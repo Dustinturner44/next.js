@@ -92,8 +92,9 @@ function errorMissingDefaultExportDEV(
       `\n//# sourceURL=${pathToFileURL(filePath)}`
     // TODO: Remove the "eval" method name from the stack.
     // TODO: Switch to `vm.runInThisContext` once is https://github.com/nodejs/node/issues/52102 resolved.
-    // eslint-disable-next-line no-eval
-    eval(source)
+    // @ts-expect-error -- Need to trick Webpack
+    // eslint-disable-next-line no-useless-concat
+    globalThis['eval' + ''](source)
   }
   const normalizedPagePath = pagePath === '/' ? '' : pagePath
   throw new Error(
