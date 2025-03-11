@@ -714,5 +714,6 @@
   "713": "Unexpected error during process lookup",
   "714": "cannot run loadNative when `NEXT_TEST_WASM` is set",
   "715": "Server Action \"%s\" was not found on the server. \\nRead more: https://nextjs.org/docs/messages/failed-to-find-server-action",
-  "716": "`unstable_isUnrecognizedActionError` can only be used on the client."
+  "716": "`unstable_isUnrecognizedActionError` can only be used on the client.",
+  "717": "This function cannot be used in the edge runtime"
 }
