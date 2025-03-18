@@ -39,6 +39,8 @@ export interface NextInstanceOpts {
   buildArgs?: string[]
   startCommand?: string
   startArgs?: string[]
+  startOptions?: string[]
+  packageManager?: 'yarn' | 'pnpm' | string
   env?: Record<string, string>
   dirSuffix?: string
   turbo?: boolean
@@ -71,6 +73,8 @@ export class NextInstance {
   public buildArgs?: string[]
   protected startCommand?: string
   protected startArgs?: string[]
+  protected startOptions?: string[]
+  protected packageManager?: 'yarn' | 'pnpm' | string
   protected dependencies?: PackageJson['dependencies'] = {}
   protected resolutions?: PackageJson['resolutions']
   protected events: { [eventName: string]: Set<any> } = {}
@@ -92,6 +96,8 @@ export class NextInstance {
 
   constructor(opts: NextInstanceOpts) {
     this.env = {}
+    // set default package manager to pnpm
+    opts.packageManager = opts.packageManager || 'pnpm'
     Object.assign(this, opts)
 
     if (!isNextDeploy) {
@@ -272,6 +278,7 @@ export class NextInstance {
               dependencies: finalDependencies,
               resolutions: this.resolutions ?? null,
               installCommand: this.installCommand,
+              packageManager: this.packageManager!,
               packageJson: this.packageJson,
               dirSuffix: this.dirSuffix,
               keepRepoDir: true,

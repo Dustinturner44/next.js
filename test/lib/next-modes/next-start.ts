@@ -63,8 +63,8 @@ export class NextStartInstance extends NextInstance {
       },
     }
 
-    let buildArgs = ['pnpm', 'next', 'build']
-    let startArgs = ['pnpm', 'next', 'start']
+    let buildArgs = [this.packageManager!, 'next', 'build']
+    let startArgs = [this.packageManager!, 'next', 'start']
 
     if (this.buildCommand) {
       buildArgs = this.buildCommand.split(' ')
@@ -205,7 +205,7 @@ export class NextStartInstance extends NextInstance {
       cliOutput: string
     }>((resolve) => {
       const curOutput = this._cliOutput.length
-      const buildArgs = ['pnpm', 'next', 'build']
+      const buildArgs = [this.packageManager!, 'next', 'build']
 
       if (this.buildArgs) {
         buildArgs.push(...this.buildArgs)

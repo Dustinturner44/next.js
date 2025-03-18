@@ -10,7 +10,7 @@ const { linkPackages } =
 const PREFER_OFFLINE = process.env.NEXT_TEST_PREFER_OFFLINE === '1'
 const useRspack = process.env.NEXT_TEST_USE_RSPACK === '1'
 
-async function installDependencies(cwd, tmpDir) {
+async function installDependencies(packageManager, cwd, tmpDir) {
   const args = [
     'install',
     '--strict-peer-dependencies=false',
@@ -24,7 +24,7 @@ async function installDependencies(cwd, tmpDir) {
     args.push('--prefer-offline')
   }
 
-  await execa('pnpm', args, {
+  await execa(packageManager, args, {
     cwd,
     stdio: ['ignore', 'inherit', 'inherit'],
     env: process.env,
@@ -39,6 +39,7 @@ async function installDependencies(cwd, tmpDir) {
  * @param {object | null} [param0.resolutions]
  * @param { ((ctx: { dependencies: { [key: string]: string } }) => string) | string | null} [param0.installCommand]
  * @param {object} [param0.packageJson]
+ * @param {string} [param0.packageManager]
  * @param {string} [param0.dirSuffix]
  * @param {boolean} [param0.keepRepoDir]
  * @param {(span: import('@next/telemetry').Span, installDir: string) => Promise<void>} param0.beforeInstall
@@ -49,6 +50,7 @@ async function createNextInstall({
   dependencies = {},
   resolutions = null,
   installCommand = null,
+  packageManager = 'pnpm',
   packageJson = {},
   dirSuffix = '',
   keepRepoDir = false,
@@ -215,7 +217,9 @@ async function createNextInstall({
       } else {
         await rootSpan
           .traceChild('run generic install command', combinedDependencies)
-          .traceAsyncFn(() => installDependencies(installDir, tmpDir))
+          .traceAsyncFn(() =>
+            installDependencies(packageManager, installDir, tmpDir)
+          )
       }
 
       if (useRspack) {
