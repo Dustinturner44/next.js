@@ -13,16 +13,12 @@ const GENERIC_RSC_ERROR =
   'An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.'
 
 describe('use-cache', () => {
-  const { next, isNextDev, isNextDeploy, isNextStart, skipped } = nextTestSetup(
-    {
-      files: __dirname,
-      skipDeployment: true,
-    }
-  )
-
-  if (skipped) {
-    return
-  }
+  const { next, isNextDev, isNextDeploy, isNextStart } = nextTestSetup({
+    files: __dirname,
+    env: {
+      NEXT_PRIVATE_DEBUG_CACHE: '1',
+    },
+  })
 
   it('should cache results', async () => {
     const browser = await next.browser(`/?n=1`)
