@@ -37,7 +37,8 @@ impl Transition for NextEcmascriptClientReferenceTransition {
     #[turbo_tasks::function]
     async fn process(
         self: Vc<Self>,
-        source: Vc<Box<dyn Source>>,
+        original_source: Vc<Box<dyn Source>>,
+        _source: Vc<Box<dyn Source>>,
         module_asset_context: Vc<ModuleAssetContext>,
         reference_type: ReferenceType,
     ) -> Result<Vc<ProcessResult>> {
@@ -53,8 +54,8 @@ impl Transition for NextEcmascriptClientReferenceTransition {
         let this = self.await?;
 
         let ident = match part {
-            Some(part) => source.ident().with_part(part.clone()),
-            None => source.ident(),
+            Some(part) => original_source.ident().with_part(part.clone()),
+            None => original_source.ident(),
         };
         let ident_ref = ident.await?;
         let ident_path = ident_ref.path.clone();
@@ -70,9 +71,10 @@ impl Transition for NextEcmascriptClientReferenceTransition {
                 ident_ref.fragment.clone(),
             ))
         } else {
-            source
+            original_source
         };
         let client_module = this.client_transition.process(
+            client_source,
             client_source,
             module_asset_context,
             ReferenceType::Entry(EntryReferenceSubType::AppClientComponent),
@@ -82,7 +84,8 @@ impl Transition for NextEcmascriptClientReferenceTransition {
         };
 
         let ssr_module = this.ssr_transition.process(
-            source,
+            original_source,
+            original_source,
             module_asset_context,
             ReferenceType::Entry(EntryReferenceSubType::AppClientComponent),
         );

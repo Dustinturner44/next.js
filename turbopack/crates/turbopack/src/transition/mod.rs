@@ -1,7 +1,6 @@
 pub(crate) mod full_context_transition;
 
 use anyhow::Result;
-pub use full_context_transition::FullContextTransition;
 use rustc_hash::FxHashMap;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, ValueDefault, Vc};
@@ -23,8 +22,12 @@ use crate::{
 pub trait Transition {
     /// Apply modifications/wrapping to the source asset
     #[turbo_tasks::function]
-    fn process_source(self: Vc<Self>, asset: Vc<Box<dyn Source>>) -> Vc<Box<dyn Source>> {
-        asset
+    fn process_source(
+        self: Vc<Self>,
+        _original_source: Vc<Box<dyn Source>>,
+        source: Vc<Box<dyn Source>>,
+    ) -> Vc<Box<dyn Source>> {
+        source
     }
 
     /// Apply modifications to the compile-time information
@@ -102,16 +105,17 @@ pub trait Transition {
     #[turbo_tasks::function]
     async fn process(
         self: Vc<Self>,
-        asset: Vc<Box<dyn Source>>,
+        original_source: Vc<Box<dyn Source>>,
+        source: Vc<Box<dyn Source>>,
         module_asset_context: Vc<ModuleAssetContext>,
         reference_type: ReferenceType,
     ) -> Result<Vc<ProcessResult>> {
-        let asset = self.process_source(asset);
+        let source = self.process_source(original_source, source);
         let module_asset_context = self.process_context(module_asset_context);
-        let asset = asset.to_resolved().await?;
+        let source = source.to_resolved().await?;
 
         Ok(match &*module_asset_context
-            .process_default(asset, reference_type)
+            .process_default(original_source.to_resolved().await?, source, reference_type)
             .await?
             .await?
         {

@@ -39,7 +39,7 @@ use turbopack::{
     ModuleAssetContext,
     module_options::ModuleOptionsContext,
     resolve_options_context::ResolveOptionsContext,
-    transition::{FullContextTransition, Transition, TransitionOptions},
+    transition::{Transition, TransitionOptions},
 };
 use turbopack_core::{
     asset::AssetContent,
@@ -65,6 +65,7 @@ use turbopack_ecmascript::resolve::esm_resolve;
 use turbopack_nodejs::NodeJsChunkingContext;
 
 use crate::{
+    app::ContextOriginalTransition,
     dynamic_imports::{
         DynamicImportedChunks, NextDynamicChunkAvailability, collect_next_dynamic_chunks,
     },
@@ -327,7 +328,7 @@ impl PagesProject {
 
     #[turbo_tasks::function]
     fn client_transition(self: Vc<Self>) -> Vc<Box<dyn Transition>> {
-        Vc::upcast(FullContextTransition::new(self.client_module_context()))
+        Vc::upcast(ContextOriginalTransition::new(self.client_module_context()))
     }
 
     #[turbo_tasks::function]
