@@ -220,10 +220,11 @@ pub enum CssReferenceSubType {
     /// Reference from ModuleCssAsset to an imported ModuleCssAsset for retrieving the composed
     /// class name
     Compose,
-    /// Reference from ModuleCssAsset to the CssModuleAsset
-    Internal,
     /// Used for generating the list of classes in a ModuleCssAsset
-    InternalAnalyze,
+    ModuleAnalyze,
+    /// Reference from ModuleCssAsset to the CssModuleAsset
+    ModuleStyles,
+    Internal,
     Custom(u8),
     #[default]
     Undefined,
@@ -421,7 +422,8 @@ impl ReferenceType {
             self,
             ReferenceType::Internal(_)
                 | ReferenceType::Css(CssReferenceSubType::Internal)
-                | ReferenceType::Css(CssReferenceSubType::InternalAnalyze)
+                | ReferenceType::Css(CssReferenceSubType::ModuleAnalyze)
+                | ReferenceType::Css(CssReferenceSubType::ModuleStyles)
                 | ReferenceType::Runtime
         )
     }

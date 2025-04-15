@@ -59,7 +59,9 @@ pub async fn get_next_server_transforms_rules(
                         RuleCondition::ResourcePathEndsWith(".module.css".into()),
                         RuleCondition::ContentTypeStartsWith("text/css+module".into()),
                     ]),
-                    RuleCondition::ReferenceType(ReferenceType::Css(CssReferenceSubType::Internal)),
+                    RuleCondition::ReferenceType(ReferenceType::Css(
+                        CssReferenceSubType::ModuleStyles,
+                    )),
                 ]),
                 vec![ModuleRuleEffect::Ignore],
             ),
