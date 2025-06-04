@@ -13,14 +13,14 @@ export interface StackFrame {
 }
 
 export function parseStack(
-  stack: string,
+  rawStack: string,
   distDir = process.env.__NEXT_DIST_DIR
 ): StackFrame[] {
-  if (!stack) return []
+  if (!rawStack) return []
 
   // throw away eval information that stacktrace-parser doesn't support
   // adapted from https://github.com/stacktracejs/error-stack-parser/blob/9f33c224b5d7b607755eb277f9d51fcdb7287e24/error-stack-parser.js#L59C33-L59C62
-  stack = stack
+  const stack = rawStack
     .split('\n')
     .map((line) => {
       if (line.includes('(eval ')) {
@@ -34,8 +34,9 @@ export function parseStack(
     })
     .join('\n')
 
+  console.log('rawStack', rawStack, stack, rawStack === stack)
   const frames = parse(stack)
-  return frames.map((frame) => {
+  const parsed = frames.map((frame) => {
     try {
       const url = new URL(frame.file!)
       const res = regexNextStatic.exec(url.pathname)
@@ -57,4 +58,7 @@ export function parseStack(
       arguments: frame.arguments,
     }
   })
+
+  console.log('frames', stack, frames)
+  return parsed
 }

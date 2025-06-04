@@ -51,6 +51,7 @@ export async function getErrorByType(
     type: event.type,
   } as const
 
+  console.log('event.frames', event.frames)
   if ('use' in React) {
     const readyRuntimeError: ReadyRuntimeError = {
       ...baseError,

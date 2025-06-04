@@ -2490,10 +2490,10 @@ export default async function getBaseWebpackConfig(
       )
     }
 
-    if (dev && originalDevtool !== webpackConfig.devtool) {
-      webpackConfig.devtool = originalDevtool
-      devtoolRevertWarning(originalDevtool)
-    }
+    // if (dev && originalDevtool !== webpackConfig.devtool) {
+    //   webpackConfig.devtool = originalDevtool
+    //   devtoolRevertWarning(originalDevtool)
+    // }
 
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const webpack5Config = webpackConfig as webpack.Configuration

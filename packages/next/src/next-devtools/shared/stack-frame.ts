@@ -84,6 +84,7 @@ export async function getOriginalStackFrames(
   type: 'server' | 'edge-server' | null,
   isAppDir: boolean
 ): Promise<OriginalStackFrame[]> {
+  console.trace('frames', frames)
   const req: OriginalStackFramesRequest = {
     frames,
     isServer: type === 'server',

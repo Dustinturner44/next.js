@@ -1,3 +1,5 @@
+import { parseStackTraceLine } from "./parse-stack-trace-line"
+
 export type ComponentStackFrame = {
   canOpenInEditor: boolean
   component: string
@@ -74,13 +76,11 @@ export function parseComponentStack(
 ): ComponentStackFrame[] {
   const componentStackFrames: ComponentStackFrame[] = []
   for (const line of componentStack.trim().split('\n')) {
-    // TODO: support safari stack trace
     // Get component and file from the component stack line
-    const match = /at ([^ ]+)( \((.*)\))?/.exec(line)
-    if (match?.[1]) {
-      const component = match[1]
-      const location = match[3]
-
+    // @compatible-stack-frame-regex
+    const { component, file: location } = parseStackTraceLine(line)
+    
+    if (component) {
       if (!location) {
         componentStackFrames.push({
           canOpenInEditor: false,

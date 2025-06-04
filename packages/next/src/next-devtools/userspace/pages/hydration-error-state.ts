@@ -8,6 +8,7 @@ import {
   isErrorMessageWithComponentStackDiff as isReact19HydrationWarning,
 } from '../../shared/react-19-hydration-error'
 import type { HydrationErrorState } from '../../shared/hydration-error'
+import { parseStackTraceLine } from '../../dev-overlay/utils/parse-stack-trace-line'
 
 // We only need this for React 18 or hydration console errors in React 19.
 // Once we surface console.error in the dev overlay in pages router, we should only
@@ -143,7 +144,11 @@ function generateHydrationDiffReact18(
       line = line.trim()
       // extract `<space>at <component>` to `<<component>>`
       // e.g. `  at Foo` -> `<Foo>`
-      const [, component, location] = /at (\w+)( \((.*)\))?/.exec(line) || []
+      // @compatible-stack-frame-regex
+      const {
+        component,
+        file: location,
+      } = parseStackTraceLine(line) // /^(?:at\s+)?(?:(\S+)?(?:\s*\((.+)\))?|(\S+)@(.+))$/.exec(line) || []
       // If there's no location then it's user-land stack frame
       if (!location) {
         if (component === firstContent && firstIndex === -1) {
