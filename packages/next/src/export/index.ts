@@ -417,7 +417,7 @@ async function exportAppImpl(
       (process.env.TURBOPACK
         ? nextConfig.experimental.turbopackMinify === false
         : nextConfig.experimental.serverMinification === false) &&
-      nextConfig.experimental.enablePrerenderSourceMaps === true,
+      nextConfig.staticPageGenerationSourceMaps === true,
   }
 
   const { publicRuntimeConfig } = nextConfig
