@@ -711,5 +711,6 @@
   "710": "Unable to remove an invalidated webpack cache. If this issue persists you can work around it by deleting %s",
   "711": "Can't resolve %s",
   "712": "`rspack.warnForEdgeRuntime` is not supported by the wasm bindings.",
-  "713": "Unexpected error during process lookup"
+  "713": "Unexpected error during process lookup",
+  "714": "Next.js RSC redirect protocol error: Missing Location header. This may indicate either a Next.js bug or that a third-party proxy is not correctly implementing the RSC redirect protocol."
 }
