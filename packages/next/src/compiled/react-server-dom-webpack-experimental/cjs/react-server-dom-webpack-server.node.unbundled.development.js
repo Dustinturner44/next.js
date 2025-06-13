@@ -1445,21 +1445,6 @@
       getAsyncIterator = getAsyncIterator.call(children);
       return serializeAsyncIterable(request, task, children, getAsyncIterator);
     }
-    function deferTask(request, task) {
-      task = createTask(
-        request,
-        task.model,
-        task.keyPath,
-        task.implicitSlot,
-        request.abortableTasks,
-        task.time,
-        task.debugOwner,
-        task.debugStack,
-        task.debugTask
-      );
-      pingTask(request, task);
-      return serializeLazyID(task.id);
-    }
     function outlineTask(request, task) {
       task = createTask(
         request,
@@ -1979,7 +1964,6 @@
       return "$B" + newTask.id.toString(16);
     }
     function renderModel(request, task, parent, key, value) {
-      serializedSize += key.length;
       var prevKeyPath = task.keyPath,
         prevImplicitSlot = task.implicitSlot;
       try {
@@ -2078,7 +2062,6 @@
                       _existingReference + ":" + parentPropertyName),
                     _writtenObjects.set(value, elementReference)));
             }
-            if (serializedSize > MAX_ROW_SIZE) return deferTask(request, task);
             if ((_existingReference = value._debugInfo))
               if (canEmitDebugInfo)
                 forwardDebugInfo(request, task, _existingReference);
@@ -2104,7 +2087,6 @@
                 _writtenObjects.set(request, elementReference));
             return request;
           case REACT_LAZY_TYPE:
-            if (serializedSize > MAX_ROW_SIZE) return deferTask(request, task);
             task.thenableState = null;
             elementReference = callLazyInitInDEV(value);
             if (request.status === ABORTING) throw null;
@@ -2275,7 +2257,6 @@
         return (
           (task = TaintRegistryValues.get(value)),
           void 0 !== task && throwTaintViolation(task.message),
-          (serializedSize += value.length),
           "Z" === value[value.length - 1] &&
           parent[parentPropertyName] instanceof Date
             ? "$D" + value
@@ -3091,7 +3072,6 @@
       if (task.status === PENDING$1) {
         var prevCanEmitDebugInfo = canEmitDebugInfo;
         task.status = RENDERING;
-        var parentSerializedSize = serializedSize;
         try {
           modelRoot = task.model;
           canEmitDebugInfo = !0;
@@ -3153,20 +3133,17 @@
             } else erroredTask(request, task, x);
           }
         } finally {
-          (canEmitDebugInfo = prevCanEmitDebugInfo),
-            (serializedSize = parentSerializedSize);
+          canEmitDebugInfo = prevCanEmitDebugInfo;
         }
       }
     }
     function tryStreamTask(request, task) {
       var prevCanEmitDebugInfo = canEmitDebugInfo;
       canEmitDebugInfo = !1;
-      var parentSerializedSize = serializedSize;
       try {
         emitChunk(request, task, task.model);
       } finally {
-        (serializedSize = parentSerializedSize),
-          (canEmitDebugInfo = prevCanEmitDebugInfo);
+        canEmitDebugInfo = prevCanEmitDebugInfo;
       }
     }
     function performWork(request) {
@@ -4718,8 +4695,6 @@
       defaultPostponeHandler = noop,
       currentRequest = null,
       canEmitDebugInfo = !1,
-      serializedSize = 0,
-      MAX_ROW_SIZE = 3200,
       modelRoot = !1,
       emptyRoot = {},
       asyncModuleCache = new Map(),

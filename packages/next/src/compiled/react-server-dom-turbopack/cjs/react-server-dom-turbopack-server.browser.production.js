@@ -835,7 +835,7 @@ function serializeReadableStream(request, task, stream) {
         try {
           (streamTask.model = entry.value),
             request.pendingChunks++,
-            tryStreamTask(request, streamTask),
+            emitChunk(request, streamTask, streamTask.model),
             enqueueFlush(request),
             reader.read().then(progress, error);
         } catch (x$9) {
@@ -909,7 +909,7 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
         try {
           (streamTask.model = entry.value),
             request.pendingChunks++,
-            tryStreamTask(request, streamTask),
+            emitChunk(request, streamTask, streamTask.model),
             enqueueFlush(request),
             iterator.next().then(progress, error);
         } catch (x$10) {
@@ -1049,18 +1049,6 @@ function renderFragment(request, task, children) {
       task.implicitSlot ? [request] : request)
     : children;
 }
-var serializedSize = 0;
-function deferTask(request, task) {
-  task = createTask(
-    request,
-    task.model,
-    task.keyPath,
-    task.implicitSlot,
-    request.abortableTasks
-  );
-  pingTask(request, task);
-  return "$L" + task.id.toString(16);
-}
 function renderElement(request, task, type, key, ref, props) {
   if (null !== ref && void 0 !== ref)
     throw Error(
@@ -1142,7 +1130,6 @@ function createTask(request, model, keyPath, implicitSlot, abortSet) {
       return pingTask(request, task);
     },
     toJSON: function (parentPropertyName, value) {
-      serializedSize += parentPropertyName.length;
       var prevKeyPath = task.keyPath,
         prevImplicitSlot = task.implicitSlot;
       try {
@@ -1357,7 +1344,6 @@ function renderModelDestructive(
                 ((elementReference = parent + ":" + parentPropertyName),
                 writtenObjects.set(value, elementReference)));
         }
-        if (3200 < serializedSize) return deferTask(request, task);
         parentPropertyName = value.props;
         parent = parentPropertyName.ref;
         request = renderElement(
@@ -1375,7 +1361,6 @@ function renderModelDestructive(
             writtenObjects.set(request, elementReference));
         return request;
       case REACT_LAZY_TYPE:
-        if (3200 < serializedSize) return deferTask(request, task);
         task.thenableState = null;
         parentPropertyName = value._init;
         value = parentPropertyName(value._payload);
@@ -1525,7 +1510,6 @@ function renderModelDestructive(
     return value;
   }
   if ("string" === typeof value) {
-    serializedSize += value.length;
     if (
       "Z" === value[value.length - 1] &&
       parent[parentPropertyName] instanceof Date
@@ -1735,7 +1719,6 @@ var emptyRoot = {};
 function retryTask(request, task) {
   if (0 === task.status) {
     task.status = 5;
-    var parentSerializedSize = serializedSize;
     try {
       modelRoot = task.model;
       var resolvedModel = renderModelDestructive(
@@ -1781,16 +1764,7 @@ function retryTask(request, task) {
         } else erroredTask(request, task, x);
       }
     } finally {
-      serializedSize = parentSerializedSize;
     }
-  }
-}
-function tryStreamTask(request, task) {
-  var parentSerializedSize = serializedSize;
-  try {
-    emitChunk(request, task, task.model);
-  } finally {
-    serializedSize = parentSerializedSize;
   }
 }
 function performWork(request) {

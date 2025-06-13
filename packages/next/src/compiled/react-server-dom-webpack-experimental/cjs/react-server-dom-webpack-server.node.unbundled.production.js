@@ -887,7 +887,7 @@ function serializeReadableStream(request, task, stream) {
         try {
           (streamTask.model = entry.value),
             request.pendingChunks++,
-            tryStreamTask(request, streamTask),
+            emitChunk(request, streamTask, streamTask.model),
             enqueueFlush(request),
             reader.read().then(progress, error);
         } catch (x$9) {
@@ -962,7 +962,7 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
         try {
           (streamTask.model = entry.value),
             request.pendingChunks++,
-            tryStreamTask(request, streamTask),
+            emitChunk(request, streamTask, streamTask.model),
             enqueueFlush(request),
             iterator.next().then(progress, error);
         } catch (x$10) {
@@ -1102,18 +1102,6 @@ function renderFragment(request, task, children) {
       task.implicitSlot ? [request] : request)
     : children;
 }
-var serializedSize = 0;
-function deferTask(request, task) {
-  task = createTask(
-    request,
-    task.model,
-    task.keyPath,
-    task.implicitSlot,
-    request.abortableTasks
-  );
-  pingTask(request, task);
-  return serializeLazyID(task.id);
-}
 function renderElement(request, task, type, key, ref, props) {
   if (null !== ref && void 0 !== ref)
     throw Error(
@@ -1195,7 +1183,6 @@ function createTask(request, model, keyPath, implicitSlot, abortSet) {
       return pingTask(request, task);
     },
     toJSON: function (parentPropertyName, value) {
-      serializedSize += parentPropertyName.length;
       var prevKeyPath = task.keyPath,
         prevImplicitSlot = task.implicitSlot;
       try {
@@ -1220,12 +1207,12 @@ function createTask(request, model, keyPath, implicitSlot, abortSet) {
             21 === request.type
               ? ((prevKeyPath = request.nextChunkId++),
                 (prevKeyPath = parentPropertyName
-                  ? serializeLazyID(prevKeyPath)
+                  ? "$L" + prevKeyPath.toString(16)
                   : serializeByValueID(prevKeyPath)),
                 (JSCompiler_inline_result = prevKeyPath))
               : ((prevKeyPath = request.fatalError),
                 (JSCompiler_inline_result = parentPropertyName
-                  ? serializeLazyID(prevKeyPath)
+                  ? "$L" + prevKeyPath.toString(16)
                   : serializeByValueID(prevKeyPath)));
         else if (
           ((value =
@@ -1250,7 +1237,7 @@ function createTask(request, model, keyPath, implicitSlot, abortSet) {
           task.keyPath = prevKeyPath;
           task.implicitSlot = prevImplicitSlot;
           JSCompiler_inline_result = parentPropertyName
-            ? serializeLazyID(JSCompiler_inline_result.id)
+            ? "$L" + JSCompiler_inline_result.id.toString(16)
             : serializeByValueID(JSCompiler_inline_result.id);
         } else
           (task.keyPath = prevKeyPath),
@@ -1265,7 +1252,7 @@ function createTask(request, model, keyPath, implicitSlot, abortSet) {
               : ((prevImplicitSlot = logRecoverableError(request, value, task)),
                 emitErrorChunk(request, prevKeyPath, prevImplicitSlot)),
             (JSCompiler_inline_result = parentPropertyName
-              ? serializeLazyID(prevKeyPath)
+              ? "$L" + prevKeyPath.toString(16)
               : serializeByValueID(prevKeyPath));
       }
       return JSCompiler_inline_result;
@@ -1277,9 +1264,6 @@ function createTask(request, model, keyPath, implicitSlot, abortSet) {
 }
 function serializeByValueID(id) {
   return "$" + id.toString(16);
-}
-function serializeLazyID(id) {
-  return "$L" + id.toString(16);
 }
 function encodeReferenceChunk(request, id, reference) {
   request = stringify(reference);
@@ -1298,7 +1282,7 @@ function serializeClientReference(
     existingId = writtenClientReferences.get(clientReferenceKey);
   if (void 0 !== existingId)
     return parent[0] === REACT_ELEMENT_TYPE && "1" === parentPropertyName
-      ? serializeLazyID(existingId)
+      ? "$L" + existingId.toString(16)
       : serializeByValueID(existingId);
   try {
     var config = request.bundlerConfig,
@@ -1335,7 +1319,7 @@ function serializeClientReference(
     request.completedImportChunks.push(processedChunk);
     writtenClientReferences.set(clientReferenceKey, importId);
     return parent[0] === REACT_ELEMENT_TYPE && "1" === parentPropertyName
-      ? serializeLazyID(importId)
+      ? "$L" + importId.toString(16)
       : serializeByValueID(importId);
   } catch (x) {
     return (
@@ -1423,7 +1407,6 @@ function renderModelDestructive(
                 ((elementReference = parent + ":" + parentPropertyName),
                 writtenObjects.set(value, elementReference)));
         }
-        if (3200 < serializedSize) return deferTask(request, task);
         parentPropertyName = value.props;
         parent = parentPropertyName.ref;
         value = renderElement(
@@ -1441,7 +1424,6 @@ function renderModelDestructive(
             writtenObjects.set(value, elementReference));
         return value;
       case REACT_LAZY_TYPE:
-        if (3200 < serializedSize) return deferTask(request, task);
         task.thenableState = null;
         parentPropertyName = value._init;
         value = parentPropertyName(value._payload);
@@ -1595,7 +1577,6 @@ function renderModelDestructive(
   if ("string" === typeof value) {
     task = TaintRegistryValues.get(value);
     void 0 !== task && throwTaintViolation(task.message);
-    serializedSize += value.length;
     if (
       "Z" === value[value.length - 1] &&
       parent[parentPropertyName] instanceof Date
@@ -1839,7 +1820,6 @@ var emptyRoot = {};
 function retryTask(request, task) {
   if (0 === task.status) {
     task.status = 5;
-    var parentSerializedSize = serializedSize;
     try {
       modelRoot = task.model;
       var resolvedModel = renderModelDestructive(
@@ -1891,16 +1871,7 @@ function retryTask(request, task) {
         } else erroredTask(request, task, x);
       }
     } finally {
-      serializedSize = parentSerializedSize;
     }
-  }
-}
-function tryStreamTask(request, task) {
-  var parentSerializedSize = serializedSize;
-  try {
-    emitChunk(request, task, task.model);
-  } finally {
-    serializedSize = parentSerializedSize;
   }
 }
 function performWork(request) {
@@ -2945,12 +2916,12 @@ exports.decodeReplyFromBusboy = function (busboyStream, webpackMap, options) {
         "React doesn't accept base64 encoded file uploads because we don't expect form data passed from a browser to ever encode data that way. If that's the wrong assumption, we can easily fix it."
       );
     pendingFiles++;
-    var JSCompiler_object_inline_chunks_259 = [];
+    var JSCompiler_object_inline_chunks_265 = [];
     value.on("data", function (chunk) {
-      JSCompiler_object_inline_chunks_259.push(chunk);
+      JSCompiler_object_inline_chunks_265.push(chunk);
     });
     value.on("end", function () {
-      var blob = new Blob(JSCompiler_object_inline_chunks_259, {
+      var blob = new Blob(JSCompiler_object_inline_chunks_265, {
         type: mimeType
       });
       response._formData.append(name, blob, filename);
