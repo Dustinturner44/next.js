@@ -1,4 +1,6 @@
 import type { OverlayDispatch, OverlayState, Corners } from '../../shared'
+import type { ReadyRuntimeError } from '../../utils/get-error-by-type'
+import type { HydrationErrorState } from '../../../shared/hydration-error'
 
 import { useState } from 'react'
 
@@ -26,10 +28,14 @@ export function DevToolsPanel({
   state,
   dispatch,
   issueCount,
+  runtimeErrors,
+  getSquashedHydrationErrorDetails,
 }: {
   state: OverlayState
   dispatch: OverlayDispatch
   issueCount: number
+  runtimeErrors: ReadyRuntimeError[]
+  getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
 }) {
   const [activeTab, setActiveTab] = useState<'issues' | 'route' | 'settings'>(
     'settings'
@@ -139,10 +145,15 @@ export function DevToolsPanel({
               <DialogBody>
                 <DevToolsPanelTab
                   activeTab={activeTab}
+                  runtimeErrors={runtimeErrors}
                   devToolsPosition={state.devToolsPosition}
                   scale={state.scale}
+                  debugInfo={state.debugInfo}
                   handlePositionChange={handlePositionChange}
                   handleScaleChange={handleScaleChange}
+                  getSquashedHydrationErrorDetails={
+                    getSquashedHydrationErrorDetails
+                  }
                 />
               </DialogBody>
             </DialogContent>
@@ -155,6 +166,11 @@ export function DevToolsPanel({
 }
 
 export const DEVTOOLS_PANEL_STYLES = css`
+  /* TODO: Better override dialog header style */
+  [data-nextjs-devtools-panel-dialog-header] {
+    margin-bottom: 0 !important;
+  }
+
   [data-nextjs-devtools-panel-overlay] {
     padding: initial;
     margin: auto;
