@@ -1,5 +1,5 @@
 import type { DevToolsPanelTabType } from '../devtools-panel'
-import type { Corners } from '../../../shared'
+import type { Corners, OverlayState } from '../../../shared'
 import type { DebugInfo } from '../../../../shared/types'
 import type { ReadyRuntimeError } from '../../../utils/get-error-by-type'
 import type { HydrationErrorState } from '../../../../shared/hydration-error'
@@ -13,6 +13,7 @@ export function DevToolsPanelTab({
   devToolsPosition,
   scale,
   debugInfo,
+  buildError,
   handlePositionChange,
   handleScaleChange,
   getSquashedHydrationErrorDetails,
@@ -22,6 +23,7 @@ export function DevToolsPanelTab({
   devToolsPosition: Corners
   scale: number
   debugInfo: DebugInfo
+  buildError: OverlayState['buildError']
   handlePositionChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
   handleScaleChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
@@ -42,6 +44,7 @@ export function DevToolsPanelTab({
       return (
         <IssuesTab
           debugInfo={debugInfo}
+          buildError={buildError}
           runtimeErrors={runtimeErrors}
           getSquashedHydrationErrorDetails={getSquashedHydrationErrorDetails}
         />

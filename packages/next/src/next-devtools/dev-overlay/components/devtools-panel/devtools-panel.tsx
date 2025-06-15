@@ -149,6 +149,7 @@ export function DevToolsPanel({
                   devToolsPosition={state.devToolsPosition}
                   scale={state.scale}
                   debugInfo={state.debugInfo}
+                  buildError={state.buildError}
                   handlePositionChange={handlePositionChange}
                   handleScaleChange={handleScaleChange}
                   getSquashedHydrationErrorDetails={
