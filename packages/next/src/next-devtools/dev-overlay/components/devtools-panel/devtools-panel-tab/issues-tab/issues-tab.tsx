@@ -1,12 +1,7 @@
-import type { DebugInfo } from '../../../../../shared/types'
-import type { HydrationErrorState } from '../../../../../shared/hydration-error'
-
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useMemo } from 'react'
 import {
   GenericErrorDescription,
-  getErrorTypeLabel,
   HydrationErrorDescription,
-  useErrorDetails,
 } from '../../../../container/errors'
 import { EnvironmentNameLabel } from '../../../errors/environment-name-label/environment-name-label'
 import { ErrorMessage } from '../../../errors/error-message/error-message'
@@ -16,7 +11,8 @@ import {
   useFrames,
   type ReadyRuntimeError,
 } from '../../../../utils/get-error-by-type'
-import { extractNextErrorCode } from '../../../../../../lib/error-telemetry-utils'
+import type { HydrationErrorState } from '../../../../../shared/hydration-error'
+import type { OverlayState } from '../../../../shared'
 import { css } from '../../../../utils/css'
 import { getFrameSource } from '../../../../../shared/stack-frame'
 import { Terminal } from '../../../terminal'
@@ -25,7 +21,8 @@ import { NEXTJS_HYDRATION_ERROR_LINK } from '../../../../../shared/react-19-hydr
 import { PseudoHtmlDiff } from '../../../../container/runtime-error/component-stack-pseudo-html'
 import { CodeFrame } from '../../../code-frame/code-frame'
 import { CallStack } from '../../../call-stack/call-stack'
-import type { OverlayState } from '../../../../shared'
+import { useRuntimeError } from '../../../../hooks/use-runtime-error'
+import type { DebugInfo } from '../../../../../shared/types'
 
 export function IssuesTab({
   debugInfo,
@@ -38,39 +35,31 @@ export function IssuesTab({
   runtimeErrors: ReadyRuntimeError[]
   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
 }) {
-  const [activeIdx, setActiveIndex] = useState<number>(0)
-  const activeError = useMemo<ReadyRuntimeError | null>(
-    () =>
-      // TODO: correct fallback
-      runtimeErrors[activeIdx] ?? {
-        error: new Error('No error'),
-        type: 'runtime',
-      },
-    [activeIdx, runtimeErrors]
-  )
+  const {
+    isLoading,
+    errorCode,
+    errorType,
+    notes,
+    hydrationWarning,
+    activeIdx,
+    errorDetails,
+    activeError,
+    setActiveIndex,
+  } = useRuntimeError({ runtimeErrors, getSquashedHydrationErrorDetails })
+
+  if (isLoading) {
+    // TODO: better loading state
+    return null
+  }
 
   if (!activeError) {
     return null
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const errorDetails = useErrorDetails(
-    activeError?.error,
-    getSquashedHydrationErrorDetails
-  )
-
-  const error = activeError?.error
-
-  const errorCode = extractNextErrorCode(error)
-  const errorType = getErrorTypeLabel(error, activeError.type)
-  // TOOD: May be better to always treat everything past the first blank line as notes
-  // We're currently only special casing hydration error messages.
-  const notes = errorDetails.notes
-  const hydrationWarning = errorDetails.hydrationWarning
   const errorMessage = hydrationWarning ? (
     <HydrationErrorDescription message={hydrationWarning} />
   ) : (
-    <GenericErrorDescription error={error} />
+    <GenericErrorDescription error={activeError.error} />
   )
 
   return (
@@ -100,11 +89,16 @@ export function IssuesTab({
           >
             <span data-nextjs-error-label-group>
               <ErrorTypeLabel errorType={errorType} />
-              {error.environmentName && (
-                <EnvironmentNameLabel environmentName={error.environmentName} />
+              {activeError.error.environmentName && (
+                <EnvironmentNameLabel
+                  environmentName={activeError.error.environmentName}
+                />
               )}
             </span>
-            <ErrorOverlayToolbar error={error} debugInfo={debugInfo} />
+            <ErrorOverlayToolbar
+              error={activeError.error}
+              debugInfo={debugInfo}
+            />
           </div>
           <ErrorMessage errorMessage={errorMessage} />
         </div>
@@ -222,7 +216,7 @@ function Foo({
   setActiveIndex,
 }: {
   runtimeError: ReadyRuntimeError
-  errorType: string
+  errorType: string | null
   idx: number
   activeIdx: number
   setActiveIndex: (idx: number) => void
