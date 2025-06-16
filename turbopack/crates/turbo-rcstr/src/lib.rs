@@ -185,28 +185,25 @@ impl From<BytesStr> for RcStr {
 
 impl From<Arc<String>> for RcStr {
     fn from(s: Arc<String>) -> Self {
-        match Arc::try_unwrap(s) {
-            Ok(v) => new_atom(Cow::Owned(v)),
-            Err(arc) => new_atom(Cow::Borrowed(&**arc)),
-        }
+        new_atom(s.as_str())
     }
 }
 
 impl From<String> for RcStr {
     fn from(s: String) -> Self {
-        new_atom(Cow::Owned(s))
+        new_atom(s.as_str())
     }
 }
 
 impl From<&'_ str> for RcStr {
     fn from(s: &str) -> Self {
-        new_atom(Cow::Borrowed(s))
+        new_atom(s)
     }
 }
 
 impl From<Cow<'_, str>> for RcStr {
     fn from(s: Cow<str>) -> Self {
-        new_atom(s)
+        new_atom(s.as_ref())
     }
 }
 

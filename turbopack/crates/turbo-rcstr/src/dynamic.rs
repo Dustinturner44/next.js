@@ -21,8 +21,8 @@ pub(crate) unsafe fn restore_arc(v: TaggedValue) -> ManuallyDrop<ThinArc<Prehash
 
 /// This can create any kind of [Atom], although this lives in the `dynamic`
 /// module.
-pub(crate) fn new_atom<T: AsRef<str> + Into<String>>(text: T) -> RcStr {
-    let bytes = text.as_ref().as_bytes();
+pub(crate) fn new_atom(text: &str) -> RcStr {
+    let bytes = text.as_bytes();
     let len = bytes.len();
 
     if len < MAX_INLINE_LEN {
@@ -35,7 +35,7 @@ pub(crate) fn new_atom<T: AsRef<str> + Into<String>>(text: T) -> RcStr {
         return RcStr { unsafe_data };
     }
 
-    let hash = hash_bytes(text.as_ref().as_bytes());
+    let hash = hash_bytes(bytes);
 
     let entry = ThinArc::from_header_and_slice(PrehashedString { hash }, bytes);
     let entry = ThinArc::into_raw(entry);
