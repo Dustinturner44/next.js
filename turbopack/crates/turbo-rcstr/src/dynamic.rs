@@ -1,57 +1,46 @@
-use std::{num::NonZeroU8, ptr::NonNull};
+use std::{mem::ManuallyDrop, num::NonZeroU8, ptr::NonNull};
 
-use triomphe::Arc;
+use triomphe::ThinArc;
 
 use crate::{
     INLINE_TAG, INLINE_TAG_INIT, LEN_OFFSET, RcStr, TAG_MASK,
     tagged_value::{MAX_INLINE_LEN, TaggedValue},
 };
-
 pub(crate) struct PrehashedString {
-    pub value: String,
     /// This is not the actual `fxhash`, but rather it's a value that passed to
     /// `write_u64` of [rustc_hash::FxHasher].
     pub hash: u64,
 }
 
-pub unsafe fn cast(ptr: TaggedValue) -> *const PrehashedString {
-    ptr.get_ptr().cast()
-}
-
-pub(crate) unsafe fn deref_from<'i>(ptr: TaggedValue) -> &'i PrehashedString {
-    unsafe { &*cast(ptr) }
-}
-
-/// Caller should call `forget` (or `clone`) on the returned `Arc`
-pub unsafe fn restore_arc(v: TaggedValue) -> Arc<PrehashedString> {
-    let ptr = v.get_ptr() as *const PrehashedString;
-    unsafe { Arc::from_raw(ptr) }
+/// Caller should call `drop` (or `clone`) on the returned `Arc` as this does manipulate the
+/// refcount
+pub(crate) unsafe fn restore_arc(v: TaggedValue) -> ManuallyDrop<ThinArc<PrehashedString, u8>> {
+    let ptr = v.get_ptr();
+    ManuallyDrop::new(unsafe { ThinArc::from_raw(ptr) })
 }
 
 /// This can create any kind of [Atom], although this lives in the `dynamic`
 /// module.
 pub(crate) fn new_atom<T: AsRef<str> + Into<String>>(text: T) -> RcStr {
-    let len = text.as_ref().len();
+    let bytes = text.as_ref().as_bytes();
+    let len = bytes.len();
 
     if len < MAX_INLINE_LEN {
         // INLINE_TAG ensures this is never zero
         let tag = INLINE_TAG_INIT | ((len as u8) << LEN_OFFSET);
         let mut unsafe_data = TaggedValue::new_tag(tag);
         unsafe {
-            unsafe_data.data_mut()[..len].copy_from_slice(text.as_ref().as_bytes());
+            unsafe_data.data_mut()[..len].copy_from_slice(bytes);
         }
         return RcStr { unsafe_data };
     }
 
     let hash = hash_bytes(text.as_ref().as_bytes());
 
-    let entry: Arc<PrehashedString> = Arc::new(PrehashedString {
-        value: text.into(),
-        hash,
-    });
-    let entry = Arc::into_raw(entry);
+    let entry = ThinArc::from_header_and_slice(PrehashedString { hash }, bytes);
+    let entry = ThinArc::into_raw(entry);
 
-    let ptr: NonNull<PrehashedString> = unsafe {
+    let ptr: NonNull<*const ()> = unsafe {
         // Safety: Arc::into_raw returns a non-null pointer
         NonNull::new_unchecked(entry as *mut _)
     };

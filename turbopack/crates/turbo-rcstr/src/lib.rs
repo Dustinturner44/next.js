@@ -3,7 +3,7 @@ use std::{
     ffi::OsStr,
     fmt::{Debug, Display},
     hash::{Hash, Hasher},
-    mem::{ManuallyDrop, forget},
+    mem::ManuallyDrop,
     num::NonZeroU8,
     ops::Deref,
     path::{Path, PathBuf},
@@ -17,7 +17,7 @@ use triomphe::Arc;
 use turbo_tasks_hash::{DeterministicHash, DeterministicHasher};
 
 use crate::{
-    dynamic::{deref_from, new_atom},
+    dynamic::{new_atom, restore_arc},
     tagged_value::TaggedValue,
 };
 
@@ -105,9 +105,14 @@ impl RcStr {
     #[inline(always)]
     fn dynamic_rcstr_as_str(&self) -> &str {
         debug_assert!(self.tag() == DYNAMIC_TAG);
-        unsafe { dynamic::deref_from(self.unsafe_data) }
-            .value
-            .as_str()
+        let arc = unsafe { restore_arc(self.unsafe_data) };
+
+        let ptr = &arc.slice as *const [u8];
+        // SAFETY:  the data is valid utf8 because it is always constructed from a string. See
+        // `dynamic` The ptr cast allows us to declare that the lifetime of the returned
+        // `str` is the same as `self`.  This is true because `restore_arc` is ManuallyDrop and thus
+        // the arc outlives this function
+        unsafe { std::str::from_utf8_unchecked(&*ptr) }
     }
 
     /// [Self::as_str] for the inline case, useful if you have already checked the tag
@@ -127,18 +132,7 @@ impl RcStr {
     ///   underlying string without cloning in `O(1)` time.
     /// - This avoids some of the potential overhead of the `Display` trait.
     pub fn into_owned(self) -> String {
-        match self.tag() {
-            DYNAMIC_TAG => {
-                // convert `self` into `arc`
-                let arc = unsafe { dynamic::restore_arc(ManuallyDrop::new(self).unsafe_data) };
-                match Arc::try_unwrap(arc) {
-                    Ok(v) => v.value,
-                    Err(arc) => arc.value.to_string(),
-                }
-            }
-            INLINE_TAG => self.inline_rcstr_as_str().to_string(),
-            _ => unsafe { debug_unreachable!() },
-        }
+        self.as_str().to_string()
     }
 
     pub fn map(self, f: impl FnOnce(String) -> String) -> Self {
@@ -148,10 +142,9 @@ impl RcStr {
     #[inline]
     pub(crate) fn from_alias(alias: TaggedValue) -> Self {
         if alias.tag() & TAG_MASK == DYNAMIC_TAG {
+            // Increment the ref-count
             unsafe {
-                let arc = dynamic::restore_arc(alias);
-                forget(arc.clone());
-                forget(arc);
+                let _ = dynamic::restore_arc(alias).clone();
             }
         }
 
@@ -309,9 +302,9 @@ impl PartialEq for RcStr {
             return false;
         }
         // They are both dynamic so we need to query memory, compare hashes and then values
-        let l = unsafe { deref_from(self.unsafe_data) };
-        let r = unsafe { deref_from(other.unsafe_data) };
-        l.hash == r.hash && l.value == r.value
+        let l = unsafe { restore_arc(self.unsafe_data) };
+        let r = unsafe { restore_arc(other.unsafe_data) };
+        l.header.header.hash == r.header.header.hash && l.slice == r.slice
     }
 }
 
@@ -333,8 +326,8 @@ impl Hash for RcStr {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self.tag() {
             DYNAMIC_TAG => {
-                let l = unsafe { deref_from(self.unsafe_data) };
-                state.write_u64(l.hash);
+                let arc = unsafe { restore_arc(self.unsafe_data) };
+                state.write_u64(arc.header.header.hash);
                 state.write_u8(0xff);
             }
             INLINE_TAG => {
@@ -361,7 +354,11 @@ impl<'de> Deserialize<'de> for RcStr {
 impl Drop for RcStr {
     fn drop(&mut self) {
         if self.tag() == DYNAMIC_TAG {
-            unsafe { drop(dynamic::restore_arc(self.unsafe_data)) }
+            unsafe {
+                drop(ManuallyDrop::into_inner(dynamic::restore_arc(
+                    self.unsafe_data,
+                )))
+            }
         }
     }
 }
@@ -453,7 +450,7 @@ mod tests {
         fn refcount(str: &RcStr) -> usize {
             assert!(str.tag() == DYNAMIC_TAG);
             let arc = ManuallyDrop::new(unsafe { dynamic::restore_arc(str.unsafe_data) });
-            triomphe::Arc::count(&arc)
+            triomphe::ThinArc::strong_count(&arc)
         }
 
         let str = RcStr::from("this is a long string that won't be inlined");
