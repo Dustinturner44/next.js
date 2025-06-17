@@ -16,6 +16,7 @@ export function GoogleTagManager(props: GTMParams) {
     preview,
     dataLayer,
     nonce,
+    strategy,
   } = props
 
   currDataLayerName = dataLayerName
@@ -56,6 +57,7 @@ export function GoogleTagManager(props: GTMParams) {
         data-ntpc="GTM"
         src={`${gtmScriptUrl}?id=${gtmId}${gtmLayer}${gtmAuth}${gtmPreview}`}
         nonce={nonce}
+        strategy={strategy}
       />
     </>
   )
