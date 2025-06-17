@@ -22,6 +22,7 @@ import React, {
   Suspense,
   useDeferredValue,
   type JSX,
+  Fragment,
 } from 'react'
 import ReactDOM from 'react-dom'
 import {
@@ -491,6 +492,20 @@ function RenderChildren({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+const SuspenseSimulationWatcher =
+  process.env.NODE_ENV !== 'development'
+    ? Fragment
+    : (
+        require('../../next-devtools/userspace/app/inspector-mode-userspace') as typeof import('../../next-devtools/userspace/app/inspector-mode-userspace')
+      ).SuspenseSimulationWatcher
+
+const SimulateSuspend =
+  process.env.NODE_ENV !== 'development'
+    ? Fragment
+    : (
+        require('../../next-devtools/userspace/app/inspector-mode-userspace') as typeof import('../../next-devtools/userspace/app/inspector-mode-userspace')
+      ).SimulateSuspend
+
 /**
  * OuterLayoutRouter handles the current segment as well as <Offscreen> rendering of other segments.
  * It can be rendered next to each other with a different `parallelRouterKey`, allowing for Parallel routes.
@@ -632,22 +647,25 @@ export default function OuterLayoutRouter({
               errorStyles={errorStyles}
               errorScripts={errorScripts}
             >
-              <LoadingBoundary loading={loadingModuleData}>
-                <HTTPAccessFallbackBoundary
-                  notFound={notFound}
-                  forbidden={forbidden}
-                  unauthorized={unauthorized}
-                >
-                  <RedirectBoundary>
-                    <InnerLayoutRouter
-                      url={url}
-                      tree={tree}
-                      cacheNode={cacheNode}
-                      segmentPath={segmentPath}
-                    />
-                  </RedirectBoundary>
-                </HTTPAccessFallbackBoundary>
-              </LoadingBoundary>
+              <SuspenseSimulationWatcher>
+                <LoadingBoundary loading={loadingModuleData}>
+                  <SimulateSuspend />
+                  <HTTPAccessFallbackBoundary
+                    notFound={notFound}
+                    forbidden={forbidden}
+                    unauthorized={unauthorized}
+                  >
+                    <RedirectBoundary>
+                      <InnerLayoutRouter
+                        url={url}
+                        tree={tree}
+                        cacheNode={cacheNode}
+                        segmentPath={segmentPath}
+                      />
+                    </RedirectBoundary>
+                  </HTTPAccessFallbackBoundary>
+                </LoadingBoundary>
+              </SuspenseSimulationWatcher>
             </ErrorBoundaryComponent>
           </ScrollAndFocusHandler>
         }

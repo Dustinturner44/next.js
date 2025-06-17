@@ -164,6 +164,12 @@ export const dispatcher: Dispatcher = {
   ),
 }
 
+export {
+  getIsSuspenseInspected,
+  setIsSuspenseInspected,
+  subscribe,
+} from './dev-overlay/inspector-mode-frontend'
+
 function replayQueuedEvents(dispatch: NonNullable<typeof maybeDispatch>) {
   try {
     for (const queuedFunction of queue) {
