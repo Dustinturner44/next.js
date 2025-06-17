@@ -19,7 +19,10 @@ export function DevRootHTTPAccessFallbackBoundary({
   children: React.ReactNode
 }) {
   return (
-    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError />}>
+    <HTTPAccessFallbackBoundary
+      notFound={<NotAllowedRootHTTPFallbackError />}
+      lazyNotFound={false}
+    >
       {children}
     </HTTPAccessFallbackBoundary>
   )

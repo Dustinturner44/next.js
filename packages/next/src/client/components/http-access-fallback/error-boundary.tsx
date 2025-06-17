@@ -11,7 +11,7 @@
  *
  */
 
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useUntrackedPathname } from '../navigation-untracked'
 import {
   HTTPAccessErrorStatus,
@@ -21,6 +21,7 @@ import {
 } from './http-access-fallback'
 import { warnOnce } from '../../../shared/lib/utils/warn-once'
 import { MissingSlotContext } from '../../../shared/lib/app-router-context.shared-runtime'
+import { useRouter } from '../navigation'
 
 interface HTTPAccessFallbackBoundaryProps {
   notFound?: React.ReactNode
@@ -28,6 +29,7 @@ interface HTTPAccessFallbackBoundaryProps {
   unauthorized?: React.ReactNode
   children: React.ReactNode
   missingSlots?: Set<string>
+  lazyNotFound: boolean
 }
 
 interface HTTPAccessFallbackErrorBoundaryProps
@@ -110,13 +112,21 @@ class HTTPAccessFallbackErrorBoundary extends React.Component<
   }
 
   render() {
-    const { notFound, forbidden, unauthorized, children } = this.props
+    const { notFound, forbidden, unauthorized, children, lazyNotFound } =
+      this.props
     const { triggeredStatus } = this.state
+    console.log({ lazyNotFound })
     const errorComponents = {
-      [HTTPAccessErrorStatus.NOT_FOUND]: notFound,
+      [HTTPAccessErrorStatus.NOT_FOUND]: lazyNotFound ? (
+        <RouterRefresh />
+      ) : (
+        notFound
+      ),
       [HTTPAccessErrorStatus.FORBIDDEN]: forbidden,
       [HTTPAccessErrorStatus.UNAUTHORIZED]: unauthorized,
     }
+
+    console.log({ errorComponents })
 
     if (triggeredStatus) {
       const isNotFound =
@@ -154,6 +164,7 @@ export function HTTPAccessFallbackBoundary({
   forbidden,
   unauthorized,
   children,
+  lazyNotFound,
 }: HTTPAccessFallbackBoundaryProps) {
   // When we're rendering the missing params shell, this will return null. This
   // is because we won't be rendering any not found boundaries or error
@@ -171,6 +182,7 @@ export function HTTPAccessFallbackBoundary({
         forbidden={forbidden}
         unauthorized={unauthorized}
         missingSlots={missingSlots}
+        lazyNotFound={lazyNotFound}
       >
         {children}
       </HTTPAccessFallbackErrorBoundary>
@@ -178,4 +190,12 @@ export function HTTPAccessFallbackBoundary({
   }
 
   return <>{children}</>
+}
+
+const RouterRefresh = () => {
+  const router = useRouter()
+  useEffect(() => {
+    router.refresh()
+  }, [router])
+  return <>Refresh Router??</>
 }

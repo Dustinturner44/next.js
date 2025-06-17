@@ -507,6 +507,7 @@ export default function OuterLayoutRouter({
   forbidden,
   unauthorized,
   gracefullyDegrade,
+  lazyNotFound,
 }: {
   parallelRouterKey: string
   error: ErrorComponent | undefined
@@ -519,6 +520,7 @@ export default function OuterLayoutRouter({
   forbidden: React.ReactNode | undefined
   unauthorized: React.ReactNode | undefined
   gracefullyDegrade?: boolean
+  lazyNotFound: boolean
 }) {
   const context = useContext(LayoutRouterContext)
   if (!context) {
@@ -637,6 +639,7 @@ export default function OuterLayoutRouter({
                   notFound={notFound}
                   forbidden={forbidden}
                   unauthorized={unauthorized}
+                  lazyNotFound={lazyNotFound}
                 >
                   <RedirectBoundary>
                     <InnerLayoutRouter
