@@ -104,7 +104,8 @@
     "@swc/helpers": "0.5.15",
     "caniuse-lite": "^1.0.30001579",
     "postcss": "8.4.31",
-    "styled-jsx": "5.1.6"
+    "styled-jsx": "5.1.6",
+    "@modelcontextprotocol/sdk": "^1.9.0"
   },
   "peerDependencies": {
     "@opentelemetry/api": "^1.1.0",
@@ -160,6 +161,7 @@
     "@hapi/accept": "5.0.2",
     "@jest/transform": "29.5.0",
     "@jest/types": "29.5.0",
+    "@modelcontextprotocol/inspector": "0.14.2",
     "@mswjs/interceptors": "0.23.0",
     "@napi-rs/triples": "1.2.0",
     "@next/font": "15.4.0-canary.78",

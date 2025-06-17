@@ -98,6 +98,7 @@ import { getDevOverlayFontMiddleware } from '../../next-devtools/server/font/get
 import { devIndicatorServerState } from './dev-indicator-server-state'
 import { getDisableDevIndicatorMiddleware } from '../../next-devtools/server/dev-indicator-middleware'
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
+import { getMcpServerMiddleware } from './next-mcp-server'
 // import { getSupportedBrowsers } from '../../build/utils'
 
 const wsServer = new ws.Server({ noServer: true })
@@ -657,6 +658,7 @@ export async function createHotReloaderTurbopack(
       telemetry: opts.telemetry,
       turbopackProject: project,
     }),
+    getMcpServerMiddleware(),
   ]
 
   const versionInfoPromise = getVersionInfo()

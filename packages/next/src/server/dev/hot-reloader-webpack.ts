@@ -88,6 +88,7 @@ import { getDevOverlayFontMiddleware } from '../../next-devtools/server/font/get
 import { getDisableDevIndicatorMiddleware } from '../../next-devtools/server/dev-indicator-middleware'
 import getWebpackBundler from '../../shared/lib/get-webpack-bundler'
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
+import { getMcpServerMiddleware } from './next-mcp-server'
 
 const MILLISECONDS_IN_NANOSECOND = BigInt(1_000_000)
 
@@ -1575,6 +1576,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       getRestartDevServerMiddleware({
         telemetry: this.telemetry,
       }),
+      getMcpServerMiddleware(),
     ]
   }
 
