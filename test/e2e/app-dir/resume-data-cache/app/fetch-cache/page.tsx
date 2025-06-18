@@ -1,19 +1,12 @@
-import { unstable_cache } from 'next/cache'
-
-const getCachedPost = unstable_cache(
-  async () => {
-    const response = await fetch('https://jsonplaceholder.typicode.com/posts/1')
-    const data = await response.json()
-    return {
-      ...data,
-      cachedAt: Date.now(),
-    }
-  },
-  ['fetch-cache-post'],
-  {
-    revalidate: 3600,
+async function getCachedPost() {
+  'use cache'
+  const response = await fetch('https://jsonplaceholder.typicode.com/posts/1')
+  const data = await response.json()
+  return {
+    ...data,
+    cachedAt: Date.now(),
   }
-)
+}
 
 async function FetchWithCache() {
   // First call to populate cache

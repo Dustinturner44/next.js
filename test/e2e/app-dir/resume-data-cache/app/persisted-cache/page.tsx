@@ -1,5 +1,7 @@
 import { unstable_cache } from 'next/cache'
 
+// Using unstable_cache here to test cache persistence with revalidate: false
+// which ensures the cache never expires and persists across server restarts
 const getPersistedData = unstable_cache(
   async () => {
     return {

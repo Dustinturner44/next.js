@@ -2,6 +2,8 @@ import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import { Suspense } from 'react'
 
+// Using unstable_cache here to test concurrent access with cache keys
+// and revalidation options, which are important for production scenarios
 const getConcurrentData = unstable_cache(
   async (requestId: string) => {
     // Simulate some processing time

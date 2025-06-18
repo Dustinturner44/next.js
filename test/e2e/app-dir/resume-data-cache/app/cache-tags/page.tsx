@@ -1,5 +1,7 @@
 import { unstable_cache } from 'next/cache'
 
+// Using unstable_cache here to test cache tags and revalidation options
+// which are not yet supported by the "use cache" directive
 const getTaggedData = unstable_cache(
   async () => {
     const timestamp = Date.now()

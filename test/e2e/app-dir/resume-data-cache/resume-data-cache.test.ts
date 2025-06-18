@@ -2,6 +2,20 @@ import { nextTestSetup } from 'e2e-utils'
 import { measurePPRTimings } from 'e2e-utils/ppr'
 import { parsePostponedState } from 'next/dist/server/app-render/postponed-state'
 
+/**
+ * Comprehensive test suite for Next.js resume data cache functionality.
+ *
+ * This test suite covers:
+ * - Cache creation and serialization during static generation
+ * - Cache restoration during dynamic rendering
+ * - Integration with fetch caching and "use cache" directive
+ * - PPR streaming with cache resume
+ * - Error handling and edge cases
+ * - Production-specific scenarios
+ *
+ * Note: Uses both "use cache" directive (modern) and unstable_cache (legacy)
+ * depending on the specific features being tested (tags, revalidation, etc.)
+ */
 describe('resume-data-cache', () => {
   const { next, isNextDev, isNextStart } = nextTestSetup({
     files: __dirname,
@@ -89,6 +103,8 @@ describe('resume-data-cache', () => {
       const secondTimestamp = secondHtml.match(/data-timestamp="(\d+)"/)?.[1]
 
       // Timestamps should be the same (cached)
+      expect(firstTimestamp).toBeDefined()
+      expect(secondTimestamp).toBeDefined()
       expect(firstTimestamp).toBe(secondTimestamp)
 
       // Different ID should get fresh data
@@ -98,6 +114,7 @@ describe('resume-data-cache', () => {
       const thirdHtml = await thirdResponse.text()
       const thirdTimestamp = thirdHtml.match(/data-timestamp="(\d+)"/)?.[1]
 
+      expect(thirdTimestamp).toBeDefined()
       expect(thirdTimestamp).not.toBe(firstTimestamp)
     })
 
@@ -180,6 +197,7 @@ describe('resume-data-cache', () => {
       // Revalidate by tag
       await next.fetch('/api/revalidate-tag', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tag: 'test-tag' }),
       })
 
@@ -190,6 +208,8 @@ describe('resume-data-cache', () => {
       const originalTime = html.match(/data-time="(\d+)"/)?.[1]
       const freshTime = freshHtml.match(/data-time="(\d+)"/)?.[1]
 
+      expect(originalTime).toBeDefined()
+      expect(freshTime).toBeDefined()
       expect(freshTime).not.toBe(originalTime)
     })
   })

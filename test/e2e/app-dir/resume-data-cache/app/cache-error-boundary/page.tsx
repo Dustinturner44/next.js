@@ -27,15 +27,24 @@ async function DynamicCacheComponent() {
     }
   }
 
-  const cachedData = await getCachedHeaderData()
+  // Test cache hit detection by calling twice
+  const firstCall = await getCachedHeaderData()
+  const secondCall = await getCachedHeaderData()
+  const cacheHit = firstCall.timestamp === secondCall.timestamp
+  const cachedData = secondCall
 
   return (
-    <div id="dynamic-cache-content" data-dynamic-io="true">
+    <div
+      id="dynamic-cache-content"
+      data-dynamic-io="true"
+      data-cache-hit={cacheHit}
+    >
       <h3>Dynamic Cache Component</h3>
       <p>Timestamp: {cachedData.timestamp}</p>
       <p>User Agent: {cachedData.userAgent}</p>
       <p>Cached: {cachedData.cached ? 'YES' : 'NO'}</p>
       <p>DynamicIO Enabled: {cachedData.dynamicIO ? 'YES' : 'NO'}</p>
+      <p>Cache Hit: {cacheHit ? 'YES' : 'NO'}</p>
     </div>
   )
 }
@@ -48,10 +57,9 @@ async function CorruptedCacheComponent() {
   const getCorruptibleData = async function () {
     'use cache'
     if (forceCorruption === 'true') {
-      // Simulate corrupted cache data by creating circular reference
-      const obj: any = { data: 'test' }
-      obj.circular = obj
-      return obj // This will fail during serialization
+      // Simulate cache corruption with a safer pattern
+      // Instead of circular reference which breaks builds, throw an error
+      throw new Error('Simulated cache corruption: Invalid data format')
     }
 
     return { data: 'valid cache data', timestamp: Date.now() }
