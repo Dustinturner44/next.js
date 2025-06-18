@@ -1,16 +1,4 @@
 {
-  "test/e2e/app-dir/nx-handling/nx-handling.test.ts": {
-    "passed": [],
-    "failed": [
-      "nx-handling should work for pages page",
-      "nx-handling should work for pages API",
-      "nx-handling should work with app page",
-      "nx-handling should work with app route"
-    ],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/e2e/404-page-router/index.test.ts": {
     "passed": [
       "404-page-router 404-page-router with basePath of false and i18n of false and middleware false for /error should have the correct router parameters after it is ready",
