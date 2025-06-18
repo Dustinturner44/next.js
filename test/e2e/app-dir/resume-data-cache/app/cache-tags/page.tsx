@@ -1,21 +1,18 @@
-import { unstable_cache } from 'next/cache'
+import { unstable_cacheTag, unstable_cacheLife } from 'next/cache'
 
-// Using unstable_cache here to test cache tags and revalidation options
-// which are not yet supported by the "use cache" directive
-const getTaggedData = unstable_cache(
-  async () => {
-    const timestamp = Date.now()
-    return {
-      data: 'This is tagged data',
-      timestamp,
-    }
-  },
-  ['tagged-data'],
-  {
-    tags: ['test-tag'],
-    revalidate: 3600,
+// Using "use cache" directive with unstable_cacheTag and unstable_cacheLife
+// to test cache tags and revalidation options
+async function getTaggedData() {
+  'use cache'
+  unstable_cacheTag('test-tag')
+  unstable_cacheLife({ revalidate: 3600 })
+
+  const timestamp = Date.now()
+  return {
+    data: 'This is tagged data',
+    timestamp,
   }
-)
+}
 
 export default async function CacheTagsPage() {
   const data = await getTaggedData()

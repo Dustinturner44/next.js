@@ -1,20 +1,17 @@
-import { unstable_cache } from 'next/cache'
+import { unstable_cacheLife } from 'next/cache'
 
-// Using unstable_cache here to test cache persistence with revalidate: false
-// which ensures the cache never expires and persists across server restarts
-const getPersistedData = unstable_cache(
-  async () => {
-    return {
-      message: 'Cache loaded from disk',
-      timestamp: Date.now(),
-      processId: process.pid,
-    }
-  },
-  ['persisted-data'],
-  {
-    revalidate: false, // Never revalidate, always use cache
+// Using "use cache" directive with unstable_cacheLife to test cache persistence
+// Setting revalidate to Infinity ensures the cache never expires and persists across server restarts
+async function getPersistedData() {
+  'use cache'
+  unstable_cacheLife({ revalidate: Infinity })
+
+  return {
+    message: 'Cache loaded from disk',
+    timestamp: Date.now(),
+    processId: process.pid,
   }
-)
+}
 
 export default async function PersistedCachePage() {
   const data = await getPersistedData()

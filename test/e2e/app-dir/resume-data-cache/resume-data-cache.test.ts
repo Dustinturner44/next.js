@@ -39,49 +39,46 @@ describe('resume-data-cache', () => {
       expect($('#cached-fetch').text()).toContain('Cached at:')
 
       // Verify the cache was used by checking the metadata
-      try {
-        const meta = await next.readFile(
-          '.next/server/app/static-with-cache.meta'
-        )
-        const metadata = JSON.parse(meta)
+      const meta = await next.readFile(
+        '.next/server/app/static-with-cache.meta'
+      )
+      const metadata = JSON.parse(meta)
 
-        // Should have postponed state with resume data
-        expect(metadata.postponed).toBeDefined()
-        expect(metadata.postponed).toContain('store')
-      } catch (e) {
-        // Meta files might not exist in all configurations
-        console.log('Meta file not found, skipping metadata check')
-      }
+      // Should have postponed state with resume data
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          postponed: expect.any(String),
+          status: 200,
+        })
+      )
+
+      // Verify postponed data contains serialized state
+      expect(metadata.postponed.length).toBeGreaterThan(0)
     })
 
     it('should serialize and compress cache data correctly', async () => {
-      try {
-        const meta = await next.readFile(
-          '.next/server/app/static-with-cache.meta'
-        )
-        const metadata = JSON.parse(meta)
+      const meta = await next.readFile(
+        '.next/server/app/static-with-cache.meta'
+      )
+      const metadata = JSON.parse(meta)
 
-        // Use the official utility to parse the postponed state
-        const postponedData = metadata.postponed
-        if (postponedData && typeof postponedData === 'string') {
-          const parsedState = parsePostponedState(postponedData, undefined)
-          const parsedCache = parsedState.renderResumeDataCache
+      // Use the official utility to parse the postponed state
+      const postponedData = metadata.postponed
+      expect(postponedData).toEqual(expect.any(String))
 
-          // Verify cache structure using the parsed cache
-          expect(parsedCache.cache).toBeDefined()
-          expect(parsedCache.fetch).toBeDefined()
-          expect(parsedCache.encryptedBoundArgs).toBeDefined()
-          expect(parsedCache.decryptedBoundArgs).toBeDefined()
-        } else {
-          console.log(
-            'No valid postponed data found, skipping cache structure test'
-          )
-        }
-      } catch (e) {
-        console.log(
-          'Meta file not found or parsing failed, skipping serialization test'
-        )
-      }
+      const parsedState = parsePostponedState(postponedData, undefined)
+
+      // Verify cache structure using grouped assertions for better failure messages
+      expect(parsedState).toEqual(
+        expect.objectContaining({
+          renderResumeDataCache: expect.objectContaining({
+            cache: expect.any(Object),
+            fetch: expect.any(Object),
+            encryptedBoundArgs: expect.any(Object),
+            decryptedBoundArgs: expect.any(Object),
+          }),
+        })
+      )
     })
   })
 
@@ -172,18 +169,22 @@ describe('resume-data-cache', () => {
       )
       const metadata = JSON.parse(meta)
 
+      // For static routes with cache, postponed data may not be present
+      // since they're fully prerendered at build time
       if (metadata.postponed) {
         // Use the official utility to parse the postponed state
         const postponedData = metadata.postponed
-        if (postponedData && typeof postponedData === 'string') {
-          const parsedState = parsePostponedState(postponedData, undefined)
-          const parsedCache = parsedState.renderResumeDataCache
+        expect(postponedData).toEqual(expect.any(String))
 
-          // Should have cached entries
-          expect(parsedCache.cache.size).toBeGreaterThan(0)
-        } else {
-          console.log('No valid postponed data found, skipping cache size test')
-        }
+        const parsedState = parsePostponedState(postponedData, undefined)
+        const parsedCache = parsedState.renderResumeDataCache
+
+        // Should have cached entries
+        expect(parsedCache.cache.size).toBeGreaterThan(0)
+      } else {
+        // For static routes, verify the cache was used during build
+        // by checking that cached content is present in the response
+        expect(html).toContain('Expensive calculation result:')
       }
     })
 

@@ -1,25 +1,22 @@
 import { headers } from 'next/headers'
-import { unstable_cache } from 'next/cache'
+import { unstable_cacheLife } from 'next/cache'
 import { Suspense } from 'react'
 
-// Using unstable_cache here to test concurrent access with cache keys
-// and revalidation options, which are important for production scenarios
-const getConcurrentData = unstable_cache(
-  async (requestId: string) => {
-    // Simulate some processing time
-    await new Promise((resolve) => setTimeout(resolve, 100))
+// Using "use cache" directive with unstable_cacheLife to test concurrent access
+// with cache keys and revalidation options, which are important for production scenarios
+async function getConcurrentData(requestId: string) {
+  'use cache'
+  unstable_cacheLife({ revalidate: 3600 })
 
-    return {
-      requestId,
-      timestamp: Date.now(),
-      data: `Data for request ${requestId}`,
-    }
-  },
-  ['concurrent-data'],
-  {
-    revalidate: 3600,
+  // Simulate some processing time
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
+  return {
+    requestId,
+    timestamp: Date.now(),
+    data: `Data for request ${requestId}`,
   }
-)
+}
 
 async function ConcurrentCacheContent() {
   const headersList = await headers()
