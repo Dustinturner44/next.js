@@ -1,17 +1,20 @@
 import type { OriginalStackFrame } from '../../../shared/stack-frame'
 
-import { useMemo, useState } from 'react'
 import { CallStackFrame } from '../call-stack-frame/call-stack-frame'
 import { ChevronUpDownIcon } from '../../icons/chevron-up-down'
 import { css } from '../../utils/css'
 
-export function CallStack({ frames }: { frames: OriginalStackFrame[] }) {
-  const [isIgnoreListOpen, setIsIgnoreListOpen] = useState(false)
-
-  const ignoredFramesTally = useMemo(() => {
-    return frames.reduce((tally, frame) => tally + (frame.ignored ? 1 : 0), 0)
-  }, [frames])
-
+export function CallStack({
+  frames,
+  isIgnoreListOpen,
+  ignoredFramesTally,
+  onToggleIgnoreList,
+}: {
+  frames: OriginalStackFrame[]
+  isIgnoreListOpen: boolean
+  ignoredFramesTally: number
+  onToggleIgnoreList: () => void
+}) {
   return (
     <div data-nextjs-call-stack-container>
       <div data-nextjs-call-stack-header>
@@ -21,7 +24,7 @@ export function CallStack({ frames }: { frames: OriginalStackFrame[] }) {
         {ignoredFramesTally > 0 && (
           <button
             data-nextjs-call-stack-ignored-list-toggle-button
-            onClick={() => setIsIgnoreListOpen((prev) => !prev)}
+            onClick={onToggleIgnoreList}
           >
             {`${isIgnoreListOpen ? 'Hide' : 'Show'} ${ignoredFramesTally} ignore-listed frame(s)`}
             <ChevronUpDownIcon />

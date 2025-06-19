@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { CallStack } from './call-stack'
+import { ErrorOverlayCallStack } from './call-stack'
 import { withShadowPortal } from '../../../storybook/with-shadow-portal'
 
-const meta: Meta<typeof CallStack> = {
-  component: CallStack,
+const meta: Meta<typeof ErrorOverlayCallStack> = {
+  component: ErrorOverlayCallStack,
   parameters: {
     layout: 'fullscreen',
     backgrounds: {
@@ -26,7 +26,7 @@ const meta: Meta<typeof CallStack> = {
 }
 
 export default meta
-type Story = StoryObj<typeof CallStack>
+type Story = StoryObj<typeof ErrorOverlayCallStack>
 
 const frame = {
   originalStackFrame: {
