@@ -1,12 +1,12 @@
 {
   "test/e2e/app-dir/nx-handling/nx-handling.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "nx-handling should work for pages page",
       "nx-handling should work for pages API",
       "nx-handling should work with app page",
       "nx-handling should work with app route"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
