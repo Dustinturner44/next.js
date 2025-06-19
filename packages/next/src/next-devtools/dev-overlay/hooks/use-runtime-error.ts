@@ -1,6 +1,3 @@
-// This is temporary solution to share the error contents across
-// the error overlay and the DevTools issues tab.
-
 import type { ReadyRuntimeError } from '../utils/get-error-by-type'
 import type { HydrationErrorState } from '../../shared/hydration-error'
 
@@ -49,7 +46,7 @@ export function useRuntimeError({
   const errorCode = extractNextErrorCode(error)
   const errorType = getErrorTypeLabel(error, activeError.type)
 
-  // TOOD: May be better to always treat everything past the first blank line as notes
+  // TODO(GH#78140): May be better to always treat everything past the first blank line as notes
   // We're currently only special casing hydration error messages.
   const notes = errorDetails.notes
   const hydrationWarning = errorDetails.hydrationWarning
