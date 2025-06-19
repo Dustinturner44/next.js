@@ -1,0 +1,88 @@
+---
+title: watchOptions
+description: Enable file watch polling for Turbopack
+---
+
+Enable file watch polling for Turbopack.
+
+## Usage
+
+The `watchOptions` option allows you to customize how Turbopack watches files during development.
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  watchOptions: {
+    pollIntervalMs: 1000,
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  watchOptions: {
+    pollIntervalMs: 1000,
+  },
+}
+
+module.exports = nextConfig
+```
+
+## Config options
+
+- `pollIntervalMs`: How frequently (in milliseconds) Turbopack should poll for file changes.
+
+## When to use
+
+Enable this option if you're running into issues where file changes are not being detected during development.
+
+This can happen when working inside a VM, Docker container, or over a networked volume.
+
+### Webpack equivalent
+
+If you're using Webpack, you can achieve similar behavior by setting the `poll` option:
+
+```ts filename="next.config.ts" switcher
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  webpack(config) {
+    config.watchOptions = {
+      ...config.watchOptions,
+      poll: 1000,
+    }
+    return config
+  },
+}
+
+export default nextConfig
+```
+
+```js filename="next.config.js" switcher
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack(config) {
+    config.watchOptions = {
+      ...config.watchOptions,
+      poll: 1000,
+    }
+    return config
+  },
+}
+
+module.exports = nextConfig
+```
+
+---
+
+> **Good to know** `watchOptions` applies only during development and is **specific** to the dev server in use (Turbopack or Webpack).
+
+## Version History
+
+| Version  | Changes                                 |
+| -------- | --------------------------------------- |
+| `15.0.0` | `watchOptions.pollIntervalMs` is added. |

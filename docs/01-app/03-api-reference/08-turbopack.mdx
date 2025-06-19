@@ -91,6 +91,8 @@ Turbopack in Next.js has **zero-configuration** for the common use cases. Below 
 | **Fast Refresh**         | **Supported** | Updates JavaScript, TypeScript, and CSS without a full refresh.                          |
 | **Incremental Bundling** | **Supported** | Turbopack lazily builds only what’s requested by the dev server, speeding up large apps. |
 
+If **Fast Refresh** is not working, try switching to file watch polling using the [`watchOptions.pollIntervalMs`](/docs/app/api-reference/config/next-config-js/watchOptions) option.
+
 ## Unsupported and unplanned features
 
 Some features are not yet implemented or not planned:
