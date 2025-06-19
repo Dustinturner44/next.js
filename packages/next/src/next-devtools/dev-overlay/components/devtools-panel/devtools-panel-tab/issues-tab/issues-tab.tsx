@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import {
   GenericErrorDescription,
   HydrationErrorDescription,
@@ -173,7 +173,12 @@ function ErrorContent({
 }
 
 function RuntimeError({ error }: { error: ReadyRuntimeError }) {
+  const [isIgnoreListOpen, setIsIgnoreListOpen] = useState(false)
   const frames = useFrames(error)
+
+  const ignoredFramesTally = useMemo(() => {
+    return frames.reduce((tally, frame) => tally + (frame.ignored ? 1 : 0), 0)
+  }, [frames])
 
   const firstFrame = useMemo(() => {
     const firstFirstPartyFrameIndex = frames.findIndex(
@@ -203,7 +208,14 @@ function RuntimeError({ error }: { error: ReadyRuntimeError }) {
         />
       )}
 
-      {frames.length > 0 && <CallStack frames={frames} />}
+      {frames.length > 0 && (
+        <CallStack
+          frames={frames}
+          isIgnoreListOpen={isIgnoreListOpen}
+          onToggleIgnoreList={() => setIsIgnoreListOpen(!isIgnoreListOpen)}
+          ignoredFramesTally={ignoredFramesTally}
+        />
+      )}
     </>
   )
 }
