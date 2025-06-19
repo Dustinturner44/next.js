@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { ErrorOverlayCallStack } from './call-stack'
+import { ErrorOverlayCallStack } from './error-overlay-call-stack'
 import { withShadowPortal } from '../../../storybook/with-shadow-portal'
 
 const meta: Meta<typeof ErrorOverlayCallStack> = {

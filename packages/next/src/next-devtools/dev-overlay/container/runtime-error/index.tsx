@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { CodeFrame } from '../../components/code-frame/code-frame'
-import { ErrorOverlayCallStack } from '../../components/errors/call-stack/call-stack'
+import { ErrorOverlayCallStack } from '../../components/errors/error-overlay-call-stack/error-overlay-call-stack'
 import { PSEUDO_HTML_DIFF_STYLES } from './component-stack-pseudo-html'
 import {
   useFrames,
