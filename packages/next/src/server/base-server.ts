@@ -2637,7 +2637,18 @@ export default abstract class Server<
             const parsedInitUrl = parseUrl(
               getRequestMeta(req, 'initURL') || req.url
             )
-            request.url = `${parsedInitUrl.pathname?.replace(/(\.prefetch\.rsc|\.rsc)$/, '')}${parsedInitUrl.search || ''}`
+            let initPathname = parsedInitUrl.pathname || '/'
+
+            for (const normalizer of [
+              this.normalizers.segmentPrefetchRSC,
+              this.normalizers.prefetchRSC,
+              this.normalizers.rsc,
+            ]) {
+              if (normalizer?.match(initPathname)) {
+                initPathname = normalizer.normalize(initPathname)
+              }
+            }
+            request.url = `${initPathname}${parsedInitUrl.search || ''}`
 
             // propagate the request context for dev
             setRequestMeta(request, getRequestMeta(req))
