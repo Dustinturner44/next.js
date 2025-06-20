@@ -644,6 +644,15 @@ export async function ncc_p_queue(task, opts) {
 }
 
 // eslint-disable-next-line camelcase
+externals['parse5-parser-stream'] = 'next/dist/compiled/parse5-parser-stream'
+export async function ncc_parse5_parser_stream(task, opts) {
+  await task
+    .source(relative(__dirname, require.resolve('parse5-parser-stream')))
+    .ncc({ packageName: 'parse5-parser-stream', externals })
+    .target('src/compiled/parse5-parser-stream')
+}
+
+// eslint-disable-next-line camelcase
 externals['raw-body'] = 'next/dist/compiled/raw-body'
 export async function ncc_raw_body(task, opts) {
   await task
@@ -2426,6 +2435,7 @@ export async function ncc(task, opts) {
         'ncc_napirs_triples',
         'ncc_p_limit',
         'ncc_p_queue',
+        'ncc_parse5_parser_stream',
         'ncc_raw_body',
         'ncc_image_size',
         'ncc_hapi_accept',

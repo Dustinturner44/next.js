@@ -1443,6 +1443,7 @@ async function renderToHTMLOrFlightImpl(
     res.setHeader(NEXT_ROUTER_STALE_TIME_HEADER, staleHeader)
     metadata.headers ??= {}
     metadata.headers[NEXT_ROUTER_STALE_TIME_HEADER] = staleHeader
+    // TODO: write CSP header here
 
     // If force static is specifically set to false, we should not revalidate
     // the page.
@@ -1468,6 +1469,94 @@ async function renderToHTMLOrFlightImpl(
         description: workStore.dynamicUsageDescription,
         stack: workStore.dynamicUsageStack,
       }
+    }
+
+    // TODO: add experimental flag
+    const EXPERIMENTAL_HASH_CSP = true
+    if (EXPERIMENTAL_HASH_CSP) {
+      const [responseStream, teedResponseStream] = response.stream.tee()
+      response.stream = responseStream
+
+      const calculateInlineScriptHashes = async (
+        htmlStream: ReadableStream<Uint8Array<ArrayBufferLike>>
+      ) => {
+        const { ParserStream } =
+          require('next/dist/compiled/parse5-parser-stream') as typeof import('next/dist/compiled/parse5-parser-stream')
+        const { finished } =
+          require('node:stream/promises') as typeof import('node:stream/promises')
+
+        const { createHash } =
+          require('node:crypto') as typeof import('node:crypto')
+        const { promisify, inspect } =
+          require('node:util') as typeof import('node:util')
+
+        const _scriptHashes: string[] = []
+
+        const htmlStreamParser = new ParserStream()
+        htmlStreamParser.on('script', (scriptElement, _, resume) => {
+          try {
+            // we only need to hash inline scripts, so skip scripts that have an `src` attribute.
+            if (scriptElement.attrs.find((attr) => attr.name === 'src')) {
+              return
+            }
+
+            if (
+              scriptElement.childNodes.length !== 1 &&
+              scriptElement.childNodes[0].nodeName !== '#text'
+            ) {
+              throw new InvariantError(
+                'Expected script element to have one text child node, got: ' +
+                  inspect(scriptElement.childNodes)
+              )
+            }
+
+            // TextNode is not exported
+            type TextNode = { nodeName: '#text'; value: string }
+            const contents = (scriptElement.childNodes[0] as TextNode).value
+
+            _scriptHashes.push(
+              createHash('sha256').update(contents).digest().toString('hex')
+            )
+          } finally {
+            resume()
+          }
+        })
+
+        const writing = (async () => {
+          const textDecoder = new TextDecoder()
+          const reader = htmlStream.getReader()
+          const write = promisify(
+            (chunk: string, cb: (error: Error | null | undefined) => void) =>
+              htmlStreamParser.write(chunk, cb)
+          )
+          while (true) {
+            const { done, value } = await reader.read()
+            if (!done) {
+              await write(textDecoder.decode(value))
+            } else {
+              htmlStreamParser.end()
+              break
+            }
+          }
+        })()
+        await Promise.all([writing, finished(htmlStreamParser)])
+        return _scriptHashes
+      }
+
+      const scriptHashes = await calculateInlineScriptHashes(teedResponseStream)
+
+      // use 'strict-dynamic' to allow scripts to create more scripts
+      // (needed e.g. for next/script)
+      // TODO: 'javascript:' URLs from react forms before hydration?
+      // TODO: merge with existing header via https://www.npmjs.com/package/content-security-policy-parser
+      // can we get an existing header here?
+      metadata.headers['Content-Security-Policy'] =
+        `script-src ${scriptHashes.map((hash) => `'sha256-${hash}'`).join(' ')} 'strict-dynamic';`
+
+      require('console').log(
+        'CSP header:',
+        metadata.headers['Content-Security-Policy']
+      )
     }
 
     return new RenderResult(await streamToString(response.stream), options)

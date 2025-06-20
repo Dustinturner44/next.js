@@ -288,6 +288,7 @@
     "os-browserify": "0.3.0",
     "p-limit": "3.1.0",
     "p-queue": "6.6.2",
+    "parse5-parser-stream": "7.1.2",
     "path-browserify": "1.0.1",
     "path-to-regexp": "6.1.0",
     "picomatch": "4.0.1",

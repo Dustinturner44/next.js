@@ -392,6 +392,10 @@ declare module 'next/dist/compiled/p-queue' {
   export = m
 }
 
+declare module 'next/dist/compiled/parse5-parser-stream' {
+  export * from 'parse5-parser-stream'
+}
+
 declare module 'next/dist/compiled/busboy' {
   import m from 'busboy'
   export = m
