@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { getErrorTypeLabel, useErrorDetails } from '../container/errors'
 import { extractNextErrorCode } from '../../../lib/error-telemetry-utils'
 
-export function useRuntimeError({
+export function useActiveRuntimeError({
   runtimeErrors,
   getSquashedHydrationErrorDetails,
 }: {
@@ -15,7 +15,7 @@ export function useRuntimeError({
   const [activeIdx, setActiveIndex] = useState<number>(0)
 
   const isLoading = useMemo<boolean>(() => {
-    return runtimeErrors.length < 1
+    return runtimeErrors.length === 0
   }, [runtimeErrors.length])
 
   const activeError = useMemo<ReadyRuntimeError | null>(
