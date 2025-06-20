@@ -14,7 +14,7 @@ import { ErrorMessage } from '../../../errors/error-message/error-message'
 import { ErrorOverlayToolbar } from '../../../errors/error-overlay-toolbar/error-overlay-toolbar'
 import { ErrorTypeLabel } from '../../../errors/error-type-label/error-type-label'
 import { css } from '../../../../utils/css'
-import { useRuntimeError } from '../../../../hooks/use-runtime-error'
+import { useActiveRuntimeError } from '../../../../hooks/use-active-runtime-error'
 
 export function IssuesTab({
   debugInfo,
@@ -37,7 +37,7 @@ export function IssuesTab({
     errorDetails,
     activeError,
     setActiveIndex,
-  } = useRuntimeError({ runtimeErrors, getSquashedHydrationErrorDetails })
+  } = useActiveRuntimeError({ runtimeErrors, getSquashedHydrationErrorDetails })
 
   if (isLoading) {
     // TODO: better loading state
