@@ -17,7 +17,7 @@ import {
 import type { ReadyRuntimeError } from '../utils/get-error-by-type'
 import type { ErrorBaseProps } from '../components/errors/error-overlay/error-overlay'
 import type { HydrationErrorState } from '../../shared/hydration-error'
-import { useActiveRuntimeError } from '../hooks/use-runtime-error'
+import { useActiveRuntimeError } from '../hooks/use-active-runtime-error'
 
 export interface ErrorsProps extends ErrorBaseProps {
   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
