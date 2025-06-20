@@ -62,6 +62,7 @@ export function IssuesTabContent({
           reactOutputComponentDiff={errorDetails.reactOutputComponentDiff || ''}
         />
       ) : null}
+      {/* TODO: Loading state */}
       <Suspense fallback={<div data-nextjs-error-suspended />}>
         <RuntimeError key={activeError.id.toString()} error={activeError} />
       </Suspense>

@@ -20,6 +20,7 @@ export function IssuesTabSidebar({
   return (
     <aside data-nextjs-devtools-panel-tab-issues-sidebar>
       {runtimeErrors.map((runtimeError, idx) => {
+        // TODO: Loading state
         return (
           <Suspense fallback={<div>Loading...</div>}>
             <IssuesTabSidebarFrame
