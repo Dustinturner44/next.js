@@ -23,7 +23,8 @@ export function CallStack({
         </p>
         {ignoredFramesTally > 0 && (
           <button
-            data-nextjs-call-stack-ignored-list-toggle-button
+            // The isIgnoreListOpen value is used by tests to confirm whether it is open or not.
+            data-nextjs-call-stack-ignored-list-toggle-button={isIgnoreListOpen}
             onClick={onToggleIgnoreList}
           >
             {`${isIgnoreListOpen ? 'Hide' : 'Show'} ${ignoredFramesTally} ignore-listed frame(s)`}
