@@ -654,6 +654,30 @@
     "flakey": [],
     "runtimeError": false
   },
+  "packages/next/src/client/flight-data-helpers.test.ts": {
+    "passed": [
+      "prepareFlightRouterStateForRequest HMR refresh handling should preserve complete state for HMR refresh requests",
+      "prepareFlightRouterStateForRequest URL stripping should always set URL (index 2) to null",
+      "prepareFlightRouterStateForRequest __PAGE__ segment handling should preserve dynamic segments",
+      "prepareFlightRouterStateForRequest __PAGE__ segment handling should preserve non-page segments",
+      "prepareFlightRouterStateForRequest __PAGE__ segment handling should strip search params from __PAGE__ segments",
+      "prepareFlightRouterStateForRequest optional fields preservation should handle minimal FlightRouterState (only segment and parallelRoutes)",
+      "prepareFlightRouterStateForRequest optional fields preservation should preserve hasLoadingBoundary",
+      "prepareFlightRouterStateForRequest optional fields preservation should preserve isRootLayout when false",
+      "prepareFlightRouterStateForRequest optional fields preservation should preserve isRootLayout when true",
+      "prepareFlightRouterStateForRequest real-world scenarios should handle complex FlightRouterState with all features",
+      "prepareFlightRouterStateForRequest recursive processing of parallel routes should handle deeply nested parallel routes",
+      "prepareFlightRouterStateForRequest recursive processing of parallel routes should recursively process nested parallel routes",
+      "prepareFlightRouterStateForRequest refresh marker handling should preserve \"inside-shared-layout\" marker",
+      "prepareFlightRouterStateForRequest refresh marker handling should preserve \"refetch\" marker",
+      "prepareFlightRouterStateForRequest refresh marker handling should strip \"refresh\" marker (client-only)",
+      "prepareFlightRouterStateForRequest refresh marker handling should strip null refresh marker"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "packages/next/src/diagnostics/build-diagnostics.test.ts": {
     "passed": [
       "build-diagnostics records build diagnostics to a file correctly",
@@ -6575,7 +6599,7 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/instrumentation-order/instrumentation-order.test.ts": {
-    "passed": ["instrumentation-order should work using cheerio"],
+    "passed": ["instrumentation-order should work"],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -7081,6 +7105,7 @@
       "app dir - metadata opengraph should support opengraph with article type",
       "app dir - metadata react cache should have same title and page value on initial load",
       "app dir - metadata react cache should have same title and page value when navigating",
+      "app dir - metadata regression: renders a large shell",
       "app dir - metadata should not effect metadata images convention like files under pages directory",
       "app dir - metadata static routes should have /favicon.ico as route",
       "app dir - metadata static routes should have icons as route",
@@ -9441,6 +9466,13 @@
       "unstable-rethrow should correctly trigger the not found page as not found",
       "unstable-rethrow should handle an internal error that gets propagated to the `cause` field"
     ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/upward-distdir/upward-distdir.test.ts": {
+    "passed": ["upward-distdir should work"],
     "failed": [],
     "pending": [],
     "flakey": [],
