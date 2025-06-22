@@ -2807,7 +2807,7 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/instrumentation-order/instrumentation-order.test.ts": {
-    "passed": ["instrumentation-order should work using cheerio"],
+    "passed": ["instrumentation-order should work"],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -3273,6 +3273,7 @@
       "app dir - metadata opengraph should support opengraph with article type",
       "app dir - metadata react cache should have same title and page value on initial load",
       "app dir - metadata react cache should have same title and page value when navigating",
+      "app dir - metadata regression: renders a large shell",
       "app dir - metadata should not effect metadata images convention like files under pages directory",
       "app dir - metadata static optimization should build static files into static route",
       "app dir - metadata static routes should build favicon.ico as a custom route",
@@ -5915,6 +5916,13 @@
       "unstable-rethrow should handle an internal error that gets propagated to the `cause` field",
       "unstable-rethrow should not log any errors at build time"
     ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/upward-distdir/upward-distdir.test.ts": {
+    "passed": ["upward-distdir should work"],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -18746,6 +18754,16 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/production/app-dir/resume-data-cache/resume-data-cache.test.ts": {
+    "passed": [
+      "resume-data-cache should have consistent data between static and dynamic renders with fetch cache",
+      "resume-data-cache should have consistent data between static and dynamic renders with use cache"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/production/app-dir/revalidate/revalidate.test.ts": {
     "passed": [
       "app-dir revalidate should be able to revalidate the cache via pages/api"
@@ -19640,6 +19658,7 @@
   "test/production/standalone-mode/required-server-files/required-server-files-ppr.test.ts": {
     "passed": [
       "required server files app router middleware rewrite should work with a dynamic path with Next-Resume",
+      "required server files app router should de-dupe client segment tree revalidate requests",
       "required server files app router should handle RSC requests",
       "required server files app router should handle prefetch RSC requests",
       "required server files app router should handle revalidating the fallback page",
@@ -19650,7 +19669,8 @@
       "required server files app router should properly handle prerender for bot request",
       "required server files app router should properly stream resume with Next-Resume",
       "required server files app router should send cache tags in minimal mode for ISR",
-      "required server files app router should still render when postponed is corrupted with Next-Resume"
+      "required server files app router should still render when postponed is corrupted with Next-Resume",
+      "required server files app router should use the postponed state for the RSC requests"
     ],
     "failed": [],
     "pending": [],
