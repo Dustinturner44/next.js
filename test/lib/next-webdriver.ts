@@ -1,6 +1,6 @@
 import { getFullUrl, waitFor } from 'next-test-utils'
 import os from 'os'
-import { Playwright } from './browsers/playwright'
+import { Cookies, Playwright } from './browsers/playwright'
 import { Page } from 'playwright'
 
 export type { Playwright }
@@ -53,6 +53,10 @@ export interface WebdriverOptions {
    * allow retrying hydration wait if reload occurs
    */
   retryWaitHydration?: boolean
+  /**
+   * Cookies to automatically set for the whole origin specified by `appPortOrUrl`.
+   */
+  defaultCookies?: ReadonlyArray<{ name: string; value: string }>
   /**
    * disable cache for page load
    */
@@ -114,13 +118,21 @@ export default async function webdriver(
     cpuThrottleRate,
     pushErrorAsConsoleLog,
     userAgent,
+    defaultCookies = [],
   } = options
 
   const { Playwright, quit } = await import('./browsers/playwright')
   browserQuit = quit
 
+  const fullUrl = getFullUrl(
+    appPortOrUrl,
+    url,
+    isBrowserStack ? deviceIP : 'localhost'
+  )
+
   const browser = new Playwright()
   const browserName = process.env.BROWSER_NAME || 'chrome'
+
   await browser.setup(
     browserName,
     locale!,
@@ -128,15 +140,16 @@ export default async function webdriver(
     Boolean(ignoreHTTPSErrors),
     // allow headless to be overwritten for a particular test
     typeof headless !== 'undefined' ? headless : !!process.env.HEADLESS,
-    userAgent
+    userAgent,
+    defaultCookies.map((cookie) => {
+      return {
+        url: new URL(fullUrl).origin,
+        name: cookie.name,
+        value: cookie.value,
+      }
+    })
   )
   ;(global as any).browserName = browserName
-
-  const fullUrl = getFullUrl(
-    appPortOrUrl,
-    url,
-    isBrowserStack ? deviceIP : 'localhost'
-  )
 
   console.log(`\n> Loading browser with ${fullUrl}\n`)
 

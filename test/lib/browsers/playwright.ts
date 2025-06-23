@@ -57,6 +57,8 @@ interface ElementHandleExt extends ElementHandle {
   text(): Promise<string>
 }
 
+export type Cookies = Parameters<BrowserContext['addCookies']>[0]
+
 export class Playwright<TCurrent = undefined> {
   private activeTrace?: string
   private eventCallbacks: Record<EventType, Set<(...args: any[]) => void>> = {
@@ -146,7 +148,8 @@ export class Playwright<TCurrent = undefined> {
     javaScriptEnabled: boolean,
     ignoreHTTPSErrors: boolean,
     headless: boolean,
-    userAgent: string | undefined
+    userAgent: string | undefined,
+    defaultCookies: Cookies
   ) {
     let device
 
@@ -172,6 +175,10 @@ export class Playwright<TCurrent = undefined> {
           ...(userAgent ? { userAgent } : {}),
           ...device,
         })
+        if (defaultCookies.length > 0) {
+          console.log('Using default cookies:', defaultCookies)
+          await context.addCookies(defaultCookies)
+        }
         contextHasJSEnabled = javaScriptEnabled
       }
       return
@@ -185,6 +192,10 @@ export class Playwright<TCurrent = undefined> {
       ...(userAgent ? { userAgent } : {}),
       ...device,
     })
+    if (defaultCookies.length > 0) {
+      console.log('Using default cookies:', defaultCookies)
+      await context.addCookies(defaultCookies)
+    }
     contextHasJSEnabled = javaScriptEnabled
   }
 
