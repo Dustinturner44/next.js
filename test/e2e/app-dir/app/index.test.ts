@@ -1820,17 +1820,18 @@ describe('app dir - basic', () => {
       // for the prod version.
       it('should successfully bootstrap even when using CSP', async () => {
         // This path has a nonce applied in middleware
-        const browser = await next.browser('/bootstrap/with-nonce')
-        const response = await next.fetch('/bootstrap/with-nonce')
+        const { browser, response } = await next.browserWithResponse(
+          '/bootstrap/with-nonce'
+        )
         // We expect this page to response with CSP headers requiring a nonce for scripts
-        expect(response.headers.get('content-security-policy')).toContain(
+        expect(response.headers['content-security-policy']).toContain(
           "script-src 'nonce"
         )
         // We expect to find the updated text which demonstrates our app
         // was able to bootstrap successfully (scripts run)
-        expect(
-          await browser.eval('document.getElementById("val").textContent')
-        ).toBe('[[updated]]')
+        await retry(async () => {
+          expect(browser.elementByCss('#val').text()).toBe('[[updated]]')
+        })
       })
     } else {
       it('should fail to bootstrap when using CSP in Dev due to eval', async () => {
