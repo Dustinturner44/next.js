@@ -616,7 +616,6 @@ const hasViewportRegex = new RegExp(
 const hasOutletRegex = new RegExp(`\\n\\s+at ${OUTLET_BOUNDARY_NAME}[\\n\\s]`)
 
 export function trackAllowedDynamicAccess(
-  route: string,
   componentStack: string,
   dynamicValidation: DynamicValidationState,
   clientDynamic: DynamicTrackingState
@@ -648,7 +647,7 @@ export function trackAllowedDynamicAccess(
     )
     return
   } else {
-    const message = `Route "${route}": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it. We don't have the exact line number added to error messages yet but you can see which component in the stack below. See more info: https://nextjs.org/docs/messages/next-prerender-missing-suspense`
+    const message = `A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it. We don't have the exact line number added to error messages yet but you can see which component in the stack below. See more info: https://nextjs.org/docs/messages/next-prerender-missing-suspense`
     const error = createErrorWithComponentStack(message, componentStack)
     dynamicValidation.dynamicErrors.push(error)
     return

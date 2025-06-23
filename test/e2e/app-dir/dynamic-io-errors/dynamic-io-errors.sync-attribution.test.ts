@@ -128,9 +128,9 @@ function runTests(options: { withMinification: boolean }) {
         const expectError = createExpectError(next.cliOutput)
 
         expectError(
-          'Error: Route "/": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it.'
+          '[Route "/"] Error: A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it.'
         )
-        expectError('Error occurred prerendering page "/"')
+        expectError('[Route "/"] Error occurred prerendering page')
       })
     })
     describe('Error Attribution with Sync IO - unguarded RSC with unguarded Client sync IO', () => {

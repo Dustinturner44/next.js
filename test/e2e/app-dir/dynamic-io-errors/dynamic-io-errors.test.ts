@@ -86,9 +86,9 @@ function runTests(options: { withMinification: boolean }) {
         const expectError = createExpectError(next.cliOutput)
 
         expectError(
-          'Error: Route "/": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary'
+          '[Route "/"] Error: A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary'
         )
-        expectError('Error occurred prerendering page "/"')
+        expectError('[Route "/"] Error occurred prerendering page')
       })
     })
     describe('Dynamic Metadata - Static Route With Suspense', () => {
@@ -333,16 +333,16 @@ function runTests(options: { withMinification: boolean }) {
         const expectError = createExpectError(next.cliOutput)
 
         expectError(
-          'Route "/": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it.',
+          '[Route "/"] Error: A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it.',
           // Turbopack doesn't support disabling minification yet
           withMinification || isTurbopack ? undefined : 'IndirectionTwo'
         )
         expectError(
-          'Route "/": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it.',
+          '[Route "/"] Error: A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it.',
           // Turbopack doesn't support disabling minification yet
           withMinification || isTurbopack ? undefined : 'IndirectionThree'
         )
-        expectError('Error occurred prerendering page "/"')
+        expectError('[Route "/"] Error occurred prerendering page "/"')
         expectError('exiting the build.')
       })
     })

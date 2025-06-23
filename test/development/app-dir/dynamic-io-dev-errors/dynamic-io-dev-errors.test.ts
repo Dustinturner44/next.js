@@ -82,7 +82,7 @@ describe('Dynamic IO Dev Errors', () => {
     })
 
     expect(stripAnsi(next.cliOutput.slice(outputIndex))).toContain(
-      `\nError: Route "/no-accessed-data": ` +
+      `\nError: ` +
         `A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it. ` +
         `We don't have the exact line number added to error messages yet but you can see which component in the stack below. ` +
         `See more info: https://nextjs.org/docs/messages/next-prerender-missing-suspense` +
@@ -100,7 +100,7 @@ describe('Dynamic IO Dev Errors', () => {
 
     await expect(browser).toDisplayCollapsedRedbox(`
        {
-         "description": "Route "/no-accessed-data": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it. We don't have the exact line number added to error messages yet but you can see which component in the stack below. See more info: https://nextjs.org/docs/messages/next-prerender-missing-suspense",
+         "description": "A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it. We don't have the exact line number added to error messages yet but you can see which component in the stack below. See more info: https://nextjs.org/docs/messages/next-prerender-missing-suspense",
          "environmentLabel": "Server",
          "label": "Console Error",
          "source": null,

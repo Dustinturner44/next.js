@@ -50,6 +50,10 @@ import type { PagesRenderContext, PagesSharedContext } from '../server/render'
 import type { AppSharedContext } from '../server/app-render/app-render'
 import { MultiFileWriter } from '../lib/multi-file-writer'
 import { createRenderResumeDataCache } from '../server/resume-data-cache/resume-data-cache'
+import {
+  setupConsoleWithContext,
+  withConsoleContext,
+} from './prerender-console-calls'
 
 const envConfig =
   require('../shared/lib/runtime-config.external') as typeof import('../shared/lib/runtime-config.external')
@@ -361,6 +365,8 @@ export async function exportPages(
     renderResumeDataCachesByPage = {},
   } = input
 
+  const tearDownReplayableConsoleCalls = setupConsoleWithContext()
+
   if (nextConfig.experimental.enablePrerenderSourceMaps) {
     try {
       // Same as `next dev`
@@ -397,7 +403,7 @@ export async function exportPages(
     const { page, path } = exportPath
     const pageKey = page !== path ? `${page}: ${path}` : path
     let attempt = 0
-    let result
+    let result: ExportPageResult | undefined
 
     const hasDebuggerAttached =
       // Also tests for `inspect-brk`
@@ -410,29 +416,32 @@ export async function exportPages(
     while (attempt < maxAttempts) {
       try {
         result = await Promise.race<ExportPageResult | undefined>([
-          exportPage({
-            exportPath,
-            distDir,
-            outDir,
-            pagesDataDir,
-            renderOpts,
-            ampValidatorPath:
-              nextConfig.experimental.amp?.validator || undefined,
-            trailingSlash: nextConfig.trailingSlash,
-            serverRuntimeConfig: nextConfig.serverRuntimeConfig,
-            subFolders: nextConfig.trailingSlash && !options.buildExport,
-            buildExport: options.buildExport,
-            optimizeCss: nextConfig.experimental.optimizeCss,
-            disableOptimizedLoading:
-              nextConfig.experimental.disableOptimizedLoading,
-            parentSpanId: input.parentSpanId,
-            httpAgentOptions: nextConfig.httpAgentOptions,
-            debugOutput: options.debugOutput,
-            enableExperimentalReact: needsExperimentalReact(nextConfig),
-            sriEnabled: Boolean(nextConfig.experimental.sri?.algorithm),
-            buildId: input.buildId,
-            renderResumeDataCache,
-          }),
+          withConsoleContext(
+            exportPath.path,
+            exportPage.bind(null, {
+              exportPath,
+              distDir,
+              outDir,
+              pagesDataDir,
+              renderOpts,
+              ampValidatorPath:
+                nextConfig.experimental.amp?.validator || undefined,
+              trailingSlash: nextConfig.trailingSlash,
+              serverRuntimeConfig: nextConfig.serverRuntimeConfig,
+              subFolders: nextConfig.trailingSlash && !options.buildExport,
+              buildExport: options.buildExport,
+              optimizeCss: nextConfig.experimental.optimizeCss,
+              disableOptimizedLoading:
+                nextConfig.experimental.disableOptimizedLoading,
+              parentSpanId: input.parentSpanId,
+              httpAgentOptions: nextConfig.httpAgentOptions,
+              debugOutput: options.debugOutput,
+              enableExperimentalReact: needsExperimentalReact(nextConfig),
+              sriEnabled: Boolean(nextConfig.experimental.sri?.algorithm),
+              buildId: input.buildId,
+              renderResumeDataCache,
+            })
+          ),
           hasDebuggerAttached
             ? // With a debugger attached, exporting can take infinitely if we paused script execution.
               new Promise(() => {})
@@ -524,6 +533,8 @@ export async function exportPages(
     results.push(...subsetResults)
   }
 
+  tearDownReplayableConsoleCalls()
+
   return results
 }
 
@@ -573,7 +584,7 @@ async function exportPage(
     }
   } catch (err) {
     console.error(
-      `Error occurred prerendering page "${input.exportPath.path}". Read more: https://nextjs.org/docs/messages/prerender-error`
+      `Error occurred prerendering page. Read more: https://nextjs.org/docs/messages/prerender-error`
     )
 
     // bailoutToCSRError errors should not leak to the user as they are not actionable; they're

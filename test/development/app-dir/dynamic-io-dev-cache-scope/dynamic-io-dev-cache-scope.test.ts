@@ -76,7 +76,7 @@ describe('Dynamic IO Dev Errors', () => {
     desc = await getRedboxDescription(browser)
 
     expect(desc).toContain(
-      'Route "/uncached": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it'
+      'A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it'
     )
 
     await browser.refresh()
@@ -84,7 +84,7 @@ describe('Dynamic IO Dev Errors', () => {
     desc = await getRedboxDescription(browser)
 
     expect(desc).toContain(
-      'Route "/uncached": A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it'
+      'A component accessed data, headers, params, searchParams, or a short-lived cache without a Suspense boundary nor a "use cache" above it'
     )
   })
 })
