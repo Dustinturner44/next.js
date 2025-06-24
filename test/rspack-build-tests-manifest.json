@@ -2924,7 +2924,7 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/instrumentation-order/instrumentation-order.test.ts": {
-    "passed": ["instrumentation-order should work using cheerio"],
+    "passed": ["instrumentation-order should work"],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -3074,6 +3074,18 @@
   "test/e2e/app-dir/logging/fetch-warning.test.ts": {
     "passed": [
       "app-dir - fetch warnings should not log fetch warnings in production"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/mdx-no-mdx-components/mdx.test.ts": {
+    "passed": [
+      "mdx app directory should allow importing client components",
+      "mdx app directory should work in initial html",
+      "mdx app directory should work using browser",
+      "mdx pages directory should work in initial html"
     ],
     "failed": [],
     "pending": [],
@@ -3389,6 +3401,7 @@
       "app dir - metadata opengraph should support opengraph with article type",
       "app dir - metadata react cache should have same title and page value on initial load",
       "app dir - metadata react cache should have same title and page value when navigating",
+      "app dir - metadata regression: renders a large shell",
       "app dir - metadata should not effect metadata images convention like files under pages directory",
       "app dir - metadata static optimization should build static files into static route",
       "app dir - metadata static routes should build favicon.ico as a custom route",
@@ -6032,6 +6045,13 @@
       "unstable-rethrow should handle an internal error that gets propagated to the `cause` field",
       "unstable-rethrow should not log any errors at build time"
     ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/upward-distdir/upward-distdir.test.ts": {
+    "passed": ["upward-distdir should work"],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -17839,8 +17859,6 @@
   },
   "test/integration/server-side-dev-errors/test/index.test.js": {
     "passed": [
-      "server-side dev errors should show server-side error for api route correctly",
-      "server-side dev errors should show server-side error for dynamic api route correctly",
       "server-side dev errors should show server-side error for dynamic gssp page correctly",
       "server-side dev errors should show server-side error for gsp page correctly",
       "server-side dev errors should show server-side error for gssp page correctly",
@@ -17849,7 +17867,10 @@
       "server-side dev errors should show server-side error for uncaught exception correctly",
       "server-side dev errors should show server-side error for uncaught rejection correctly"
     ],
-    "failed": [],
+    "failed": [
+      "server-side dev errors should show server-side error for api route correctly",
+      "server-side dev errors should show server-side error for dynamic api route correctly"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -19612,11 +19633,10 @@
   },
   "test/production/pnpm-support/index.test.ts": {
     "passed": [
-      "pnpm support should build with dependencies installed via pnpm"
-    ],
-    "failed": [
+      "pnpm support should build with dependencies installed via pnpm",
       "pnpm support should execute client-side JS on each page in output: \"standalone\""
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
