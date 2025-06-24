@@ -3,6 +3,7 @@ import { check } from 'next-test-utils'
 
 import { SavedSpan } from './constants'
 import { type Collector, connectCollector } from './collector'
+import { NEXT_RSC_UNION_QUERY } from 'next/dist/client/components/app-router-headers'
 
 const EXTERNAL = {
   traceId: 'ee75cd9e534ff5e9ed78b4a0c706f0f2',
@@ -358,7 +359,7 @@ describe('opentelemetry', () => {
           })
 
           it('should handle RSC with fetch in RSC mode', async () => {
-            await next.fetch('/app/param/rsc-fetch', {
+            await next.fetch(`/app/param/rsc-fetch?${NEXT_RSC_UNION_QUERY}`, {
               ...env.fetchInit,
               headers: {
                 ...env.fetchInit?.headers,
