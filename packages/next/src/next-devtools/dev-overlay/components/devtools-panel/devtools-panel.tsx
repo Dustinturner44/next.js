@@ -1,6 +1,6 @@
 import type { OverlayDispatch, OverlayState, Corners } from '../../shared'
 
-import { useState } from 'react'
+import { startTransition, useState } from 'react'
 
 import { DevToolsPanelFooter } from './devtools-panel-footer'
 import { DevToolsPanelTab } from './devtools-panel-tab/devtools-panel-tab'
@@ -19,6 +19,10 @@ import { Draggable } from '../errors/dev-tools-indicator/draggable'
 import { INDICATOR_PADDING } from '../devtools-indicator/devtools-indicator'
 import { FullScreenIcon } from '../../icons/fullscreen'
 import { Cross } from '../../icons/cross'
+import {
+  PictureInPictureIcon,
+  usePictureInPicture,
+} from './devtools-picture-in-picture'
 
 export type DevToolsPanelTabType = 'issues' | 'route' | 'settings'
 
@@ -56,15 +60,30 @@ export function DevToolsPanel({
     localStorage.setItem(STORAGE_KEY_SCALE, e.target.value)
   }
 
+  const {
+    activatePictureInPictureAction,
+    pictureInPictureActive,
+    pictureInPictureAvailable,
+  } = usePictureInPicture()
+  function handlePipClick() {
+    startTransition(async () => {
+      await activatePictureInPictureAction()
+    })
+  }
+
   return (
     <Overlay
       data-nextjs-devtools-panel-overlay
-      style={{
-        [vertical]: `${INDICATOR_PADDING}px`,
-        [horizontal]: `${INDICATOR_PADDING}px`,
-        [vertical === 'top' ? 'bottom' : 'top']: 'auto',
-        [horizontal === 'left' ? 'right' : 'left']: 'auto',
-      }}
+      style={
+        pictureInPictureActive
+          ? {}
+          : {
+              [vertical]: `${INDICATOR_PADDING}px`,
+              [horizontal]: `${INDICATOR_PADDING}px`,
+              [vertical === 'top' ? 'bottom' : 'top']: 'auto',
+              [horizontal === 'left' ? 'right' : 'left']: 'auto',
+            }
+      }
     >
       {/* TODO: Investigate why onCloseDevToolsPanel on Dialog doesn't close when clicked outside. */}
       <OverlayBackdrop
@@ -72,6 +91,7 @@ export function DevToolsPanel({
         onClick={onCloseDevToolsPanel}
       />
       <Draggable
+        disabled={pictureInPictureActive}
         data-nextjs-devtools-panel-draggable
         padding={INDICATOR_PADDING}
         onDragStart={() => {}}
@@ -124,16 +144,29 @@ export function DevToolsPanel({
                     </button>
                   </div>
                   <div data-nextjs-devtools-panel-header-action-button-group>
+                    {!pictureInPictureActive && pictureInPictureAvailable && (
+                      <button
+                        data-nextjs-devtools-panel-header-action-button
+                        title="Activate picture-in-picture mode"
+                        onClick={handlePipClick}
+                      >
+                        <PictureInPictureIcon />
+                      </button>
+                    )}
                     {/* TODO: Currently no-op, will add fullscreen toggle. */}
-                    <button data-nextjs-devtools-panel-header-action-button>
-                      <FullScreenIcon width={16} height={16} />
-                    </button>
-                    <button
-                      data-nextjs-devtools-panel-header-action-button
-                      onClick={onCloseDevToolsPanel}
-                    >
-                      <Cross width={16} height={16} />
-                    </button>
+                    {!pictureInPictureActive && (
+                      <button data-nextjs-devtools-panel-header-action-button>
+                        <FullScreenIcon width={16} height={16} />
+                      </button>
+                    )}
+                    {!pictureInPictureActive && (
+                      <button
+                        data-nextjs-devtools-panel-header-action-button
+                        onClick={onCloseDevToolsPanel}
+                      >
+                        <Cross width={16} height={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </DialogHeader>
@@ -178,6 +211,17 @@ export const DEVTOOLS_PANEL_STYLES = css`
     @media (min-width: 992px) {
       max-width: 960px;
     }
+
+    @media (display-mode: picture-in-picture) {
+      min-width: 100vw;
+      min-height: 100vh;
+      max-width: none;
+      max-height: none;
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      top: 0;
+    }
   }
 
   [data-nextjs-devtools-panel-overlay-backdrop] {
@@ -188,6 +232,10 @@ export const DEVTOOLS_PANEL_STYLES = css`
   [data-nextjs-devtools-panel-draggable] {
     /* For responsiveness */
     width: 100%;
+
+    @media (display-mode: picture-in-picture) {
+      height: 100%;
+    }
   }
 
   [data-nextjs-devtools-panel-dialog] {
@@ -204,6 +252,14 @@ export const DEVTOOLS_PANEL_STYLES = css`
     width: 100%;
     max-height: 50vh;
     min-height: 450px;
+
+    @media (display-mode: picture-in-picture) {
+      max-width: none;
+      max-height: none;
+      height: 100%;
+      border: 0;
+      border-radius: 0;
+    }
   }
 
   [data-nextjs-devtools-panel-header] {

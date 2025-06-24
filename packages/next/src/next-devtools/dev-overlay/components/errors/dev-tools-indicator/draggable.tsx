@@ -13,6 +13,7 @@ interface Corner {
 
 export function Draggable({
   children,
+  disabled,
   padding,
   position: currentCorner,
   setPosition: setCurrentCorner,
@@ -20,12 +21,14 @@ export function Draggable({
   ...props
 }: {
   children: React.ReactElement
+  disabled?: boolean
   position: Corners
   padding: number
   setPosition: (position: Corners) => void
   onDragStart?: () => void
 }) {
   const { ref, animate, ...drag } = useDrag({
+    disabled,
     threshold: 5,
     onDragStart,
     onDragEnd,
@@ -129,6 +132,7 @@ export function Draggable({
 }
 
 interface UseDragOptions {
+  disabled?: boolean
   onDragStart?: () => void
   onDrag?: (translation: Point) => void
   onDragEnd?: (translation: Point, velocity: Point) => void
@@ -191,12 +195,14 @@ export function useDrag(options: UseDragOptions) {
     }
     origin.current = { x: e.clientX, y: e.clientY }
     state.current = 'press'
+    // TODO: Does this cleanup on pip
     window.addEventListener('pointermove', onPointerMove)
     window.addEventListener('pointerup', onPointerUp)
     ref.current?.addEventListener('click', onClick)
   }
 
   function onPointerMove(e: PointerEvent) {
+    if (options.disabled) return
     if (state.current === 'press') {
       const dx = e.clientX - origin.current.x
       const dy = e.clientY - origin.current.y
