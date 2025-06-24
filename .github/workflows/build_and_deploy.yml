@@ -536,7 +536,9 @@ jobs:
           path: crates/wasm
 
       - name: Create tarballs
-        run: node scripts/create-preview-tarballs.js "${{ github.sha }}" "${{ github.event.after }}" "${{ runner.temp }}/preview-tarballs"
+        # github.event.after is available on push and pull_request#synchronize events.
+        # For workflow_dispatch events, github.sha is the head commit.
+        run: node scripts/create-preview-tarballs.js "${{ github.sha }}" "${{ github.event.after || github.sha }}" "${{ runner.temp }}/preview-tarballs"
 
       - name: Upload tarballs
         uses: actions/upload-artifact@v4
