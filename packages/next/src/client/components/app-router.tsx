@@ -22,8 +22,6 @@ import {
   PathParamsContext,
 } from '../../shared/lib/hooks-client-context.shared-runtime'
 import { dispatchAppRouterAction, useActionQueue } from './use-action-queue'
-import { ErrorBoundary } from './error-boundary'
-import DefaultGlobalError from '../../client/components/global-error'
 import { isBot } from '../../shared/lib/router/utils/is-bot'
 import { addBasePath } from '../add-base-path'
 import { AppRouterAnnouncer } from './app-router-announcer'
@@ -521,15 +519,6 @@ function Router({
     // leave the app as it is rather than caught by GlobalError boundary.
     if (gracefullyDegrade) {
       content = <GracefulDegradeBoundary>{content}</GracefulDegradeBoundary>
-    } else {
-      content = (
-        <ErrorBoundary
-          errorComponent={globalError[0]}
-          errorStyles={globalError[1]}
-        >
-          {content}
-        </ErrorBoundary>
-      )
     }
   }
 
@@ -574,7 +563,7 @@ export default function AppRouter({
 }) {
   useNavFailureHandler()
 
-  const router = (
+  return (
     <Router
       actionQueue={actionQueue}
       assetPrefix={assetPrefix}
@@ -582,20 +571,6 @@ export default function AppRouter({
       gracefullyDegrade={gracefullyDegrade}
     />
   )
-
-  if (gracefullyDegrade) {
-    return router
-  } else {
-    return (
-      <ErrorBoundary
-        // At the very top level, use the default GlobalError component as the final fallback.
-        // When the app router itself fails, which means the framework itself fails, we show the default error.
-        errorComponent={DefaultGlobalError}
-      >
-        {router}
-      </ErrorBoundary>
-    )
-  }
 }
 
 const runtimeStyles = new Set<string>()

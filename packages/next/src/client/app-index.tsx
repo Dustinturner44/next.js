@@ -20,6 +20,8 @@ import {
   createMutableActionQueue,
 } from './components/app-router-instance'
 import AppRouter from './components/app-router'
+import { ErrorBoundary } from './components/error-boundary'
+import DefaultGlobalError from './components/global-error'
 import type { InitialRSCPayload } from '../server/app-render/types'
 import { createInitialRouterState } from './components/router-reducer/create-initial-router-state'
 import { MissingSlotContext } from '../shared/lib/app-router-context.shared-runtime'
@@ -166,27 +168,46 @@ function ServerRoot({
 }): React.ReactNode {
   const initialRSCPayload = use(initialServerResponse)
   const actionQueue = use<AppRouterActionQueue>(pendingActionQueue)
+  const gracefullyDegrade = isBot(window.navigator.userAgent)
 
   const router = (
     <AppRouter
-      gracefullyDegrade={isBot(window.navigator.userAgent)}
+      gracefullyDegrade={gracefullyDegrade}
       actionQueue={actionQueue}
       globalErrorState={initialRSCPayload.G}
       assetPrefix={initialRSCPayload.p}
     />
   )
 
+  let content = router
+
+  // Wrap with missing slot context in development
   if (process.env.NODE_ENV === 'development' && initialRSCPayload.m) {
     // We provide missing slot information in a context provider only during development
     // as we log some additional information about the missing slots in the console.
-    return (
+    content = (
       <MissingSlotContext value={initialRSCPayload.m}>
-        {router}
+        {content}
       </MissingSlotContext>
     )
   }
 
-  return router
+  // Apply error boundary hierarchy - this is the highest level where we can catch errors
+  // The gracefullyDegrade flag is handled internally by the Router component
+  return (
+    <ErrorBoundary
+      // Ultimate fallback: DefaultGlobalError catches any errors from the user's GlobalError component itself
+      errorComponent={DefaultGlobalError}
+    >
+      <ErrorBoundary
+        // Primary error boundary: User's GlobalError component catches all errors (AppRouter + framework + app content)
+        errorComponent={initialRSCPayload.G[0]}
+        errorStyles={initialRSCPayload.G[1]}
+      >
+        {content}
+      </ErrorBoundary>
+    </ErrorBoundary>
+  )
 }
 
 const StrictModeIfEnabled = process.env.__NEXT_STRICT_MODE_APP
