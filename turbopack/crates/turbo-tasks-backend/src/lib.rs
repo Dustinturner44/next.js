@@ -80,7 +80,7 @@ pub fn rocksdb_backing_storage(
     base_path: &Path,
     version_info: &GitVersionInfo,
     is_ci: bool,
-) -> Result<RocksDBBackingStorage> {
+) -> Result<(RocksDBBackingStorage, StartupCacheState)> {
     KeyValueDatabaseBackingStorage::open_versioned_on_disk(
         base_path.to_owned(),
         version_info,
