@@ -196,22 +196,34 @@ async fn base_resolve_options(
         environment.resolve_extensions().owned().await?
     } else {
         let mut ext = Vec::new();
+        
+        if opt.enable_react_native_web_infix {
+            if opt.enable_typescript && opt.enable_react {
+                ext.push(rcstr!(".web.tsx"));
+            }
+            if opt.enable_typescript {
+                ext.push(rcstr!(".web.ts"));
+            }
+            if opt.enable_react {
+                ext.push(rcstr!(".web.jsx"));
+            }
+            ext.push(rcstr!(".web.js"));
+            if opt.enable_mjs_extension {
+                ext.push(rcstr!(".web.mjs"));
+            }
+        }
+        
         if opt.enable_typescript && opt.enable_react {
-            ext.push(rcstr!(".web.tsx"));
             ext.push(rcstr!(".tsx"));
         }
         if opt.enable_typescript {
-            ext.push(rcstr!(".web.ts"));
             ext.push(rcstr!(".ts"));
         }
         if opt.enable_react {
-            ext.push(rcstr!(".web.jsx"));
             ext.push(rcstr!(".jsx"));
         }
-        ext.push(rcstr!(".web.js"));
         ext.push(rcstr!(".js"));
         if opt.enable_mjs_extension {
-            ext.push(rcstr!(".web.mjs"));
             ext.push(rcstr!(".mjs"));
         }
         if opt.enable_node_native_modules {
