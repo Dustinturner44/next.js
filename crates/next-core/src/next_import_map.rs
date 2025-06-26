@@ -735,16 +735,14 @@ async fn rsc_aliases(
         });
     }
     alias.extend(fxindexmap! {
-        "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client"),
-        "react-server-dom-webpack/client.edge" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
-        "react-server-dom-webpack/server.edge" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
-        "react-server-dom-webpack/server.node" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.node"),
-        "react-server-dom-webpack/static.edge" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
-        "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client"),
-        "react-server-dom-turbopack/client.edge" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
-        "react-server-dom-turbopack/server.edge" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
-        "react-server-dom-turbopack/server.node" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.node"),
-        "react-server-dom-turbopack/static.edge" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
+        "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.browser"),
+        // TODO: Should we alias these to throwers
+        "react-server-dom-webpack/server" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
+        "react-server-dom-webpack/static" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
+        "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.browser"),
+        // TODO: Should we alias these to throwers
+        "react-server-dom-turbopack/server" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
+        "react-server-dom-turbopack/static" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
     });
 
     if runtime == NextRuntime::NodeJs {
@@ -756,8 +754,8 @@ async fn rsc_aliases(
                     "react/compiler-runtime" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react-compiler-runtime"),
                     "react" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react"),
                     "react-dom" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react-dom"),
-                    "react-server-dom-webpack/client.edge" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react-server-dom-turbopack-client-edge"),
-                    "react-server-dom-turbopack/client.edge" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react-server-dom-turbopack-client-edge"),
+                    "react-server-dom-webpack/client" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react-server-dom-turbopack-client"),
+                    "react-server-dom-turbopack/client" => format!("next/dist/server/route-modules/app-page/vendored/ssr/react-server-dom-turbopack-client"),
                 });
             }
             ServerContextType::AppRSC { .. }
@@ -770,12 +768,13 @@ async fn rsc_aliases(
                     "react/compiler-runtime" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-compiler-runtime"),
                     "react" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react"),
                     "react-dom" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-dom"),
-                    "react-server-dom-webpack/server.edge" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server-edge"),
-                    "react-server-dom-webpack/server.node" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server-node"),
-                    "react-server-dom-webpack/static.edge" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-static-edge"),
-                    "react-server-dom-turbopack/server.edge" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server-edge"),
-                    "react-server-dom-turbopack/server.node" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server-node"),
-                    "react-server-dom-turbopack/static.edge" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-static-edge"),
+                    // TODO: Vendored
+                    "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.node"),
+                    "react-server-dom-webpack/server" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server"),
+                    "react-server-dom-webpack/static" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-static"),
+                    "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.node"),
+                    "react-server-dom-turbopack/server" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server"),
+                    "react-server-dom-turbopack/static" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-static"),
                     "next/navigation" => format!("next/dist/api/navigation.react-server"),
 
                     // Needed to make `react-dom/server` work.
