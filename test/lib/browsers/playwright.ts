@@ -330,14 +330,18 @@ export class Playwright<TCurrent = void> {
     // If the url is relative, we need to resolve it against the current page url.
     // This is necessary to ensure that the url is always absolute and to avoid
     // issues with relative urls in the browser.
-    const response = await this.page.goto(
-      new URL(url, this.page.url()).toString(),
-      {
-        // Unless overridden, we wait for the load event to fire before returning.
-        waitUntil: 'load',
-        ...gotoOptions,
-      }
-    )
+    const base = this.page.url()
+    const resolved =
+      base !== 'about:blank' &&
+      !(url.startsWith('http:') || url.startsWith('https:'))
+        ? new URL(url, this.page.url()).toString()
+        : url
+
+    const response = await this.page.goto(resolved, {
+      // Unless overridden, we wait for the load event to fire before returning.
+      waitUntil: 'load',
+      ...gotoOptions,
+    })
 
     if (waitUntilHydration) {
       try {

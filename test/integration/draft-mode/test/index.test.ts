@@ -36,7 +36,7 @@ describe('Test Draft Mode', () => {
     'development mode',
     () => {
       let appPort, app, browser, cookieString
-      it('should start development application', async () => {
+      beforeAll(async () => {
         appPort = await findPort()
         app = await launchApp(appDir, appPort)
       })

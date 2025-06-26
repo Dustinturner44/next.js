@@ -4,7 +4,6 @@ import { setTimeout } from 'node:timers/promises'
 
 const logger = new TestingLogger('waitForHydration')
 
-const HYDRATION_TIMEOUT = 10_000
 const RETRY_DELAY = 100
 
 interface NextWindow extends Window {
@@ -42,7 +41,7 @@ export default async function waitForHydration<T>(
           console.log('Next.js page already hydrated')
           return callback()
         } else {
-          const timeout = win.setTimeout(callback, HYDRATION_TIMEOUT)
+          const timeout = win.setTimeout(callback, 10_000)
           win.__NEXT_HYDRATED_CB = function () {
             win.clearTimeout(timeout)
             console.log('Next.js hydrate callback fired')
