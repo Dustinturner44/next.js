@@ -212,18 +212,15 @@ async fn base_resolve_options(
         }
         
         if opt.enable_react_native_web_infix {
-            let web_extensions: Vec<_> = ext
-                .iter()
-                .map(|e| format!(".web{}", e).into())
-                .chain(ext.into_iter())
-                .collect();
-            ext = web_extensions;
+            ext = ext.iter().map(|e| format!(".web{}", e).into()).chain(ext.into_iter()).collect();
         }
-        
+
         if opt.enable_node_native_modules {
             ext.push(rcstr!(".node"));
         }
         ext.push(rcstr!(".json"));
+        
+        
         ext
     };
     Ok(ResolveOptions {
