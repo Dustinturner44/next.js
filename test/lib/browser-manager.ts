@@ -47,17 +47,17 @@ export class BrowserManager {
       case 'afterEach':
         this.afterEachCallbacks.push(async () => {
           await instance.closeContext()
+          this.instance = undefined
         })
         this.afterAllCallbacks.push(async () => {
           await instance.close()
-          this.instance = undefined
         })
         break
       case 'afterAll':
         this.afterAllCallbacks.push(async () => {
           await instance.closeContext()
-          await instance.close()
           this.instance = undefined
+          await instance.close()
         })
         break
       default:
