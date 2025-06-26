@@ -236,49 +236,51 @@ describe('ServerSide Props Preview Mode', () => {
         expect(cookies.length).toBe(2)
       })
 
-      /** @type {import('next-webdriver').Chain} */
-      let browser
-      beforeEach(async () => {
-        browser = await webdriver(
-          appPort,
-          '/api/preview?' + qs.stringify({ client: 'mode' })
-        )
-      })
+      describe('with browser', () => {
+        /** @type {import('next-webdriver').Chain} */
+        let browser
+        beforeEach(async () => {
+          browser = await webdriver(
+            appPort,
+            '/api/preview?' + qs.stringify({ client: 'mode' })
+          )
+        })
 
-      it('should fetch preview data on SSR', async () => {
-        await browser.goto(`http://localhost:${appPort}/`)
-        await browser.waitForElementByCss('#props-pre')
-        // expect(await browser.elementById('props-pre').text()).toBe('Has No Props')
-        // await new Promise(resolve => setTimeout(resolve, 2000))
-        expect(await browser.elementById('props-pre').text()).toBe(
-          'true and {"client":"mode"}'
-        )
-      })
+        it('should fetch preview data on SSR', async () => {
+          await browser.goto(`http://localhost:${appPort}/`)
+          await browser.waitForElementByCss('#props-pre')
+          // expect(await browser.elementById('props-pre').text()).toBe('Has No Props')
+          // await new Promise(resolve => setTimeout(resolve, 2000))
+          expect(await browser.elementById('props-pre').text()).toBe(
+            'true and {"client":"mode"}'
+          )
+        })
 
-      it('should fetch preview data on CST', async () => {
-        await browser.goto(`http://localhost:${appPort}/to-index`)
-        await browser.waitForElementByCss('#to-index')
-        await browser.eval('window.itdidnotrefresh = "hello"')
-        await browser.elementById('to-index').click()
-        await browser.waitForElementByCss('#props-pre')
-        expect(await browser.eval('window.itdidnotrefresh')).toBe('hello')
-        expect(await browser.elementById('props-pre').text()).toBe(
-          'true and {"client":"mode"}'
-        )
-      })
+        it('should fetch preview data on CST', async () => {
+          await browser.goto(`http://localhost:${appPort}/to-index`)
+          await browser.waitForElementByCss('#to-index')
+          await browser.eval('window.itdidnotrefresh = "hello"')
+          await browser.elementById('to-index').click()
+          await browser.waitForElementByCss('#props-pre')
+          expect(await browser.eval('window.itdidnotrefresh')).toBe('hello')
+          expect(await browser.elementById('props-pre').text()).toBe(
+            'true and {"client":"mode"}'
+          )
+        })
 
-      it('should fetch prerendered data', async () => {
-        await browser.goto(`http://localhost:${appPort}/api/reset`)
+        it('should fetch prerendered data', async () => {
+          await browser.goto(`http://localhost:${appPort}/api/reset`)
 
-        await browser.goto(`http://localhost:${appPort}/`)
-        await browser.waitForElementByCss('#props-pre')
-        expect(await browser.elementById('props-pre').text()).toBe(
-          'false and null'
-        )
-      })
+          await browser.goto(`http://localhost:${appPort}/`)
+          await browser.waitForElementByCss('#props-pre')
+          expect(await browser.elementById('props-pre').text()).toBe(
+            'false and null'
+          )
+        })
 
-      afterAll(async () => {
-        await killApp(app)
+        afterAll(async () => {
+          await killApp(app)
+        })
       })
     }
   )
