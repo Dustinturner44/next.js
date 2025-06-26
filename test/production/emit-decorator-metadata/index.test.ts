@@ -1,5 +1,4 @@
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { createNext } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { fetchViaHTTP } from 'next-test-utils'
@@ -21,7 +20,7 @@ describe('emitDecoratorMetadata SWC option', () => {
   afterAll(() => next.destroy())
 
   it('should compile with emitDecoratorMetadata enabled', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     const message = await browser.elementByCss('#message').text()
 
     expect(message).toBe('Hello, world!')

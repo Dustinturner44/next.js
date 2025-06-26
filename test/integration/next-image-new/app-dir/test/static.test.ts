@@ -260,7 +260,9 @@ describe('Static Image Component Tests', () => {
         app = await nextStart(appDir, appPort)
         html = await renderViaHTTP(appPort, '/static-img')
         $ = cheerio.load(html)
-        browser = await webdriver(appPort, '/static-img')
+        browser = await webdriver(appPort, '/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)
@@ -276,7 +278,9 @@ describe('Static Image Component Tests', () => {
         app = await launchApp(appDir, appPort)
         html = await renderViaHTTP(appPort, '/static-img')
         $ = cheerio.load(html)
-        browser = await webdriver(appPort, '/static-img')
+        browser = await webdriver(appPort, '/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)

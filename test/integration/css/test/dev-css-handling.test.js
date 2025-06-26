@@ -31,8 +31,7 @@ describe('Can hot reload CSS without losing state', () => {
   })
 
   it('should update CSS color without remounting <input>', async () => {
-    let browser
-    browser = await webdriver(appPort, '/page1')
+    const browser = await webdriver(appPort, '/page1')
     const desiredText = 'hello world'
     await browser.elementById('text-input').type(desiredText)
     expect(await browser.elementById('text-input').getValue()).toBe(desiredText)
@@ -80,8 +79,7 @@ describe('Has CSS in computed styles in Development', () => {
   })
 
   it('should have CSS for page', async () => {
-    let browser
-    browser = await webdriver(appPort, '/page2')
+    const browser = await webdriver(appPort, '/page2')
     const currentColor = await browser.eval(
       `window.getComputedStyle(document.querySelector('.blue-text')).color`
     )
@@ -107,8 +105,7 @@ describe('Body is not hidden when unused in Development', () => {
   })
 
   it('should have body visible', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     const currentDisplay = await browser.eval(
       `window.getComputedStyle(document.querySelector('body')).display`
     )
@@ -132,20 +129,17 @@ describe('Body is not hidden when broken in Development', () => {
 
   it('should have body visible', async () => {
     const pageFile = new File(join(appDir, 'pages/index.js'))
-    let browser
     try {
       pageFile.replace('<div />', '<div>')
       await waitFor(2000) // wait for recompile
 
-      browser = await webdriver(appPort, '/')
+      const browser = await webdriver(appPort, '/')
       const currentDisplay = await browser.eval(
         `window.getComputedStyle(document.querySelector('body')).display`
       )
       expect(currentDisplay).toBe('block')
     } finally {
       pageFile.restore()
-      if (browser) {
-      }
     }
   })
 })
@@ -167,8 +161,7 @@ describe('React Lifecyce Order (dev)', () => {
   })
 
   it('should have the correct color on mount after navigation', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await browser.waitForElementByCss('#link-other').click()
     const text = await browser.waitForElementByCss('#red-title').text()
     expect(text).toMatchInlineSnapshot(`"rgb(255, 0, 0)"`)

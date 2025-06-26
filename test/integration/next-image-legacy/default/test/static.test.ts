@@ -151,7 +151,9 @@ describe('Static Image Component Tests', () => {
         appPort = await findPort()
         app = await nextStart(appDir, appPort)
         html = await renderViaHTTP(appPort, '/static-img')
-        browser = await webdriver(appPort, '/static-img')
+        browser = await webdriver(appPort, '/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)

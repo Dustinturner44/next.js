@@ -71,15 +71,13 @@ const appDir = join(__dirname, '../')
           })
 
           it(`should client-render the ${page} page`, async () => {
-            let browser
-            browser = await webdriver(appPort, page)
+            const browser = await webdriver(appPort, page)
             await check(() => getBrowserBodyText(browser), expectedClient)
           })
         }
 
         it(`should render a static url image import`, async () => {
-          let browser
-          browser = await webdriver(appPort, '/image')
+          const browser = await webdriver(appPort, '/image')
           await browser.waitForElementByCss('#static-image')
           await check(
             () => browser.elementByCss('#static-image').getAttribute('src'),
@@ -88,8 +86,7 @@ const appDir = join(__dirname, '../')
         })
 
         it(`should allow url import in css`, async () => {
-          let browser
-          browser = await webdriver(appPort, '/css')
+          const browser = await webdriver(appPort, '/css')
           await browser.waitForElementByCss('#static-css')
           await check(
             () =>

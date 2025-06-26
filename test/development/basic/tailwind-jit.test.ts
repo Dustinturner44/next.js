@@ -1,5 +1,4 @@
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { FileRef, nextTestSetup } from 'e2e-utils'
 import { check, shouldRunTurboDevTest } from 'next-test-utils'
 
@@ -27,7 +26,7 @@ describe('TailwindCSS JIT', () => {
   })
 
   it('works with JIT enabled', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     const text = await browser.elementByCss('.text-6xl').text()
     expect(text).toMatch(/Welcome to/)
     const cssBlue = await browser

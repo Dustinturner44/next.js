@@ -291,8 +291,7 @@ module.exports = {
             })
 
             it('should have the correct color on mount after navigation', async () => {
-              let browser
-              browser = await webdriver(appPort, '/')
+              const browser = await webdriver(appPort, '/')
               await browser.waitForElementByCss('#link-other').click()
               const text = await browser
                 .waitForElementByCss('#red-title')

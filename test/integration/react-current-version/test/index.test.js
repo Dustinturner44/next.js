@@ -79,8 +79,7 @@ function runTestsAgainstRuntime(runtime) {
     `Concurrent mode in the ${runtime} runtime`,
     (context, env) => {
       async function withBrowser(path, cb) {
-        let browser
-        browser = await webdriver(context.appPort, path)
+        const browser = await webdriver(context.appPort, path)
         await cb(browser)
       }
 

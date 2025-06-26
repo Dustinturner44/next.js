@@ -1,7 +1,6 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import {
   assertHasRedbox,
   assertNoRedbox,
@@ -20,7 +19,7 @@ describe.skip('next/font build-errors', () => {
   afterAll(() => next.destroy())
 
   it('should show a next/font error when input is wrong', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     const content = await next.readFile('app/page.js')
 
     await next.patchFile(
@@ -48,7 +47,7 @@ export default function Page() {
   })
 
   it("should show a module not found error if local font file can' be resolved", async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     const content = await next.readFile('app/page.js')
 
     await next.patchFile(

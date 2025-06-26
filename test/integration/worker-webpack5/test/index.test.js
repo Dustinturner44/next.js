@@ -17,8 +17,7 @@ let app
 
 const runTests = () => {
   it('should pass on both client and worker', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await browser.waitForElementByCss('#web-status')
     await check(() => browser.elementByCss('#web-status').text(), /PASS/i)
     await browser.waitForElementByCss('#worker-status')

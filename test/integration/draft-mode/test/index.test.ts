@@ -86,7 +86,7 @@ describe('Test Draft Mode', () => {
         expect(cookies[0]).toBeTruthy()
       })
 
-      it('should start the client-side browser', async () => {
+      beforeEach(async () => {
         browser = await webdriver(appPort, '/api/enable')
       })
 

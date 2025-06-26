@@ -75,8 +75,7 @@ function getRatio(width, height) {
 
 function runTests(mode: 'dev' | 'server') {
   it('should load the images', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').naturalWidth`
@@ -97,8 +96,7 @@ function runTests(mode: 'dev' | 'server') {
   })
 
   it('should preload priority images', async () => {
-    let browser
-    browser = await webdriver(appPort, '/priority')
+    const browser = await webdriver(appPort, '/priority')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').naturalWidth`
@@ -244,8 +242,7 @@ function runTests(mode: 'dev' | 'server') {
   })
 
   it('should update the image on src change', async () => {
-    let browser
-    browser = await webdriver(appPort, '/update')
+    const browser = await webdriver(appPort, '/update')
     await check(
       () => browser.eval(`document.getElementById("update-image").src`),
       /test\.jpg/
@@ -490,8 +487,7 @@ function runTests(mode: 'dev' | 'server') {
   })
 
   it('should work with image with blob src', async () => {
-    let browser
-    browser = await webdriver(appPort, '/blob')
+    const browser = await webdriver(appPort, '/blob')
     await check(
       () => browser.eval(`document.getElementById("blob-image").src`),
       /^blob:/
@@ -503,8 +499,7 @@ function runTests(mode: 'dev' | 'server') {
   })
 
   it('should work when using flexbox', async () => {
-    let browser
-    browser = await webdriver(appPort, '/flex')
+    const browser = await webdriver(appPort, '/flex')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').width`
@@ -555,8 +550,7 @@ function runTests(mode: 'dev' | 'server') {
   })
 
   it('should render no wrappers or sizers', async () => {
-    let browser
-    browser = await webdriver(appPort, '/wrapper-div')
+    const browser = await webdriver(appPort, '/wrapper-div')
     const numberOfChildren = await browser.eval(
       `document.getElementById('image-container1').children.length`
     )
@@ -1142,8 +1136,7 @@ function runTests(mode: 'dev' | 'server') {
   }
 
   it('should correctly ignore prose styles', async () => {
-    let browser
-    browser = await webdriver(appPort, '/prose')
+    const browser = await webdriver(appPort, '/prose')
     const id = 'prose-image'
     await check(async () => {
       const result = await browser.eval(
@@ -1163,8 +1156,7 @@ function runTests(mode: 'dev' | 'server') {
   })
 
   it('should apply style inheritance for img elements but not wrapper elements', async () => {
-    let browser
-    browser = await webdriver(appPort, '/style-inheritance')
+    const browser = await webdriver(appPort, '/style-inheritance')
     await browser.eval(
       `document.querySelector("footer").scrollIntoView({behavior: "smooth"})`
     )
@@ -1237,7 +1229,7 @@ function runTests(mode: 'dev' | 'server') {
   describe('Fill-mode tests', () => {
     let browser
     beforeAll(async () => {
-      browser = await webdriver(appPort, '/fill')
+      browser = await webdriver(appPort, '/fill', {})
     })
     it('should include a data-attribute on fill images', async () => {
       expect(
@@ -1282,7 +1274,7 @@ function runTests(mode: 'dev' | 'server') {
         )
       })
       it('should log warnings when using fill mode incorrectly', async () => {
-        browser = await webdriver(appPort, '/fill-warnings')
+        await browser.goto('/fill-warnings')
         await waitFor(1000)
         const warnings = (await browser.log())
           .map((log) => log.message)
@@ -1301,7 +1293,7 @@ function runTests(mode: 'dev' | 'server') {
         )
       })
       it('should not log warnings when image unmounts', async () => {
-        browser = await webdriver(appPort, '/should-not-warn-unmount')
+        await browser.goto('/should-not-warn-unmount')
         await waitFor(1000)
         const warnings = (await browser.log())
           .map((log) => log.message)

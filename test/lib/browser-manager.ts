@@ -7,7 +7,6 @@ const logger = new TestingLogger('browser-manager')
  * Browser Manager for singleton instance management.
  */
 export class BrowserManager {
-  private static shared?: PlaywrightManager
   private static instance?: PlaywrightManager
 
   /**
@@ -24,6 +23,7 @@ export class BrowserManager {
     ignoreHTTPSErrors: boolean
     headless: boolean
     userAgent?: string
+    teardownPolicy: 'afterEach' | 'afterAll' | 'none'
   }): Promise<PlaywrightManager> {
     if (this.instance) {
       logger.debug('Reusing existing browser instance')
@@ -34,46 +34,89 @@ export class BrowserManager {
 
     const { PlaywrightManager } = await import('./browsers/playwright')
 
-    this.instance = this.shared = await PlaywrightManager.setup(
+    const instance = (this.instance = await PlaywrightManager.setup(
       options.browserName,
       options.locale,
       options.javaScriptEnabled,
       options.ignoreHTTPSErrors,
       options.headless,
       options.userAgent
-    )
+    ))
 
-    return this.instance
+    switch (options.teardownPolicy) {
+      case 'afterEach':
+        this.afterEachCallbacks.push(async () => {
+          await instance.closeContext()
+        })
+        this.afterAllCallbacks.push(async () => {
+          await instance.close()
+          this.instance = undefined
+        })
+        break
+      case 'afterAll':
+        this.afterAllCallbacks.push(async () => {
+          await instance.closeContext()
+          await instance.close()
+          this.instance = undefined
+        })
+        break
+      default:
+        break
+    }
+
+    return instance
   }
 
   /**
    * Close the singleton instance of the browser (if it exists).
    */
+  private static afterEachCallbacks: (() => Promise<void>)[] = []
   static async afterEach(): Promise<void> {
-    if (!this.instance) return
+    if (!this.afterEachCallbacks.length) return
 
     logger.debug('Closing browser context')
 
     try {
-      await this.instance.closeContext()
+      const results = await Promise.allSettled(
+        this.afterEachCallbacks.map((cb) => cb())
+      )
+      const rejected = results.filter((r) => r.status === 'rejected')
+      if (rejected.length > 0) {
+        throw new Error(
+          `Failed to close browser instance: ${rejected
+            .map((r) => r.reason)
+            .join(', ')}`
+        )
+      }
     } catch (error) {
       logger.error('Failed to close browser instance', error as Error)
     } finally {
-      this.instance = undefined
+      this.afterEachCallbacks = []
     }
   }
 
+  private static afterAllCallbacks: (() => Promise<void>)[] = []
   static async afterAll(): Promise<void> {
-    if (!this.shared) return
+    if (!this.afterAllCallbacks.length) return
 
     logger.debug('Closing browser instance')
 
     try {
-      await this.shared.close()
+      const results = await Promise.allSettled(
+        this.afterAllCallbacks.map((cb) => cb())
+      )
+      const rejected = results.filter((r) => r.status === 'rejected')
+      if (rejected.length > 0) {
+        throw new Error(
+          `Failed to close browser instance: ${rejected
+            .map((r) => r.reason)
+            .join(', ')}`
+        )
+      }
     } catch (error) {
       logger.error('Failed to close browser instance', error as Error)
     } finally {
-      this.shared = undefined
+      this.afterAllCallbacks = []
     }
   }
 }

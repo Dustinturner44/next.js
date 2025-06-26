@@ -1,7 +1,6 @@
 import path from 'path'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 
 const isReact18 = parseInt(process.env.NEXT_TEST_REACT_VERSION) === 18
 
@@ -32,7 +31,7 @@ describe('prerender native module', () => {
   afterAll(() => next.destroy())
 
   it('should render index correctly', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     expect(await browser.elementByCss('#index').text()).toBe('index page')
     expect(JSON.parse(await browser.elementByCss('#props').text())).toEqual({
       index: true,
@@ -40,7 +39,7 @@ describe('prerender native module', () => {
   })
 
   it('should render /blog/first correctly', async () => {
-    const browser = await webdriver(next.url, '/blog/first')
+    const browser = await next.browser('/blog/first')
 
     expect(await browser.elementByCss('#blog').text()).toBe('blog page')
     expect(JSON.parse(await browser.elementByCss('#props').text())).toEqual({
@@ -54,7 +53,7 @@ describe('prerender native module', () => {
   })
 
   it('should render /blog/second correctly', async () => {
-    const browser = await webdriver(next.url, '/blog/second')
+    const browser = await next.browser('/blog/second')
     await browser.waitForElementByCss('#blog')
 
     expect(await browser.elementByCss('#blog').text()).toBe('blog page')

@@ -1,6 +1,5 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { check } from 'next-test-utils'
-import webdriver from 'next-webdriver'
 import { NextInstance } from 'e2e-utils'
 import { join } from 'path'
 
@@ -19,7 +18,7 @@ describe('nonce head manager', () => {
   afterAll(() => next.destroy())
 
   async function runTests(url) {
-    const browser = await webdriver(next.url, url)
+    const browser = await next.browser(url)
     await check(
       async () =>
         await browser.eval(`JSON.stringify(window.scriptExecutionIds)`),

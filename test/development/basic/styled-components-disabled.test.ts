@@ -1,5 +1,4 @@
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { retry } from 'next-test-utils'
@@ -30,10 +29,7 @@ import { retry } from 'next-test-utils'
 
     it('should have hydration mismatch with styled-components transform disabled', async () => {
       // Compile /_error
-      const browser = await webdriver(
-        next.url,
-        new URL('/', next.url).toString()
-      )
+      const browser = await next.browser(new URL('/', next.url).toString())
 
       await retry(async () => {
         const logs = await browser.log()

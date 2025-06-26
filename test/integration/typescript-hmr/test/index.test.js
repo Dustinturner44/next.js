@@ -51,11 +51,10 @@ describe('TypeScript HMR', () => {
 
   // old behavior:
   it.skip('should recover from a type error', async () => {
-    let browser
     const pagePath = join(appDir, 'pages/type-error-recover.tsx')
     const origContent = await fs.readFile(pagePath, 'utf8')
     try {
-      browser = await webdriver(appPort, '/type-error-recover')
+      const browser = await webdriver(appPort, '/type-error-recover')
       const errContent = origContent.replace('() =>', '(): boolean =>')
 
       await fs.writeFile(pagePath, errContent)
@@ -75,11 +74,10 @@ describe('TypeScript HMR', () => {
   })
 
   it('should ignore type errors in development', async () => {
-    let browser
     const pagePath = join(appDir, 'pages/type-error-recover.tsx')
     const origContent = await fs.readFile(pagePath, 'utf8')
     try {
-      browser = await webdriver(appPort, '/type-error-recover')
+      const browser = await webdriver(appPort, '/type-error-recover')
       const errContent = origContent.replace(
         '() => <p>Hello world</p>',
         '(): boolean => <p>hello with error</p>'

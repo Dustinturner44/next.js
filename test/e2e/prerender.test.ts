@@ -16,7 +16,6 @@ import {
   retry,
   waitFor,
 } from 'next-test-utils'
-import webdriver from 'next-webdriver'
 import stripAnsi from 'strip-ansi'
 
 const isReact18 = parseInt(process.env.NEXT_TEST_REACT_VERSION) === 18
@@ -385,7 +384,7 @@ describe('Prerender', () => {
 
       await Promise.all(toBuild.map((pg) => renderViaHTTP(next.url, pg)))
 
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       let text = await browser.elementByCss('p').text()
       expect(text).toMatch(/hello.*?world/)
 
@@ -750,7 +749,7 @@ describe('Prerender', () => {
     }
 
     it('should navigate to a normal page and back', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       let text = await browser.elementByCss('p').text()
       expect(text).toMatch(/hello.*?world/)
 
@@ -761,14 +760,14 @@ describe('Prerender', () => {
     })
 
     it('should parse query values on mount correctly', async () => {
-      const browser = await webdriver(next.url, '/blog/post-1?another=value')
+      const browser = await next.browser('/blog/post-1?another=value')
       const text = await browser.elementByCss('#query').text()
       expect(text).toMatch(/another.*?value/)
       expect(text).toMatch(/post.*?post-1/)
     })
 
     it('should reload page on failed data request', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.eval('window.beforeClick = "abc"')
       await browser.elementByCss('#broken-post').click()
       expect(
@@ -787,7 +786,7 @@ describe('Prerender', () => {
     })
 
     it('should navigate to dynamic page with brackets in param as object', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.elementByCss('#dynamic-first').click()
       await browser.waitForElementByCss('#param')
       const value = await browser.elementByCss('#param').text()
@@ -801,7 +800,7 @@ describe('Prerender', () => {
     })
 
     it('should navigate to dynamic page with brackets in param as string', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.elementByCss('#dynamic-second').click()
       await browser.waitForElementByCss('#param')
       const value = await browser.elementByCss('#param').text()
@@ -843,7 +842,7 @@ describe('Prerender', () => {
     })
 
     it('should render correctly for SSG pages that starts with api-docs', async () => {
-      const browser = await webdriver(next.url, '/api-docs/second')
+      const browser = await next.browser('/api-docs/second')
       await browser.waitForElementByCss('#api-docs')
 
       expect(await browser.elementByCss('#api-docs').text()).toBe('API Docs')
@@ -874,7 +873,7 @@ describe('Prerender', () => {
     })
 
     it('should navigate to catch-all page with brackets in param as string', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.elementByCss('#catchall-explicit-string').click()
       await browser.waitForElementByCss('#catchall')
       const value = await browser.elementByCss('#catchall').text()
@@ -891,7 +890,7 @@ describe('Prerender', () => {
     })
 
     it('should navigate to catch-all page with brackets in param as object', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.elementByCss('#catchall-explicit-object').click()
       await browser.waitForElementByCss('#catchall')
       const value = await browser.elementByCss('#catchall').text()
@@ -902,7 +901,7 @@ describe('Prerender', () => {
       // TODO: dev currently renders this page as blocking, meaning it shows the
       // server error instead of continuously retrying. Do we want to change this?
       it.skip('should reload page on failed data request, and retry', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
         await browser.eval('window.beforeClick = "abc"')
         await browser.elementByCss('#broken-at-first-post').click()
         expect(
@@ -934,7 +933,7 @@ describe('Prerender', () => {
       expect($('#catchall').text()).toBe('fallback')
 
       // hydration
-      const browser = await webdriver(next.url, '/catchall/delayby3s')
+      const browser = await next.browser('/catchall/delayby3s')
 
       const text1 = await browser.elementByCss('#catchall').text()
       expect(text1).toBe('fallback')
@@ -955,7 +954,7 @@ describe('Prerender', () => {
       expect($('#catchall').text()).toBe('fallback')
 
       // hydration
-      const browser = await webdriver(next.url, '/catchall/delayby3s/nested')
+      const browser = await next.browser('/catchall/delayby3s/nested')
 
       const text1 = await browser.elementByCss('#catchall').text()
       expect(text1).toBe('fallback')
@@ -990,7 +989,7 @@ describe('Prerender', () => {
     })
 
     it('should handle fallback only page correctly HTML', async () => {
-      const browser = await webdriver(next.url, '/fallback-only/first%2Fpost', {
+      const browser = await next.browser('/fallback-only/first%2Fpost', {
         waitHydration: false,
       })
 
@@ -1068,7 +1067,7 @@ describe('Prerender', () => {
     })
 
     it('should fetch /_next/data correctly with mismatched href and as', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
 
       if (!isDev) {
         await browser.eval(() =>
@@ -1098,7 +1097,7 @@ describe('Prerender', () => {
 
     it('should not error when rewriting to fallback dynamic SSG page', async () => {
       const item = Math.round(Math.random() * 100)
-      const browser = await webdriver(next.url, `/some-rewrite/${item}`)
+      const browser = await next.browser(`/some-rewrite/${item}`)
 
       await check(
         () => browser.elementByCss('p').text(),
@@ -1320,7 +1319,7 @@ describe('Prerender', () => {
       })
 
       it('should not re-call getStaticProps when updating query', async () => {
-        const browser = await webdriver(next.url, '/something?hello=world')
+        const browser = await next.browser('/something?hello=world')
         await waitFor(2000)
 
         const query = await browser.elementByCss('#query').text()
@@ -1347,7 +1346,7 @@ describe('Prerender', () => {
       })
 
       it('should show error for invalid JSON returned from getStaticProps on SSR', async () => {
-        const browser = await webdriver(next.url, '/non-json/direct')
+        const browser = await next.browser('/non-json/direct')
 
         // FIXME: enable this
         // expect(await getRedboxHeader(browser)).toMatch(
@@ -1362,7 +1361,7 @@ describe('Prerender', () => {
       })
 
       it('should show error for invalid JSON returned from getStaticProps on CST', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
         await browser.elementByCss('#non-json').click()
 
         // FIXME: enable this
@@ -1392,13 +1391,13 @@ describe('Prerender', () => {
       })
 
       it('should not show error for invalid JSON returned from getStaticProps on SSR', async () => {
-        const browser = await webdriver(next.url, '/non-json/direct')
+        const browser = await next.browser('/non-json/direct')
 
         await check(() => getBrowserBodyText(browser), /hello /)
       })
 
       it('should not show error for invalid JSON returned from getStaticProps on CST', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
         await browser.elementByCss('#non-json').click()
         await check(() => getBrowserBodyText(browser), /hello /)
       })
@@ -2193,7 +2192,7 @@ describe('Prerender', () => {
       })
 
       it('should not fetch prerender data on mount', async () => {
-        const browser = await webdriver(next.url, '/blog/post-100')
+        const browser = await next.browser('/blog/post-100')
         await browser.eval('window.thisShouldStay = true')
         await waitFor(2 * 1000)
         const val = await browser.eval('window.thisShouldStay')

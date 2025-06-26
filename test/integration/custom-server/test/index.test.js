@@ -180,8 +180,7 @@ describe.each([
       })
 
       it('Should support HMR when rendering with /index pathname', async () => {
-        let browser
-        browser = await webdriver(nextUrl, '/test-index-hmr')
+        const browser = await webdriver(nextUrl, '/test-index-hmr')
         const text = await browser.elementByCss('#go-asset').text()
         const logs = await browser.log()
         expect(text).toBe('Asset')

@@ -25,8 +25,7 @@ let app
 
 function runTests(dev) {
   it('should be able to client-side navigate from red to blue', async () => {
-    let browser
-    browser = await webdriver(appPort, '/red')
+    const browser = await webdriver(appPort, '/red')
     await browser.eval(`window.__did_not_ssr = 'make sure this is set'`)
     const redColor = await browser.eval(
       `window.getComputedStyle(document.querySelector('#verify-red')).color`
@@ -56,8 +55,7 @@ function runTests(dev) {
       expect(serverCssPrefetches.length).toBe(0)
     }
 
-    let browser
-    browser = await webdriver(appPort, '/blue')
+    const browser = await webdriver(appPort, '/blue')
     await browser.eval(`window.__did_not_ssr = 'make sure this is set'`)
     const redColor = await browser.eval(
       `window.getComputedStyle(document.querySelector('#verify-blue')).color`
@@ -75,8 +73,7 @@ function runTests(dev) {
   })
 
   it('should be able to client-side navigate from none to red', async () => {
-    let browser
-    browser = await webdriver(appPort, '/none')
+    const browser = await webdriver(appPort, '/none')
     await browser.eval(`window.__did_not_ssr = 'make sure this is set'`)
     await browser.elementByCss('#link-red').click()
     await browser.waitForElementByCss('#verify-red')
@@ -90,8 +87,7 @@ function runTests(dev) {
   })
 
   it('should be able to client-side navigate from none to blue', async () => {
-    let browser
-    browser = await webdriver(appPort, '/none')
+    const browser = await webdriver(appPort, '/none')
     await browser.eval(`window.__did_not_ssr = 'make sure this is set'`)
     await browser.elementByCss('#link-blue').click()
     await browser.waitForElementByCss('#verify-blue')
@@ -142,11 +138,10 @@ describe('CSS Module client-side navigation', () => {
       })
 
       it('should time out and hard navigate for stalled CSS request', async () => {
-        let browser
         stallCss = true
 
         try {
-          browser = await webdriver(appPort, '/red')
+          const browser = await webdriver(appPort, '/red')
           await browser.eval('window.beforeNav = "hello"')
 
           const redColor = await browser.eval(
@@ -169,8 +164,6 @@ describe('CSS Module client-side navigation', () => {
           expect(await browser.eval('window.beforeNav')).toBeFalsy()
         } finally {
           stallCss = false
-          if (browser) {
-          }
         }
       })
 

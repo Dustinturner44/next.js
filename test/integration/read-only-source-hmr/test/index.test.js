@@ -56,9 +56,7 @@ describe('Read-only source HMR', () => {
   })
 
   it('should detect changes to a page', async () => {
-    let browser
-
-    browser = await webdriver(appPort, '/hello')
+    const browser = await webdriver(appPort, '/hello')
     await check(() => getBrowserBodyText(browser), /Hello World/)
     const originalContent = await fs.readFile(pagePath, 'utf8')
     const editedContent = originalContent.replace('Hello World', 'COOL page')
@@ -73,9 +71,7 @@ describe('Read-only source HMR', () => {
   })
 
   it('should handle page deletion and subsequent recreation', async () => {
-    let browser
-
-    browser = await webdriver(appPort, '/hello')
+    const browser = await webdriver(appPort, '/hello')
     await check(() => getBrowserBodyText(browser), /Hello World/)
     const originalContent = await fs.readFile(pagePath, 'utf8')
     if (process.env.IS_TURBOPACK_TEST) {
@@ -88,7 +84,6 @@ describe('Read-only source HMR', () => {
   })
 
   it('should detect a new page', async () => {
-    let browser
     const newPagePath = join(appDir, 'pages/new.js')
 
     try {
@@ -101,7 +96,7 @@ describe('Read-only source HMR', () => {
       `
       )
 
-      browser = await webdriver(appPort, '/new')
+      const browser = await webdriver(appPort, '/new')
       await check(() => getBrowserBodyText(browser), /New page/)
     } finally {
       await fs.remove(newPagePath)

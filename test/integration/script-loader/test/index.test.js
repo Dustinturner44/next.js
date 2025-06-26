@@ -24,8 +24,7 @@ const runTests = (isDev) => {
   // TODO: We will refactor the next/script to be strict mode resilient
   // Don't skip the test case for development mode (strict mode) once refactoring is finished
   it('priority afterInteractive', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await waitFor(1000)
 
     async function test(id) {
@@ -48,9 +47,7 @@ const runTests = (isDev) => {
   })
 
   it('priority lazyOnload', async () => {
-    let browser
-
-    browser = await webdriver(appPort, '/page3')
+    const browser = await webdriver(appPort, '/page3')
 
     await browser.waitForElementByCss('#onload-div')
     await waitFor(1000)
@@ -165,8 +162,7 @@ const runTests = (isDev) => {
   })
 
   it('priority beforeInteractive on navigate', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
 
     // beforeInteractive scripts should load once
     let documentBIScripts = await browser.elementsByCss(
@@ -186,8 +182,7 @@ const runTests = (isDev) => {
   })
 
   it('onload fires correctly', async () => {
-    let browser
-    browser = await webdriver(appPort, '/page4')
+    const browser = await webdriver(appPort, '/page4')
     await waitFor(3000)
 
     const text = await browser.elementById('onload-div-1').text()
@@ -222,8 +217,7 @@ const runTests = (isDev) => {
   })
 
   it('priority beforeInteractive with inline script should execute', async () => {
-    let browser
-    browser = await webdriver(appPort, '/page7')
+    const browser = await webdriver(appPort, '/page7')
     await waitFor(1000)
 
     const logs = await browser.log()
@@ -236,8 +230,7 @@ const runTests = (isDev) => {
   })
 
   it('Does not duplicate inline scripts', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
 
     // Navigate away and back to page
     await browser.waitForElementByCss('[href="/page5"]').click()
@@ -271,8 +264,7 @@ const runTests = (isDev) => {
   }
 
   it('onReady fires after load event and then on every subsequent re-mount', async () => {
-    let browser
-    browser = await webdriver(appPort, '/page8')
+    const browser = await webdriver(appPort, '/page8')
 
     const text = await browser.elementById('text').text()
 
@@ -290,8 +282,7 @@ const runTests = (isDev) => {
 
   // https://github.com/vercel/next.js/issues/39993
   it('onReady should only fires once after loaded (issue #39993)', async () => {
-    let browser
-    browser = await webdriver(appPort, '/page10')
+    const browser = await webdriver(appPort, '/page10')
 
     // wait for remote script to be loaded
     await waitFor(1000)

@@ -1,4 +1,3 @@
-import webdriver from 'next-webdriver'
 import { createNext } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check } from 'next-test-utils'
@@ -45,7 +44,7 @@ describe('beforeInteractive in document Head', () => {
   afterAll(() => next.destroy())
 
   it('Script is injected server-side', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     const script = await browser.eval(
       `document.querySelector('script[data-nscript="beforeInteractive"]')`
@@ -95,7 +94,7 @@ describe('beforeInteractive in document body', () => {
   afterAll(() => next.destroy())
 
   it('Script is injected server-side', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     const script = await browser.eval(
       `document.querySelector('script[data-nscript="beforeInteractive"]')`
@@ -146,7 +145,7 @@ describe('empty strategy in document Head', () => {
   afterAll(() => next.destroy())
 
   it('Script is injected server-side', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     const script = await browser.eval(
       `document.querySelector('script[data-nscript="afterInteractive"]')`
@@ -195,7 +194,7 @@ describe('empty strategy in document body', () => {
   afterAll(() => next.destroy())
 
   it('Script is injected server-side', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     const script = await browser.eval(
       `document.querySelector('script[data-nscript="afterInteractive"]')`
@@ -232,7 +231,7 @@ describe('empty strategy in document body', () => {
       afterAll(() => next.destroy())
 
       it('Partytown snippet is not injected to head if not enabled in configuration', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
 
         const snippetScript = await browser.eval(
           `document.querySelector('script[data-partytown]')`
@@ -276,7 +275,7 @@ describe('empty strategy in document body', () => {
       afterAll(() => next.destroy())
 
       it('Partytown snippets are injected to head if enabled in configuration', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
 
         const snippetScript = await browser.eval(
           `document.querySelector('script[data-partytown]').innerHTML`
@@ -295,7 +294,7 @@ describe('empty strategy in document body', () => {
       })
 
       it('Worker scripts are modified by Partytown to execute on a worker thread', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
 
         // Partytown modifies type to "text/partytown-x" after it has been executed in the web worker
         await check(async () => {
@@ -351,7 +350,7 @@ describe('empty strategy in document body', () => {
           `<Script id="inline-script" strategy="worker">{"document.getElementById('text').textContent += 'abc'"}</Script>`
         )
 
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
 
         // Partytown modifies type to "text/partytown-x" after it has been executed in the web worker
         await check(async () => {
@@ -370,7 +369,7 @@ describe('empty strategy in document body', () => {
           `<Script id="inline-script" strategy="worker" dangerouslySetInnerHTML={{__html: "document.getElementById('text').textContent += 'abcd'"}}/>`
         )
 
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
 
         // Partytown modifies type to "text/partytown-x" after it has been executed in the web worker
         await check(async () => {
@@ -450,7 +449,7 @@ describe('empty strategy in document body', () => {
       afterAll(() => next.destroy())
 
       it('Partytown config script is overwritten', async () => {
-        const browser = await webdriver(next.url, '/')
+        const browser = await next.browser('/')
 
         const configScript = await browser.eval(
           `document.querySelector('script[data-partytown-config]').innerHTML`

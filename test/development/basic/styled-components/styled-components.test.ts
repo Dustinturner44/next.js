@@ -1,4 +1,3 @@
-import webdriver from 'next-webdriver'
 import { nextTestSetup } from 'e2e-utils'
 import { fetchViaHTTP, renderViaHTTP } from 'next-test-utils'
 
@@ -23,7 +22,7 @@ describe('styled-components SWC transform', () => {
   }
 
   it('should not have hydration mismatch with styled-components transform enabled', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     // Compile /_error
     await fetchViaHTTP(next.url, '/404')
@@ -39,7 +38,7 @@ describe('styled-components SWC transform', () => {
   })
 
   it('should render the page with correct styles', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     expect(
       await browser.eval(

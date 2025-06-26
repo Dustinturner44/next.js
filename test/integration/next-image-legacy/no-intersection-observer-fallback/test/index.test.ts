@@ -12,7 +12,6 @@ import { join } from 'path'
 const appDir = join(__dirname, '../')
 let appPort
 let app
-let browser
 
 describe('Image Component No IntersectionObserver test', () => {
   ;(process.env.TURBOPACK_DEV ? describe.skip : describe)(
@@ -27,7 +26,7 @@ describe('Image Component No IntersectionObserver test', () => {
 
       describe('SSR Lazy Loading Tests', () => {
         it('should automatically load images if observer does not exist', async () => {
-          browser = await webdriver(appPort, '/no-observer')
+          const browser = await webdriver(appPort, '/no-observer')
 
           // Make sure the IntersectionObserver is mocked to null during the test
           await check(() => {
@@ -49,7 +48,7 @@ describe('Image Component No IntersectionObserver test', () => {
 
       describe('Client-side Lazy Loading Tests', () => {
         it('should automatically load images if observer does not exist', async () => {
-          browser = await webdriver(appPort, '/')
+          const browser = await webdriver(appPort, '/')
 
           // Make sure the IntersectionObserver is mocked to null during the test
           await check(() => {

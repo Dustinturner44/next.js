@@ -1,5 +1,6 @@
 /* eslint-env jest */
 
+import type { ChildProcess } from 'node:child_process'
 import {
   check,
   findPort,
@@ -8,13 +9,13 @@ import {
   nextStart,
   waitFor,
 } from 'next-test-utils'
-import webdriver from 'next-webdriver'
-import { join } from 'path'
+import webdriver, { type Playwright } from 'next-webdriver'
+import { join } from 'node:path'
 
 const appDir = join(__dirname, '../')
-let appPort
-let app
-let browser
+let appPort: number
+let app: ChildProcess
+let browser: Playwright
 const emptyImage =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 
@@ -234,7 +235,7 @@ function lazyLoadingTests() {
   })
 }
 
-async function hasPreloadLinkMatchingUrl(url) {
+async function hasPreloadLinkMatchingUrl(url: string) {
   const links = await browser.elementsByCss('link[rel=preload][as=image]')
   for (const link of links) {
     const imagesrcset = await link.getAttribute('imagesrcset')
@@ -271,15 +272,14 @@ describe('Image Component Tests', () => {
         await nextBuild(appDir)
         appPort = await findPort()
         app = await nextStart(appDir, appPort)
+        browser = await webdriver(appPort, '/', {
+          teardownPolicy: 'afterAll',
+        })
       })
-      afterAll(() => killApp(app))
+      afterAll(async () => {
+        await killApp(app)
+      })
       describe('SSR Image Component Tests', () => {
-        beforeAll(async () => {
-          browser = await webdriver(appPort, '/')
-        })
-        afterAll(async () => {
-          browser = null
-        })
         runTests()
         it('should add a preload tag for a priority image', async () => {
           expect(
@@ -323,7 +323,7 @@ describe('Image Component Tests', () => {
           ).toBe('intrinsic')
         })
         it('should not pass config to custom loader prop', async () => {
-          browser = await webdriver(appPort, '/loader-prop')
+          const browser = await webdriver(appPort, '/loader-prop')
           expect(
             await browser.elementById('loader-prop-img').getAttribute('src')
           ).toBe('https://example.vercel.sh/success/foo.jpg?width=1024')
@@ -336,12 +336,10 @@ describe('Image Component Tests', () => {
       })
       describe('Client-side Image Component Tests', () => {
         beforeAll(async () => {
-          browser = await webdriver(appPort, '/')
+          await browser.goto(`http://localhost:${appPort}/`)
           await browser.waitForElementByCss('#clientlink').click()
         })
-        afterAll(async () => {
-          browser = null
-        })
+
         runTests()
         // FIXME: this test
         it.skip('should NOT add a preload tag for a priority image', async () => {
@@ -383,22 +381,18 @@ describe('Image Component Tests', () => {
       })
       describe('SSR Lazy Loading Tests', () => {
         beforeAll(async () => {
-          browser = await webdriver(appPort, '/lazy')
+          await browser.goto(`http://localhost:${appPort}/lazy`)
         })
-        afterAll(async () => {
-          browser = null
-        })
+
         lazyLoadingTests()
       })
       describe('Client-side Lazy Loading Tests', () => {
         beforeAll(async () => {
-          browser = await webdriver(appPort, '/')
+          await browser.goto(`http://localhost:${appPort}/`)
           await browser.waitForElementByCss('#lazylink').click()
           await waitFor(500)
         })
-        afterAll(async () => {
-          browser = null
-        })
+
         lazyLoadingTests()
       })
     }

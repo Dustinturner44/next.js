@@ -54,8 +54,7 @@ function getRatio(width, height) {
 
 function runTests(mode) {
   it('should load the images', async () => {
-    let browser
-    browser = await webdriver(appPort, '/docs')
+    const browser = await webdriver(appPort, '/docs')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').naturalWidth`
@@ -76,8 +75,7 @@ function runTests(mode) {
   })
 
   it('should update the image on src change', async () => {
-    let browser
-    browser = await webdriver(appPort, '/docs/update')
+    const browser = await webdriver(appPort, '/docs/update')
     await check(
       () => browser.eval(`document.getElementById("update-image").src`),
       /test\.jpg/
@@ -90,8 +88,7 @@ function runTests(mode) {
   })
 
   it('should work when using flexbox', async () => {
-    let browser
-    browser = await webdriver(appPort, '/docs/flex')
+    const browser = await webdriver(appPort, '/docs/flex')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').width`
@@ -138,8 +135,7 @@ function runTests(mode) {
   }
 
   it('should correctly ignore prose styles', async () => {
-    let browser
-    browser = await webdriver(appPort, '/docs/prose')
+    const browser = await webdriver(appPort, '/docs/prose')
     const id = 'prose-image'
     await check(async () => {
       const result = await browser.eval(

@@ -3,7 +3,6 @@ import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check, fetchViaHTTP } from 'next-test-utils'
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 
 describe('Middleware can set the matcher in its config', () => {
   let next: NextInstance
@@ -95,7 +94,7 @@ describe('Middleware can set the matcher in its config', () => {
   })
 
   it('should load matches in client matchers correctly', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     await check(async () => {
       const matchers = await browser.eval(
@@ -113,7 +112,7 @@ describe('Middleware can set the matcher in its config', () => {
   })
 
   it('should navigate correctly with matchers', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await browser.eval('window.beforeNav = 1')
 
     await browser.elementByCss('#to-another-middleware').click()

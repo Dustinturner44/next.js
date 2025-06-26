@@ -198,7 +198,6 @@ describe('config-output-export', () => {
   it('should error with getStaticProps and revalidate 10 seconds (ISR)', async () => {
     const blog = join(appDir, 'pages/blog.js')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
     try {
       fs.writeFileSync(
         blog,
@@ -216,11 +215,11 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/blog')
     } finally {
       await killApp(app).catch(() => {})
       fs.rmSync(blog)
     }
+    const browser = await webdriver(result.port, '/blog')
     await assertHasRedbox(browser)
     expect(await getRedboxHeader(browser)).toContain(
       'ISR cannot be used with "output: export".'
@@ -233,7 +232,7 @@ describe('config-output-export', () => {
   it('should work with getStaticProps and revalidate false', async () => {
     const blog = join(appDir, 'pages/blog.js')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
+
     try {
       fs.writeFileSync(
         blog,
@@ -251,18 +250,17 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/blog')
     } finally {
       await killApp(app).catch(() => {})
       fs.rmSync(blog)
     }
+    const browser = await webdriver(result.port, '/blog')
     await assertNoRedbox(browser)
   })
 
   it('should work with getStaticProps and without revalidate', async () => {
     const blog = join(appDir, 'pages/blog.js')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
     try {
       fs.writeFileSync(
         blog,
@@ -279,18 +277,17 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/blog')
     } finally {
       await killApp(app).catch(() => {})
       fs.rmSync(blog)
     }
+    const browser = await webdriver(result.port, '/blog')
     await assertNoRedbox(browser)
   })
 
   it('should error with getServerSideProps without fallback', async () => {
     const blog = join(appDir, 'pages/blog.js')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
     try {
       fs.writeFileSync(
         blog,
@@ -307,11 +304,11 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/blog')
     } finally {
       await killApp(app).catch(() => {})
       fs.rmSync(blog)
     }
+    const browser = await webdriver(result.port, '/blog')
     await assertHasRedbox(browser)
     expect(await getRedboxHeader(browser)).toContain(
       'getServerSideProps cannot be used with "output: export".'
@@ -324,7 +321,6 @@ describe('config-output-export', () => {
   it('should error with getStaticPaths and fallback true', async () => {
     const posts = join(appDir, 'pages/posts')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
     try {
       fs.mkdirSync(posts)
       fs.writeFileSync(
@@ -351,7 +347,7 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/posts/one')
+      const browser = await webdriver(result.port, '/posts/one')
       await assertHasRedbox(browser)
       expect(await getRedboxHeader(browser)).toContain(
         'getStaticPaths with "fallback: true" cannot be used with "output: export".'
@@ -368,7 +364,6 @@ describe('config-output-export', () => {
   it('should error with getStaticPaths and fallback blocking', async () => {
     const posts = join(appDir, 'pages/posts')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
     try {
       fs.mkdirSync(posts)
       fs.writeFileSync(
@@ -395,7 +390,7 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/posts/one')
+      const browser = await webdriver(result.port, '/posts/one')
       await assertHasRedbox(browser)
       expect(await getRedboxHeader(browser)).toContain(
         'getStaticPaths with "fallback: blocking" cannot be used with "output: export".'
@@ -412,7 +407,6 @@ describe('config-output-export', () => {
   it('should work with getStaticPaths and fallback false', async () => {
     const posts = join(appDir, 'pages/posts')
     let result: { stdout: string; stderr: string; port: number } | undefined
-    let browser: any
     try {
       fs.mkdirSync(posts)
       fs.writeFileSync(
@@ -439,11 +433,11 @@ describe('config-output-export', () => {
       result = await runDev({
         output: 'export',
       })
-      browser = await webdriver(result.port, '/posts/one')
     } finally {
       await killApp(app).catch(() => {})
       fs.rmSync(posts, { recursive: true, force: true })
     }
+    const browser = await webdriver(result.port, '/posts/one')
     const h1 = await browser.elementByCss('h1')
     expect(await h1.text()).toContain('Hello from one')
     await assertNoRedbox(browser)

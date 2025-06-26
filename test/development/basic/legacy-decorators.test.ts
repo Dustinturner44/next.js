@@ -1,5 +1,4 @@
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check } from 'next-test-utils'
@@ -28,7 +27,7 @@ describe('Legacy decorators SWC option', () => {
     afterAll(() => next.destroy())
 
     it('should compile with legacy decorators enabled from extended config', async () => {
-      let browser = await webdriver(next.url, '/')
+      let browser = await next.browser('/')
       const text = await browser.elementByCss('#count').text()
       expect(text).toBe('Current number: 0')
       await browser.elementByCss('#increase').click()
@@ -58,7 +57,7 @@ describe('Legacy decorators SWC option', () => {
     afterAll(() => next.destroy())
 
     it('should compile with legacy decorators enabled', async () => {
-      let browser = await webdriver(next.url, '/')
+      let browser = await next.browser('/')
       const text = await browser.elementByCss('#count').text()
       expect(text).toBe('Current number: 0')
       await browser.elementByCss('#increase').click()

@@ -2,7 +2,6 @@ import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check } from 'next-test-utils'
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 
 describe('link-with-api-rewrite', () => {
   let next: NextInstance
@@ -19,7 +18,7 @@ describe('link-with-api-rewrite', () => {
   afterAll(() => next.destroy())
 
   it('should perform hard navigation for rewritten urls', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     // Click the link on the page, we expect that there will be a hard
     // navigation later (we do this be checking that the window global is
@@ -40,7 +39,7 @@ describe('link-with-api-rewrite', () => {
   })
 
   it('should perform hard navigation for direct urls', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     // Click the link on the page, we expect that there will be a hard
     // navigation later (we do this be checking that the window global is

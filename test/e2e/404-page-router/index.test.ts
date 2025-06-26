@@ -1,6 +1,5 @@
 import path from 'path'
 import fs from 'fs-extra'
-import webdriver from 'next-webdriver'
 import { createNext, FileRef, type NextInstance } from 'e2e-utils'
 import { check, retry } from 'next-test-utils'
 
@@ -123,7 +122,7 @@ describe('404-page-router', () => {
       describe.each(urls)('for $url', ({ url, pathname, asPath }) => {
         it('should have the correct router parameters after it is ready', async () => {
           const query = url.split('?', 2)[1] ?? ''
-          const browser = await webdriver(next.url, url)
+          const browser = await next.browser(url)
 
           await check(
             () => browser.eval('next.router.isReady ? "yes" : "no"'),
@@ -138,7 +137,7 @@ describe('404-page-router', () => {
       // It should not throw any errors when re-fetching the route info:
       // https://github.com/vercel/next.js/issues/44293
       it('should not throw any errors when re-fetching the route info', async () => {
-        const browser = await webdriver(next.url, '/?test=1')
+        const browser = await next.browser('/?test=1')
         await check(
           () => browser.eval('next.router.isReady ? "yes" : "no"'),
           'yes'

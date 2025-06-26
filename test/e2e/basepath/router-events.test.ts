@@ -1,5 +1,4 @@
 import assert from 'assert'
-import webdriver from 'next-webdriver'
 import { nextTestSetup } from 'e2e-utils'
 import { check, retry } from 'next-test-utils'
 
@@ -18,7 +17,7 @@ describe('basePath', () => {
   })
 
   it('should use urls with basepath in router events', async () => {
-    const browser = await webdriver(next.url, `${basePath}/hello`)
+    const browser = await next.browser(`${basePath}/hello`)
     await check(
       () => browser.eval('window.next.router.isReady ? "ready" : "no"'),
       'ready'
@@ -39,7 +38,7 @@ describe('basePath', () => {
   })
 
   it('should use urls with basepath in router events for hash changes', async () => {
-    const browser = await webdriver(next.url, `${basePath}/hello`)
+    const browser = await next.browser(`${basePath}/hello`)
     await check(
       () => browser.eval('window.next.router.isReady ? "ready" : "no"'),
       'ready'
@@ -54,7 +53,7 @@ describe('basePath', () => {
   })
 
   it('should use urls with basepath in router events for cancelled routes', async () => {
-    const browser = await webdriver(next.url, `${basePath}/hello`)
+    const browser = await next.browser(`${basePath}/hello`)
     await check(
       () => browser.eval('window.next.router.isReady ? "ready" : "no"'),
       'ready'
@@ -83,7 +82,7 @@ describe('basePath', () => {
   })
 
   it('should use urls with basepath in router events for failed route change', async () => {
-    const browser = await webdriver(next.url, `${basePath}/hello`)
+    const browser = await next.browser(`${basePath}/hello`)
     await check(
       () => browser.eval('window.next.router.isReady ? "ready" : "no"'),
       'ready'

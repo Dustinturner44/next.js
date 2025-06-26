@@ -1,6 +1,5 @@
 import { join } from 'path'
 import cheerio from 'cheerio'
-import webdriver from 'next-webdriver'
 import { createNext, FileRef } from 'e2e-utils'
 import { assertNoRedbox, renderViaHTTP, check } from 'next-test-utils'
 import { NextInstance } from 'e2e-utils'
@@ -85,8 +84,7 @@ describe('next/dynamic', () => {
       })
 
       it('should render even there are no physical chunk exists', async () => {
-        let browser
-        browser = await webdriver(next.url, basePath + '/dynamic/no-chunk')
+        const browser = await next.browser(basePath + '/dynamic/no-chunk')
         await check(
           () => browser.elementByCss('body').text(),
           /Welcome, normal/
@@ -106,8 +104,7 @@ describe('next/dynamic', () => {
       })
 
       it('should hydrate nested chunks', async () => {
-        let browser
-        browser = await webdriver(next.url, basePath + '/dynamic/nested')
+        const browser = await next.browser(basePath + '/dynamic/nested')
         await check(() => browser.elementByCss('body').text(), /Nested 1/)
         await check(() => browser.elementByCss('body').text(), /Nested 2/)
         await check(
@@ -127,8 +124,7 @@ describe('next/dynamic', () => {
       })
 
       it('should render the component Head content', async () => {
-        let browser
-        browser = await webdriver(next.url, basePath + '/dynamic/head')
+        const browser = await next.browser(basePath + '/dynamic/head')
         await check(() => browser.elementByCss('body').text(), /test/)
         const backgroundColor = await browser
           .elementByCss('.dynamic-style')
@@ -148,15 +144,13 @@ describe('next/dynamic', () => {
       })
 
       it('should render the component on client side', async () => {
-        let browser
-        browser = await webdriver(next.url, basePath + '/dynamic/no-ssr')
+        const browser = await next.browser(basePath + '/dynamic/no-ssr')
         await check(() => browser.elementByCss('body').text(), /navigator/)
         await assertNoRedbox(browser)
       })
 
       it('should import and render the ESM module correctly on client side', async () => {
-        let browser
-        browser = await webdriver(next.url, basePath + '/dynamic/no-ssr-esm')
+        const browser = await next.browser(basePath + '/dynamic/no-ssr-esm')
         await check(() => browser.elementByCss('body').text(), /esm.mjs/)
         await assertNoRedbox(browser)
       })
@@ -170,8 +164,7 @@ describe('next/dynamic', () => {
       })
 
       it('should render the component on client side', async () => {
-        let browser
-        browser = await webdriver(next.url, basePath + '/dynamic/ssr-true')
+        const browser = await next.browser(basePath + '/dynamic/ssr-true')
         await check(() => browser.elementByCss('body').text(), /Hello World 1/)
       })
 
@@ -195,9 +188,7 @@ describe('next/dynamic', () => {
         })
 
         it('should render the component on client side', async () => {
-          let browser
-          browser = await webdriver(
-            next.url,
+          const browser = await next.browser(
             basePath + '/dynamic/chunkfilename'
           )
           await check(
@@ -215,9 +206,7 @@ describe('next/dynamic', () => {
       })
 
       it('should render the component on client side', async () => {
-        let browser
-        browser = await webdriver(
-          next.url,
+        const browser = await next.browser(
           basePath + '/dynamic/no-ssr-custom-loading'
         )
         await check(() => browser.elementByCss('body').text(), /Hello World 1/)
@@ -236,9 +225,7 @@ describe('next/dynamic', () => {
         })
 
         it('should only load the rendered module in the browser', async () => {
-          let browser
-          browser = await webdriver(
-            next.url,
+          const browser = await next.browser(
             basePath + '/dynamic/multiple-modules'
           )
           const html = await browser.eval('document.documentElement.innerHTML')

@@ -205,7 +205,9 @@ describe('Static Image Component Tests for basePath', () => {
         app = await nextStart(appDir, appPort)
         html = await renderViaHTTP(appPort, '/docs/static-img')
         $ = cheerio.load(html)
-        browser = await webdriver(appPort, '/docs/static-img')
+        browser = await webdriver(appPort, '/docs/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)
@@ -221,7 +223,9 @@ describe('Static Image Component Tests for basePath', () => {
         app = await launchApp(appDir, appPort)
         html = await renderViaHTTP(appPort, '/docs/static-img')
         $ = cheerio.load(html)
-        browser = await webdriver(appPort, '/docs/static-img')
+        browser = await webdriver(appPort, '/docs/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)

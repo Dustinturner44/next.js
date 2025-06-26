@@ -131,7 +131,9 @@ describe('Static Image Component Tests for basePath', () => {
         appPort = await findPort()
         app = await nextStart(appDir, appPort)
         html = await renderViaHTTP(appPort, '/docs/static-img')
-        browser = await webdriver(appPort, '/docs/static-img')
+        browser = await webdriver(appPort, '/docs/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)
@@ -146,7 +148,9 @@ describe('Static Image Component Tests for basePath', () => {
         appPort = await findPort()
         app = await launchApp(appDir, appPort)
         html = await renderViaHTTP(appPort, '/docs/static-img')
-        browser = await webdriver(appPort, '/docs/static-img')
+        browser = await webdriver(appPort, '/docs/static-img', {
+          teardownPolicy: 'afterAll',
+        })
       })
       afterAll(async () => {
         await killApp(app)

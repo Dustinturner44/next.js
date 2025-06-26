@@ -371,13 +371,12 @@ const context = {}
     })
 
     it.skip('should not reload unless the page is edited for an AMP page', async () => {
-      let browser
       const hmrTestPagePath = join(__dirname, '../', 'pages', 'hmr', 'test.js')
       const originalContent = readFileSync(hmrTestPagePath, 'utf8')
       try {
         await renderViaHTTP(dynamicAppPort, '/hmr/test')
 
-        browser = await webdriver(dynamicAppPort, '/hmr/amp')
+        const browser = await webdriver(dynamicAppPort, '/hmr/amp')
         await check(() => browser.elementByCss('p').text(), /I'm an AMP page!/)
 
         const origDate = await browser.elementByCss('span').text()

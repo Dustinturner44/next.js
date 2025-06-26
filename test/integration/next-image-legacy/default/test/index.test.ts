@@ -73,8 +73,7 @@ function getRatio(width, height) {
 
 function runTests(mode) {
   it('should load the images', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').naturalWidth`
@@ -95,8 +94,7 @@ function runTests(mode) {
   })
 
   it('should preload priority images', async () => {
-    let browser
-    browser = await webdriver(appPort, '/priority')
+    const browser = await webdriver(appPort, '/priority')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').naturalWidth`
@@ -200,8 +198,7 @@ function runTests(mode) {
   })
 
   it('should update the image on src change', async () => {
-    let browser
-    browser = await webdriver(appPort, '/update')
+    const browser = await webdriver(appPort, '/update')
     await check(
       () => browser.eval(`document.getElementById("update-image").src`),
       /test\.jpg/
@@ -214,8 +211,7 @@ function runTests(mode) {
   })
 
   it('should callback onLoadingComplete when image is fully loaded', async () => {
-    let browser
-    browser = await webdriver(appPort, '/on-loading-complete')
+    const browser = await webdriver(appPort, '/on-loading-complete')
     await browser.eval(
       `document.getElementById("footer").scrollIntoView({behavior: "smooth"})`
     )
@@ -393,8 +389,7 @@ function runTests(mode) {
   })
 
   it('should work with image with blob src', async () => {
-    let browser
-    browser = await webdriver(appPort, '/blob')
+    const browser = await webdriver(appPort, '/blob')
     await check(
       () => browser.eval(`document.getElementById("blob-image").src`),
       /^blob:/
@@ -406,8 +401,7 @@ function runTests(mode) {
   })
 
   it('should work when using flexbox', async () => {
-    let browser
-    browser = await webdriver(appPort, '/flex')
+    const browser = await webdriver(appPort, '/flex')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').width`
@@ -421,8 +415,7 @@ function runTests(mode) {
   })
 
   it('should work with layout-fixed so resizing window does not resize image', async () => {
-    let browser
-    browser = await webdriver(appPort, '/layout-fixed')
+    const browser = await webdriver(appPort, '/layout-fixed')
     const width = 1200
     const height = 700
     const delta = 250
@@ -452,8 +445,7 @@ function runTests(mode) {
   })
 
   it('should work with layout-intrinsic so resizing window maintains image aspect ratio', async () => {
-    let browser
-    browser = await webdriver(appPort, '/layout-intrinsic')
+    const browser = await webdriver(appPort, '/layout-intrinsic')
     const width = 1200
     const height = 700
     const delta = 250
@@ -489,8 +481,7 @@ function runTests(mode) {
   })
 
   it('should work with layout-responsive so resizing window maintains image aspect ratio', async () => {
-    let browser
-    browser = await webdriver(appPort, '/layout-responsive')
+    const browser = await webdriver(appPort, '/layout-responsive')
     const width = 1200
     const height = 700
     const delta = 250
@@ -526,8 +517,7 @@ function runTests(mode) {
   })
 
   it('should work with layout-fill to fill the parent but NOT stretch with viewport', async () => {
-    let browser
-    browser = await webdriver(appPort, '/layout-fill')
+    const browser = await webdriver(appPort, '/layout-fill')
     const width = 600
     const height = 350
     const delta = 150
@@ -563,8 +553,7 @@ function runTests(mode) {
   })
 
   it('should work with layout-fill to fill the parent and stretch with viewport', async () => {
-    let browser
-    browser = await webdriver(appPort, '/layout-fill')
+    const browser = await webdriver(appPort, '/layout-fill')
     const id = 'fill2'
     const width = await getComputed(browser, id, 'width')
     const height = await getComputed(browser, id, 'height')
@@ -623,8 +612,7 @@ function runTests(mode) {
   })
 
   it('should work with sizes and automatically use layout-responsive', async () => {
-    let browser
-    browser = await webdriver(appPort, '/sizes')
+    const browser = await webdriver(appPort, '/sizes')
     const width = 1200
     const height = 700
     const delta = 250
@@ -662,8 +650,7 @@ function runTests(mode) {
   })
 
   it('should handle the styles prop appropriately', async () => {
-    let browser
-    browser = await webdriver(appPort, '/style-prop')
+    const browser = await webdriver(appPort, '/style-prop')
     expect(await browser.elementById('with-styles').getAttribute('style')).toBe(
       'border-radius:10px;padding:0;position:absolute;top:0;left:0;bottom:0;right:0;box-sizing:border-box;border:none;margin:auto;display:block;width:0;height:0;min-width:100%;max-width:100%;min-height:100%;max-height:100%'
     )
@@ -946,8 +933,7 @@ function runTests(mode) {
   }
 
   it('should correctly ignore prose styles', async () => {
-    let browser
-    browser = await webdriver(appPort, '/prose')
+    const browser = await webdriver(appPort, '/prose')
     const id = 'prose-image'
     await check(async () => {
       const result = await browser.eval(
@@ -967,8 +953,7 @@ function runTests(mode) {
   })
 
   it('should apply style inheritance for img elements but not wrapper elements', async () => {
-    let browser
-    browser = await webdriver(appPort, '/style-inheritance')
+    const browser = await webdriver(appPort, '/style-inheritance')
     await browser.eval(
       `document.querySelector("footer").scrollIntoView({behavior: "smooth"})`
     )
@@ -1097,8 +1082,7 @@ function runTests(mode) {
   })
 
   it('should remove blurry placeholder after image loads', async () => {
-    let browser
-    browser = await webdriver(appPort, '/blurry-placeholder')
+    const browser = await webdriver(appPort, '/blurry-placeholder')
     await check(
       async () =>
         await getComputedStyle(
@@ -1130,8 +1114,7 @@ function runTests(mode) {
   })
 
   it('should re-lazyload images after src changes', async () => {
-    let browser
-    browser = await webdriver(appPort, '/lazy-src-change')
+    const browser = await webdriver(appPort, '/lazy-src-change')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('basic-image').naturalWidth`
@@ -1199,8 +1182,7 @@ function runTests(mode) {
   })
 
   it('should initially load only two of four images using lazyroot', async () => {
-    let browser
-    browser = await webdriver(appPort, '/lazy-withref')
+    const browser = await webdriver(appPort, '/lazy-withref')
     await check(async () => {
       const result = await browser.eval(
         `document.getElementById('myImage1').naturalWidth`
@@ -1269,8 +1251,7 @@ function runTests(mode) {
   })
 
   it('should be valid HTML', async () => {
-    let browser
-    browser = await webdriver(appPort, '/valid-html-w3c')
+    const browser = await webdriver(appPort, '/valid-html-w3c')
     await waitFor(1000)
     expect(await browser.hasElementByCssSelector('img')).toBeTruthy()
     const url = await browser.url()

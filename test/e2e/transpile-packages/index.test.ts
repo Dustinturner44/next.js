@@ -1,7 +1,6 @@
 import path from 'path'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 
 describe('transpile packages', () => {
   let next: NextInstance
@@ -29,14 +28,14 @@ describe('transpile packages', () => {
 
   // TODO: This test is failing in Turbopack
   it.skip('should handle optional peer dependencies', async () => {
-    const browser = await webdriver(next.url, '/peer-deps')
+    const browser = await next.browser('/peer-deps')
 
     expect(await browser.elementByCss('h1').text()).toBe('world')
   })
 
   describe('css', () => {
     it('should handle global css imports inside transpiled modules', async () => {
-      const browser = await webdriver(next.url, '/global-css')
+      const browser = await next.browser('/global-css')
 
       expect(
         await browser.eval(
@@ -46,7 +45,7 @@ describe('transpile packages', () => {
     })
 
     it('should handle global scss imports inside transpiled modules', async () => {
-      const browser = await webdriver(next.url, '/global-scss')
+      const browser = await next.browser('/global-scss')
 
       expect(
         await browser.eval(
@@ -56,7 +55,7 @@ describe('transpile packages', () => {
     })
 
     it('should handle css modules imports inside transpiled modules', async () => {
-      const browser = await webdriver(next.url, '/css-modules')
+      const browser = await next.browser('/css-modules')
 
       expect(
         await browser.eval(
@@ -66,7 +65,7 @@ describe('transpile packages', () => {
     })
 
     it('should handle scss modules imports inside transpiled modules', async () => {
-      const browser = await webdriver(next.url, '/scss-modules')
+      const browser = await next.browser('/scss-modules')
 
       expect(
         await browser.eval(

@@ -1,7 +1,7 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 import { check } from 'next-test-utils'
+import type { Playwright } from 'next-webdriver'
 
 describe('useSelectedLayoutSegment(s)', () => {
   let next: NextInstance
@@ -13,10 +13,9 @@ describe('useSelectedLayoutSegment(s)', () => {
   })
   afterAll(() => next.destroy())
 
-  let browser: Awaited<ReturnType<typeof webdriver>>
+  let browser: Playwright
   beforeEach(async () => {
-    browser = await webdriver(
-      next.url,
+    browser = await next.browser(
       '/segment-name/value1/segment-name2/value2/value3/value4'
     )
   })

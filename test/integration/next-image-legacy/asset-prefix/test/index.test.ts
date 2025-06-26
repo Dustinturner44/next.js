@@ -26,8 +26,7 @@ describe('Image Component assetPrefix Tests', () => {
       afterAll(() => killApp(app))
 
       it('should include assetPrefix when placeholder=blur during next dev', async () => {
-        let browser
-        browser = await webdriver(appPort, '/')
+        const browser = await webdriver(appPort, '/')
         const id = 'test1'
         const bgImage = await browser.eval(
           `document.getElementById('${id}').style['background-image']`
@@ -53,8 +52,7 @@ describe('Image Component assetPrefix Tests', () => {
       afterAll(() => killApp(app))
 
       it('should use base64 data url with placeholder=blur during next start', async () => {
-        let browser
-        browser = await webdriver(appPort, '/')
+        const browser = await webdriver(appPort, '/')
         const id = 'test1'
         const bgImage = await browser.eval(
           `document.getElementById('${id}').style['background-image']`

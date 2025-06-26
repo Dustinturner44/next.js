@@ -1,7 +1,6 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { renderViaHTTP } from 'next-test-utils'
-import webdriver from 'next-webdriver'
 import cheerio from 'cheerio'
 import path from 'path'
 
@@ -43,14 +42,14 @@ describe('New Link Behavior', () => {
   })
 
   it('should navigate to /about', async () => {
-    const browser = await webdriver(next.url, `/`)
+    const browser = await next.browser(`/`)
     await browser.elementByCss('a').click().waitForElementByCss('#about-page')
     const text = await browser.elementByCss('h1').text()
     expect(text).toBe('About Page')
   })
 
   it('should handle onclick', async () => {
-    const browser = await webdriver(next.url, `/onclick`)
+    const browser = await next.browser(`/onclick`)
     await browser.elementByCss('a').click().waitForElementByCss('h1')
     const text = await browser.elementByCss('h1').text()
     expect(text).toBe('Home Page')
@@ -59,7 +58,7 @@ describe('New Link Behavior', () => {
   })
 
   it('should handle preventdefault', async () => {
-    const browser = await webdriver(next.url, `/onclick-prevent-default`)
+    const browser = await next.browser(`/onclick-prevent-default`)
     await browser.elementByCss('a').click()
     const text = await browser.elementByCss('h1').text()
     expect(text).toBe('Onclick prevent default')

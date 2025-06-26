@@ -1,5 +1,4 @@
 import fs from 'fs-extra'
-import webdriver from 'next-webdriver'
 import { assertNoRedbox, check, findPort } from 'next-test-utils'
 import { NextInstance } from 'e2e-utils'
 import { createNext } from 'e2e-utils'
@@ -27,7 +26,7 @@ describe.skip('Project Directory Renaming', () => {
   afterAll(() => next.destroy().catch(() => {}))
 
   it('should detect project dir rename and restart', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await browser.eval('window.beforeNav = 1')
 
     let newTestDir = `${next.testDir}-renamed`

@@ -1,6 +1,5 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 
 describe('navigation between pages and app dir', () => {
   let next: NextInstance
@@ -18,7 +17,7 @@ describe('navigation between pages and app dir', () => {
   afterAll(() => next.destroy())
 
   it('It should be able to navigate app -> pages', async () => {
-    const browser = await webdriver(next.url, '/app')
+    const browser = await next.browser('/app')
     expect(await browser.elementById('app-page').text()).toBe('App Page')
     await browser
       .elementById('link-to-pages')
@@ -29,7 +28,7 @@ describe('navigation between pages and app dir', () => {
   })
 
   it('It should be able to navigate pages -> app', async () => {
-    const browser = await webdriver(next.url, '/pages')
+    const browser = await next.browser('/pages')
     expect(await browser.elementById('pages-page').text()).toBe('Pages Page')
     await browser
       .elementById('link-to-app')
@@ -42,7 +41,7 @@ describe('navigation between pages and app dir', () => {
   // TODO: re-enable after 404 transition bug is addressed
   if (!(global as any).isNextDeploy) {
     it('It should be able to navigate pages -> app and go back an forward', async () => {
-      const browser = await webdriver(next.url, '/pages')
+      const browser = await next.browser('/pages')
       await browser
         .elementById('link-to-app')
         .click()
@@ -56,7 +55,7 @@ describe('navigation between pages and app dir', () => {
     })
 
     it('It should be able to navigate app -> pages and go back and forward', async () => {
-      const browser = await webdriver(next.url, '/app')
+      const browser = await next.browser('/app')
       await browser
         .elementById('link-to-pages')
         .click()

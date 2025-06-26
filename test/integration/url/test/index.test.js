@@ -51,8 +51,7 @@ for (const dev of [false, true]) {
         })
 
         it(`should client-render the ${page} page`, async () => {
-          let browser
-          browser = await webdriver(appPort, page)
+          const browser = await webdriver(appPort, page)
           await check(() => getBrowserBodyText(browser), expectedClient)
         })
       }

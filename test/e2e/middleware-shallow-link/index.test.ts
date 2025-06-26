@@ -1,6 +1,5 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 import { join } from 'path'
 import { check } from 'next-test-utils'
 
@@ -19,7 +18,7 @@ describe('browser-shallow-navigation', () => {
   afterAll(() => next.destroy())
 
   it('should render the correct page', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
 
     /// do shallow push
     await browser.elementByCss('[data-next-shallow-push]').click()

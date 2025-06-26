@@ -1,11 +1,11 @@
 import { getFullUrl, TestingLogger, waitFor } from 'next-test-utils'
 import os from 'node:os'
 import { setTimeout } from 'node:timers/promises'
-import { Playwright } from './browsers/playwright'
+import { Playwright, PlaywrightManager } from './browsers/playwright'
 import { Page } from 'playwright'
 import { BrowserManager } from './browser-manager'
 
-export type { Playwright }
+export type { Playwright, PlaywrightManager }
 
 // Constants
 const CONSTANTS = {
@@ -170,6 +170,12 @@ export interface WebdriverOptions {
    * Override the user agent
    */
   userAgent?: string
+
+  /**
+   * The policy for tearing down the browser instance.
+   * @default 'afterEach'
+   */
+  teardownPolicy?: 'afterEach' | 'afterAll' | 'none'
 }
 
 /**
@@ -193,6 +199,7 @@ export default async function webdriver(
     waitHydration: true,
     retryWaitHydration: false,
     disableCache: false,
+    teardownPolicy: 'afterEach',
   }
   const mergedOptions = Object.assign({}, defaultOptions, options)
   const {
@@ -207,6 +214,7 @@ export default async function webdriver(
     cpuThrottleRate,
     pushErrorAsConsoleLog,
     userAgent,
+    teardownPolicy,
   } = mergedOptions
 
   const browserName = process.env.BROWSER_NAME || CONSTANTS.DEFAULT_BROWSER
@@ -230,6 +238,7 @@ export default async function webdriver(
       headless:
         typeof headless !== 'undefined' ? headless : !!process.env.HEADLESS,
       userAgent,
+      teardownPolicy,
     })
 
     const page = await playwright.newPage(fullUrl, {

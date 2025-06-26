@@ -3,7 +3,6 @@ import { NextInstance } from 'e2e-utils'
 import { renderViaHTTP } from 'next-test-utils'
 import cheerio from 'cheerio'
 import path from 'path'
-import webdriver from 'next-webdriver'
 
 const appDir = path.join(__dirname, 'typescript')
 
@@ -30,7 +29,7 @@ describe('New Link Behavior', () => {
   })
 
   it('should apply ref on link', async () => {
-    const browser = await webdriver(next.url, `/ref`)
+    const browser = await next.browser(`/ref`)
     const text = await browser.elementByCss('#anchor-text').text()
     expect(text).toBe('AnchorText: About')
   })

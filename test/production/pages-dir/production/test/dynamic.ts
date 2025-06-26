@@ -1,5 +1,4 @@
 /* eslint-env jest */
-import webdriver from 'next-webdriver'
 import cheerio from 'cheerio'
 import { check } from 'next-test-utils'
 import { NextInstance } from 'e2e-utils'
@@ -42,7 +41,7 @@ export default (next: NextInstance, render) => {
       })
 
       it('should not remove css styles for same css file between page transitions', async () => {
-        const browser = await webdriver(next.appPort, '/dynamic/pagechange1')
+        const browser = await next.browser('/dynamic/pagechange1')
         await check(() => browser.elementByCss('body').text(), /PageChange1/)
         const firstElement = await browser.elementById('with-css')
         const css1 = await firstElement.getComputedCss('display')
@@ -58,10 +57,7 @@ export default (next: NextInstance, render) => {
       })
 
       it('should output correct css even in case of three css module files while one is shared across files', async () => {
-        const browser = await webdriver(
-          next.appPort,
-          '/dynamic/shared-css-module'
-        )
+        const browser = await next.browser('/dynamic/shared-css-module')
         await check(
           () => browser.elementByCss('#with-css').getComputedCss('color'),
           'rgb(0, 0, 0)'
@@ -79,7 +75,7 @@ export default (next: NextInstance, render) => {
       })
 
       it('should render even there are no physical chunk exists', async () => {
-        const browser = await webdriver(next.appPort, '/dynamic/no-chunk')
+        const browser = await next.browser('/dynamic/no-chunk')
         await check(
           () => browser.elementByCss('body').text(),
           /Welcome, normal/
@@ -97,7 +93,7 @@ export default (next: NextInstance, render) => {
       })
 
       it('should render the component on client side', async () => {
-        const browser = await webdriver(next.appPort, '/dynamic/no-ssr')
+        const browser = await next.browser('/dynamic/no-ssr')
         await check(() => browser.elementByCss('body').text(), /Hello World 1/)
       })
     })
@@ -109,7 +105,7 @@ export default (next: NextInstance, render) => {
       })
 
       it('should render the component on client side', async () => {
-        const browser = await webdriver(next.appPort, '/dynamic/ssr-true')
+        const browser = await next.browser('/dynamic/ssr-true')
         await check(() => browser.elementByCss('body').text(), /Hello World 1/)
       })
     })
@@ -121,10 +117,7 @@ export default (next: NextInstance, render) => {
       })
 
       it('should render the component on client side', async () => {
-        const browser = await webdriver(
-          next.appPort,
-          '/dynamic/no-ssr-custom-loading'
-        )
+        const browser = await next.browser('/dynamic/no-ssr-custom-loading')
         await check(() => browser.elementByCss('body').text(), /Hello World 1/)
       })
     })

@@ -1,7 +1,6 @@
 /* eslint-env jest */
 /* eslint-disable jest/no-standalone-expect */
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { fetchViaHTTP } from 'next-test-utils'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
@@ -155,7 +154,7 @@ describe('Middleware custom matchers', () => {
     itif(!isModeDeploy)(
       'should match has query on client routing',
       async () => {
-        const browser = await webdriver(next.url, '/routes')
+        const browser = await next.browser('/routes')
         await browser.eval('window.__TEST_NO_RELOAD = true')
         await browser.elementById('has-match-2').click()
         const fromMiddleware = await browser
@@ -170,7 +169,7 @@ describe('Middleware custom matchers', () => {
     itif(!isModeDeploy)(
       'should match has cookie on client routing',
       async () => {
-        const browser = await webdriver(next.url, '/routes')
+        const browser = await next.browser('/routes')
         await browser.addCookie({ name: 'loggedIn', value: 'true' })
         await browser.refresh()
         await browser.eval('window.__TEST_NO_RELOAD = true')

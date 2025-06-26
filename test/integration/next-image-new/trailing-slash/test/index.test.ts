@@ -28,9 +28,7 @@ describe('Image Component Trailing Slash Tests', () => {
 
       it('should include trailing slash when trailingSlash is set on config file during next dev', async () => {
         expect.assertions(1)
-        let browser
-
-        browser = await webdriver(appPort, '/')
+        const browser = await webdriver(appPort, '/')
         const id = 'test1'
         const srcImage = await browser.eval(
           `document.getElementById('${id}').src`
@@ -52,8 +50,7 @@ describe('Image Component Trailing Slash Tests', () => {
       afterAll(() => killApp(app))
 
       it('should include trailing slash when trailingSlash is set on config file during next start', async () => {
-        let browser
-        browser = await webdriver(appPort, '/')
+        const browser = await webdriver(appPort, '/')
         const id = 'test1'
         await check(async () => {
           const srcImage = await browser.eval(

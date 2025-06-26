@@ -2,7 +2,7 @@ import { join } from 'path'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check, waitFor } from 'next-test-utils'
-import webdriver, { Playwright } from 'next-webdriver'
+import { Playwright } from 'next-webdriver'
 
 import type { HistoryState } from 'next/dist/shared/lib/router/router'
 
@@ -28,7 +28,7 @@ describe('Event with stale state - static route previously was dynamic', () => {
   afterAll(() => next.destroy())
 
   test('Ignore event without query param', async () => {
-    const browser = await webdriver(next.url, '/static')
+    const browser = await next.browser('/static')
 
     const state: HistoryState = {
       url: '/[dynamic]?',
@@ -51,7 +51,7 @@ describe('Event with stale state - static route previously was dynamic', () => {
   })
 
   test('Ignore event with query param', async () => {
-    const browser = await webdriver(next.url, '/static?param=1')
+    const browser = await next.browser('/static?param=1')
 
     const state: HistoryState = {
       url: '/[dynamic]?param=1',

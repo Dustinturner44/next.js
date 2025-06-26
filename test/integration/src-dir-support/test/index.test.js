@@ -42,8 +42,7 @@ function runTests() {
   })
 
   it('should navigate to a dynamic page successfully', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await browser.elementByCss('#view-post-1').click()
     await browser.waitForElementByCss('p#post-1')
 
@@ -52,8 +51,7 @@ function runTests() {
   })
 
   it('should navigate to a nested dynamic page successfully', async () => {
-    let browser
-    browser = await webdriver(appPort, '/')
+    const browser = await webdriver(appPort, '/')
     await browser.elementByCss('#view-post-1-comment-1').click()
     await browser.waitForElementByCss('p#comment-1')
 

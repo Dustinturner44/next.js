@@ -12,12 +12,11 @@ import { join } from 'path'
 const appDir = join(__dirname, '../')
 let appPort
 let app
-let browser
 
 function runTests() {
   // #31065
   it('should apply image config for node_modules', async () => {
-    browser = await webdriver(appPort, '/image-from-node-modules')
+    const browser = await webdriver(appPort, '/image-from-node-modules')
     expect(
       await browser.elementById('image-from-node-modules').getAttribute('src')
     ).toMatch('i.imgur.com')

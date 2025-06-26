@@ -2,7 +2,6 @@ import { join } from 'path'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check } from 'next-test-utils'
-import webdriver from 'next-webdriver'
 
 describe('i18n-data-fetching-redirect', () => {
   let next: NextInstance
@@ -36,10 +35,7 @@ describe('i18n-data-fetching-redirect', () => {
     `(
       '$path $fromLocale -> $toLocale',
       async ({ path, fromLocale, toLocale }) => {
-        const browser = await webdriver(
-          next.url,
-          `/${fromLocale}/${path}/${toLocale}`
-        )
+        const browser = await next.browser(`/${fromLocale}/${path}/${toLocale}`)
 
         await check(
           () => browser.eval('window.location.pathname'),
@@ -68,7 +64,7 @@ describe('i18n-data-fetching-redirect', () => {
     `(
       'next/link $path $fromLocale -> $toLocale',
       async ({ path, fromLocale, toLocale }) => {
-        const browser = await webdriver(next.url, `/${fromLocale}`)
+        const browser = await next.browser(`/${fromLocale}`)
         await browser.eval('window.beforeNav = 1')
 
         await browser.elementByCss(`#to-${path}-${toLocale}`).click()

@@ -1,4 +1,3 @@
-import webdriver from 'next-webdriver'
 import { createNext } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { assertNoRedbox } from 'next-test-utils'
@@ -24,7 +23,7 @@ describe('basePath + trailingSlash', () => {
 
   const runTests = (dev = false) => {
     it('should allow URL query strings without refresh', async () => {
-      const browser = await webdriver(next.url, `${basePath}/hello/?query=true`)
+      const browser = await next.browser(`${basePath}/hello/?query=true`)
       await browser.eval('window.itdidnotrefresh = "hello"')
       await new Promise((resolve, reject) => {
         // Timeout of EventSource created in setupPing()
@@ -44,7 +43,7 @@ describe('basePath + trailingSlash', () => {
     })
 
     it('should allow URL query strings on index without refresh', async () => {
-      const browser = await webdriver(next.url, `${basePath}/?query=true`)
+      const browser = await next.browser(`${basePath}/?query=true`)
       await browser.eval('window.itdidnotrefresh = "hello"')
       await new Promise((resolve, reject) => {
         // Timeout of EventSource created in setupPing()
@@ -64,7 +63,7 @@ describe('basePath + trailingSlash', () => {
     })
 
     it('should correctly replace state when same asPath but different url', async () => {
-      const browser = await webdriver(next.url, `${basePath}/`)
+      const browser = await next.browser(`${basePath}/`)
       await browser.elementByCss('#hello-link').click()
       await browser.waitForElementByCss('#something-else-link')
       await browser.elementByCss('#something-else-link').click()

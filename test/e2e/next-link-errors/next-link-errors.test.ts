@@ -1,5 +1,4 @@
 import { nextTestSetup } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 
 describe('next-link', () => {
   const { skipped, next, isNextDev } = nextTestSetup({
@@ -10,7 +9,7 @@ describe('next-link', () => {
   if (skipped) return
 
   it('errors on invalid href', async () => {
-    const browser = await webdriver(next.appPort, '/invalid-href')
+    const browser = await next.browser('/invalid-href')
 
     if (isNextDev) {
       // TODO(veil): https://linear.app/vercel/issue/NDX-554/hide-the-anonymous-frames-which-are-between-2-ignored-frames
@@ -36,7 +35,7 @@ describe('next-link', () => {
   })
 
   it('no children', async () => {
-    const browser = await webdriver(next.appPort, '/no-children')
+    const browser = await next.browser('/no-children')
 
     if (isNextDev) {
       // TODO(veil): https://linear.app/vercel/issue/NDX-554/hide-the-anonymous-frames-which-are-between-2-ignored-frames
@@ -60,7 +59,7 @@ describe('next-link', () => {
   })
 
   it('multiple children', async () => {
-    const browser = await webdriver(next.appPort, '/multiple-children')
+    const browser = await next.browser('/multiple-children')
 
     if (isNextDev) {
       // TODO(veil): https://linear.app/vercel/issue/NDX-554/hide-the-anonymous-frames-which-are-between-2-ignored-frames
@@ -85,7 +84,7 @@ describe('next-link', () => {
   })
 
   it('invalid `prefetch` causes runtime error (dev-only)', async () => {
-    const browser = await webdriver(next.appPort, '/invalid-prefetch')
+    const browser = await next.browser('/invalid-prefetch')
 
     if (isNextDev) {
       // TODO(veil): https://linear.app/vercel/issue/NDX-554/hide-the-anonymous-frames-which-are-between-2-ignored-frames

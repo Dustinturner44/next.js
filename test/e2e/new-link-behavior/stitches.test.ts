@@ -1,6 +1,5 @@
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
-import webdriver from 'next-webdriver'
 import path from 'path'
 
 const appDir = path.join(__dirname, 'stitches')
@@ -27,7 +26,7 @@ describe('New Link Behavior with stitches', () => {
   afterAll(() => next.destroy())
 
   it('should render <a>', async () => {
-    const browser = await webdriver(next.url, `/`)
+    const browser = await next.browser(`/`)
     const element = await browser.elementByCss('a[href="/about"]')
 
     const color = await element.getComputedCss('color')

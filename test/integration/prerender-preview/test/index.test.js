@@ -331,10 +331,11 @@ describe('Prerender Preview Mode', () => {
 
       /** @type {import('next-webdriver').Chain} */
       let browser
-      it('should start the client-side browser', async () => {
+      beforeAll(async () => {
         browser = await webdriver(
           appPort,
-          '/api/preview?' + qs.stringify({ client: 'mode' })
+          '/api/preview?' + qs.stringify({ client: 'mode' }),
+          { teardownPolicy: 'afterAll' }
         )
       })
 

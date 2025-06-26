@@ -15,7 +15,6 @@ import {
   assertHasRedbox,
 } from 'next-test-utils'
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { NextInstance } from 'e2e-utils'
 
 const appDir = join(__dirname, '../app')
@@ -216,7 +215,7 @@ const navigateTest = () => {
 
     await Promise.all(toBuild.map((pg) => renderViaHTTP(next.url, pg)))
 
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     let text = await browser.elementByCss('p').text()
     expect(text).toMatch(/hello.*?world/)
 
@@ -318,7 +317,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should render 404 correctly when notFound is returned client-transition (non-dynamic)', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await browser.eval(`(function() {
       window.beforeNav = 1
       window.next.router.push('/not-found?hiding=true')
@@ -347,7 +346,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should render 404 correctly when notFound is returned client-transition (dynamic)', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await browser.eval(`(function() {
       window.beforeNav = 1
       window.next.router.push('/not-found/first?hiding=true')
@@ -584,7 +583,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should navigate to a normal page and back', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     let text = await browser.elementByCss('p').text()
     expect(text).toMatch(/hello.*?world/)
 
@@ -595,7 +594,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should load a fast refresh page', async () => {
-    const browser = await webdriver(next.url, '/refresh')
+    const browser = await next.browser('/refresh')
     expect(
       await check(
         () => browser.elementByCss('p').text(),
@@ -616,7 +615,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should parse query values on mount correctly', async () => {
-    const browser = await webdriver(next.url, '/blog/post-1?another=value')
+    const browser = await next.browser('/blog/post-1?another=value')
     await waitFor(2000)
     const text = await browser.elementByCss('#query').text()
     expect(text).toMatch(/another.*?value/)
@@ -624,7 +623,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should pass query for data request on navigation', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await browser.eval('window.beforeNav = true')
     await browser.elementByCss('#something-query').click()
     await browser.waitForElementByCss('#initial-query')
@@ -636,7 +635,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should reload page on failed data request', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await waitFor(500)
     await browser.eval('window.beforeClick = "abc"')
     await browser.elementByCss('#broken-post').click()
@@ -666,7 +665,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should not re-call getServerSideProps when updating query', async () => {
-    const browser = await webdriver(next.url, '/something?hello=world')
+    const browser = await next.browser('/something?hello=world')
     await waitFor(2000)
 
     const query = await browser.elementByCss('#query').text()
@@ -683,7 +682,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should not trigger an error when a data request is cancelled due to another navigation', async () => {
-    const browser = await webdriver(next.url, ' /')
+    const browser = await next.browser(' /')
 
     await browser.elementByCss("[href='/redirect-page']").click()
 
@@ -698,7 +697,7 @@ const runTests = (isDev = false, isDeploy = false) => {
   })
 
   it('should dedupe server data requests', async () => {
-    const browser = await webdriver(next.url, '/')
+    const browser = await next.browser('/')
     await waitFor(2000)
 
     // Keep clicking on the link
@@ -767,7 +766,7 @@ const runTests = (isDev = false, isDeploy = false) => {
     })
 
     it('should show error for invalid JSON returned from getStaticProps on CST', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.elementByCss('#non-json').click()
 
       await assertHasRedbox(browser)
@@ -804,7 +803,7 @@ const runTests = (isDev = false, isDeploy = false) => {
     })
   } else {
     it('should not fetch data on mount', async () => {
-      const browser = await webdriver(next.url, '/blog/post-100')
+      const browser = await next.browser('/blog/post-100')
       await browser.eval('window.thisShouldStay = true')
       await waitFor(2 * 1000)
       const val = await browser.eval('window.thisShouldStay')
@@ -857,7 +856,7 @@ const runTests = (isDev = false, isDeploy = false) => {
     })
 
     it('should not show error for invalid JSON returned from getStaticProps on CST', async () => {
-      const browser = await webdriver(next.url, '/')
+      const browser = await next.browser('/')
       await browser.elementByCss('#non-json').click()
       await check(() => getBrowserBodyText(browser), /hello /)
     })

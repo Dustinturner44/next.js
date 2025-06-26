@@ -2,7 +2,6 @@
 
 import fs from 'fs-extra'
 import { join } from 'path'
-import webdriver from 'next-webdriver'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import { check, fetchViaHTTP, waitFor } from 'next-test-utils'
@@ -82,7 +81,7 @@ describe('Middleware Runtime trailing slash', () => {
 
     if ((global as any).isNextDev) {
       it('refreshes the page when middleware changes ', async () => {
-        const browser = await webdriver(next.url, `/about/`)
+        const browser = await next.browser(`/about/`)
         await browser.eval('window.didrefresh = "hello"')
         const text = await browser.elementByCss('h1').text()
         expect(text).toEqual('AboutA')
@@ -177,7 +176,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should have correct query values for rewrite to ssg page', async () => {
-      const browser = await webdriver(next.url, '/to-ssg/')
+      const browser = await next.browser('/to-ssg/')
       await browser.eval('window.beforeNav = 1')
 
       await check(() => browser.elementByCss('body').text(), /\/to-ssg/)
@@ -196,7 +195,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should have correct dynamic route params on client-transition to dynamic route', async () => {
-      const browser = await webdriver(next.url, '/404')
+      const browser = await next.browser('/404')
       await check(
         () => browser.eval('next.router.isReady ? "yes" : "no"'),
         'yes'
@@ -238,7 +237,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should have correct dynamic route params for middleware rewrite to dynamic route', async () => {
-      const browser = await webdriver(next.url, '/404')
+      const browser = await next.browser('/404')
       await check(
         () => browser.eval('next.router.isReady ? "yes" : "no"'),
         'yes'
@@ -265,7 +264,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should have correct route params for chained rewrite from middleware to config rewrite', async () => {
-      const browser = await webdriver(next.url, '/404')
+      const browser = await next.browser('/404')
       await check(
         () => browser.eval('next.router.isReady ? "yes" : "no"'),
         'yes'
@@ -295,7 +294,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should have correct route params for rewrite from config dynamic route', async () => {
-      const browser = await webdriver(next.url, '/404')
+      const browser = await next.browser('/404')
       await check(
         () => browser.eval('next.router.isReady ? "yes" : "no"'),
         'yes'
@@ -320,7 +319,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should have correct route params for rewrite from config non-dynamic route', async () => {
-      const browser = await webdriver(next.url, '/404')
+      const browser = await next.browser('/404')
       await browser.eval('window.beforeNav = 1')
       await browser.eval('window.next.router.push("/rewrite-1")')
 
@@ -343,7 +342,7 @@ describe('Middleware Runtime trailing slash', () => {
         '/somewhere/else/'
       )
 
-      const browser = await webdriver(next.url, `/`)
+      const browser = await next.browser(`/`)
       await browser.eval(`next.router.push('/redirect-1')`)
       await check(async () => {
         const pathname = await browser.eval('location.pathname')
@@ -356,7 +355,7 @@ describe('Middleware Runtime trailing slash', () => {
       expect(res.status).toBe(200)
       expect(await res.text()).toContain('Hello World')
 
-      const browser = await webdriver(next.url, `/404`)
+      const browser = await next.browser(`/404`)
       await check(
         () => browser.eval('next.router.isReady ? "yes" : "nope"'),
         'yes'
@@ -375,7 +374,7 @@ describe('Middleware Runtime trailing slash', () => {
       expect(res.status).toBe(200)
       expect(await res.text()).toContain('AboutA')
 
-      const browser = await webdriver(next.url, `/404`)
+      const browser = await next.browser(`/404`)
       await browser.eval(`next.router.push('/rewrite-2')`)
       await check(async () => {
         const content = await browser.eval('document.documentElement.innerHTML')
@@ -406,7 +405,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('should trigger middleware for data requests', async () => {
-      const browser = await webdriver(next.url, `/ssr-page`)
+      const browser = await next.browser(`/ssr-page`)
       const text = await browser.elementByCss('h1').text()
       expect(text).toEqual('Bye Cruel World')
       const res = await fetchViaHTTP(
@@ -464,7 +463,7 @@ describe('Middleware Runtime trailing slash', () => {
     })
 
     it('allows shallow linking with middleware', async () => {
-      const browser = await webdriver(next.url, '/sha/')
+      const browser = await next.browser('/sha/')
       const getMessageContents = () =>
         browser.elementById('message-contents').text()
       const ssrMessage = await getMessageContents()
