@@ -211,7 +211,11 @@ async fn base_resolve_options(
         }
         
         if opt.enable_react_native_web_infix {
-            ext = ext.iter().map(|e| format!(".web{}", e).into()).chain(ext.into_iter()).collect();
+            ext = ext
+                .iter()
+                .map(|e| format!(".web{e}").into())
+                .chain(ext.iter().cloned())
+                .collect();
         }
 
         if opt.enable_node_native_modules {
