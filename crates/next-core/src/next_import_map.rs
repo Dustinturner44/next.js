@@ -924,6 +924,12 @@ async fn insert_next_shared_aliases(
         request_to_import_mapping(project_path, &format!("react-dom/{react_client_package}")),
     );
 
+    // Add react-native => react-native-web alias
+    import_map.insert_exact_alias(
+        "react-native",
+        request_to_import_mapping(project_path, "react-native-web"),
+    );
+
     import_map.insert_alias(
         // Make sure you can't import custom server as it'll cause all Next.js internals to be
         // bundled which doesn't work.
