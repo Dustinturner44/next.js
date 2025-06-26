@@ -59,10 +59,10 @@ describe(`app-dir-hmr`, () => {
     })
 
     it('should update server components after navigating to a page with a different runtime', async () => {
-      let browser = await next.browser('/env/node')
+      const browser = await next.browser('/env/node')
       expect(await browser.elementByCss('p').text()).toBe('mac')
 
-      browser = await next.browser(`${next.url}/env/edge`)
+      await browser.goto('/env/edge')
       await browser.eval('window.__TEST_NO_RELOAD = true')
       expect(await browser.elementByCss('p').text()).toBe('mac')
 

@@ -1,29 +1,16 @@
 import { getFullUrl, TestingLogger, waitFor } from 'next-test-utils'
 import os from 'node:os'
-import { setTimeout } from 'node:timers/promises'
 import { Playwright, PlaywrightManager } from './browsers/playwright'
 import { Page } from 'playwright'
 import { BrowserManager } from './browser-manager'
+import waitForHydration from './wait-for-hydration'
 
 export type { Playwright, PlaywrightManager }
 
 // Constants
-const CONSTANTS = {
-  HYDRATION_TIMEOUT: 10_000,
-  RETRY_DELAY: 2_000,
-  TURBOPACK_DELAY: 1_000,
-  DEFAULT_BROWSER: 'chrome',
-  IPV4_FAMILY: 'IPv4' as const,
-} as const
-
-// Type definitions
-interface NextWindow extends Window {
-  __NEXT_HYDRATED?: boolean
-  __NEXT_HYDRATED_CB?: () => void
-  next?: {
-    version: string
-  }
-}
+const TURBOPACK_DELAY = 1_000
+const DEFAULT_BROWSER = 'chrome'
+const IPV4_FAMILY = 'IPv4' as const
 
 interface GlobalWithBrowser {
   browserName: string
@@ -31,19 +18,9 @@ interface GlobalWithBrowser {
 
 // Custom error classes
 class BrowserSetupError extends Error {
-  constructor(
-    message: string,
-    public cause?: Error
-  ) {
-    super(message)
+  constructor(message: string, cause?: Error) {
+    super(message, { cause })
     this.name = 'BrowserSetupError'
-  }
-}
-
-class HydrationTimeoutError extends Error {
-  constructor(public url: string) {
-    super(`Hydration timeout for ${url}`)
-    this.name = 'HydrationTimeoutError'
   }
 }
 
@@ -58,71 +35,17 @@ function getDeviceIPv4Address(): string | undefined {
   const nets = os.networkInterfaces()
   for (const interfaces of Object.values(nets)) {
     const ipv4 = interfaces?.find(
-      (item) => item.family === CONSTANTS.IPV4_FAMILY && !item.internal
+      (item) => item.family === IPV4_FAMILY && !item.internal
     )
     if (ipv4) return ipv4.address
   }
   return undefined
 }
 
-async function waitForHydration(
-  page: Playwright,
-  url: string,
-  options: { retry?: boolean } = {}
-): Promise<void> {
-  logger.debug(`Waiting hydration for ${url}`)
-
-  const checkHydrated = async () => {
-    await page.eval(() => {
-      return new Promise<void>((callback) => {
-        const win = window as NextWindow
-
-        // if it's not a Next.js app return
-        if (
-          !document.documentElement.innerHTML.includes('__NEXT_DATA__') &&
-          typeof win.next?.version === 'undefined'
-        ) {
-          console.log('Not a next.js page, resolving hydrate check')
-          return callback()
-        }
-
-        // TODO: should we also ensure router.isReady is true
-        // by default before resolving?
-        if (win.__NEXT_HYDRATED) {
-          console.log('Next.js page already hydrated')
-          return callback()
-        } else {
-          const timeout = win.setTimeout(callback, CONSTANTS.HYDRATION_TIMEOUT)
-          win.__NEXT_HYDRATED_CB = function () {
-            win.clearTimeout(timeout)
-            console.log('Next.js hydrate callback fired')
-            callback()
-          }
-        }
-      })
-    })
-  }
-
-  try {
-    await checkHydrated()
-  } catch (err) {
-    if (options.retry) {
-      // re-try in case the page reloaded during check
-      await setTimeout(CONSTANTS.RETRY_DELAY)
-      await checkHydrated()
-    } else {
-      logger.error('Failed to check hydration', err as Error)
-      throw err
-    }
-  }
-
-  logger.debug(`Hydration complete for ${url}`)
-}
-
 let deviceIP: string | undefined
 const isBrowserStack = !!process.env.BROWSERSTACK
 ;(global as GlobalWithBrowser & typeof globalThis).browserName =
-  process.env.BROWSER_NAME || CONSTANTS.DEFAULT_BROWSER
+  process.env.BROWSER_NAME || DEFAULT_BROWSER
 
 if (isBrowserStack) {
   deviceIP = getDeviceIPv4Address()
@@ -217,7 +140,7 @@ export default async function webdriver(
     teardownPolicy,
   } = mergedOptions
 
-  const browserName = process.env.BROWSER_NAME || CONSTANTS.DEFAULT_BROWSER
+  const browserName = process.env.BROWSER_NAME || DEFAULT_BROWSER
   ;(global as GlobalWithBrowser & typeof globalThis).browserName = browserName
 
   const fullUrl = getFullUrl(
@@ -254,9 +177,6 @@ export default async function webdriver(
       try {
         await waitForHydration(page, fullUrl, { retry: retryWaitHydration })
       } catch (error) {
-        if (error instanceof HydrationTimeoutError) {
-          throw error
-        }
         throw new BrowserSetupError(
           'Failed to wait for hydration',
           error as Error
@@ -268,7 +188,7 @@ export default async function webdriver(
     // So we delay file changes to give it some time
     // to connect the WebSocket and start watching.
     if (process.env.IS_TURBOPACK_TEST) {
-      await waitFor(CONSTANTS.TURBOPACK_DELAY)
+      await waitFor(TURBOPACK_DELAY)
     }
 
     return page

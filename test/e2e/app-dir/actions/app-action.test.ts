@@ -1419,17 +1419,22 @@ describe('app-dir action handling', () => {
     // TODO: investigate flakey behavior with revalidate
     it('should revalidate when cookies.set is called in a client action', async () => {
       const browser = await next.browser('/revalidate')
+      await browser.elementByCss('#set-cookie').click()
+
+      await retry(async () => {
+        const randomCookie = await browser.elementByCss('#random-cookie').text()
+        expect(randomCookie.length).toBeGreaterThan(0)
+      })
+
       await browser.refresh()
 
       let randomCookie
       await retry(async () => {
-        randomCookie = JSON.parse(
-          await browser.elementByCss('#random-cookie').text()
-        ).value
-        expect(randomCookie).toBeDefined()
-      })
+        const text = await browser.elementByCss('#random-cookie').text()
+        expect(text.length).toBeGreaterThan(0)
 
-      console.log(123, await browser.elementByCss('body').text())
+        randomCookie = JSON.parse(text).value
+      })
 
       await browser.elementByCss('#another').click()
       await retry(async () => {

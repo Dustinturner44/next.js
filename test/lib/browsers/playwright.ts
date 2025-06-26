@@ -14,6 +14,7 @@ import {
 } from 'playwright'
 import path from 'path'
 import { TestingLogger } from 'next-test-utils'
+import waitForHydration from '../wait-for-hydration'
 
 type EventType = 'request' | 'response'
 
@@ -308,18 +309,45 @@ export class Playwright<TCurrent = void> {
     this.eventCallbacks[event]?.delete(cb)
   }
 
-  goto(
+  async goto(
     url: string,
     options?: {
       referer?: string
       timeout?: number
       waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit'
+      waitUntilHydration?: boolean
     }
   ) {
+    const defaultOptions = {
+      waitUntilHydration: true,
+    } as const
+    const { waitUntilHydration, ...gotoOptions } = Object.assign(
+      {},
+      defaultOptions,
+      options
+    )
+
     // If the url is relative, we need to resolve it against the current page url.
     // This is necessary to ensure that the url is always absolute and to avoid
     // issues with relative urls in the browser.
-    return this.page.goto(new URL(url, this.page.url()).toString(), options)
+    const response = await this.page.goto(
+      new URL(url, this.page.url()).toString(),
+      {
+        // Unless overridden, we wait for the load event to fire before returning.
+        waitUntil: 'load',
+        ...gotoOptions,
+      }
+    )
+
+    if (waitUntilHydration) {
+      try {
+        await waitForHydration(this, url)
+      } catch (error) {
+        throw new Error('Failed to wait for hydration', { cause: error })
+      }
+    }
+
+    return response
   }
 
   back(options?: Parameters<Page['goBack']>[0]) {
@@ -336,10 +364,31 @@ export class Playwright<TCurrent = void> {
     })
   }
 
-  refresh() {
+  refresh(options?: {
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit'
+    waitUntilHydration?: boolean
+  }) {
+    const defaultOptions = {
+      waitUntilHydration: true,
+      waitUntil: 'load',
+    } as const
+    const { waitUntilHydration, waitUntil } = Object.assign(
+      {},
+      defaultOptions,
+      options
+    )
+
     // do not preserve the previous chained value, it's likely to be invalid after a reload.
     return this.startChain(async () => {
-      await this.page.reload()
+      await this.page.reload({ waitUntil })
+
+      if (waitUntilHydration) {
+        try {
+          await waitForHydration(this, await this.url())
+        } catch (error) {
+          throw new Error('Failed to wait for hydration', { cause: error })
+        }
+      }
     })
   }
   setDimensions({ width, height }: { height: number; width: number }) {
