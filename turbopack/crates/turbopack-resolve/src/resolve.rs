@@ -197,16 +197,21 @@ async fn base_resolve_options(
     } else {
         let mut ext = Vec::new();
         if opt.enable_typescript && opt.enable_react {
+            ext.push(rcstr!(".web.tsx"));
             ext.push(rcstr!(".tsx"));
         }
         if opt.enable_typescript {
+            ext.push(rcstr!(".web.ts"));
             ext.push(rcstr!(".ts"));
         }
         if opt.enable_react {
+            ext.push(rcstr!(".web.jsx"));
             ext.push(rcstr!(".jsx"));
         }
+        ext.push(rcstr!(".web.js"));
         ext.push(rcstr!(".js"));
         if opt.enable_mjs_extension {
+            ext.push(rcstr!(".web.mjs"));
             ext.push(rcstr!(".mjs"));
         }
         if opt.enable_node_native_modules {
