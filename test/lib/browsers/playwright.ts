@@ -316,7 +316,10 @@ export class Playwright<TCurrent = void> {
       waitUntil?: 'load' | 'domcontentloaded' | 'networkidle' | 'commit'
     }
   ) {
-    return this.page.goto(url, options)
+    // If the url is relative, we need to resolve it against the current page url.
+    // This is necessary to ensure that the url is always absolute and to avoid
+    // issues with relative urls in the browser.
+    return this.page.goto(new URL(url, this.page.url()).toString(), options)
   }
 
   back(options?: Parameters<Page['goBack']>[0]) {

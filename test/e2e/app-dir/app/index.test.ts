@@ -1459,8 +1459,8 @@ describe('app dir - basic', () => {
       it('server component', async () => {
         // trigger compilation of 404 here first.
         // Any other page being compiled between refresh of a page would get us fresh modules i.e. not catch previous regressions where we restored the wrong fetch.
-        await next.browser('/_not-found')
-        const browser = await next.browser('/react-fetch/server-component')
+        const browser = await next.browser('/_not-found')
+        await browser.goto('/react-fetch/server-component')
         const val1 = await browser.elementByCss('#value-1').text()
         const val2 = await browser.elementByCss('#value-2').text()
         expect(val1).toBe(val2)
