@@ -122,16 +122,16 @@ async function createComponentTreeInternal({
   const { page, conventionPath, segment, modules, parallelRoutes } =
     parseLoaderTree(tree)
 
-  const {
+  let {
     layout,
     template,
     error,
     loading,
-    'not-found': notFound,
+    // 'not-found': notFound,
     forbidden,
     unauthorized,
   } = modules
-
+  const notFound = undefined
   const injectedCSSWithCurrentLayout = new Set(injectedCSS)
   const injectedJSWithCurrentLayout = new Set(injectedJS)
   const injectedFontPreloadTagsWithCurrentLayout = new Set(
