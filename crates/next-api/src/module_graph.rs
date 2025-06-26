@@ -509,9 +509,8 @@ async fn validate_pages_css_imports(
         .node_weights()
         .map(async |n| Ok((n.module(), n.module().ident().to_string().await?)))
         .try_join()
-        .await
+        .await?
         .into_iter()
-        .flatten()
         .collect::<FxIndexMap<_, _>>();
 
     graph.traverse_edges_from_entries(entries, |parent_info, node| {
