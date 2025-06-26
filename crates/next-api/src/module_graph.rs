@@ -480,22 +480,15 @@ impl Issue for CssGlobalImportIssue {
     }
 }
 
-type FxModuleNameMap = FxIndexMap<ResolvedVc<Box<dyn Module>>, RcStr>;
-
-#[turbo_tasks::value(transparent)]
-struct ModuleNameMap(pub FxModuleNameMap);
-
 #[turbo_tasks::function]
 async fn validate_pages_css_imports(
     graph: Vc<SingleModuleGraph>,
     is_single_page: bool,
     entry: Vc<Box<dyn Module>>,
     app_module: ResolvedVc<Box<dyn Module>>,
-    module_name_map: ResolvedVc<ModuleNameMap>,
 ) -> Result<()> {
     let graph = &*graph.await?;
     let entry = entry.to_resolved().await?;
-    let module_name_map = module_name_map.await?;
 
     let entries = if !is_single_page {
         // TODO: Optimize this code by checking if the node is an entry using `get_module` and then
@@ -509,6 +502,18 @@ async fn validate_pages_css_imports(
         Either::Right(graph.entry_modules())
     };
 
+    // We need to collect the module names here, the traverse_edges_from_entries callback cannot
+    // await futures.
+    let module_ident_map = graph
+        .graph
+        .node_weights()
+        .map(async |n| Ok((n.module(), n.module().ident().to_string().await?)))
+        .try_join()
+        .await
+        .into_iter()
+        .flatten()
+        .collect::<FxIndexMap<_, _>>();
+
     graph.traverse_edges_from_entries(entries, |parent_info, node| {
         let module = node.module;
 
@@ -521,9 +526,10 @@ async fn validate_pages_css_imports(
         }
 
         // We allow imports of global CSS files which are inside of `node_modules`.
-        let module_name_contains_node_modules = module_name_map
+        let module_name_contains_node_modules = module_ident_map
             .get(&module)
-            .is_some_and(|s| s.contains("node_modules"));
+            .unwrap()
+            .contains("/node_modules/");
 
         if module_name_contains_node_modules {
             return GraphTraversalAction::Continue;
@@ -760,42 +766,10 @@ impl ReducedGraphs {
         let span = tracing::info_span!("validate pages css imports");
         async move {
             let graphs = &self.bare_graphs.await?.graphs;
-
-            // We need to collect the module names here to pass into the
-            // `validate_pages_css_imports` function. This is because the function is
-            // called for each graph, and we need to know the module names of the parent
-            // modules to determine if the import is valid. We can't do this in the
-            // called function because it's within a closure that can't resolve turbo tasks.
-            let graph_to_module_ident_tuples = async |graph: &ResolvedVc<SingleModuleGraph>| {
-                graph
-                    .await?
-                    .graph
-                    .node_weights()
-                    .map(async |n| Ok((n.module(), n.module().ident().to_string().owned().await?)))
-                    .try_join()
-                    .await
-            };
-
-            let identifier_map = graphs
-                .iter()
-                .map(graph_to_module_ident_tuples)
-                .try_join()
-                .await?
-                .into_iter()
-                .flatten()
-                .collect::<FxIndexMap<_, _>>();
-            let identifier_map = ModuleNameMap(identifier_map).cell();
-
-            let _ = graphs
+            graphs
                 .iter()
                 .map(|graph| {
-                    validate_pages_css_imports(
-                        **graph,
-                        self.is_single_page,
-                        entry,
-                        app_module,
-                        identifier_map,
-                    )
+                    validate_pages_css_imports(**graph, self.is_single_page, entry, app_module)
                 })
                 .try_join()
                 .await?;
