@@ -507,7 +507,17 @@ async fn validate_pages_css_imports(
     let module_ident_map = graph
         .graph
         .node_weights()
-        .map(async |n| Ok((n.module(), n.module().ident().to_string().await?)))
+        .map(async |n| {
+            Ok((
+                n.module(),
+                n.module()
+                    .ident()
+                    .path()
+                    .await?
+                    .path
+                    .contains("/node_modules/"),
+            ))
+        })
         .try_join()
         .await?
         .into_iter()
@@ -525,11 +535,7 @@ async fn validate_pages_css_imports(
         }
 
         // We allow imports of global CSS files which are inside of `node_modules`.
-        let module_name_contains_node_modules = module_ident_map
-            .get(&module)
-            .unwrap()
-            .contains("/node_modules/");
-
+        let module_name_contains_node_modules = *module_ident_map.get(&module).unwrap();
         if module_name_contains_node_modules {
             return GraphTraversalAction::Continue;
         }
