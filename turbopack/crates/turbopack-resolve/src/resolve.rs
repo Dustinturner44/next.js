@@ -196,7 +196,6 @@ async fn base_resolve_options(
         environment.resolve_extensions().owned().await?
     } else {
         let mut ext = Vec::new();
-        
         if opt.enable_typescript && opt.enable_react {
             ext.push(rcstr!(".tsx"));
         }
@@ -219,8 +218,6 @@ async fn base_resolve_options(
             ext.push(rcstr!(".node"));
         }
         ext.push(rcstr!(".json"));
-        
-        
         ext
     };
     Ok(ResolveOptions {
