@@ -91,6 +91,8 @@ thread_local! {
 static MAX_ALLOCATED: AtomicUsize = AtomicUsize::new(0);
 
 /// Returns an estimate of the total memory statistics
+/// This is fundamentally racy since allocations may be racing with this call. Thus the returned
+/// value does not represent any specific point in time.
 pub fn global_counters() -> AllocationCounters {
     let mut counters = AllocationCounters::new();
     for global in GLOBAL.iter() {
@@ -107,12 +109,13 @@ pub fn global_counters() -> AllocationCounters {
     counters
 }
 
+/// Returns the allocation counters for the current thread.
 pub fn allocation_counters() -> AllocationCounters {
     with_local_counter(|local, _| local.counters.clone())
 }
 
 /// Resets the counters for the current thread.
-/// This is used to exclude some work from the metrics and as such should be used sparingly.
+/// This can be used to exclude some work from the metrics and as such should be used sparingly.
 /// NOTE: this does not exclude the allocations from the global metrics
 pub fn reset_allocation_counters(start: AllocationCounters) {
     with_local_counter(|local, _| local.counters = start);
