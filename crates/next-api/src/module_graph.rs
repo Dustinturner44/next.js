@@ -511,7 +511,7 @@ async fn validate_pages_css_imports(
         .try_join()
         .await?
         .into_iter()
-        .collect::<FxIndexMap<_, _>>();
+        .collect::<FxHashMap<_, _>>();
 
     graph.traverse_edges_from_entries(entries, |parent_info, node| {
         let module = node.module;
