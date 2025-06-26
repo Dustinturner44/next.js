@@ -1,6 +1,7 @@
 /* eslint-env jest */
 import path from 'path'
 import fs from 'fs-extra'
+import webdriver from 'next-webdriver'
 import { createNext, FileRef } from 'e2e-utils'
 import { NextInstance } from 'e2e-utils'
 import {
@@ -84,6 +85,7 @@ describe('pnpm support', () => {
 
     let appPort
     let server
+    let browser
     try {
       appPort = await findPort()
       const standaloneDir = path.join(
@@ -114,12 +116,12 @@ describe('pnpm support', () => {
 
       await renderViaHTTP(appPort, '/')
 
-      let browser = await next.browser('/', {
+      browser = await webdriver(appPort, '/', {
         waitHydration: false,
       })
       expect(await browser.waitForElementByCss('#world').text()).toBe('World')
 
-      browser = await next.browser('/about', {
+      browser = await webdriver(appPort, '/about', {
         waitHydration: false,
       })
       expect(await browser.waitForElementByCss('#world').text()).toBe('World')
