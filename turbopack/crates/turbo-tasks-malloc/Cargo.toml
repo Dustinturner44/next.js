@@ -22,5 +22,4 @@ custom_allocator = ["dep:mimalloc"]
 default = ["custom_allocator"]
 
 [dependencies]
-lazy_static = {workspace = true}
 rustc-hash = {workspace = true}
