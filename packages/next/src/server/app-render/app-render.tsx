@@ -511,6 +511,27 @@ async function generateDynamicRSCPayload(
       serveStreamingMetadata,
     })
 
+    const refetchNotFound = (() => {
+      if (!flightRouterState) return false
+
+      const checkForRefetchNotFound = (state: FlightRouterState): boolean => {
+        if (state[3] === 'refetch-with-not-found') return true
+
+        // Check parallel routes
+        if (state[1]) {
+          for (const parallelRoute of Object.values(state[1])) {
+            if (checkForRefetchNotFound(parallelRoute)) return true
+          }
+        }
+
+        return false
+      }
+
+      return checkForRefetchNotFound(flightRouterState)
+    })()
+
+    console.log({ refetchNotFound })
+
     flightData = (
       await walkTreeWithFlightRouterState({
         ctx,
@@ -539,6 +560,7 @@ async function generateDynamicRSCPayload(
         getMetadataReady,
         preloadCallbacks,
         StreamingMetadataOutlet,
+        refetchNotFound,
       })
     ).map((path) => path.slice(1)) // remove the '' (root) segment
   }
@@ -857,6 +879,7 @@ async function getRSCPayload(
     preloadCallbacks,
     authInterrupts: ctx.renderOpts.experimental.authInterrupts,
     StreamingMetadataOutlet,
+    isInitialLoad: true,
   })
 
   // When the `vary` response header is present with `Next-URL`, that means there's a chance

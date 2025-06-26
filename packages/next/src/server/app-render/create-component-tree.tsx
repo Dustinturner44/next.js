@@ -44,6 +44,7 @@ export function createComponentTree(props: {
   preloadCallbacks: PreloadCallbacks
   authInterrupts: boolean
   StreamingMetadataOutlet: React.ComponentType | null
+  isInitialLoad: boolean
 }): Promise<CacheNodeSeedData> {
   return getTracer().trace(
     NextNodeServerSpan.createComponentTree,
@@ -80,6 +81,7 @@ async function createComponentTreeInternal({
   preloadCallbacks,
   authInterrupts,
   StreamingMetadataOutlet,
+  isInitialLoad,
 }: {
   loaderTree: LoaderTree
   parentParams: Params
@@ -94,7 +96,9 @@ async function createComponentTreeInternal({
   preloadCallbacks: PreloadCallbacks
   authInterrupts: boolean
   StreamingMetadataOutlet: React.ComponentType | null
+  isInitialLoad: boolean
 }): Promise<CacheNodeSeedData> {
+  console.log({ isInitialLoadCreateComponentTree: isInitialLoad })
   const {
     renderOpts: { nextConfigOutput, experimental },
     workStore,
@@ -508,32 +512,35 @@ async function createComponentTreeInternal({
             }
           }
 
-          const seedData = await createComponentTreeInternal({
-            loaderTree: parallelRoute,
-            parentParams: currentParams,
-            rootLayoutIncluded: rootLayoutIncludedAtThisLevelOrAbove,
-            injectedCSS: injectedCSSWithCurrentLayout,
-            injectedJS: injectedJSWithCurrentLayout,
-            injectedFontPreloadTags: injectedFontPreloadTagsWithCurrentLayout,
-            // `getMetadataReady` and `getViewportReady` are used to conditionally throw. In the case of parallel routes we will have more than one page
-            // but we only want to throw on the first one.
-            getMetadataReady: isChildrenRouteKey
-              ? getMetadataReady
-              : () => Promise.resolve(),
-            getViewportReady: isChildrenRouteKey
-              ? getViewportReady
-              : () => Promise.resolve(),
-            ctx,
-            missingSlots,
-            preloadCallbacks,
-            authInterrupts,
-            // `StreamingMetadataOutlet` is used to conditionally throw. In the case of parallel routes we will have more than one page
-            // but we only want to throw on the first one.
-            StreamingMetadataOutlet: isChildrenRouteKey
-              ? StreamingMetadataOutlet
-              : null,
-          })
-
+          let seedData: CacheNodeSeedData | null = null
+          if (parallelRouteKey !== '__not_found__') {
+            seedData = await createComponentTreeInternal({
+              loaderTree: parallelRoute,
+              parentParams: currentParams,
+              rootLayoutIncluded: rootLayoutIncludedAtThisLevelOrAbove,
+              injectedCSS: injectedCSSWithCurrentLayout,
+              injectedJS: injectedJSWithCurrentLayout,
+              injectedFontPreloadTags: injectedFontPreloadTagsWithCurrentLayout,
+              // `getMetadataReady` and `getViewportReady` are used to conditionally throw. In the case of parallel routes we will have more than one page
+              // but we only want to throw on the first one.
+              getMetadataReady: isChildrenRouteKey
+                ? getMetadataReady
+                : () => Promise.resolve(),
+              getViewportReady: isChildrenRouteKey
+                ? getViewportReady
+                : () => Promise.resolve(),
+              ctx,
+              missingSlots,
+              preloadCallbacks,
+              authInterrupts,
+              // `StreamingMetadataOutlet` is used to conditionally throw. In the case of parallel routes we will have more than one page
+              // but we only want to throw on the first one.
+              StreamingMetadataOutlet: isChildrenRouteKey
+                ? StreamingMetadataOutlet
+                : null,
+              isInitialLoad,
+            })
+          }
           childCacheNodeSeedData = seedData
         }
 
@@ -582,6 +589,7 @@ async function createComponentTreeInternal({
             // Since gracefullyDegrade only applies to bots, only
             // pass it when we're in a bot context to avoid extra bytes.
             {...(gracefullyDegrade && { gracefullyDegrade })}
+            isInitialLoad={isInitialLoad}
           />,
           childCacheNodeSeedData,
         ]

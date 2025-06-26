@@ -22,6 +22,8 @@ import React, {
   Suspense,
   useDeferredValue,
   type JSX,
+  useState,
+  useEffect,
 } from 'react'
 import ReactDOM from 'react-dom'
 import {
@@ -52,7 +54,8 @@ const Activity = process.env.__NEXT_ROUTER_BF_CACHE
  */
 function walkAddRefetch(
   segmentPathToWalk: FlightSegmentPath | undefined,
-  treeToRecreate: FlightRouterState
+  treeToRecreate: FlightRouterState,
+  isNotFoundSegment: boolean
 ): FlightRouterState {
   if (segmentPathToWalk) {
     const [segment, parallelRouteKey] = segmentPathToWalk
@@ -63,7 +66,8 @@ function walkAddRefetch(
         if (isLast) {
           const subTree = walkAddRefetch(
             undefined,
-            treeToRecreate[1][parallelRouteKey]
+            treeToRecreate[1][parallelRouteKey],
+            isNotFoundSegment
           )
           return [
             treeToRecreate[0],
@@ -73,7 +77,7 @@ function walkAddRefetch(
                 subTree[0],
                 subTree[1],
                 subTree[2],
-                'refetch',
+                isNotFoundSegment ? 'refetch-with-not-found' : 'refetch',
               ],
             },
           ]
@@ -85,7 +89,8 @@ function walkAddRefetch(
             ...treeToRecreate[1],
             [parallelRouteKey]: walkAddRefetch(
               segmentPathToWalk.slice(2),
-              treeToRecreate[1][parallelRouteKey]
+              treeToRecreate[1][parallelRouteKey],
+              isNotFoundSegment
             ),
           },
         ]
@@ -336,11 +341,13 @@ function InnerLayoutRouter({
   segmentPath,
   cacheNode,
   url,
+  isNotFoundSegment,
 }: {
   tree: FlightRouterState
   segmentPath: FlightSegmentPath
   cacheNode: CacheNode
   url: string
+  isNotFoundSegment: boolean
 }) {
   const context = useContext(GlobalLayoutRouterContext)
   if (!context) {
@@ -385,7 +392,12 @@ function InnerLayoutRouter({
        * Router state with refetch marker added
        */
       // TODO-APP: remove ''
-      const refetchTree = walkAddRefetch(['', ...segmentPath], fullTree)
+      const refetchTree = walkAddRefetch(
+        ['', ...segmentPath],
+        fullTree,
+        isNotFoundSegment
+      )
+
       const includeNextUrl = hasInterceptionRouteInCurrentTree(fullTree)
       const navigatedAt = Date.now()
       cacheNode.lazyData = lazyData = fetchServerResponse(
@@ -508,6 +520,7 @@ export default function OuterLayoutRouter({
   forbidden,
   unauthorized,
   gracefullyDegrade,
+  isInitialLoad,
 }: {
   parallelRouterKey: string
   error: ErrorComponent | undefined
@@ -520,7 +533,9 @@ export default function OuterLayoutRouter({
   forbidden: React.ReactNode | undefined
   unauthorized: React.ReactNode | undefined
   gracefullyDegrade?: boolean
+  isInitialLoad: boolean
 }) {
+  console.log({ isInitialLoad })
   const context = useContext(LayoutRouterContext)
   if (!context) {
     throw new Error('invariant expected layout router to be mounted')
@@ -556,12 +571,15 @@ export default function OuterLayoutRouter({
       : parentSegmentPath.concat([parentTreeSegment, '__not_found__'])
 
   const renderNotFoundCacheNode = notFoundCacheNode ? (
-    <InnerLayoutRouter
-      url={url}
-      tree={notFoundTree}
-      cacheNode={notFoundCacheNode}
-      segmentPath={notFoundSegmentPath}
-    />
+    <NotFoundSSRCompat enabled={isInitialLoad}>
+      <InnerLayoutRouter
+        url={url}
+        tree={notFoundTree}
+        cacheNode={notFoundCacheNode}
+        segmentPath={notFoundSegmentPath}
+        isNotFoundSegment={true}
+      />
+    </NotFoundSSRCompat>
   ) : null
 
   // If the parallel router cache node does not exist yet, create it.
@@ -676,6 +694,7 @@ export default function OuterLayoutRouter({
                       tree={tree}
                       cacheNode={cacheNode}
                       segmentPath={segmentPath}
+                      isNotFoundSegment={false}
                     />
                   </RedirectBoundary>
                 </HTTPAccessFallbackBoundary>
@@ -707,4 +726,40 @@ export default function OuterLayoutRouter({
   } while (bfcacheEntry !== null)
 
   return children
+}
+
+// If notFound() is called in SSR and due to the fact that NotFound is lazily-loaded by default,
+// we are limited to only render NotFound on the client side.
+const NotFoundSSRCompat = ({
+  children,
+  enabled,
+}: {
+  children: React.ReactNode
+  enabled: boolean
+}) => {
+  if (enabled) {
+    return <NotFoundSSRCompatInternal>{children}</NotFoundSSRCompatInternal>
+  }
+
+  return children
+}
+
+const NotFoundSSRCompatInternal = ({
+  children,
+}: {
+  children: React.ReactNode
+}) => {
+  const [csr, setCsr] = useState(false)
+
+  useEffect(() => {
+    setCsr(true)
+  }, [])
+
+  if (csr) {
+    return <>{children}</>
+  }
+
+  // Uses this plain fallback in SSR'd NotFound
+  // CSR will then lazy fetch the actual NotFound component
+  return <>404 Not Found</>
 }

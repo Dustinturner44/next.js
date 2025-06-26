@@ -42,6 +42,7 @@ export async function walkTreeWithFlightRouterState({
   ctx,
   preloadCallbacks,
   StreamingMetadataOutlet,
+  refetchNotFound,
 }: {
   loaderTreeToFilter: LoaderTree
   parentParams: { [key: string]: string | string[] }
@@ -57,6 +58,7 @@ export async function walkTreeWithFlightRouterState({
   ctx: AppRenderContext
   preloadCallbacks: PreloadCallbacks
   StreamingMetadataOutlet: React.ComponentType | null
+  refetchNotFound: boolean
 }): Promise<FlightDataPath[]> {
   const {
     renderOpts: { nextFontManifest, experimental },
@@ -101,15 +103,16 @@ export async function walkTreeWithFlightRouterState({
   /**
    * Decide if the current segment is where rendering has to start.
    */
-  const renderComponentsOnThisLevel =
-    // No further router state available
-    !flightRouterState ||
-    // Segment in router state does not match current segment
-    !matchSegment(actualSegment, flightRouterState[0]) ||
-    // Last item in the tree
-    parallelRoutesKeys.length === 0 ||
-    // Explicit refresh
-    flightRouterState[3] === 'refetch'
+  const renderComponentsOnThisLevel = refetchNotFound
+    ? flightRouterState?.[3] === 'refetch-with-not-found'
+    : // No further router state available
+      !flightRouterState ||
+      // Segment in router state does not match current segment
+      !matchSegment(actualSegment, flightRouterState[0]) ||
+      // Last item in the tree
+      parallelRoutesKeys.length === 0 ||
+      // Explicit refresh
+      flightRouterState[3] === 'refetch'
 
   // Pre-PPR, the `loading` component signals to the router how deep to render the component tree
   // to ensure prefetches are quick and inexpensive. If there's no `loading` component anywhere in the tree being rendered,
@@ -129,7 +132,7 @@ export async function walkTreeWithFlightRouterState({
   const isInsideSharedLayout =
     renderComponentsOnThisLevel ||
     parentIsInsideSharedLayout ||
-    flightRouterState[3] === 'inside-shared-layout'
+    flightRouterState?.[3] === 'inside-shared-layout'
 
   if (
     isInsideSharedLayout &&
@@ -209,6 +212,7 @@ export async function walkTreeWithFlightRouterState({
         preloadCallbacks,
         authInterrupts: experimental.authInterrupts,
         StreamingMetadataOutlet,
+        isInitialLoad: false,
       }
     )
 
@@ -253,6 +257,10 @@ export async function walkTreeWithFlightRouterState({
   for (const parallelRouteKey of parallelRoutesKeys) {
     const parallelRoute = parallelRoutes[parallelRouteKey]
 
+    if (parallelRouteKey === '__not_found__' && !refetchNotFound) {
+      continue
+    }
+
     const subPaths = await walkTreeWithFlightRouterState({
       ctx,
       loaderTreeToFilter: parallelRoute,
@@ -269,6 +277,7 @@ export async function walkTreeWithFlightRouterState({
       getMetadataReady,
       preloadCallbacks,
       StreamingMetadataOutlet,
+      refetchNotFound,
     })
 
     for (const subPath of subPaths) {

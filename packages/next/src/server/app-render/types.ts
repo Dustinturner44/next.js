@@ -57,6 +57,7 @@ export const flightRouterStateSchema: s.Describe<any> = s.tuple([
         s.literal('refetch'),
         s.literal('refresh'),
         s.literal('inside-shared-layout'),
+        s.literal('refetch-with-not-found'),
       ])
     )
   ),
@@ -95,7 +96,12 @@ export type FlightRouterState = [
    *   make sense for the client to send a FlightRouterState, since this type is
    *   overloaded with concerns.
    */
-  refresh?: 'refetch' | 'refresh' | 'inside-shared-layout' | null,
+  refresh?:
+    | 'refetch'
+    | 'refresh'
+    | 'inside-shared-layout'
+    | 'refetch-with-not-found'
+    | null,
   isRootLayout?: boolean,
   /**
    * Only present when responding to a tree prefetch request. Indicates whether
