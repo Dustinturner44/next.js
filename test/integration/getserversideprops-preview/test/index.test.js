@@ -238,7 +238,7 @@ describe('ServerSide Props Preview Mode', () => {
 
       /** @type {import('next-webdriver').Chain} */
       let browser
-      it('should start the client-side browser', async () => {
+      beforeEach(async () => {
         browser = await webdriver(
           appPort,
           '/api/preview?' + qs.stringify({ client: 'mode' })

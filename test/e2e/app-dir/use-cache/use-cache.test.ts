@@ -1005,7 +1005,7 @@ describe('use-cache', () => {
 })
 
 async function getSanitizedLogs(browser: Playwright): Promise<string[]> {
-  const logs = await browser.logs({ includeArgs: true })
+  const logs = await browser.log({ includeArgs: true })
 
   return logs.map(({ args }) =>
     format(
