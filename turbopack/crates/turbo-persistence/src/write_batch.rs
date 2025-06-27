@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::{Context, Result};
 use byteorder::{BE, WriteBytesExt};
-use lzzzz::lz4::{self, ACC_LEVEL_DEFAULT};
+use lz4::block::{CompressionMode, compress_to_buffer};
 use parking_lot::Mutex;
 use rayon::{
     iter::{Either, IndexedParallelIterator, IntoParallelIterator, ParallelIterator},
@@ -420,8 +420,19 @@ impl<K: StoreKey + Send + Sync, const FAMILIES: usize> WriteBatch<K, FAMILIES> {
         let seq = self.current_sequence_number.fetch_add(1, Ordering::SeqCst) + 1;
         let mut buffer = Vec::new();
         buffer.write_u32::<BE>(value.len() as u32)?;
-        lz4::compress_to_vec(value, &mut buffer, ACC_LEVEL_DEFAULT)
-            .context("Compression of value for blob file failed")?;
+        let compressed_bound =
+            lz4::block::compress_bound(value.len()).context("Input too large for LZ4")?;
+        buffer.reserve(compressed_bound);
+        let start_len = buffer.len();
+        buffer.resize(start_len + compressed_bound, 0);
+        let compressed_size = compress_to_buffer(
+            value,
+            Some(CompressionMode::DEFAULT),
+            false,
+            &mut buffer[start_len..],
+        )
+        .context("Compression of value for blob file failed")?;
+        buffer.truncate(start_len + compressed_size);
 
         let file = self.db_path.join(format!("{seq:08}.blob"));
         let mut file = File::create(&file).context("Unable to create blob file")?;

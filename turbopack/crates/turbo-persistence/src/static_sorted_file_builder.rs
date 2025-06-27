@@ -8,11 +8,13 @@ use std::{
 
 use anyhow::{Context, Result};
 use byteorder::{BE, ByteOrder, WriteBytesExt};
-use lzzzz::lz4::{ACC_LEVEL_DEFAULT, max_compressed_size};
 
-use crate::static_sorted_file::{
-    BLOCK_TYPE_INDEX, BLOCK_TYPE_KEY, KEY_BLOCK_ENTRY_TYPE_BLOB, KEY_BLOCK_ENTRY_TYPE_DELETED,
-    KEY_BLOCK_ENTRY_TYPE_MEDIUM, KEY_BLOCK_ENTRY_TYPE_SMALL,
+use crate::{
+    lz4_dict::compress_with_dict,
+    static_sorted_file::{
+        BLOCK_TYPE_INDEX, BLOCK_TYPE_KEY, KEY_BLOCK_ENTRY_TYPE_BLOB, KEY_BLOCK_ENTRY_TYPE_DELETED,
+        KEY_BLOCK_ENTRY_TYPE_MEDIUM, KEY_BLOCK_ENTRY_TYPE_SMALL,
+    },
 };
 
 /// The maximum number of entries that should go into a single key block
@@ -364,15 +366,7 @@ impl<'a> StaticSortedFileBuilder<'a> {
 
     /// Compresses a block with a compression dictionary.
     fn compress_block(&self, block: &[u8], dict: &[u8]) -> (u32, Vec<u8>) {
-        let mut compressor =
-            lzzzz::lz4::Compressor::with_dict(dict).expect("LZ4 compressor creation failed");
-        let mut compressed = Vec::with_capacity(max_compressed_size(block.len()));
-        compressor
-            .next_to_vec(block, &mut compressed, ACC_LEVEL_DEFAULT)
-            .expect("Compression failed");
-        if compressed.capacity() > compressed.len() * 2 {
-            compressed.shrink_to_fit();
-        }
+        let compressed = compress_with_dict(block, dict).expect("Compression failed");
         (block.len().try_into().unwrap(), compressed)
     }
 

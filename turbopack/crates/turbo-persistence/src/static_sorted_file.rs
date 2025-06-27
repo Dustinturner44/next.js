@@ -10,7 +10,6 @@ use std::{
 
 use anyhow::{Context, Result, bail};
 use byteorder::{BE, ReadBytesExt};
-use lzzzz::lz4::decompress_with_dict;
 use memmap2::Mmap;
 use quick_cache::sync::GuardResult;
 use rustc_hash::FxHasher;
@@ -19,6 +18,7 @@ use crate::{
     QueryKey,
     arc_slice::ArcSlice,
     lookup_entry::{LookupEntry, LookupValue},
+    lz4_dict::decompress_with_dict,
 };
 
 /// The block header for an index block.

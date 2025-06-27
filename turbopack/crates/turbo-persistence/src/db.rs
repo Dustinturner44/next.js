@@ -15,7 +15,7 @@ use std::{
 use anyhow::{Context, Result, bail};
 use byteorder::{BE, ReadBytesExt, WriteBytesExt};
 use jiff::Timestamp;
-use lzzzz::lz4::decompress;
+use lz4::block::decompress_to_buffer;
 use memmap2::Mmap;
 use parking_lot::{Mutex, RwLock};
 use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
@@ -388,7 +388,7 @@ impl TurboPersistence {
         let mut buffer = unsafe { transmute::<Arc<[MaybeUninit<u8>]>, Arc<[u8]>>(buffer) };
         // Safety: We know that the buffer is not shared yet.
         let decompressed = unsafe { Arc::get_mut_unchecked(&mut buffer) };
-        decompress(compressed, decompressed)?;
+        decompress_to_buffer(compressed, Some(uncompressed_length as i32), decompressed)?;
         Ok(ArcSlice::from(buffer))
     }
 

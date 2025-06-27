@@ -12,6 +12,7 @@ mod constants;
 mod db;
 mod key;
 mod lookup_entry;
+mod lz4_dict;
 mod merge_iter;
 mod static_sorted_file;
 mod static_sorted_file_builder;
