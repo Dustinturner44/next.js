@@ -283,6 +283,7 @@ export function createRSCAliases(
     'react/jsx-dev-runtime$': `next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime`,
     'react/compiler-runtime$': `next/dist/compiled/react${bundledReactChannel}/compiler-runtime`,
     'react-dom/client$': `next/dist/compiled/react-dom${bundledReactChannel}/client`,
+    'react-dom/server$': `next/dist/compiled/react-dom${bundledReactChannel}/server`,
     'react-dom/server.browser$': `next/dist/compiled/react-dom${bundledReactChannel}/server.browser`,
     'react-dom/static$': `next/dist/compiled/react-dom${bundledReactChannel}/static.edge`,
     'react-dom/static.edge$': `next/dist/compiled/react-dom${bundledReactChannel}/static.edge`,
