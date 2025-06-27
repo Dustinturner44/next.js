@@ -736,12 +736,12 @@ async fn rsc_aliases(
     }
     alias.extend(fxindexmap! {
         "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.browser"),
-        // TODO: Should we alias these to throwers
         "react-server-dom-webpack/server" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
+        "react-server-dom-webpack/server.node" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.node"),
         "react-server-dom-webpack/static" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
         "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.browser"),
-        // TODO: Should we alias these to throwers
         "react-server-dom-turbopack/server" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
+        "react-server-dom-turbopack/server.node" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.node"),
         "react-server-dom-turbopack/static" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
     });
 
@@ -768,12 +768,14 @@ async fn rsc_aliases(
                     "react/compiler-runtime" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-compiler-runtime"),
                     "react" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react"),
                     "react-dom" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-dom"),
-                    // TODO: Vendored
+                    // TODO: Vendored?
                     "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.node"),
                     "react-server-dom-webpack/server" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server"),
+                    "react-server-dom-webpack/server.node" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server"),
                     "react-server-dom-webpack/static" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-static"),
                     "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.node"),
                     "react-server-dom-turbopack/server" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server"),
+                    "react-server-dom-turbopack/server.node" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-server"),
                     "react-server-dom-turbopack/static" => format!("next/dist/server/route-modules/app-page/vendored/rsc/react-server-dom-turbopack-static"),
                     "next/navigation" => format!("next/dist/api/navigation.react-server"),
 
@@ -785,6 +787,18 @@ async fn rsc_aliases(
         }
     }
 
+     if runtime == NextRuntime::Edge {
+        match ty {
+            ServerContextType::AppSSR { .. } => {
+                alias.extend(fxindexmap! {
+                    "react-dom/server" => format!("next/dist/compiled/react-dom{react_channel}/server.edge"),
+                    "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
+                    "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
+                });
+            }
+            _ => {}
+        }
+    }
     if runtime == NextRuntime::Edge && ty.supports_react_server() {
         alias.extend(fxindexmap! {
             "react" => format!("next/dist/compiled/react{react_channel}/react.react-server"),
@@ -802,6 +816,12 @@ async fn rsc_aliases(
             "next/dist/compiled/react-dom" => format!("next/dist/compiled/react-dom{react_channel}/react-dom.react-server"),
             "next/dist/compiled/react-dom-experimental" => format!("next/dist/compiled/react-dom-experimental/react-dom.react-server"),
             "next/navigation" => format!("next/dist/api/navigation.react-server"),
+            "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
+            "react-server-dom-webpack/server" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
+            "react-server-dom-webpack/static" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
+            "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
+            "react-server-dom-turbopack/server" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/server.edge"),
+            "react-server-dom-turbopack/static" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/static.edge"),
         })
     }
 

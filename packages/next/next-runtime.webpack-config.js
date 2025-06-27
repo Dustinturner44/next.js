@@ -24,6 +24,7 @@ const pagesExternals = [
   'react-dom/server.edge',
   'react-server-dom-webpack/client',
   'react-server-dom-webpack/server',
+  'react-server-dom-webpack/server.node',
   'react-server-dom-webpack/static',
 ]
 
