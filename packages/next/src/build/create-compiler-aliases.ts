@@ -287,11 +287,10 @@ export function createRSCAliases(
     'react-dom/static.edge$': `next/dist/compiled/react-dom${bundledReactChannel}/static.edge`,
     'react-dom/static.node$': `next/dist/compiled/react-dom${bundledReactChannel}/static.node`,
     // TODO: Vendor react-dom/static.browser
-    // optimizations to ignore the legacy APIs in react-dom/server
-    'react-dom/server$': `next/dist/build/webpack/alias/react-dom-server${bundledReactChannel}.js`,
-    'react-dom/server.edge$': `next/dist/build/webpack/alias/react-dom-server${bundledReactChannel}.js`,
-    'react-dom/server.node$': `next/dist/build/webpack/alias/react-dom-server${bundledReactChannel}.js`,
+    'react-dom/server$': `next/dist/compiled/react-dom${bundledReactChannel}/server`,
     'react-dom/server.browser$': `next/dist/compiled/react-dom${bundledReactChannel}/server.browser`,
+    'react-dom/server.edge$': `next/dist/compiled/react-dom${bundledReactChannel}/server.edge`,
+    'react-dom/server.node$': `next/dist/compiled/react-dom${bundledReactChannel}/server.node`,
     // react-server-dom-webpack alias
     'react-server-dom-webpack/client$': `next/dist/compiled/react-server-dom-webpack${bundledReactChannel}/client.browser`,
     // TODO: Should we alias these to throwers
@@ -328,6 +327,12 @@ export function createRSCAliases(
   if (isEdgeServer) {
     if (layer === WEBPACK_LAYERS.serverSideRendering) {
       alias = Object.assign(alias, {
+        // optimizations to ignore the legacy APIs in react-dom/server
+        // This is a leftover from old behavior. Ideally we wouldn't interfere 
+        // with product code here let them have the freedom to use the APIs.
+        // Only Next.js code should use the minimal version.
+        'react-dom/server$': `next/dist/build/webpack/alias/react-dom-server${bundledReactChannel}.js`,
+        'react-dom/server.edge$': `next/dist/build/webpack/alias/react-dom-server${bundledReactChannel}.js`,
         'react-server-dom-webpack/client$': `next/dist/compiled/react-server-dom-webpack${bundledReactChannel}/client.edge`,
       })
     } else if (isReactServerEnvironment) {
