@@ -787,7 +787,7 @@ async fn rsc_aliases(
         }
     }
 
-     if runtime == NextRuntime::Edge {
+    if runtime == NextRuntime::Edge {
         match ty {
             ServerContextType::AppSSR { .. } => {
                 alias.extend(fxindexmap! {
