@@ -788,15 +788,12 @@ async fn rsc_aliases(
     }
 
     if runtime == NextRuntime::Edge {
-        match ty {
-            ServerContextType::AppSSR { .. } => {
-                alias.extend(fxindexmap! {
+        if matches!(ty, ServerContextType::AppSSR { .. }) {
+            alias.extend(fxindexmap! {
                     "react-dom/server" => format!("next/dist/compiled/react-dom{react_channel}/server.edge"),
                     "react-server-dom-webpack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
                     "react-server-dom-turbopack/client" => format!("next/dist/compiled/react-server-dom-turbopack{react_channel}/client.edge"),
                 });
-            }
-            _ => {}
         }
     }
     if runtime == NextRuntime::Edge && ty.supports_react_server() {
