@@ -285,7 +285,7 @@ export function createRSCAliases(
     'react-dom/client$': `next/dist/compiled/react-dom${bundledReactChannel}/client`,
     'react-dom/server$': `next/dist/compiled/react-dom${bundledReactChannel}/server`,
     'react-dom/server.browser$': `next/dist/compiled/react-dom${bundledReactChannel}/server.browser`,
-    'react-dom/static$': `next/dist/compiled/react-dom${bundledReactChannel}/static`,
+    'react-dom/static$': `next/dist/compiled/react-dom${bundledReactChannel}/static.edge`,
     'react-dom/static.edge$': `next/dist/compiled/react-dom${bundledReactChannel}/static.edge`,
     'react-dom/static.node$': `next/dist/compiled/react-dom${bundledReactChannel}/static.node`,
     // TODO: Vendor react-dom/static.browser
