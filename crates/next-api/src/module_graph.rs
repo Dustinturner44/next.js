@@ -15,7 +15,7 @@ use tracing::Instrument;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
     CollectiblesSource, FxIndexMap, FxIndexSet, ReadRef, ResolvedVc, TryFlatJoinIterExt,
-    TryJoinIterExt, ValueToString, Vc,
+    TryJoinIterExt, Vc,
 };
 use turbo_tasks_fs::FileSystemPath;
 use turbopack::css::{CssModuleAsset, ModuleCssAsset};
