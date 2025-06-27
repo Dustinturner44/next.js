@@ -47,9 +47,9 @@ function makeAppAliases({ experimental, bundler }) {
     'react/jsx-dev-runtime$': `next/dist/compiled/react${reactChannel}/jsx-dev-runtime`,
     'react/compiler-runtime$': `next/dist/compiled/react${reactChannel}/compiler-runtime`,
     'react-dom/client$': `next/dist/compiled/react-dom${reactChannel}/client`,
-    'react-dom/static$': `next/dist/compiled/react-dom${reactChannel}/static.node`,
     // optimizations to ignore the legacy APIs in react-dom/server
     'react-dom/server$': `next/dist/build/webpack/alias/react-dom-server${reactChannel}.js`,
+    'react-dom/static$': `next/dist/compiled/react-dom${reactChannel}/static.node`,
     // react-server-dom-webpack alias
     'react-server-dom-turbopack/client$': `next/dist/compiled/react-server-dom-turbopack${reactChannel}/client.node`,
     'react-server-dom-turbopack/server$': `next/dist/compiled/react-server-dom-turbopack${reactChannel}/server.node`,
