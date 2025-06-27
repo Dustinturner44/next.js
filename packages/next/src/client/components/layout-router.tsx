@@ -54,8 +54,7 @@ const Activity = process.env.__NEXT_ROUTER_BF_CACHE
  */
 function walkAddRefetch(
   segmentPathToWalk: FlightSegmentPath | undefined,
-  treeToRecreate: FlightRouterState,
-  isNotFoundSegment: boolean
+  treeToRecreate: FlightRouterState
 ): FlightRouterState {
   if (segmentPathToWalk) {
     const [segment, parallelRouteKey] = segmentPathToWalk
@@ -66,8 +65,7 @@ function walkAddRefetch(
         if (isLast) {
           const subTree = walkAddRefetch(
             undefined,
-            treeToRecreate[1][parallelRouteKey],
-            isNotFoundSegment
+            treeToRecreate[1][parallelRouteKey]
           )
           return [
             treeToRecreate[0],
@@ -77,7 +75,7 @@ function walkAddRefetch(
                 subTree[0],
                 subTree[1],
                 subTree[2],
-                isNotFoundSegment ? 'refetch-with-not-found' : 'refetch',
+                'refetch',
               ],
             },
           ]
@@ -89,8 +87,7 @@ function walkAddRefetch(
             ...treeToRecreate[1],
             [parallelRouteKey]: walkAddRefetch(
               segmentPathToWalk.slice(2),
-              treeToRecreate[1][parallelRouteKey],
-              isNotFoundSegment
+              treeToRecreate[1][parallelRouteKey]
             ),
           },
         ]
@@ -341,7 +338,6 @@ function InnerLayoutRouter({
   segmentPath,
   cacheNode,
   url,
-  isNotFoundSegment,
 }: {
   tree: FlightRouterState
   segmentPath: FlightSegmentPath
@@ -388,15 +384,13 @@ function InnerLayoutRouter({
     // Check if there's already a pending request.
     let lazyData = cacheNode.lazyData
     if (lazyData === null) {
+      console.log('fetching lazy data')
       /**
        * Router state with refetch marker added
        */
       // TODO-APP: remove ''
-      const refetchTree = walkAddRefetch(
-        ['', ...segmentPath],
-        fullTree,
-        isNotFoundSegment
-      )
+      const refetchTree = walkAddRefetch(['', ...segmentPath], fullTree)
+      console.log('refetchTree', { fullTree, segmentPath, refetchTree })
 
       const includeNextUrl = hasInterceptionRouteInCurrentTree(fullTree)
       const navigatedAt = Date.now()
@@ -535,7 +529,6 @@ export default function OuterLayoutRouter({
   gracefullyDegrade?: boolean
   isInitialLoad: boolean
 }) {
-  console.log({ isInitialLoad })
   const context = useContext(LayoutRouterContext)
   if (!context) {
     throw new Error('invariant expected layout router to be mounted')
@@ -571,15 +564,15 @@ export default function OuterLayoutRouter({
       : parentSegmentPath.concat([parentTreeSegment, '__not_found__'])
 
   const renderNotFoundCacheNode = notFoundCacheNode ? (
-    <NotFoundSSRCompat enabled={isInitialLoad}>
+    <Suspense>
       <InnerLayoutRouter
-        url={url}
+        url={`${url}`}
         tree={notFoundTree}
         cacheNode={notFoundCacheNode}
         segmentPath={notFoundSegmentPath}
         isNotFoundSegment={true}
       />
-    </NotFoundSSRCompat>
+    </Suspense>
   ) : null
 
   // If the parallel router cache node does not exist yet, create it.

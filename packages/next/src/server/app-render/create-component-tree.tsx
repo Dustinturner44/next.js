@@ -583,7 +583,7 @@ async function createComponentTreeInternal({
             }
             templateStyles={templateStyles}
             templateScripts={templateScripts}
-            notFound={notFoundComponent}
+            // notFound={notFoundComponent}
             forbidden={forbiddenComponent}
             unauthorized={unauthorizedComponent}
             // Since gracefullyDegrade only applies to bots, only

@@ -79,6 +79,13 @@ class HTTPAccessFallbackErrorBoundary extends React.Component<
   static getDerivedStateFromError(error: any) {
     if (isHTTPAccessFallbackError(error)) {
       const httpStatus = getAccessFallbackHTTPStatus(error)
+
+      if (typeof window === 'undefined') {
+        console.log('error caught during SSR', {
+          httpStatus,
+        })
+      }
+
       return {
         triggeredStatus: httpStatus,
       }
@@ -116,6 +123,18 @@ class HTTPAccessFallbackErrorBoundary extends React.Component<
       [HTTPAccessErrorStatus.NOT_FOUND]: notFound,
       [HTTPAccessErrorStatus.FORBIDDEN]: forbidden,
       [HTTPAccessErrorStatus.UNAUTHORIZED]: unauthorized,
+    }
+
+    if (typeof window === 'undefined') {
+      console.log('rendering not found boundary on SSR??', {
+        notFound,
+        errorComponents,
+      })
+
+      // return notFound
+      console.log({
+        triggeredStatus,
+      })
     }
 
     if (triggeredStatus) {
