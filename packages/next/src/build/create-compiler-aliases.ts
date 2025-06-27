@@ -328,7 +328,7 @@ export function createRSCAliases(
     if (layer === WEBPACK_LAYERS.serverSideRendering) {
       alias = Object.assign(alias, {
         // optimizations to ignore the legacy APIs in react-dom/server
-        // This is a leftover from old behavior. Ideally we wouldn't interfere 
+        // This is a leftover from old behavior. Ideally we wouldn't interfere
         // with product code here let them have the freedom to use the APIs.
         // Only Next.js code should use the minimal version.
         'react-dom/server$': `next/dist/build/webpack/alias/react-dom-server${bundledReactChannel}.js`,
@@ -350,6 +350,9 @@ export function createRSCAliases(
         'react-dom$': `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
         'next/dist/compiled/react-dom$': `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
         'next/dist/compiled/react-dom-experimental$': `next/dist/compiled/react-dom-experimental/react-dom.react-server`,
+        'react-server-dom-webpack/client$': `next/dist/compiled/react-server-dom-webpack${bundledReactChannel}/client.edge`,
+        'react-server-dom-webpack/server$': `next/dist/compiled/react-server-dom-webpack${bundledReactChannel}/server.edge`,
+        'react-server-dom-webpack/static$': `next/dist/compiled/react-server-dom-webpack${bundledReactChannel}/static.edge`,
       })
     }
   }
