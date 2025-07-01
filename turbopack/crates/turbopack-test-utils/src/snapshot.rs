@@ -127,24 +127,21 @@ pub async fn diff(path: FileSystemPath, actual: Vc<AssetContent>) -> Result<()> 
     if actual != expected {
         if let Some(actual) = actual {
             if *UPDATE {
-                let content = File::from(RcStr::from(actual)).into();
-                path.write(content).await?;
-                println!("updated contents of {path_str}");
-
+                dbg!(&path);
                 // Check if it's a sourcemap file and visualize it
                 if let Some(extension) = path.extension_ref()
                     && extension == "map"
                 {
                     // Read sourcemap file content
-                    if let FileContent::Content(file) = &*content.await?
-                        && let Ok(content_str) = std::str::from_utf8(&file.content().to_bytes())
-                    {
-                        // Perform sourcemap visualization
-                        if let Err(e) = visualize_sourcemap_as_markdown(content_str, &path).await {
-                            eprintln!("Failed to visualize sourcemap {path}: {e}");
-                        }
+                    // Perform sourcemap visualization
+                    if let Err(e) = visualize_sourcemap_as_markdown(&actual, &path).await {
+                        eprintln!("Failed to visualize sourcemap {path}: {e}");
                     }
                 }
+
+                let content = File::from(RcStr::from(actual)).into();
+                path.write(content).await?;
+                println!("updated contents of {path_str}");
             } else {
                 if expected.is_none() {
                     eprintln!("new file {path_str} detected:");
@@ -258,8 +255,12 @@ async fn visualize_sourcemap_as_markdown(
     output_path: &FileSystemPath,
 ) -> Result<()> {
     // Parse sourcemap
-    let sourcemap = match swc_sourcemap::SourceMap::from_slice(sourcemap_content.as_bytes()) {
-        Ok(sm) => sm,
+    let sourcemap = match swc_sourcemap::decode_slice(sourcemap_content.as_bytes()) {
+        Ok(sm) => match sm {
+            swc_sourcemap::DecodedMap::Regular(source_map) => source_map,
+            swc_sourcemap::DecodedMap::Index(source_map_index) => source_map_index.flatten()?,
+            _ => unreachable!("unexpected sourcemap type"),
+        },
         Err(e) => {
             eprintln!("Failed to parse sourcemap: {e}");
             return Ok(());
