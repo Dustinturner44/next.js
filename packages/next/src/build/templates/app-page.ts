@@ -178,7 +178,7 @@ export async function handler(
   resolvedPathname = decodePathParams(resolvedPathname)
 
   const prerenderInfo = prerenderManifest.dynamicRoutes[normalizedSrcPage]
-  const isPrerendered = prerenderManifest.routes[resolvedPathname]
+  const isPrerendered = prerenderManifest.routes[normalizedSrcPage]
 
   let isSSG = Boolean(
     prerenderInfo ||
