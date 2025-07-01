@@ -15,7 +15,7 @@ use turbo_tasks::{ReadConsistency, ResolvedVc, TurboTasks, ValueToString, Vc, ap
 use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
 use turbo_tasks_env::DotenvProcessEnv;
 use turbo_tasks_fs::{
-    DiskFileSystem, FileSystem, FileSystemPath, json::parse_json_with_source_context,
+    DiskFileSystem, FileContent, FileSystem, FileSystemPath, json::parse_json_with_source_context,
     util::sys_to_unix,
 };
 use turbopack::{
@@ -28,7 +28,7 @@ use turbopack::{
 };
 use turbopack_browser::BrowserChunkingContext;
 use turbopack_core::{
-    asset::Asset,
+    asset::{Asset, AssetContent},
     chunk::{
         ChunkingConfig, ChunkingContext, ChunkingContextExt, EvaluatableAsset, EvaluatableAssetExt,
         EvaluatableAssets, MinifyType, availability_info::AvailabilityInfo,
@@ -508,6 +508,23 @@ async fn walk_asset(
     if path.is_inside_ref(output_path) {
         // Only consider assets that should be written to disk.
         diff(path.clone(), asset.content()).await?;
+
+        // 소스맵 파일인지 확인하고 시각화
+        if let Some(extension) = path.extension_ref()
+            && extension == "map"
+        {
+            // 소스맵 파일 내용 읽기
+            let content = asset.content().await?;
+            if let AssetContent::File(content) = &*content
+                && let FileContent::Content(file) = &*content.await?
+                && let Ok(content_str) = std::str::from_utf8(&file.content().to_bytes())
+            {
+                // 소스맵 시각화 수행
+                if let Err(e) = visualize_sourcemap_as_markdown(content_str, &path).await {
+                    eprintln!("Failed to visualize sourcemap {path}: {e}");
+                }
+            }
+        }
     }
 
     queue.extend(
@@ -535,4 +552,121 @@ async fn maybe_load_env(
     let env = DotenvProcessEnv::new(None, dotenv_path.clone());
     let asset = ProcessEnvAsset::new(dotenv_path, Vc::upcast(env));
     Ok(Some(Vc::upcast(asset)))
+}
+
+/// 소스맵을 디코딩하고 마크다운으로 시각화하는 함수
+async fn visualize_sourcemap_as_markdown(
+    sourcemap_content: &str,
+    output_path: &FileSystemPath,
+) -> Result<()> {
+    // 소스맵 파싱
+    let sourcemap = match swc_sourcemap::SourceMap::from_slice(sourcemap_content.as_bytes()) {
+        Ok(sm) => sm,
+        Err(e) => {
+            eprintln!("Failed to parse sourcemap: {e}");
+            return Ok(());
+        }
+    };
+
+    let mut markdown_content = String::new();
+    markdown_content.push_str("# Source Map Visualization\n\n");
+
+    // 기본 정보
+    markdown_content.push_str("## Basic Information\n\n");
+
+    if let Some(file) = sourcemap.get_file() {
+        markdown_content.push_str(&format!("- **File**: {file}\n"));
+    }
+
+    if let Some(source_root) = sourcemap.get_source_root() {
+        markdown_content.push_str(&format!("- **Source Root**: {source_root}\n"));
+    }
+
+    // 소스 파일들
+    markdown_content.push_str("\n## Source Files\n\n");
+    for (i, source) in sourcemap.sources().enumerate() {
+        markdown_content.push_str(&format!("{}. `{source}`\n", i + 1));
+    }
+
+    // 매핑 정보
+    markdown_content.push_str("\n## Mappings Overview\n\n");
+
+    let mut total_mappings = 0;
+    let mut line_count = 0;
+
+    // 토큰 순회
+    for token in sourcemap.tokens() {
+        total_mappings += 1;
+        if token.get_dst_line() > line_count {
+            line_count = token.get_dst_line();
+        }
+    }
+
+    markdown_content.push_str(&format!("- **Total Mappings**: {total_mappings}\n"));
+    markdown_content.push_str(&format!("- **Generated Lines**: {}\n", line_count + 1));
+
+    // 매핑 테이블 (처음 50개만 표시)
+    markdown_content.push_str("\n## Mapping Details (First 50 entries)\n");
+    markdown_content.push_str("| Generated | Original | Source File | Name |\n");
+    markdown_content.push_str("|-----------|----------|-------------|------|\n");
+
+    for (count, token) in sourcemap.tokens().enumerate() {
+        if count >= 50 {
+            markdown_content.push_str("| ... | ... | ... | ... |\n");
+            break;
+        }
+
+        let generated_pos = format!("{}:{}", token.get_dst_line() + 1, token.get_dst_col());
+        let original_pos = format!("{}:{}", token.get_src_line() + 1, token.get_src_col());
+
+        let src_id = token.get_src_id();
+        let source_file = sourcemap
+            .get_source(src_id)
+            .map(|v| &**v)
+            .unwrap_or("Unknown");
+
+        let name = sourcemap
+            .get_name(token.get_name_id())
+            .map(|v| &**v)
+            .unwrap_or("N/A");
+
+        markdown_content.push_str(&format!(
+            "| {generated_pos} | {original_pos} | {source_file} | {name} |\n"
+        ));
+    }
+
+    // 소스 내용 (있는 경우)
+    if sourcemap.source_contents().count() != 0 {
+        markdown_content.push_str("\n## Source Contents\n\n");
+        for (i, content) in sourcemap.source_contents().enumerate() {
+            if let Some(content) = content {
+                let source_name = sourcemap.get_source(i as u32).map(|v| &**v).unwrap_or("");
+                markdown_content.push_str(&format!("### {source_name}\n"));
+                markdown_content.push_str("```javascript\n");
+                // 내용이 너무 길면 처음 20줄만 표시
+                let lines: Vec<&str> = content.lines().collect();
+                if lines.len() > 20 {
+                    for line in &lines[..20] {
+                        markdown_content.push_str(line);
+                        markdown_content.push('\n');
+                    }
+                    markdown_content
+                        .push_str(&format!("\n// ... ({} more lines)\n", lines.len() - 20))
+                } else {
+                    markdown_content.push_str(content);
+                }
+                markdown_content.push_str("```\n\n");
+            }
+        }
+    }
+
+    // 마크다운 파일 저장
+    let markdown_path = output_path.with_extension("map.md");
+    if let Err(e) = fs::write(markdown_path.to_string(), markdown_content) {
+        eprintln!("Failed to write sourcemap markdown: {e}");
+    } else {
+        println!("Generated sourcemap visualization: {markdown_path}");
+    }
+
+    Ok(())
 }
