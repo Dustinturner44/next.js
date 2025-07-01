@@ -131,15 +131,15 @@ pub async fn diff(path: FileSystemPath, actual: Vc<AssetContent>) -> Result<()> 
                 path.write(content).await?;
                 println!("updated contents of {path_str}");
 
-                // 소스맵 파일인지 확인하고 시각화
+                // Check if it's a sourcemap file and visualize it
                 if let Some(extension) = path.extension_ref()
                     && extension == "map"
                 {
-                    // 소스맵 파일 내용 읽기
+                    // Read sourcemap file content
                     if let FileContent::Content(file) = &*content.await?
                         && let Ok(content_str) = std::str::from_utf8(&file.content().to_bytes())
                     {
-                        // 소스맵 시각화 수행
+                        // Perform sourcemap visualization
                         if let Err(e) = visualize_sourcemap_as_markdown(content_str, &path).await {
                             eprintln!("Failed to visualize sourcemap {path}: {e}");
                         }
@@ -252,12 +252,12 @@ fn styled_string_to_file_safe_string(styled_string: &StyledString) -> String {
     }
 }
 
-/// 소스맵을 디코딩하고 마크다운으로 시각화하는 함수
+/// Function to decode sourcemap and visualize it as markdown
 async fn visualize_sourcemap_as_markdown(
     sourcemap_content: &str,
     output_path: &FileSystemPath,
 ) -> Result<()> {
-    // 소스맵 파싱
+    // Parse sourcemap
     let sourcemap = match swc_sourcemap::SourceMap::from_slice(sourcemap_content.as_bytes()) {
         Ok(sm) => sm,
         Err(e) => {
@@ -269,7 +269,7 @@ async fn visualize_sourcemap_as_markdown(
     let mut markdown_content = String::new();
     markdown_content.push_str("# Source Map Visualization\n\n");
 
-    // 기본 정보
+    // Basic information
     markdown_content.push_str("## Basic Information\n\n");
 
     if let Some(file) = sourcemap.get_file() {
@@ -280,19 +280,19 @@ async fn visualize_sourcemap_as_markdown(
         markdown_content.push_str(&format!("- **Source Root**: {source_root}\n"));
     }
 
-    // 소스 파일들
+    // Source files
     markdown_content.push_str("\n## Source Files\n\n");
     for (i, source) in sourcemap.sources().enumerate() {
         markdown_content.push_str(&format!("{}. `{source}`\n", i + 1));
     }
 
-    // 매핑 정보
+    // Mapping information
     markdown_content.push_str("\n## Mappings Overview\n\n");
 
     let mut total_mappings = 0;
     let mut line_count = 0;
 
-    // 토큰 순회
+    // Iterate through tokens
     for token in sourcemap.tokens() {
         total_mappings += 1;
         if token.get_dst_line() > line_count {
@@ -303,7 +303,7 @@ async fn visualize_sourcemap_as_markdown(
     markdown_content.push_str(&format!("- **Total Mappings**: {total_mappings}\n"));
     markdown_content.push_str(&format!("- **Generated Lines**: {}\n", line_count + 1));
 
-    // 매핑 테이블 (처음 50개만 표시)
+    // Mapping table (show first 50 entries only)
     markdown_content.push_str("\n## Mapping Details (First 50 entries)\n");
     markdown_content.push_str("| Generated | Original | Source File | Name |\n");
     markdown_content.push_str("|-----------|----------|-------------|------|\n");
@@ -333,7 +333,7 @@ async fn visualize_sourcemap_as_markdown(
         ));
     }
 
-    // 소스 내용 (있는 경우)
+    // Source contents (if available)
     if sourcemap.source_contents().count() != 0 {
         markdown_content.push_str("\n## Source Contents\n\n");
         for (i, content) in sourcemap.source_contents().enumerate() {
@@ -341,7 +341,7 @@ async fn visualize_sourcemap_as_markdown(
                 let source_name = sourcemap.get_source(i as u32).map(|v| &**v).unwrap_or("");
                 markdown_content.push_str(&format!("### {source_name}\n"));
                 markdown_content.push_str("```javascript\n");
-                // 내용이 너무 길면 처음 20줄만 표시
+                // If content is too long, show only the first 20 lines
                 let lines: Vec<&str> = content.lines().collect();
                 if lines.len() > 20 {
                     for line in &lines[..20] {
@@ -358,7 +358,7 @@ async fn visualize_sourcemap_as_markdown(
         }
     }
 
-    // 마크다운 파일 저장
+    // Save markdown file
     let markdown_path = output_path.with_extension("map.md");
     if let Err(e) = fs::write(markdown_path.to_string(), markdown_content) {
         eprintln!("Failed to write sourcemap markdown: {e}");
