@@ -38,7 +38,6 @@ use crate::{
     magic_any::MagicAny,
     message_queue::{CompilationEvent, CompilationEventQueue},
     raw_vc::{CellId, RawVc},
-    registry,
     serialization_invalidation::SerializationInvalidator,
     task::local_task::{LocalTask, LocalTaskSpec, LocalTaskType},
     task_statistics::TaskStatisticsApi,
@@ -665,7 +664,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
         // for resolved cells we already know the value type so we can lookup the
         // function
         if let RawVc::TaskCell(_, CellId { type_id, .. }) = this {
-            match registry::get_value_type(type_id).get_trait_method(trait_method) {
+            match trait_method.get_impl(type_id) {
                 Some(native_fn) => {
                     let arg = native_fn.arg_meta.filter_owned(arg);
                     return self.dynamic_call(native_fn, Some(this), arg, persistence);

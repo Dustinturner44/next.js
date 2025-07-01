@@ -273,8 +273,8 @@ pub fn value_impl(args: TokenStream, input: TokenStream) -> TokenStream {
                 });
 
                 trait_registers.push(quote! {
-                    value.register_trait_method(
-                        <Box<dyn #trait_path> as turbo_tasks::VcValueTrait>::get_trait_type_id(),
+                    trait_type.register_impl(
+                        value_id,
                         stringify!(#ident),
                         &#native_function_ident);
                 });
@@ -286,7 +286,6 @@ pub fn value_impl(args: TokenStream, input: TokenStream) -> TokenStream {
             #[allow(non_snake_case)]
             pub(crate) fn #register_trait_methods(value: &mut turbo_tasks::ValueType) {
                 value.register_trait(<Box<dyn #trait_path> as turbo_tasks::VcValueTrait>::get_trait_type_id());
-                #(#trait_registers)*
             }
             #[doc(hidden)]
             #[allow(non_snake_case)]
@@ -297,6 +296,8 @@ pub fn value_impl(args: TokenStream, input: TokenStream) -> TokenStream {
                 let fat_pointer: *const dyn #trait_path = ::std::ptr::null::<#ty>() as *const dyn #trait_path;
                 let metadata = turbo_tasks::macro_helpers::metadata(fat_pointer);
                 turbo_tasks::macro_helpers::register_trait_impl::<dyn #trait_path, Box<dyn #trait_path>>(value_id, metadata);
+                let trait_type = <Box<dyn #trait_path> as turbo_tasks::VcValueTrait>::get_trait_type();
+                #(#trait_registers)*
             }
 
             // NOTE(alexkirsz) We can't have a general `turbo_tasks::Upcast<Box<dyn Trait>> for T where T: Trait` because

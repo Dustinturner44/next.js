@@ -134,7 +134,7 @@ impl LocalTaskType {
         trait_method: &'static TraitMethod,
         value_type: ValueTypeId,
     ) -> Result<&'static NativeFunction> {
-        match registry::get_value_type(value_type).get_trait_method(trait_method) {
+        match trait_method.get_impl(value_type) {
             Some(native_fn) => Ok(native_fn),
             None => Err(anyhow!(
                 "{} doesn't implement the trait for {:?}, the compiler should have flagged this",

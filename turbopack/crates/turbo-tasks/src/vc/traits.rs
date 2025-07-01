@@ -1,6 +1,6 @@
 use crate::{
-    NonLocalValue, ShrinkToFit, TraitTypeId, ValueTypeId, VcRead, macro_helpers::VTableRegistry,
-    vc::cell_mode::VcCellMode,
+    NonLocalValue, ShrinkToFit, TraitType, TraitTypeId, ValueTypeId, VcRead,
+    macro_helpers::VTableRegistry, vc::cell_mode::VcCellMode,
 };
 
 /// A trait implemented on all values types that can be put into a Value Cell
@@ -32,6 +32,9 @@ pub trait VcValueTrait: NonLocalValue + Send + Sync + 'static {
 
     /// Returns the type id of the trait object.
     fn get_trait_type_id() -> TraitTypeId;
+
+    /// Returns the type of the trait object.
+    fn get_trait_type() -> &'static TraitType;
 
     /// Returns the vtable for an implementation of this trait.
     /// Panics if ValueTypeId does not implement the trait.

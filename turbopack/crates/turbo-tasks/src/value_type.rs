@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tracing::Span;
 
 use crate::{
-    RawVc, VcValueType,
+    FxDashMap, RawVc, ValueTypeId, VcValueType,
     id::TraitTypeId,
     macro_helpers::NativeFunction,
     magic_any::{AnyDeserializeSeed, MagicAny, MagicAnyDeserializeSeed},
@@ -37,8 +37,6 @@ pub struct ValueType {
     pub name: String,
     /// Set of traits available
     traits: AutoSet<TraitTypeId>,
-    /// List of trait methods available
-    trait_methods: AutoMap<&'static TraitMethod, &'static NativeFunction>,
 
     /// Functors for serialization
     magic_serialization: Option<(MagicSerializationFn, MagicAnyDeserializeSeed)>,
@@ -75,11 +73,7 @@ impl Debug for ValueType {
         let mut d = f.debug_struct("ValueType");
         d.field("name", &self.name);
         for trait_id in self.traits.iter() {
-            for (name, m) in &registry::get_trait(*trait_id).methods {
-                if self.trait_methods.contains_key(&m) {
-                    d.field(name, &"(trait fn)");
-                }
-            }
+            d.field("impl", &registry::get_trait_type_global_name(*trait_id));
         }
         d.finish()
     }
@@ -109,7 +103,6 @@ impl ValueType {
         Self {
             name: std::any::type_name::<T>().to_string(),
             traits: AutoSet::new(),
-            trait_methods: AutoMap::new(),
             magic_serialization: None,
             any_serialization: None,
             raw_cell: <T::CellMode as VcCellMode<T>>::raw_cell,
@@ -123,7 +116,6 @@ impl ValueType {
         Self {
             name: std::any::type_name::<T>().to_string(),
             traits: AutoSet::new(),
-            trait_methods: AutoMap::new(),
             magic_serialization: None,
             any_serialization: Some((any_as_serialize::<T>, AnyDeserializeSeed::new::<T>())),
             raw_cell: <T::CellMode as VcCellMode<T>>::raw_cell,
@@ -166,27 +158,6 @@ impl ValueType {
     }
 
     /// This is internally used by `#[turbo_tasks::value_impl]`
-    pub fn register_trait_method(
-        &mut self,
-        trait_type: TraitTypeId,
-        name: &str,
-        native_fn: &'static NativeFunction,
-    ) {
-        self.trait_methods
-            .insert(registry::get_trait(trait_type).get(name), native_fn);
-    }
-
-    pub fn get_trait_method(
-        &self,
-        trait_method: &'static TraitMethod,
-    ) -> Option<&'static NativeFunction> {
-        match self.trait_methods.get(trait_method) {
-            Some(f) => Some(*f),
-            None => trait_method.default_method,
-        }
-    }
-
-    /// This is internally used by `#[turbo_tasks::value_impl]`
     pub fn register_trait(&mut self, trait_type: TraitTypeId) {
         self.traits.insert(trait_type);
     }
@@ -215,6 +186,7 @@ pub struct TraitMethod {
     pub(crate) trait_name: &'static str,
     pub(crate) method_name: &'static str,
     pub(crate) default_method: Option<&'static NativeFunction>,
+    impls: FxDashMap<crate::ValueTypeId, &'static NativeFunction>,
 }
 impl Hash for TraitMethod {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -245,7 +217,15 @@ impl TraitMethod {
             name = format_args!("{}::{}", &self.trait_name, &self.method_name),
         )
     }
+
+    pub(crate) fn get_impl(&self, id: ValueTypeId) -> Option<&'static NativeFunction> {
+        self.impls
+            .get(&id)
+            .map(|r| *r.value())
+            .or(self.default_method)
+    }
 }
+
 #[derive(Debug)]
 pub struct TraitType {
     pub name: &'static str,
@@ -287,6 +267,7 @@ impl TraitType {
                 trait_name: self.name,
                 method_name: name,
                 default_method: None,
+                impls: FxDashMap::default(),
             },
         );
     }
@@ -302,8 +283,18 @@ impl TraitType {
                 trait_name: self.name,
                 method_name: name,
                 default_method: Some(native_fn),
+                impls: FxDashMap::default(),
             },
         );
+    }
+
+    pub fn register_impl(
+        &self,
+        id: crate::ValueTypeId,
+        name: &'static str,
+        native_fn: &'static NativeFunction,
+    ) {
+        self.get(name).impls.insert(id, native_fn);
     }
 
     pub fn get(&self, name: &str) -> &TraitMethod {
