@@ -9992,6 +9992,7 @@ dependencies = [
  "rustc-hash 2.1.1",
  "serde",
  "similar",
+ "swc_sourcemap",
  "turbo-rcstr",
  "turbo-tasks",
  "turbo-tasks-build",
