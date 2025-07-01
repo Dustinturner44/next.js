@@ -15,6 +15,7 @@ import {
   STORAGE_KEY_SCALE,
   STORAGE_KEY_POSITION,
   ACTION_ERROR_OVERLAY_CLOSE,
+  STORAGE_KEY_ACTIVE_TAB,
 } from '../../shared'
 import { css } from '../../utils/css'
 import { OverlayBackdrop } from '../overlay'
@@ -25,8 +26,6 @@ import { Cross } from '../../icons/cross'
 import { MinimizeIcon } from '../../icons/minimize'
 
 export type DevToolsPanelTabType = 'issues' | 'route' | 'settings'
-
-const STORAGE_KEY_ACTIVE_TAB = 'nextjs-devtools-active-tab'
 
 function useSessionState<T extends string>(
   key: string,
@@ -78,6 +77,9 @@ export function DevToolsPanel({
   if (state.isErrorOverlayOpen !== prevIsErrorOverlayOpen) {
     if (state.isErrorOverlayOpen) {
       setIsFullscreen(true)
+      // We should always show the issues tab initially if we're
+      // programmatically opening the panel to highlight errors.
+      setActiveTab('issues')
     }
     setPrevIsErrorOverlayOpen(state.isErrorOverlayOpen)
   }
@@ -159,7 +161,8 @@ export function DevToolsPanel({
                 >
                   <div data-nextjs-devtools-panel-header-tab-group>
                     <button
-                      data-nextjs-devtools-panel-header-tab={
+                      data-nextjs-devtools-panel-header-tab="issues"
+                      data-nextjs-devtools-panel-header-tab-active={
                         activeTab === 'issues'
                       }
                       onClick={() => setActiveTab('issues')}
@@ -174,7 +177,8 @@ export function DevToolsPanel({
                       ) : null}
                     </button>
                     <button
-                      data-nextjs-devtools-panel-header-tab={
+                      data-nextjs-devtools-panel-header-tab="route"
+                      data-nextjs-devtools-panel-header-tab-active={
                         activeTab === 'route'
                       }
                       onClick={() => setActiveTab('route')}
@@ -182,7 +186,8 @@ export function DevToolsPanel({
                       Route Info
                     </button>
                     <button
-                      data-nextjs-devtools-panel-header-tab={
+                      data-nextjs-devtools-panel-header-tab="settings"
+                      data-nextjs-devtools-panel-header-tab-active={
                         activeTab === 'settings'
                       }
                       onClick={() => setActiveTab('settings')}
@@ -212,6 +217,7 @@ export function DevToolsPanel({
               </DialogHeader>
               <DialogBody data-nextjs-devtools-panel-dialog-body>
                 <DevToolsPanelTab
+                  page={state.page}
                   activeTab={activeTab}
                   devToolsPosition={state.devToolsPosition}
                   scale={state.scale}
@@ -230,6 +236,7 @@ export function DevToolsPanel({
             <DevToolsPanelFooter
               versionInfo={state.versionInfo}
               isDraggable={!isFullscreen}
+              showRestartServerButton={state.showRestartServerButton}
             />
           </Dialog>
         </>
@@ -277,11 +284,7 @@ export const DEVTOOLS_PANEL_STYLES = css`
     }
 
     @media (min-width: 992px) {
-      max-width: 960px;
-    }
-
-    @media (min-width: 1200px) {
-      max-width: 1140px;
+      max-width: 920px;
     }
   }
 
@@ -311,8 +314,11 @@ export const DEVTOOLS_PANEL_STYLES = css`
     box-shadow: var(--shadow-lg);
     position: relative;
     width: 100%;
-    max-height: 75vh;
-    min-height: 450px;
+    height: 350px;
+
+    @media (min-width: 768px) {
+      height: 450px;
+    }
   }
 
   [data-nextjs-devtools-panel-header] {
@@ -349,7 +355,7 @@ export const DEVTOOLS_PANEL_STYLES = css`
     }
   }
 
-  [data-nextjs-devtools-panel-header-tab='true'] {
+  [data-nextjs-devtools-panel-header-tab-active='true'] {
     color: var(--color-gray-1000);
     background-color: var(--color-gray-100);
   }
@@ -384,7 +390,7 @@ export const DEVTOOLS_PANEL_STYLES = css`
     align-items: center;
     justify-content: center;
     padding: 6px;
-    color: var(--color-gray-600);
+    color: var(--color-gray-1000);
     border-radius: 4px;
     transition: all 0.2s ease;
 

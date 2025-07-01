@@ -698,8 +698,9 @@ const getOrInstantiateModuleFromParent = (id, sourceModule)=>{
         parentId: sourceModule.id
     });
 };
-// @ts-ignore Defined in `runtime-base.ts`
-function instantiateModule(id, source) {
+function instantiateModule(moduleId, source) {
+    // We are in development, this is always a string.
+    let id = moduleId;
     const moduleFactory = moduleFactories[id];
     if (typeof moduleFactory !== 'function') {
         // This can happen if modules incorrectly handle HMR disposes/updates,
@@ -746,7 +747,7 @@ function instantiateModule(id, source) {
         exports: {},
         error: undefined,
         loaded: false,
-        id,
+        id: id,
         parents,
         children: [],
         namespaceObject: undefined,
@@ -762,7 +763,7 @@ function instantiateModule(id, source) {
         };
         runModuleExecutionHooks(module, (refresh)=>{
             const r = commonJsRequire.bind(null, module);
-            moduleFactory.call(module.exports, augmentContext({
+            moduleFactory(augmentContext({
                 a: asyncModule.bind(null, module),
                 e: module.exports,
                 r: commonJsRequire.bind(null, module),
@@ -821,9 +822,9 @@ function instantiateModule(id, source) {
         // This is expected when running in a Web Worker.  It is also common in some of
         // our test environments.
         executeModule({
-            register: (type, id)=>{},
-            signature: ()=>(type)=>{},
-            registerExports: (module, helpers)=>{}
+            register: (_type, _id)=>{},
+            signature: ()=>(_type)=>{},
+            registerExports: (_module, _helpers)=>{}
         });
     }
 }

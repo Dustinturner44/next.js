@@ -19,6 +19,7 @@ import type {
   ManifestRedirectRoute,
   RouteType,
 } from '../build'
+import { isStableBuild } from '../shared/lib/canary-only'
 
 export type NextConfigComplete = Required<NextConfig> & {
   images: Required<ImageConfigComplete>
@@ -736,11 +737,6 @@ export interface ExperimentalConfig {
   globalNotFound?: boolean
 
   /**
-   * Enable segment viewer for the app directory in Next.js DevTools.
-   */
-  devtoolSegmentExplorer?: boolean
-
-  /**
    * Enable new panel UI for the Next.js DevTools.
    */
   devtoolNewPanelUI?: boolean
@@ -1437,7 +1433,9 @@ export const defaultConfig = {
     viewTransition: false,
     routerBFCache: false,
     removeUncaughtErrorAndRejectionListeners: false,
-    validateRSCRequestHeaders: false,
+    validateRSCRequestHeaders: !!(
+      process.env.__NEXT_TEST_MODE || !isStableBuild()
+    ),
     staleTimes: {
       dynamic: 0,
       static: 300,
@@ -1453,7 +1451,6 @@ export const defaultConfig = {
     useCache: undefined,
     slowModuleDetection: undefined,
     globalNotFound: false,
-    devtoolSegmentExplorer: false,
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,
