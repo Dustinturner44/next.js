@@ -361,6 +361,7 @@ async fn visualize_sourcemap_as_markdown(
 
     // Save markdown file
     let markdown_path = output_path.with_extension("map.md");
+    fs::create_dir_all(&markdown_path.parent().path)?;
     if let Err(e) = fs::write(markdown_path.to_string(), markdown_content) {
         eprintln!("Failed to write sourcemap markdown: {e}");
     } else {
