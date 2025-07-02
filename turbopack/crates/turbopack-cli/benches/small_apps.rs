@@ -4,6 +4,7 @@
 static ALLOC: turbo_tasks_malloc::TurboMalloc = turbo_tasks_malloc::TurboMalloc;
 
 use std::{
+    fs::OpenOptions,
     io::Write,
     path::{Path, PathBuf},
     process::Command,
@@ -50,6 +51,7 @@ fn bench_small_apps(c: &mut Criterion) {
 
     let (apps_dir, apps) = list_apps();
     let mut g = c.benchmark_group("turbopack/build/apps");
+    let mut benchmark_results = Vec::new();
 
     for app in apps {
         g.bench_function(
@@ -118,19 +120,50 @@ fn bench_small_apps(c: &mut Criterion) {
                     deallocations: sum.deallocations / allocations.len(),
                 };
 
-                if let Ok(output_file_path) = std::env::var("GITHUB_STEP_SUMMARY") {
-                    let mut file = std::fs::File::create(output_file_path).unwrap();
-                    let mut writer = std::io::BufWriter::new(file);
-
-                    writeln!(writer, "# App: {app_name}").unwrap();
-                    writeln!(writer, "## Allocations").unwrap();
-
-                    for allocation in allocations {
-                        writeln!(writer, "- {allocation:?}").unwrap();
-                    }
-                }
+                // Store the result
+                benchmark_results.push((app_name.clone(), avg_alloc));
             },
         );
+    }
+
+    // Write all results to GITHUB_OUTPUT after benchmarks complete
+    write_results_to_github_output(&benchmark_results);
+}
+
+fn write_results_to_github_output(results: &[(String, AllocationInfo)]) {
+    if let Ok(output_file_path) = std::env::var("GITHUB_OUTPUT")
+        && !results.is_empty()
+    {
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(output_file_path)
+            .expect("Failed to open GITHUB_OUTPUT file");
+
+        // Create markdown table
+        let mut table = String::new();
+        table.push_str("## Turbopack Build Apps Allocation Metrics\n");
+        table.push_str(
+            "| App | Allocation Count | Deallocation Count | Allocations (bytes) | Deallocations \
+             (bytes) |\n",
+        );
+        table.push_str("|-----|-----|-----|-----|-----|\n");
+
+        for (app_name, avg_alloc) in results.iter() {
+            table.push_str(&format!(
+                "| {} | {} | {} | {} | {} |\n",
+                app_name,
+                avg_alloc.allocation_count,
+                avg_alloc.deallocation_count,
+                avg_alloc.allocations,
+                avg_alloc.deallocations
+            ));
+        }
+
+        // Write in GITHUB_OUTPUT format with proper escaping
+        writeln!(file, "result<<EOF").expect("Failed to write to GITHUB_OUTPUT");
+        write!(file, "{table}").expect("Failed to write to GITHUB_OUTPUT");
+        writeln!(file, "EOF").expect("Failed to write to GITHUB_OUTPUT");
     }
 }
 
