@@ -10,6 +10,7 @@ use std::{
 };
 
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
+use turbo_tasks_malloc::AllocationInfo;
 use turbopack_cli::{
     arguments::{BuildArguments, CommonArguments},
     register,
@@ -99,6 +100,23 @@ fn bench_small_apps(c: &mut Criterion) {
                     let alloc_info = allocation_counters.until_now();
                     allocations.push(alloc_info);
                 });
+
+                let sum =
+                    allocations
+                        .iter()
+                        .fold(AllocationInfo::default(), |mut acc, allocation| {
+                            acc.allocation_count += allocation.allocation_count;
+                            acc.deallocation_count += allocation.deallocation_count;
+                            acc.allocations += allocation.allocations;
+                            acc.deallocations += allocation.deallocations;
+                            acc
+                        });
+                let avg_alloc = AllocationInfo {
+                    allocation_count: sum.allocation_count / allocations.len(),
+                    deallocation_count: sum.deallocation_count / allocations.len(),
+                    allocations: sum.allocations / allocations.len(),
+                    deallocations: sum.deallocations / allocations.len(),
+                };
 
                 if let Ok(output_file_path) = std::env::var("GITHUB_STEP_SUMMARY") {
                     let mut file = std::fs::File::create(output_file_path).unwrap();
