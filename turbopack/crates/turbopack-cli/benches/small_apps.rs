@@ -161,9 +161,7 @@ fn write_results_to_github_output(results: &[(String, AllocationInfo)]) {
         }
 
         // Write in GITHUB_OUTPUT format with proper escaping
-        writeln!(file, "result<<EOF").expect("Failed to write to GITHUB_OUTPUT");
-        write!(file, "{table}").expect("Failed to write to GITHUB_OUTPUT");
-        writeln!(file, "EOF").expect("Failed to write to GITHUB_OUTPUT");
+        writeln!(file, "result={table}").expect("Failed to write to GITHUB_OUTPUT");
     }
 }
 
