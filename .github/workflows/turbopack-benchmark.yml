@@ -82,10 +82,16 @@ jobs:
         run: cargo codspeed build -p turbopack-cli small_apps
 
       - name: Run the benchmarks
+        id: bench
         uses: CodSpeedHQ/action@v3
         with:
           run: cargo codspeed run
           token: ${{ secrets.CODSPEED_TOKEN }}
+
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message-id: benchmark-small-apps-comment
+          message: ${{ steps.bench.outputs.result }}
 
   benchmark-large:
     name: Benchmark Rust Crates (large)
