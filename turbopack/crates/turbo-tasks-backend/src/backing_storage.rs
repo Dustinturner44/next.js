@@ -8,6 +8,7 @@ use turbo_tasks::{SessionId, TaskId, backend::CachedTaskType};
 use crate::{
     backend::{AnyOperation, TaskDataCategory},
     data::CachedDataItem,
+    interning_serde::RcStrToLocalId,
     utils::chunked_vec::ChunkedVec,
 };
 
@@ -46,7 +47,11 @@ pub trait BackingStorageSealed: 'static + Send + Sync {
     fn next_session_id(&self) -> Result<SessionId>;
     fn uncompleted_operations(&self) -> Result<Vec<AnyOperation>>;
     #[allow(clippy::ptr_arg)]
-    fn serialize(&self, task: TaskId, data: &Vec<CachedDataItem>) -> Result<SmallVec<[u8; 16]>>;
+    fn serialize(
+        &self,
+        task: TaskId,
+        data: &Vec<CachedDataItem>,
+    ) -> Result<(SmallVec<[u8; 16]>, RcStrToLocalId)>;
     fn save_snapshot<I>(
         &self,
         session_id: SessionId,
@@ -58,8 +63,8 @@ pub trait BackingStorageSealed: 'static + Send + Sync {
         I: Iterator<
                 Item = (
                     TaskId,
-                    Option<SmallVec<[u8; 16]>>,
-                    Option<SmallVec<[u8; 16]>>,
+                    Option<(SmallVec<[u8; 16]>, RcStrToLocalId)>,
+                    Option<(SmallVec<[u8; 16]>, RcStrToLocalId)>,
                 ),
             > + Send
             + Sync;
@@ -71,7 +76,7 @@ pub trait BackingStorageSealed: 'static + Send + Sync {
         &self,
         tx: Option<&Self::ReadTransaction<'_>>,
         key: &CachedTaskType,
-    ) -> Result<Option<TaskId>>;
+    ) -> Result<Option<(TaskId, RcStrToLocalId)>>;
     /// # Safety
     ///
     /// `tx` must be a transaction from this BackingStorage instance.
