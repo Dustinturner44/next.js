@@ -15,6 +15,6 @@ jobs:
 
       - name: Run for 5 minutes
         run: |
-          echo "Starting 5-minute test run..."
+          echo "Starting 5-minute test run...."
           sleep 300
           echo "5-minute test run completed successfully!"
