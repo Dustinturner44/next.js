@@ -14,11 +14,13 @@ interface TooltipProps {
   offset?: number
   bgcolor?: string
   color?: string
+  className?: string
 }
 
 export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   function Tooltip(
     {
+      className,
       children,
       title,
       direction = 'top',
@@ -53,7 +55,7 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
               }
             >
               <BaseTooltip.Popup
-                className="tooltip"
+                className={cx('tooltip', className)}
                 style={
                   {
                     backgroundColor: bgcolor,
