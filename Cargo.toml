@@ -438,3 +438,6 @@ webbrowser = "0.8.7"
 mdxjs = { git = "https://github.com/kdy1/mdxjs-rs.git", branch = "swc-core-30" }
 lightningcss = { git = "https://github.com/parcel-bundler/lightningcss.git", branch = "mischnic/bump-browserslist" }
 parcel_selectors = { git = "https://github.com/parcel-bundler/lightningcss.git", branch = "mischnic/bump-browserslist" }
+
+# We use forte
+rayon-core = { git = "https://github.com/NthTensor/Forte", package = "rayon-compat", branch = "rayon-compat"}
