@@ -145,13 +145,13 @@ fn write_results_to_github_output(results: &[(String, AllocationInfo)]) {
         table.push_str("## Turbopack Build Apps Allocation Metrics\n");
         table.push_str(
             "| App | Allocation Count | Deallocation Count | Allocations (bytes) | Deallocations \
-             (bytes) |\n",
+             (bytes) |\\n",
         );
-        table.push_str("|-----|-----|-----|-----|-----|\n");
+        table.push_str("|-----|-----|-----|-----|-----|\\n");
 
         for (app_name, avg_alloc) in results.iter() {
             table.push_str(&format!(
-                "| {} | {} | {} | {} | {} |\n",
+                "| {} | {} | {} | {} | {} |\\n",
                 app_name,
                 avg_alloc.allocation_count,
                 avg_alloc.deallocation_count,
@@ -160,10 +160,7 @@ fn write_results_to_github_output(results: &[(String, AllocationInfo)]) {
             ));
         }
 
-        // Write to GITHUB_OUTPUT with proper escaping for multiline content
-        writeln!(file, "result<<EOF").expect("Failed to write to GITHUB_OUTPUT file");
-        writeln!(file, "{table}").expect("Failed to write to GITHUB_OUTPUT file");
-        writeln!(file, "EOF").expect("Failed to write to GITHUB_OUTPUT file");
+        writeln!(file, "result={table}").expect("Failed to write to GITHUB_OUTPUT file");
     }
 }
 
