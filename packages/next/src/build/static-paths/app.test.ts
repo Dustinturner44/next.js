@@ -110,6 +110,58 @@ describe('assignErrorIfEmpty', () => {
     expect(prerenderedRoutes[3].throwOnEmptyStaticShell).toBe(true)
     expect(prerenderedRoutes[4].throwOnEmptyStaticShell).toBe(false)
   })
+
+  it('should handle parameter value collisions', () => {
+    const params = [{ slug: ['foo', 'bar'] }, { slug: 'foo,bar' }]
+
+    const unique = filterUniqueRootParamsCombinations(['slug'], params)
+
+    expect(unique).toEqual([{ slug: ['foo', 'bar'] }, { slug: 'foo,bar' }])
+  })
+
+  it('should handle multiple routes at the same trie node', () => {
+    const prerenderedRoutes: PrerenderedRoute[] = [
+      {
+        params: { id: '1' },
+        pathname: '/1/[name]',
+        encodedPathname: '/1/[name]',
+        fallbackRouteParams: ['name'],
+        fallbackMode: FallbackMode.NOT_FOUND,
+        fallbackRootParams: [],
+        throwOnEmptyStaticShell: true,
+      },
+      {
+        params: { id: '1' },
+        pathname: '/1/[name]/[extra]',
+        encodedPathname: '/1/[name]/[extra]',
+        fallbackRouteParams: ['name', 'extra'],
+        fallbackMode: FallbackMode.NOT_FOUND,
+        fallbackRootParams: [],
+        throwOnEmptyStaticShell: true,
+      },
+      {
+        params: { id: '1', name: 'test' },
+        pathname: '/1/test',
+        encodedPathname: '/1/test',
+        fallbackRouteParams: [],
+        fallbackMode: FallbackMode.NOT_FOUND,
+        fallbackRootParams: [],
+        throwOnEmptyStaticShell: true,
+      },
+    ]
+
+    assignErrorIfEmpty(prerenderedRoutes, ['id', 'name', 'extra'])
+
+    expect(prerenderedRoutes[0].throwOnEmptyStaticShell).toBe(false)
+    expect(prerenderedRoutes[1].throwOnEmptyStaticShell).toBe(false)
+    expect(prerenderedRoutes[2].throwOnEmptyStaticShell).toBe(true)
+  })
+
+  it('should handle empty input', () => {
+    const prerenderedRoutes: PrerenderedRoute[] = []
+    assignErrorIfEmpty(prerenderedRoutes, [])
+    expect(prerenderedRoutes).toEqual([])
+  })
 })
 
 describe('filterUniqueParams', () => {
@@ -153,5 +205,24 @@ describe('filterUniqueRootParamsCombinations', () => {
     const unique = filterUniqueRootParamsCombinations(['id'], params)
 
     expect(unique).toEqual([{ id: '1' }, { id: '2' }])
+  })
+
+  it('should handle multiple root parameters', () => {
+    const params = [
+      { lang: 'en', region: 'US', page: 'home' },
+      { lang: 'en', region: 'US', page: 'about' },
+      { lang: 'fr', region: 'CA', page: 'home' },
+      { lang: 'fr', region: 'CA', page: 'about' },
+    ]
+
+    const unique = filterUniqueRootParamsCombinations(
+      ['lang', 'region'],
+      params
+    )
+
+    expect(unique).toEqual([
+      { lang: 'en', region: 'US' },
+      { lang: 'fr', region: 'CA' },
+    ])
   })
 })
