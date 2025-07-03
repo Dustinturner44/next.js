@@ -129,7 +129,11 @@ where
         either::for_both!(self, this => this.uncompleted_operations())
     }
 
-    fn serialize(&self, task: TaskId, data: &Vec<CachedDataItem>) -> Result<SmallVec<[u8; 16]>> {
+    fn serialize(
+        &self,
+        task: TaskId,
+        data: &Vec<CachedDataItem>,
+    ) -> Result<(SmallVec<[u8; 16]>, RcStrToLocalId)> {
         either::for_both!(self, this => this.serialize(task, data))
     }
 
@@ -144,8 +148,8 @@ where
         I: Iterator<
                 Item = (
                     TaskId,
-                    Option<SmallVec<[u8; 16]>>,
-                    Option<SmallVec<[u8; 16]>>,
+                    Option<(SmallVec<[u8; 16]>, RcStrToLocalId)>,
+                    Option<(SmallVec<[u8; 16]>, RcStrToLocalId)>,
                 ),
             > + Send
             + Sync,
@@ -169,7 +173,7 @@ where
         &self,
         tx: Option<&Self::ReadTransaction<'_>>,
         key: &CachedTaskType,
-    ) -> Result<Option<TaskId>> {
+    ) -> Result<Option<(TaskId, RcStrToLocalId)>> {
         match self {
             Either::Left(this) => {
                 let tx = tx.map(|tx| read_transaction_left_or_panic(tx.as_ref()));
