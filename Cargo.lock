@@ -11707,3 +11707,8 @@ checksum = "ec866b44a2a1fd6133d363f073ca1b179f438f99e7e5bfb1e33f7181facfe448"
 dependencies = [
  "zune-core",
 ]
+
+[[patch.unused]]
+name = "rayon-compat"
+version = "1.12.1"
+source = "git+https://github.com/NthTensor/Forte?branch=rayon-compat#1082a9fcf1cd4ac0a548c9184023f29bb7617bd4"
