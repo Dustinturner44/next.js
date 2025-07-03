@@ -160,7 +160,7 @@ fn write_results_to_github_output(results: &[(String, AllocationInfo)]) {
             ));
         }
 
-        writeln!(file, "result='{table}'").expect("Failed to write to GITHUB_OUTPUT file");
+        writeln!(file, "result={table}").expect("Failed to write to GITHUB_OUTPUT file");
     }
 }
 
