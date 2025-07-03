@@ -266,8 +266,8 @@ interface TrieNode {
  * should throw an error when its static shell is empty.
  *
  * A route should not throw on empty static shell if it has child routes in the Trie. For example,
- * if we have two routes, `/blog/[slug]` and `/blog/first-post`, the route for
- * `/blog/[slug]` is a shell because it has a more specific child.
+ * if we have two routes, `/blog/first-post` and `/blog/[slug]`, the route for
+ * `/blog/[slug]` should not throw because `/blog/first-post` is a more specific concrete route.
  *
  * @param prerenderedRoutes - The prerendered routes.
  * @param routeParamKeys - The keys of the route parameters.
@@ -374,13 +374,13 @@ export function assignErrorIfEmpty(
         // following conditions is met:
         // 1. `hasChildren` is true: This node has further concrete parameter children.
         //    This means the current route is a parent to more specific routes (e.g.,
-        //    `/blog/[slug]` is a shell if `/blog/first-post` exists).
+        //    `/blog/[slug]` should not throw when concrete routes like `/blog/first-post` exist).
         // OR
         // 2. `route.fallbackRouteParams.length > minFallbacks`: This route has
         //    more fallback parameters than another route at the same Trie node.
         //    This implies the current route is a more general version that should not throw
         //    compared to a more specific route that has fewer fallback parameters
-        //    (e.g., `/[id]/[...slug]` is a shell for `/[id]`).
+        //    (e.g., `/1234/[...slug]` should not throw relative to `/[id]/[...slug]`).
         if (
           hasChildren ||
           (route.fallbackRouteParams &&
