@@ -1,0 +1,20 @@
+name: test-check-running-workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test-check:
+    runs-on: ubuntu-latest
+    name: Test check running workflow
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run for 5 minutes
+        run: |
+          echo "Starting 5-minute test run..."
+          sleep 300
+          echo "5-minute test run completed successfully!"
