@@ -182,7 +182,9 @@ function getSelectedLayoutSegmentPath(
     return segmentPath
   }
 
-  segmentPath.push(segmentValue)
+  if (segmentValue !== 'children' && !segmentValue.startsWith('@')) {
+    segmentPath.push(segmentValue)
+  }
 
   return getSelectedLayoutSegmentPath(
     node,

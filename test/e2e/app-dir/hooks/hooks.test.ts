@@ -181,4 +181,58 @@ describe('app dir - hooks', () => {
       expect(JSON.parse($('#page-layout-segment').text())).toEqual(null)
     })
   })
+
+  describe('useSelectedLayoutSegments with parallel routes', () => {
+    it.each`
+      path                                                    | defaultSegments | headerSegments | defaultSegment | headerSegment
+      ${'/hooks/use-selected-layout-segment-parallel/first'}  | ${['first']}    | ${['first']}   | ${'first'}     | ${'first'}
+      ${'/hooks/use-selected-layout-segment-parallel/second'} | ${['second']}   | ${['second']}  | ${'second'}    | ${'second'}
+      ${'/hooks/use-selected-layout-segment-parallel/third'}  | ${['third']}    | ${['third']}   | ${'third'}     | ${'third'}
+    `(
+      'should not include "children" or "@" markers in results at $path',
+      async ({
+        path,
+        defaultSegments,
+        headerSegments,
+        defaultSegment,
+        headerSegment,
+      }) => {
+        const $ = await next.render$(path)
+
+        expect(JSON.parse($('#default-segments').text())).toEqual(
+          defaultSegments
+        )
+        expect(JSON.parse($('#default-segment').text())).toEqual(defaultSegment)
+
+        expect(JSON.parse($('#header-segments').text())).toEqual(headerSegments)
+        expect(JSON.parse($('#header-segment').text())).toEqual(headerSegment)
+
+        const allSegments = [...defaultSegments, ...headerSegments]
+
+        expect(allSegments).not.toContain('children')
+
+        expect(
+          allSegments.every(
+            // gotta type narrow from any to string
+            (segment) => typeof segment === 'string' && !segment.startsWith('@')
+          )
+        ).toBe(true)
+      }
+    )
+
+    it('should filter out internal routing segments from both parallel routes', async () => {
+      const $ = await next.render$(
+        '/hooks/use-selected-layout-segment-parallel/test'
+      )
+
+      const defaultSegments = JSON.parse($('#default-segments').text())
+      const headerSegments = JSON.parse($('#header-segments').text())
+
+      expect(defaultSegments).toEqual(['test'])
+      expect(headerSegments).toEqual(['test'])
+
+      expect($('#header-page').text()).toContain('Parallel-Header: test')
+      expect($('#children-page').text()).toContain('Page-Children: test')
+    })
+  })
 })
