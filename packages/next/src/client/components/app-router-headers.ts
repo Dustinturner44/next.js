@@ -16,6 +16,10 @@ export const NEXT_HMR_REFRESH_HASH_COOKIE = '__next_hmr_refresh_hash__' as const
 export const NEXT_URL = 'Next-Url' as const
 export const RSC_CONTENT_TYPE_HEADER = 'text/x-component' as const
 
+// TODO: make this a more general naming for lazy loaded parts of the page
+export const NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER =
+  'Next-Router-Include-Not-Found' as const
+
 export const FLIGHT_HEADERS = [
   RSC_HEADER,
   NEXT_ROUTER_STATE_TREE_HEADER,

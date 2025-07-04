@@ -32,6 +32,7 @@ import {
   NEXT_ROUTER_PREFETCH_HEADER,
   NEXT_IS_PRERENDER_HEADER,
   NEXT_DID_POSTPONE_HEADER,
+  NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER,
 } from '../../client/components/app-router-headers'
 import { getBotType, isBot } from '../../shared/lib/router/utils/is-bot'
 import {
@@ -245,11 +246,15 @@ export async function handler(
   // render.
   const minimalPostponed = isRoutePPREnabled ? initialPostponed : undefined
 
+  const isIncludeNotFound =
+    req.headers[NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER.toLowerCase()] === '1'
+
   // If PPR is enabled, and this is a RSC request (but not a prefetch), then
   // we can use this fact to only generate the flight data for the request
   // because we can't cache the HTML (as it's also dynamic).
   const isDynamicRSCRequest =
-    isRoutePPREnabled && isRSCRequest && !isPrefetchRSCRequest
+    (isRoutePPREnabled && isRSCRequest && !isPrefetchRSCRequest) ||
+    (isRSCRequest && isIncludeNotFound)
 
   // Need to read this before it's stripped by stripFlightHeaders. We don't
   // need to transfer it to the request meta because it's only read
@@ -295,7 +300,8 @@ export async function handler(
     !supportsDynamicResponse &&
     !isPossibleServerAction &&
     !minimalPostponed &&
-    !isDynamicRSCRequest
+    !isDynamicRSCRequest &&
+    !isIncludeNotFound
   ) {
     ssgCacheKey = resolvedPathname
   }

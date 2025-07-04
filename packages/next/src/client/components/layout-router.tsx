@@ -2,6 +2,7 @@
 
 import type {
   CacheNode,
+  ChildSegmentMap,
   LazyCacheNode,
   LoadingModuleData,
 } from '../../shared/lib/app-router-context.shared-runtime'
@@ -40,6 +41,7 @@ import { createRouterCacheKey } from './router-reducer/create-router-cache-key'
 import { hasInterceptionRouteInCurrentTree } from './router-reducer/reducers/has-interception-route-in-current-tree'
 import { dispatchAppRouterAction } from './use-action-queue'
 import { useRouterBFCache, type RouterBFCacheEntry } from './bfcache'
+import { PAGE_SEGMENT_KEY } from '../../shared/lib/segment'
 
 const Activity = process.env.__NEXT_ROUTER_BF_CACHE
   ? (require('react') as typeof import('react')).unstable_Activity
@@ -335,11 +337,13 @@ function InnerLayoutRouter({
   segmentPath,
   cacheNode,
   url,
+  isNotFoundSegment,
 }: {
   tree: FlightRouterState
   segmentPath: FlightSegmentPath
   cacheNode: CacheNode
   url: string
+  isNotFoundSegment: boolean
 }) {
   const context = useContext(GlobalLayoutRouterContext)
   if (!context) {
@@ -392,6 +396,7 @@ function InnerLayoutRouter({
         {
           flightRouterState: refetchTree,
           nextUrl: includeNextUrl ? context.nextUrl : null,
+          isNotFoundSegment,
         }
       ).then((serverResponse) => {
         startTransition(() => {
@@ -503,7 +508,7 @@ export default function OuterLayoutRouter({
   templateStyles,
   templateScripts,
   template,
-  notFound,
+  // notFound,
   forbidden,
   unauthorized,
   gracefullyDegrade,
@@ -516,7 +521,7 @@ export default function OuterLayoutRouter({
   templateStyles: React.ReactNode | undefined
   templateScripts: React.ReactNode | undefined
   template: React.ReactNode
-  notFound: React.ReactNode | undefined
+  // notFound: React.ReactNode | undefined
   forbidden: React.ReactNode | undefined
   unauthorized: React.ReactNode | undefined
   gracefullyDegrade?: boolean
@@ -528,18 +533,16 @@ export default function OuterLayoutRouter({
   }
 
   const { parentTree, parentCacheNode, parentSegmentPath, url } = context
-
-  // Get the CacheNode for this segment by reading it from the parent segment's
-  // child map.
+  const parentTreeSegment = parentTree[0]
   const parentParallelRoutes = parentCacheNode.parallelRoutes
   let segmentMap = parentParallelRoutes.get(parallelRouterKey)
+
   // If the parallel router cache node does not exist yet, create it.
   // This writes to the cache when there is no item in the cache yet. It never *overwrites* existing cache items which is why it's safe in concurrent mode.
   if (!segmentMap) {
     segmentMap = new Map()
     parentParallelRoutes.set(parallelRouterKey, segmentMap)
   }
-  const parentTreeSegment = parentTree[0]
   const segmentPath =
     parentSegmentPath === null
       ? // TODO: The root segment value is currently omitted from the segment
@@ -630,6 +633,15 @@ export default function OuterLayoutRouter({
       )
     }
 
+    // TODO: Is useMemo required here?
+    const notFound = getNotFound(
+      parentParallelRoutes,
+      parentTree,
+      parentSegmentPath,
+      url
+      // TODO: pass the notFound prop when lazy not found feature is disabled
+    )
+
     // TODO: The loading module data for a segment is stored on the parent, then
     // applied to each of that parent segment's parallel route slots. In the
     // simple case where there's only one parallel route (the `children` slot),
@@ -661,6 +673,7 @@ export default function OuterLayoutRouter({
                       tree={tree}
                       cacheNode={cacheNode}
                       segmentPath={segmentPath}
+                      isNotFoundSegment={false}
                     />
                     {segmentBoundaryTriggerNode}
                   </RedirectBoundary>
@@ -705,4 +718,72 @@ export default function OuterLayoutRouter({
   } while (bfcacheEntry !== null)
 
   return children
+}
+
+const getNotFound = (
+  parentParallelRoutes: Map<string, ChildSegmentMap>,
+  parentTree: FlightRouterState,
+  parentSegmentPath: FlightSegmentPath | null,
+  url: string
+) => {
+  // TODO: if feature is not enabled, simply return notFound from prop.
+  // If feature is enabled, we should assert notFound is NULL at all times.
+
+  // We've converted not-found into a parallel route at the loader.
+  // Hence if it was previously a sibling module to a page segment,
+  // then it is now a sibling parallel route to the page segment.
+  // The following is a hardcoded algorithm to find the not-found
+  // parallel route based on the parent tree segment of the current tree.
+
+  // Get the CacheNode for this segment by reading it from the parent segment's
+  // child map.
+  // EXAMPLE:
+  //      children -> ...
+  //      __not_found__ -> ...
+  // EXAMPLE:
+  //       parallelRouterKey: "children"
+  //       segmentMap:
+  //             __PAGE__ -> ... (cacheNode)
+  // should be named as: childrenSegmentMap
+
+  // TODO: "__not_found__" should be turned to a const.
+  let notFoundSegmentMap = parentParallelRoutes.get('__not_found__')
+  const parentTreeSegment = parentTree[0]
+
+  let notFoundCacheNode = notFoundSegmentMap?.get(PAGE_SEGMENT_KEY)
+  let notFoundTree = parentTree[1]['__not_found__']
+  let notFoundSegmentPath =
+    parentSegmentPath === null
+      ? ['__not_found__']
+      : parentSegmentPath.concat([parentTreeSegment, '__not_found__'])
+
+  // InnerLayoutRouter is a renderer for cacheNode.
+  // The only reason we need to send `isNotFoundSegment` prop is so that
+  // when it fetches the "dynamic hole" for the cacheNode, it knows
+  // to attach a specific header.
+  // TODO: can make `isNotFoundSegment` to an override prop for
+  // FetchServerResponseOptions to avoid leaky abstraction.
+  if (notFoundCacheNode) {
+    return (
+      // TODO: Suspense causes flash of content, but removing it would
+      // cause the following error when you directly load a notFound page.
+      // ```
+      // Can't perform a React state update on a component that hasn't mounted yet.
+      // This indicates that you have a side-effect in your render function that
+      // asynchronously tries to update the component. Move this work to useEffect instead.
+      // ```
+      // Fix React error when loading `/gone`
+      // <Suspense>
+      <InnerLayoutRouter
+        url={`${url}`}
+        tree={notFoundTree}
+        cacheNode={notFoundCacheNode}
+        segmentPath={notFoundSegmentPath}
+        isNotFoundSegment={true}
+      />
+      // </Suspense>
+    )
+  }
+
+  return null
 }

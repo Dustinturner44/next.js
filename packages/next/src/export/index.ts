@@ -75,6 +75,7 @@ export class ExportError extends Error {
   code = 'NEXT_EXPORT_ERROR'
 }
 
+// TODO: does not support lazy not found mode
 async function exportAppImpl(
   dir: string,
   options: Readonly<ExportAppOptions>,

@@ -20,6 +20,7 @@ import {
   NEXT_HMR_REFRESH_HEADER,
   NEXT_DID_POSTPONE_HEADER,
   NEXT_ROUTER_STALE_TIME_HEADER,
+  NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER,
 } from '../app-router-headers'
 import { callServer } from '../../app-call-server'
 import { findSourceMapURL } from '../../app-find-source-map-url'
@@ -40,6 +41,7 @@ export interface FetchServerResponseOptions {
   readonly nextUrl: string | null
   readonly prefetchKind?: PrefetchKind
   readonly isHmrRefresh?: boolean
+  readonly isNotFoundSegment?: boolean
 }
 
 export type FetchServerResponseResult = {
@@ -61,6 +63,9 @@ export type RequestHeaders = {
   [NEXT_HMR_REFRESH_HEADER]?: '1'
   // A header that is only added in test mode to assert on fetch priority
   'Next-Test-Fetch-Priority'?: RequestInit['priority']
+  // TODO: change cache busting to account for this to prevent
+  // cache poisoning??
+  [NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER]?: '1'
 }
 
 export function urlToUrlWithoutFlightMarker(url: string): URL {
@@ -117,7 +122,8 @@ export async function fetchServerResponse(
   url: URL,
   options: FetchServerResponseOptions
 ): Promise<FetchServerResponseResult> {
-  const { flightRouterState, nextUrl, prefetchKind } = options
+  const { flightRouterState, nextUrl, prefetchKind, isNotFoundSegment } =
+    options
 
   const headers: RequestHeaders = {
     // Enable flight response
@@ -145,6 +151,10 @@ export async function fetchServerResponse(
 
   if (nextUrl) {
     headers[NEXT_URL] = nextUrl
+  }
+
+  if (isNotFoundSegment) {
+    headers[NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER] = '1'
   }
 
   try {

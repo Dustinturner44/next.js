@@ -236,6 +236,11 @@ export interface RequestMeta {
    * specific flags in future)
    */
   minimalMode?: boolean
+
+  /**
+   * Whether the request is for the not found page.
+   */
+  isIncludeNotFound?: boolean
 }
 
 /**

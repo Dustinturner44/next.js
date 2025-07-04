@@ -105,6 +105,7 @@ import {
   NEXT_URL,
   NEXT_ROUTER_STATE_TREE_HEADER,
   NEXT_IS_PRERENDER_HEADER,
+  NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER,
 } from '../client/components/app-router-headers'
 import type {
   MatchOptions,
@@ -172,6 +173,7 @@ import { fixMojibake } from './lib/fix-mojibake'
 import { computeCacheBustingSearchParam } from '../shared/lib/router/utils/cache-busting-search-param'
 import { RedirectStatusCode } from '../client/components/redirect-status-code'
 import { setCacheBustingSearchParamWithHash } from '../client/components/router-reducer/set-cache-busting-search-param'
+import { NotFoundRSCPathnameNormalizer } from './normalizers/request/not-found-rsc'
 
 export type FindComponentsResult = {
   components: LoadComponentsReturnType
@@ -444,6 +446,7 @@ export default abstract class Server<
     readonly prefetchRSC: PrefetchRSCPathnameNormalizer | undefined
     readonly segmentPrefetchRSC: SegmentPrefixRSCPathnameNormalizer | undefined
     readonly data: NextDataPathnameNormalizer | undefined
+    readonly notFoundRSC: NotFoundRSCPathnameNormalizer | undefined
   }
 
   private readonly isAppPPREnabled: boolean
@@ -551,6 +554,10 @@ export default abstract class Server<
       data: this.enabledDirectories.pages
         ? new NextDataPathnameNormalizer(this.buildId)
         : undefined,
+      notFoundRSC:
+        this.enabledDirectories.app && this.minimalMode
+          ? new NotFoundRSCPathnameNormalizer()
+          : undefined,
     }
 
     this.nextFontManifest = this.getNextFontManifest()
@@ -679,6 +686,18 @@ export default abstract class Server<
       req.headers[NEXT_ROUTER_PREFETCH_HEADER.toLowerCase()] = '1'
       addRequestMeta(req, 'isRSCRequest', true)
       addRequestMeta(req, 'isPrefetchRSCRequest', true)
+    } else if (this.normalizers.notFoundRSC?.match(parsedUrl.pathname)) {
+      // TODO: Which code calls into this branch?
+      parsedUrl.pathname = this.normalizers.notFoundRSC.normalize(
+        parsedUrl.pathname,
+        true
+      )
+
+      req.headers[RSC_HEADER.toLowerCase()] = '1'
+      addRequestMeta(req, 'isRSCRequest', true)
+
+      req.headers[NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER.toLowerCase()] = '1'
+      addRequestMeta(req, 'isIncludeNotFound', true)
     } else if (this.normalizers.rsc?.match(parsedUrl.pathname)) {
       parsedUrl.pathname = this.normalizers.rsc.normalize(
         parsedUrl.pathname,
@@ -699,6 +718,12 @@ export default abstract class Server<
       return false
     } else if (req.headers[RSC_HEADER.toLowerCase()] === '1') {
       addRequestMeta(req, 'isRSCRequest', true)
+
+      if (
+        req.headers[NEXT_ROUTER_INCLUDE_NOT_FOUND_HEADER.toLowerCase()] === '1'
+      ) {
+        addRequestMeta(req, 'isIncludeNotFound', true)
+      }
 
       if (req.headers[NEXT_ROUTER_PREFETCH_HEADER.toLowerCase()] === '1') {
         addRequestMeta(req, 'isPrefetchRSCRequest', true)
@@ -1646,6 +1671,10 @@ export default abstract class Server<
       normalizers.push(this.normalizers.segmentPrefetchRSC)
     }
 
+    if (this.normalizers.notFoundRSC) {
+      normalizers.push(this.normalizers.notFoundRSC)
+    }
+
     // We have to put the prefetch normalizer before the RSC normalizer
     // because the RSC normalizer will match the prefetch RSC routes too.
     if (this.normalizers.prefetchRSC) {
@@ -2058,6 +2087,7 @@ export default abstract class Server<
     let isSSG = !!components.getStaticProps
     // NOTE: Don't delete headers[RSC] yet, it still needs to be used in renderToHTML later
     const isRSCRequest = getRequestMeta(req, 'isRSCRequest') ?? false
+    const isIncludeNotFound = getRequestMeta(req, 'isIncludeNotFound') ?? false
 
     // Not all CDNs respect the Vary header when caching. We must assume that
     // only the URL is used to vary the responses. The Next client computes a
@@ -2283,7 +2313,8 @@ export default abstract class Server<
     // we can use this fact to only generate the flight data for the request
     // because we can't cache the HTML (as it's also dynamic).
     const isDynamicRSCRequest =
-      isRoutePPREnabled && isRSCRequest && !isPrefetchRSCRequest
+      (isRoutePPREnabled && isRSCRequest && !isPrefetchRSCRequest) ||
+      (isRSCRequest && isIncludeNotFound)
 
     // Need to read this before it's stripped by stripFlightHeaders. We don't
     // need to transfer it to the request meta because it's only read
