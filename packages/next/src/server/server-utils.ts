@@ -31,10 +31,11 @@ import { parseAndValidateFlightRouterState } from './app-render/parse-and-valida
 import { isInterceptionRouteRewrite } from '../lib/generate-interception-routes-rewrites'
 import { NEXT_ROUTER_STATE_TREE_HEADER } from '../client/components/app-router-headers'
 import { getSelectedParams } from '../client/components/router-reducer/compute-changed-path'
+import { getRouteParamKeys } from '../shared/lib/router/utils/route-param-keys'
 
 function filterInternalQuery(
   query: Record<string, undefined | string | string[]>,
-  paramKeys: string[]
+  paramKeys: readonly string[]
 ) {
   // this is used to pass query information in rewrites
   // but should not be exposed in final query
@@ -60,7 +61,7 @@ function filterInternalQuery(
 
 export function normalizeCdnUrl(
   req: BaseNextRequest | IncomingMessage,
-  paramKeys: string[]
+  paramKeys: readonly string[]
 ) {
   // make sure to normalize req.url from CDNs to strip dynamic and rewrite
   // params from the query which are added during routing
@@ -83,7 +84,7 @@ export function interpolateDynamicPath(
 ) {
   if (!defaultRouteRegex) return pathname
 
-  for (const param of Object.keys(defaultRouteRegex.groups)) {
+  for (const param of getRouteParamKeys(defaultRouteRegex.groups)) {
     const { optional, repeat } = defaultRouteRegex.groups[param]
     let builtParam = `[${repeat ? '...' : ''}${param}]`
 
@@ -119,7 +120,7 @@ export function normalizeDynamicRouteParams(
   let hasValidParams = true
   let params: ParsedUrlQuery = {}
 
-  for (const key of Object.keys(defaultRouteRegex.groups)) {
+  for (const key of getRouteParamKeys(defaultRouteRegex.groups)) {
     let value: string | string[] | undefined = query[key]
 
     if (typeof value === 'string') {
@@ -396,7 +397,7 @@ export function getServerUtils({
 
           // Use all the named route keys.
           const result = {} as RegExpExecArray
-          for (const keyName of Object.keys(routeKeys)) {
+          for (const keyName of getRouteParamKeys(groups)) {
             const paramName = routeKeys[keyName]
 
             // If this param name is not a valid parameter name, then skip it.

@@ -35,6 +35,7 @@ import { getEdgeInstrumentationModule } from './web/globals'
 import type { ServerOnInstrumentationRequestError } from './app-render/types'
 import { getEdgePreviewProps } from './web/get-edge-preview-props'
 import { NoFallbackError } from '../shared/lib/no-fallback-error.external'
+import { getRouteParamKeys } from '../shared/lib/router/utils/route-param-keys'
 
 interface WebServerOptions extends Options {
   buildId: string
@@ -186,7 +187,7 @@ export default class NextWebServer extends BaseServer<
           normalizedParams,
           routeRegex
         )
-        normalizeCdnUrl(req, Object.keys(routeRegex.routeKeys))
+        normalizeCdnUrl(req, getRouteParamKeys(routeRegex.groups))
       }
     }
 

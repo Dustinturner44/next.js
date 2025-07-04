@@ -85,6 +85,7 @@ import { denormalizePagePath } from '../shared/lib/page-path/denormalize-page-pa
 import * as Log from '../build/output/log'
 import { getPreviouslyRevalidatedTags, getServerUtils } from './server-utils'
 import isError, { getProperError } from '../lib/is-error'
+import { getRouteParamKeys } from '../shared/lib/router/utils/route-param-keys'
 import {
   addRequestMeta,
   getRequestMeta,
@@ -1396,7 +1397,9 @@ export default abstract class Server<
           if (pageIsDynamic || didRewrite) {
             utils.normalizeCdnUrl(req, [
               ...rewriteParamKeys,
-              ...Object.keys(utils.defaultRouteRegex?.groups || {}),
+              ...(utils.defaultRouteRegex
+                ? getRouteParamKeys(utils.defaultRouteRegex.groups)
+                : []),
             ])
           }
           // Remove the route `params` keys from `parsedUrl.query` if they are

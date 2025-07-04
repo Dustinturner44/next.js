@@ -7,6 +7,7 @@ import { PathnameContext } from '../hooks-client-context.shared-runtime'
 import { isDynamicRoute } from './utils'
 import { asPathToSearchParams } from './utils/as-path-to-search-params'
 import { getRouteRegex } from './utils/route-regex'
+import { getRouteParamKeys } from './utils/route-param-keys'
 
 /** It adapts a Pages Router (`NextRouter`) to the App Router Instance. */
 export function adaptForAppRouterInstance(
@@ -59,7 +60,7 @@ export function adaptForPathParams(
   }
   const pathParams: Params = {}
   const routeRegex = getRouteRegex(router.pathname)
-  const keys = Object.keys(routeRegex.groups)
+  const keys = getRouteParamKeys(routeRegex.groups)
   for (const key of keys) {
     pathParams[key] = router.query[key]!
   }

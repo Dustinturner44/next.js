@@ -1,6 +1,6 @@
 export function omit<T extends { [key: string]: unknown }, K extends keyof T>(
   object: T,
-  keys: K[]
+  keys: readonly K[]
 ): Omit<T, K> {
   const omitted: { [key: string]: unknown } = {}
   Object.keys(object).forEach((key) => {

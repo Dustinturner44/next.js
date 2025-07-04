@@ -7,7 +7,7 @@ import path from 'node:path'
 import { AfterRunner } from '../../server/after/run-with-after'
 import { createWorkStore } from '../../server/async-storage/work-store'
 import { FallbackMode } from '../../lib/fallback'
-import { getRouteMatcher } from '../../shared/lib/router/utils/route-matcher'
+import { getRouteParamKeys } from '../../shared/lib/router/utils/route-param-keys'
 import {
   getRouteRegex,
   type RouteRegex,
@@ -471,7 +471,7 @@ export async function buildAppStaticPaths({
   })
 
   const regex = getRouteRegex(page)
-  const routeParamKeys = Object.keys(getRouteMatcher(regex)(page) || {})
+  const routeParamKeys = getRouteParamKeys(regex.groups)
 
   const afterRunner = new AfterRunner()
 

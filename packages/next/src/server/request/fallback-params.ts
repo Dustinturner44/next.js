@@ -1,22 +1,15 @@
-import { getRouteMatcher } from '../../shared/lib/router/utils/route-matcher'
+import { getRouteParamKeys } from '../../shared/lib/router/utils/route-param-keys'
 import { getRouteRegex } from '../../shared/lib/router/utils/route-regex'
 
 export type FallbackRouteParams = ReadonlyMap<string, string>
-
-function getParamKeys(page: string) {
-  const pattern = getRouteRegex(page)
-  const matcher = getRouteMatcher(pattern)
-
-  // Get the default list of allowed params.
-  return Object.keys(matcher(page))
-}
 
 export function getFallbackRouteParams(
   pageOrKeys: string | readonly string[]
 ): FallbackRouteParams | null {
   let keys: readonly string[]
   if (typeof pageOrKeys === 'string') {
-    keys = getParamKeys(pageOrKeys)
+    const { groups } = getRouteRegex(pageOrKeys)
+    keys = getRouteParamKeys(groups)
   } else {
     keys = pageOrKeys
   }

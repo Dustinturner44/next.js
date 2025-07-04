@@ -24,6 +24,7 @@ import { isDynamicRoute } from './utils/is-dynamic'
 import { parseRelativeUrl } from './utils/parse-relative-url'
 import { getRouteMatcher } from './utils/route-matcher'
 import { getRouteRegex } from './utils/route-regex'
+import { getRouteParamKeys } from './utils/route-param-keys'
 import { formatWithValidation } from './utils/format-url'
 import { detectDomainLocale } from '../../../client/detect-domain-locale'
 import { parsePath } from './utils/parse-path'
@@ -1504,7 +1505,7 @@ export default class Router implements BaseRouter {
         : ({} as { result: undefined; params: undefined })
 
       if (!routeMatch || (shouldInterpolate && !interpolatedAs.result)) {
-        const missingParams = Object.keys(routeRegex.groups).filter(
+        const missingParams = getRouteParamKeys(routeRegex.groups).filter(
           (param) => !query[param] && !routeRegex.groups[param].optional
         )
 

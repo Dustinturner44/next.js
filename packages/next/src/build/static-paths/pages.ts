@@ -8,6 +8,7 @@ import { removeTrailingSlash } from '../../shared/lib/router/utils/remove-traili
 import { getRouteMatcher } from '../../shared/lib/router/utils/route-matcher'
 import { getRouteRegex } from '../../shared/lib/router/utils/route-regex'
 import { encodeParam, normalizePathname } from './utils'
+import { getRouteParamKeys } from '../../shared/lib/router/utils/route-param-keys'
 
 export async function buildPagesStaticPaths({
   page,
@@ -27,7 +28,7 @@ export async function buildPagesStaticPaths({
   const _routeMatcher = getRouteMatcher(_routeRegex)
 
   // Get the default list of allowed params.
-  const routeParameterKeys = Object.keys(_routeMatcher(page))
+  const routeParameterKeys = getRouteParamKeys(_routeRegex.groups)
   const staticPathsResult = await getStaticPaths({
     // We create a copy here to avoid having the types of `getStaticPaths`
     // change. This ensures that users can't mutate this array and have it

@@ -2,6 +2,7 @@ import type { ParsedUrlQuery } from 'querystring'
 
 import { getRouteMatcher } from './route-matcher'
 import { getRouteRegex } from './route-regex'
+import { getRouteParamKeys } from './route-param-keys'
 
 export function interpolateAs(
   route: string,
@@ -11,7 +12,6 @@ export function interpolateAs(
   let interpolatedRoute = ''
 
   const dynamicRegex = getRouteRegex(route)
-  const dynamicGroups = dynamicRegex.groups
   const dynamicMatches =
     // Try to match the dynamic route against the asPath
     (asPathname !== route ? getRouteMatcher(dynamicRegex)(asPathname) : '') ||
@@ -20,12 +20,12 @@ export function interpolateAs(
     query
 
   interpolatedRoute = route
-  const params = Object.keys(dynamicGroups)
+  const params = getRouteParamKeys(dynamicRegex.groups)
 
   if (
     !params.every((param) => {
       let value = dynamicMatches[param] || ''
-      const { repeat, optional } = dynamicGroups[param]
+      const { repeat, optional } = dynamicRegex.groups[param]
 
       // support single-level catch-all
       // TODO: more robust handling for user-error (passing `/`)
