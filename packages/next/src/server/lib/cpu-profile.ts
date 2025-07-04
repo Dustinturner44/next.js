@@ -8,25 +8,44 @@ if (isCpuProfileEnabled) {
   const session = new Session()
   session.connect()
 
-  session.post('Profiler.enable')
-  session.post('Profiler.start')
-
-  function saveProfile() {
-    session.post('Profiler.stop', (error, param) => {
-      if (error) {
-        console.error('Cannot generate CPU profiling:', error)
+  session.post('Profiler.enable', (enableErr) => {
+    if (enableErr) {
+      console.error('Cannot generate CPU profiling:', enableErr)
+      return
+    }
+    session.post('Profiler.start', (startErr) => {
+      if (startErr) {
+        console.error('Cannot generate CPU profiling:', startErr)
         return
       }
+      console.log(`CPU profiling started for process ${process.pid}`)
 
-      // Write profile to disk
-      const filename = `${
-        privateCpuProfileName || 'CPU.main'
-      }.${Date.now()}.cpuprofile`
-      fs.writeFileSync(`./${filename}`, JSON.stringify(param.profile))
-      process.exit(0)
+      let profileSaved = false
+      function saveProfile() {
+        if (profileSaved) {
+          return
+        }
+        profileSaved = true
+
+        session.post('Profiler.stop', (error, param) => {
+          if (error) {
+            console.error('Cannot generate CPU profiling:', error)
+            return
+          }
+          // Write profile to disk
+          const filename = `${
+            privateCpuProfileName || 'CPU.main'
+          }.${Date.now()}.cpuprofile`
+          fs.writeFileSync(`./${filename}`, JSON.stringify(param.profile))
+          console.log(
+            `CPU profile for process ${process.pid} saved to ${filename}`
+          )
+        })
+      }
+
+      process.on('SIGINT', saveProfile)
+      process.on('SIGTERM', saveProfile)
+      process.on('exit', saveProfile)
     })
-  }
-  process.on('SIGINT', saveProfile)
-  process.on('SIGTERM', saveProfile)
-  process.on('exit', saveProfile)
+  })
 }
