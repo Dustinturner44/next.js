@@ -54,5 +54,12 @@ turbo-tasks-macros = { workspace = true }
 turbo-tasks-malloc = { workspace = true }
 unsize = { workspace = true }
 
+# Performance optimizations
+bumpalo = { version = "3.19.0", features = ["allocator_api"] }
+hashbrown = { workspace = true, features = ["nightly"] }
+hashbrown15 = { version = "0.15.4", features = ["nightly"] }
+swc_allocator = { version = "4.0.0", features = ["nightly"] }
+
+
 [build-dependencies]
 turbo-tasks-build = { workspace = true }
