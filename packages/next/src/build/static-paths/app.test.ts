@@ -7,7 +7,7 @@ import {
 import type { PrerenderedRoute } from './types'
 
 describe('assignErrorIfEmpty', () => {
-  it('should assign throwOnEmptyStaticShell false for a static route', () => {
+  it('should assign throwOnEmptyStaticShell true for a static route with no children', () => {
     const prerenderedRoutes: PrerenderedRoute[] = [
       {
         params: {},
@@ -25,7 +25,7 @@ describe('assignErrorIfEmpty', () => {
     expect(prerenderedRoutes[0].throwOnEmptyStaticShell).toBe(true)
   })
 
-  it('should assign throwOnEmptyStaticShell to the prerendered routes', () => {
+  it('should assign throwOnEmptyStaticShell based on route hierarchy', () => {
     const prerenderedRoutes: PrerenderedRoute[] = [
       {
         params: {},

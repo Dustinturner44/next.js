@@ -623,7 +623,7 @@ export async function buildAppStaticPaths({
   if (hadAllParamsGenerated || isRoutePPREnabled) {
     if (isRoutePPREnabled) {
       // Discover all unique combinations of the rootParams so we can generate
-      // shells for each of them if they're available.
+      // routes that won't throw on empty static shell for each of them if they're available.
       routeParams.unshift(
         ...filterUniqueRootParamsCombinations(rootParamKeys, routeParams)
       )
