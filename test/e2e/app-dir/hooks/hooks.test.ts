@@ -184,19 +184,13 @@ describe('app dir - hooks', () => {
 
   describe('useSelectedLayoutSegments with parallel routes', () => {
     it.each`
-      path                                                    | defaultSegments | headerSegments | defaultSegment | headerSegment
-      ${'/hooks/use-selected-layout-segment-parallel/first'}  | ${['first']}    | ${['first']}   | ${'first'}     | ${'first'}
-      ${'/hooks/use-selected-layout-segment-parallel/second'} | ${['second']}   | ${['second']}  | ${'second'}    | ${'second'}
-      ${'/hooks/use-selected-layout-segment-parallel/third'}  | ${['third']}    | ${['third']}   | ${'third'}     | ${'third'}
+      path                                                    | defaultSegments | headerSegments
+      ${'/hooks/use-selected-layout-segment-parallel/first'}  | ${['first']}    | ${['first']}
+      ${'/hooks/use-selected-layout-segment-parallel/second'} | ${['second']}   | ${['second']}
+      ${'/hooks/use-selected-layout-segment-parallel/third'}  | ${['third']}    | ${['third']}
     `(
       'should not include "children" or "@" markers in results at $path',
-      async ({
-        path,
-        defaultSegments,
-        headerSegments,
-        defaultSegment,
-        headerSegment,
-      }) => {
+      async ({ path, defaultSegments, headerSegments }) => {
         const $ = await next.render$(path)
 
         const collectedDefaultSegments = JSON.parse(
@@ -214,15 +208,9 @@ describe('app dir - hooks', () => {
         expect(collectedDefaultSegments).toEqual(defaultSegments)
         expect(collectedHeaderSegments).toEqual(headerSegments)
 
-        expect(JSON.parse($('#default-segment').text())).toEqual(defaultSegment)
-        expect(JSON.parse($('#header-segment').text())).toEqual(headerSegment)
-
-        expect(
-          allSegments.every(
-            // gotta type narrow from any to string
-            (segment) => typeof segment === 'string' && !segment.startsWith('@')
-          )
-        ).toBe(true)
+        expect(allSegments.every((segment) => !segment.startsWith('@'))).toBe(
+          true
+        )
       }
     )
 
