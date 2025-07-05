@@ -13,7 +13,7 @@ use tracing::{Instrument, Level};
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
     FxIndexMap, FxIndexSet, NonLocalValue, ReadRef, ResolvedVc, SliceMap, TaskInput,
-    TryJoinIterExt, ValueToString, Vc, trace::TraceRawVcs,
+    TryFlatJoinIterExt, TryJoinIterExt, ValueToString, Vc, trace::TraceRawVcs,
 };
 use turbo_tasks_fs::{
     FileSystemEntryType, FileSystemPath, RealPathResult, util::normalize_request,
@@ -35,7 +35,8 @@ use crate::{
     data_uri_source::DataUriSource,
     file_source::FileSource,
     issue::{
-        IssueExt, IssueSource, module::emit_unknown_module_type_error, resolve::ResolvingIssue,
+        Issue, IssueExt, IssueSource, module::emit_unknown_module_type_error,
+        resolve::ResolvingIssue,
     },
     module::{Module, Modules, OptionModule},
     output::{OutputAsset, OutputAssets},
@@ -549,11 +550,47 @@ impl RequestKey {
     }
 }
 
+#[turbo_tasks::value_trait]
+pub trait PendingResolvingIssue {
+    #[turbo_tasks::function]
+    fn into_issue(&self, path: FileSystemPath, source: Option<IssueSource>) -> Vc<Box<dyn Issue>>;
+}
+
+#[turbo_tasks::function]
+async fn emit_and_drop_issues(
+    result: ResolvedVc<ResolveResult>,
+    path: FileSystemPath,
+    source: Option<IssueSource>,
+) -> Result<Vc<ResolveResult>> {
+    let result = result.await?;
+
+    result
+        .issues
+        .iter()
+        .map(|i| {
+            let path = path.clone();
+            async move {
+                i.into_issue(path, source).to_resolved().await?.emit();
+                Ok(None::<()>)
+            }
+        })
+        .try_flat_join()
+        .await?;
+
+    Ok(ResolveResult {
+        primary: result.primary.clone(),
+        affecting_sources: result.affecting_sources.clone(),
+        issues: Vec::new().into_boxed_slice(),
+    }
+    .cell())
+}
+
 #[turbo_tasks::value(shared)]
 #[derive(Clone)]
 pub struct ResolveResult {
     pub primary: SliceMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
+    issues: Box<[ResolvedVc<Box<dyn PendingResolvingIssue>>]>,
 }
 
 #[turbo_tasks::value_impl]
@@ -616,16 +653,18 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
+            issues: Default::default(),
         }
         .resolved_cell()
     }
 
-    pub fn unresolvable_with_affecting_sources(
+    fn unresolvable_with_affecting_sources(
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            issues: Default::default(),
         }
         .resolved_cell()
     }
@@ -634,18 +673,16 @@ impl ResolveResult {
         Self::primary_with_key(RequestKey::default(), result)
     }
 
-    pub fn primary_with_key(
-        request_key: RequestKey,
-        result: ResolveResultItem,
-    ) -> ResolvedVc<Self> {
+    fn primary_with_key(request_key: RequestKey, result: ResolveResultItem) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: Default::default(),
+            issues: Default::default(),
         }
         .resolved_cell()
     }
 
-    pub fn primary_with_affecting_sources(
+    fn primary_with_affecting_sources(
         request_key: RequestKey,
         result: ResolveResultItem,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
@@ -653,6 +690,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            issues: Default::default(),
         }
         .resolved_cell()
     }
@@ -668,6 +706,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: Default::default(),
+            issues: Default::default(),
         }
         .resolved_cell()
     }
@@ -680,6 +719,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            issues: Default::default(),
         }
         .resolved_cell()
     }
@@ -783,6 +823,7 @@ impl ResolveResult {
         ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            issues: self.issues.clone(),
         }
     }
 
@@ -812,6 +853,7 @@ impl From<ResolveResultBuilder> for ResolveResult {
         ResolveResult {
             primary: v.primary.into_iter().collect(),
             affecting_sources: v.affecting_sources.into_boxed_slice(),
+            issues: Default::default(),
         }
     }
 }
@@ -869,6 +911,7 @@ impl ResolveResult {
                 .copied()
                 .chain(std::iter::once(source))
                 .collect(),
+            issues: self.issues.clone(),
         }
         .cell())
     }
@@ -886,6 +929,7 @@ impl ResolveResult {
                 .copied()
                 .chain(sources)
                 .collect(),
+            issues: self.issues.clone(),
         }
         .cell())
     }
@@ -905,6 +949,7 @@ impl ResolveResult {
                 return Ok(Self {
                     primary: result_ref.primary.clone(),
                     affecting_sources: affecting_sources.into_boxed_slice(),
+                    issues: result_ref.issues.clone(),
                 }
                 .cell());
             }
@@ -1027,6 +1072,7 @@ impl ResolveResult {
         Ok(ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            issues: self.issues.clone(),
         }
         .into())
     }
@@ -1064,6 +1110,7 @@ impl ResolveResult {
         Ok(ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            issues: self.issues.clone(),
         }
         .into())
     }
@@ -1088,6 +1135,7 @@ impl ResolveResult {
         ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            issues: self.issues.clone(),
         }
         .into()
     }
@@ -1546,8 +1594,29 @@ pub async fn resolve_raw(
     Ok(merge_results(results))
 }
 
+// The main resolution routine
+// Not a turbotask since it contains high entropy parameters related to issue reporting.
+pub fn resolve(
+    lookup_path: FileSystemPath,
+    reference_type: ReferenceType,
+    request: Vc<Request>,
+    options: Vc<ResolveOptions>,
+    original_path: FileSystemPath,
+    issue_source: Option<IssueSource>,
+) -> Vc<ResolveResult> {
+    emit_and_drop_issues(
+        resolve_without_source(lookup_path, reference_type, request, options),
+        original_path,
+        issue_source,
+    )
+}
+
+/// The 'top level' turbotask function forms the root for making this request cacheable.
+/// This returns a `ResolveResult` with possibly contained [ResolveResult::issues] and so callers
+/// should only directly call this from within an existing call to [resolve].
+/// This is public primarily for plugins.
 #[turbo_tasks::function]
-pub async fn resolve(
+pub async fn resolve_without_source(
     lookup_path: FileSystemPath,
     reference_type: ReferenceType,
     request: Vc<Request>,
@@ -1556,7 +1625,7 @@ pub async fn resolve(
     resolve_inline(lookup_path, reference_type, request, options).await
 }
 
-pub async fn resolve_inline(
+async fn resolve_inline(
     lookup_path: FileSystemPath,
     reference_type: ReferenceType,
     request: Vc<Request>,
@@ -1609,19 +1678,25 @@ pub async fn url_resolve(
 ) -> Result<Vc<ModuleResolveResult>> {
     let resolve_options = origin.resolve_options(reference_type.clone()).await?;
     let rel_request = request.as_relative();
+    let origin_path = origin.origin_path().owned().await?;
+    let origin_path_parent = origin_path.parent();
     let rel_result = resolve(
-        origin.origin_path().await?.parent(),
+        origin_path_parent.clone(),
         reference_type.clone(),
         rel_request,
         resolve_options,
+        origin_path.clone(),
+        issue_source,
     );
     let result = if *rel_result.is_unresolvable().await? && rel_request.resolve().await? != request
     {
         resolve(
-            origin.origin_path().await?.parent(),
+            origin_path_parent,
             reference_type.clone(),
             request,
             resolve_options,
+            origin_path,
+            issue_source,
         )
         .with_affecting_sources(
             rel_result
@@ -1709,6 +1784,7 @@ async fn handle_after_resolve_plugins(
 
     let mut new_primary = FxIndexMap::default();
     let mut new_affecting_sources = Vec::new();
+    let mut new_issues = Vec::new();
 
     for (key, primary) in result_value.primary.iter() {
         if let &ResolveResultItem::Source(source) = primary {
@@ -1731,6 +1807,7 @@ async fn handle_after_resolve_plugins(
                         .map(|(_, item)| (key.clone(), item.clone())),
                 );
                 new_affecting_sources.extend(new_result.affecting_sources.iter().copied());
+                new_issues.extend(new_result.issues.iter().copied());
             } else {
                 new_primary.insert(key.clone(), primary.clone());
             }
@@ -1746,9 +1823,13 @@ async fn handle_after_resolve_plugins(
     let mut affecting_sources = result_value.affecting_sources.to_vec();
     affecting_sources.append(&mut new_affecting_sources);
 
+    let mut issues = result_value.issues.to_vec();
+    issues.append(&mut new_issues);
+
     Ok(ResolveResult {
         primary: new_primary.into_iter().collect(),
         affecting_sources: affecting_sources.into_boxed_slice(),
+        issues: issues.into_boxed_slice(),
     }
     .cell())
 }
