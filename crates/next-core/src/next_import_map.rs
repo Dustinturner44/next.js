@@ -1140,7 +1140,7 @@ pub async fn get_next_package(context_directory: FileSystemPath) -> Result<Vc<Fi
         Request::parse(Pattern::Constant(rcstr!("next/package.json"))),
         node_cjs_resolve_options(context_directory.root().await?.clone_value()),
         // For reporting issues, there simply isn't a better option.
-        context_directory.clone(),
+        context_directory,
         None,
     );
     let source = result

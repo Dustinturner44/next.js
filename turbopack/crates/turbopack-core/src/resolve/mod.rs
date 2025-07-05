@@ -35,8 +35,8 @@ use crate::{
     data_uri_source::DataUriSource,
     file_source::FileSource,
     issue::{
-        Issue, IssueExt, IssueSource, module::emit_unknown_module_type_error,
-        resolve::ResolvingIssue,
+        Issue, IssueDescriptionExt as _, IssueExt, IssueSource,
+        module::emit_unknown_module_type_error, resolve::ResolvingIssue,
     },
     module::{Module, Modules, OptionModule},
     output::{OutputAsset, OutputAssets},
@@ -1604,11 +1604,46 @@ pub fn resolve(
     original_path: FileSystemPath,
     issue_source: Option<IssueSource>,
 ) -> Vc<ResolveResult> {
-    emit_and_drop_issues(
-        resolve_without_source(lookup_path, reference_type, request, options),
-        original_path,
-        issue_source,
-    )
+    let result = if cfg!(debug_assertions) {
+        resolve_without_source_operation_wrapper(lookup_path, reference_type, request, options)
+    } else {
+        resolve_without_source(lookup_path, reference_type, request, options)
+    };
+    emit_and_drop_issues(result, original_path, issue_source)
+}
+
+#[cfg(debug_assertions)]
+#[turbo_tasks::function]
+async fn resolve_without_source_operation_wrapper(
+    lookup_path: FileSystemPath,
+    reference_type: ReferenceType,
+    request: ResolvedVc<Request>,
+    options: ResolvedVc<ResolveOptions>,
+) -> Result<Vc<ResolveResult>> {
+    let op =
+        resolve_without_source_operation(lookup_path.clone(), reference_type, request, options);
+
+    let issues = op.peek_issues_with_path().await?;
+    for issue in issues.iter() {
+        if lookup_path == *issue.file_path().await? {
+            panic!(
+                "issues should not be reported with the resolve lookup path during resolution, \
+                 issue: {:?}",
+                issue.title().await?
+            );
+        }
+    }
+    Ok(op.connect())
+}
+#[cfg(debug_assertions)]
+#[turbo_tasks::function(operation)]
+fn resolve_without_source_operation(
+    lookup_path: FileSystemPath,
+    reference_type: ReferenceType,
+    request: ResolvedVc<Request>,
+    options: ResolvedVc<ResolveOptions>,
+) -> Vc<ResolveResult> {
+    resolve_without_source(lookup_path, reference_type, *request, *options)
 }
 
 /// The 'top level' turbotask function forms the root for making this request cacheable.
