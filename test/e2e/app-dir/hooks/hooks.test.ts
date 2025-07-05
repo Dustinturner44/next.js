@@ -199,17 +199,23 @@ describe('app dir - hooks', () => {
       }) => {
         const $ = await next.render$(path)
 
-        expect(JSON.parse($('#default-segments').text())).toEqual(
-          defaultSegments
+        const collectedDefaultSegments = JSON.parse(
+          $('#default-segments').text()
         )
-        expect(JSON.parse($('#default-segment').text())).toEqual(defaultSegment)
+        const collectedHeaderSegments = JSON.parse($('#header-segments').text())
 
-        expect(JSON.parse($('#header-segments').text())).toEqual(headerSegments)
-        expect(JSON.parse($('#header-segment').text())).toEqual(headerSegment)
-
-        const allSegments = [...defaultSegments, ...headerSegments]
+        const allSegments = [
+          ...collectedDefaultSegments,
+          ...collectedHeaderSegments,
+        ]
 
         expect(allSegments).not.toContain('children')
+
+        expect(collectedDefaultSegments).toEqual(defaultSegments)
+        expect(collectedHeaderSegments).toEqual(headerSegments)
+
+        expect(JSON.parse($('#default-segment').text())).toEqual(defaultSegment)
+        expect(JSON.parse($('#header-segment').text())).toEqual(headerSegment)
 
         expect(
           allSegments.every(
