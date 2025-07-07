@@ -35,8 +35,8 @@ use crate::{
     data_uri_source::DataUriSource,
     file_source::FileSource,
     issue::{
-        Issue, IssueDescriptionExt as _, IssueExt, IssueSource,
-        module::emit_unknown_module_type_error, resolve::ResolvingIssue,
+        Issue, IssueDescriptionExt, IssueExt, IssueSource, module::emit_unknown_module_type_error,
+        resolve::ResolvingIssue,
     },
     module::{Module, Modules, OptionModule},
     output::{OutputAsset, OutputAssets},
@@ -1604,11 +1604,12 @@ pub fn resolve(
     original_path: FileSystemPath,
     issue_source: Option<IssueSource>,
 ) -> Vc<ResolveResult> {
-    let result = if cfg!(debug_assertions) {
-        resolve_without_source_operation_wrapper(lookup_path, reference_type, request, options)
-    } else {
-        resolve_without_source(lookup_path, reference_type, request, options)
-    };
+    #[cfg(debug_assertions)]
+    let result =
+        resolve_without_source_operation_wrapper(lookup_path, reference_type, request, options);
+
+    #[cfg(not(debug_assertions))]
+    let result = resolve_without_source(lookup_path, reference_type, request, options);
     emit_and_drop_issues(result, original_path, issue_source)
 }
 
