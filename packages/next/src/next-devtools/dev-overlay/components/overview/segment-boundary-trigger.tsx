@@ -2,7 +2,10 @@ import { useCallback, useState, useRef, useMemo } from 'react'
 import { Menu } from '@base-ui-components/react/menu'
 import type { SegmentNodeState } from '../../../userspace/app/segment-explorer-node'
 import { ChevronDownIcon } from '../../icons/chevron-down'
-import { normalizeBoundaryFilename } from '../../../../server/app-render/segment-explorer-path'
+import {
+  isBoundaryFile,
+  normalizeBoundaryFilename,
+} from '../../../../server/app-render/segment-explorer-path'
 import { cx } from '../../utils/cx'
 import { useClickOutside } from '../errors/dev-tools-indicator/utils'
 
@@ -71,9 +74,9 @@ export function SegmentBoundaryTrigger({
   }, [boundaries, possibleExtension])
 
   const fileName = (pagePath || '').split('/').pop() || ''
-  const isBoundaryFile = fileType.startsWith('boundary:')
+  const isBoundary = isBoundaryFile(fileType)
   const pageFileName = normalizeBoundaryFilename(
-    isBoundaryFile
+    isBoundary
       ? fileName // Show the selected boundary file name when overridden
       : fileName || `page.${possibleExtension}`
   )
@@ -154,8 +157,8 @@ export function SegmentBoundaryTrigger({
     [onSelectBoundary, pagePath, openInEditor]
   )
 
-  // For layout/template files, just render a simple button to open in editor
-  if (fileType === 'layout' || fileType === 'template') {
+  // For non-page files, just render a simple button to open in editor
+  if (fileType !== 'page' && !fileType.startsWith('boundary:')) {
     return (
       <button
         className="segment-boundary-trigger"
