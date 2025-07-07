@@ -11,7 +11,9 @@ import {
 import { Tooltip } from '../../../components/tooltip'
 import { useRef, useState, useCallback, useMemo } from 'react'
 import {
+  BOUNDARY_PREFIX,
   BUILTIN_PREFIX,
+  isBoundaryFile,
   normalizeBoundaryFilename,
 } from '../../../../server/app-render/segment-explorer-path'
 
@@ -43,7 +45,7 @@ function countActiveBoundaries(node: SegmentTrieNode): number {
   if (
     node.value?.setBoundaryType &&
     node.value.boundaryType !== null &&
-    !node.value.type.startsWith('boundary:')
+    !isBoundaryFile(node.value.type)
   ) {
     count++
   }
@@ -178,6 +180,12 @@ function PageSegmentTreeLayerPresentation({
       if (aType === 'template' && bType !== 'template') return -1
       if (aType !== 'template' && bType === 'template') return 1
 
+      // non boundary files are prioritized than boundary files
+      if (aType && bType) {
+        if (isBoundaryFile(aType) && !isBoundaryFile(bType)) return 1
+        if (!isBoundaryFile(aType) && isBoundaryFile(bType)) return -1
+      }
+
       // If both are the same type, sort by pagePath
       const aFilePath = node.children[a]?.value?.pagePath || ''
       const bFilePath = node.children[b]?.value?.pagePath || ''
@@ -225,7 +233,7 @@ function PageSegmentTreeLayerPresentation({
   filesChildrenKeys.forEach((childKey) => {
     const childNode = node.children[childKey]
     if (!childNode || !childNode.value) return
-    if (childNode.value.type.startsWith('boundary:')) {
+    if (isBoundaryFile(childNode.value.type)) {
       const boundaryType = childNode.value.type.split(':')[1] as
         | 'not-found'
         | 'loading'
@@ -243,7 +251,7 @@ function PageSegmentTreeLayerPresentation({
       if (!childNode || !childNode.value) return true
       const type = childNode.value.type
       const selectedBoundaryType = firstChild?.value?.type?.replace(
-        'boundary:',
+        BOUNDARY_PREFIX,
         ''
       )
       if (
@@ -294,7 +302,7 @@ function PageSegmentTreeLayerPresentation({
                       }
                       // If it's boundary node, which marks the existence of the boundary not the rendered status,
                       // we don't need to present in the rendered files.
-                      if (childNode.value.type.startsWith('boundary:')) {
+                      if (isBoundaryFile(childNode.value.type)) {
                         return null
                       }
                       // If it's a page file, don't show it as a separate label since it's represented by the dropdown button

@@ -30,10 +30,16 @@ export function normalizeConventionFilePath(
   return relativePath
 }
 
+export const BOUNDARY_SUFFIX = '@boundary'
 export function normalizeBoundaryFilename(filename: string) {
   return filename
     .replace(new RegExp(`^${BUILTIN_PREFIX}`), '')
-    .replace(/@boundary$/, '')
+    .replace(new RegExp(`${BOUNDARY_SUFFIX}$`), '')
+}
+
+export const BOUNDARY_PREFIX = 'boundary:'
+export function isBoundaryFile(fileType: string) {
+  return fileType.startsWith(BOUNDARY_PREFIX)
 }
 
 export function getConventionPathByType(

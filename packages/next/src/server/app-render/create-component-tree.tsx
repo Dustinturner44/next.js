@@ -26,7 +26,11 @@ import type {
   UseCachePageComponentProps,
 } from '../use-cache/use-cache-wrapper'
 import { DEFAULT_SEGMENT_KEY } from '../../shared/lib/segment'
-import { getConventionPathByType } from './segment-explorer-path'
+import {
+  BOUNDARY_PREFIX,
+  BOUNDARY_SUFFIX,
+  getConventionPathByType,
+} from './segment-explorer-path'
 
 /**
  * Use the provided loader tree to create the React Component tree.
@@ -562,24 +566,24 @@ async function createComponentTreeInternal({
         // Add a suffix to avoid conflict with the segment view node representing rendered file.
         // existence: not-found.tsx@boundary
         // rendered: not-found.tsx
-        const fileNameSuffix = '@boundary'
+        const fileNameSuffix = BOUNDARY_SUFFIX
         const segmentViewBoundaries = isSegmentViewEnabled ? (
           <>
             {notFoundFilePath && (
               <SegmentViewNode
-                type={'boundary:not-found'}
+                type={`${BOUNDARY_PREFIX}not-found`}
                 pagePath={notFoundFilePath + fileNameSuffix}
               />
             )}
             {loadingFilePath && (
               <SegmentViewNode
-                type={'boundary:loading'}
+                type={`${BOUNDARY_PREFIX}loading`}
                 pagePath={loadingFilePath + fileNameSuffix}
               />
             )}
             {errorFilePath && (
               <SegmentViewNode
-                type={'boundary:error'}
+                type={`${BOUNDARY_PREFIX}error`}
                 pagePath={errorFilePath + fileNameSuffix}
               />
             )}

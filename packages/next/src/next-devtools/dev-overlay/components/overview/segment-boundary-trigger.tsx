@@ -120,7 +120,7 @@ export function SegmentBoundaryTrigger({
   const hasBoundaries = Object.values(boundaries).some(
     (boundary) => boundary !== null
   )
-  const isPageFile = fileType === 'page'
+  const isPageOrBoundary = fileType && !isBoundaryFile(fileType)
 
   const openInEditor = useCallback(({ filePath }: { filePath: string }) => {
     const params = new URLSearchParams({
@@ -158,7 +158,10 @@ export function SegmentBoundaryTrigger({
   )
 
   // For non-page files, just render a simple button to open in editor
-  if (fileType !== 'page' && !fileType.startsWith('boundary:')) {
+  if (
+    !(fileType === 'page' || fileType === 'default') &&
+    !isBoundaryFile(fileType)
+  ) {
     return (
       <button
         className="segment-boundary-trigger"
@@ -172,11 +175,6 @@ export function SegmentBoundaryTrigger({
     )
   }
 
-  // Don't render the dropdown if there are no boundaries and no page file
-  if (!hasBoundaries && !isPageFile) {
-    return null
-  }
-
   const Trigger = (
     triggerProps: React.ComponentProps<'button'> & {
       ref?: React.Ref<HTMLButtonElement>
@@ -187,7 +185,7 @@ export function SegmentBoundaryTrigger({
     return (
       <button {...triggerProps} ref={mergedRef} type="button">
         <span className="segment-boundary-trigger-text">
-          {isPageFile
+          {isPageOrBoundary
             ? pageFileName
             : boundaryType === null
               ? // TODO(pran): improve the UX of the default boundary selector
@@ -206,7 +204,7 @@ export function SegmentBoundaryTrigger({
       <Menu.Trigger
         className={cx(
           'segment-boundary-trigger',
-          !isPageFile && 'segment-boundary-trigger--boundary',
+          !isPageOrBoundary && 'segment-boundary-trigger--boundary',
           isOverridden && 'segment-boundary-trigger--overridden'
         )}
         data-nextjs-dev-overlay-segment-boundary-trigger-button
