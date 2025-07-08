@@ -211,28 +211,51 @@ pub fn no_note() -> String {
     String::new()
 }
 
+pub fn ignore_note(_note: impl Fn() -> String + Sync + Send + 'static) {
+    // This function must be removed by DCE.
+    // This code triggers a build error when it's not removed.
+    unsafe {
+        unsafe extern "C" {
+            fn trigger_link_error() -> !;
+        }
+        trigger_link_error();
+    }
+}
+
 #[cfg(not(feature = "hanging_detection"))]
 #[macro_export]
 macro_rules! listen_event {
-    ($self:expr, $note:expr) => {
+    ($self:expr, $note:expr) => {{
+        // This makes sure the code is checked, but not included in the final result.
+        if false {
+            $crate::event::ignore_note($note);
+        }
         $self.listen()
-    };
+    }};
 }
 
 #[cfg(not(feature = "hanging_detection"))]
 #[macro_export]
 macro_rules! new_event {
-    ($description:expr) => {
+    ($description:expr) => {{
+        // This makes sure the code is checked, but not included in the final result.
+        if false {
+            $crate::event::ignore_note($description);
+        }
         $crate::event::Event::new()
-    };
+    }};
 }
 
 #[cfg(not(feature = "hanging_detection"))]
 #[macro_export]
 macro_rules! event_note {
-    ($note:expr) => {
+    ($note:expr) => {{
+        // This makes sure the code is checked, but not included in the final result.
+        if false {
+            $crate::event::ignore_note($note);
+        }
         $crate::event::no_note
-    };
+    }};
 }
 
 #[cfg(feature = "hanging_detection")]
