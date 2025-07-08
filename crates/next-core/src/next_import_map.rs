@@ -399,6 +399,8 @@ pub async fn get_next_edge_import_map(
         ),
     );
 
+    insert_pages_api_aliases(&mut import_map, project_path.clone());
+
     insert_next_shared_aliases(
         &mut import_map,
         project_path.clone(),
