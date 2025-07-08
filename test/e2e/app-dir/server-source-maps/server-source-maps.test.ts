@@ -185,14 +185,14 @@ describe('app-dir - server source maps', () => {
              "logError app/ssr-error-log-ignore-listed/page.js (9:17)",
              "runWithInternalIgnored app/ssr-error-log-ignore-listed/page.js (19:13)",
              "<FIXME-file-protocol>",
-             "runWithExternalSourceMapped app/ssr-error-log-ignore-listed/page.js (18:28)",
+             "runWithExternalSourceMapped app/ssr-error-log-ignore-listed/page.js (18:29)",
              "<FIXME-file-protocol>",
-             "runWithExternal app/ssr-error-log-ignore-listed/page.js (17:31)",
-             "runWithInternalSourceMapped app/ssr-error-log-ignore-listed/page.js (16:17)",
+             "runWithExternal app/ssr-error-log-ignore-listed/page.js (17:32)",
+             "runWithInternalSourceMapped app/ssr-error-log-ignore-listed/page.js (16:18)",
              "<FIXME-file-protocol>",
-             "runWithInternal app/ssr-error-log-ignore-listed/page.js (15:27)",
+             "runWithInternal app/ssr-error-log-ignore-listed/page.js (15:28)",
              "runInternal internal-pkg/index.js (2:10)",
-             "Page app/ssr-error-log-ignore-listed/page.js (14:13)",
+             "Page app/ssr-error-log-ignore-listed/page.js (14:14)",
            ],
          }
         `)
@@ -456,11 +456,19 @@ describe('app-dir - server source maps', () => {
         )
       }
 
-      expect(cliOutput).toContain(
-        '' +
-          "\n> 1 | export const error = new Error('module-evaluation')" +
-          '\n    |                     ^'
-      )
+      if (isTurbopack) {
+        expect(cliOutput).toContain(
+          '' +
+            "\n> 1 | export const error = new Error('module-evaluation')" +
+            '\n    |                      ^'
+        )
+      } else {
+        expect(cliOutput).toContain(
+          '' +
+            "\n> 1 | export const error = new Error('module-evaluation')" +
+            '\n    |                     ^'
+        )
+      }
 
       if (isTurbopack) {
         await expect(browser).toDisplayCollapsedRedbox(`
