@@ -4,7 +4,7 @@ import { check } from 'next-test-utils'
 import stripAnsi from 'strip-ansi'
 
 describe('fetch failures have good stack traces in edge runtime', () => {
-  const { isTurbopack, next, isNextStart, isNextDev, skipped } = nextTestSetup({
+  const { next, isNextStart, isNextDev, skipped } = nextTestSetup({
     files: __dirname,
     // don't have access to runtime logs on deploy
     skipDeployment: true,
@@ -44,23 +44,22 @@ describe('fetch failures have good stack traces in edge runtime', () => {
             '\n ⨯ Error [TypeError]: fetch failed'
         )
 
-        // TODO(veil): Why column off by one?
         // eslint-disable-next-line jest/no-standalone-expect
         await expect(browser).toDisplayRedbox(`
-       {
-         "description": "fetch failed",
-         "environmentLabel": null,
-         "label": "Runtime TypeError",
-         "source": "src/fetcher.js (6:16) @ anotherFetcher
-       > 6 |   return await fetch(...args)
-           |                ^",
-         "stack": [
-           "anotherFetcher src/fetcher.js (6:16)",
-           "fetcher src/fetcher.js (2:16)",
-           "UnknownDomainEndpoint pages/api/unknown-domain.js (6:${isTurbopack ? 15 : 16})",
-         ],
-       }
-      `)
+         {
+           "description": "fetch failed",
+           "environmentLabel": null,
+           "label": "Runtime TypeError",
+           "source": "src/fetcher.js (6:16) @ anotherFetcher
+         > 6 |   return await fetch(...args)
+             |                ^",
+           "stack": [
+             "anotherFetcher src/fetcher.js (6:16)",
+             "fetcher src/fetcher.js (2:16)",
+             "UnknownDomainEndpoint pages/api/unknown-domain.js (6:16)",
+           ],
+         }
+        `)
       }
     }
   )
