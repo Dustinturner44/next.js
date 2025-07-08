@@ -3,7 +3,7 @@ use std::{collections::hash_map::Entry, hash::Hash, marker::PhantomData};
 use parking_lot::Mutex;
 use rustc_hash::FxHashMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use turbo_tasks::event::Event;
+use turbo_tasks::{event::Event, new_event};
 
 pub struct MutexMap<K> {
     map: Mutex<FxHashMap<K, Option<(Event, usize)>>>,
@@ -30,7 +30,7 @@ impl<'a, K: Eq + Hash + Clone> MutexMap<K> {
                             event.listen()
                         }
                         None => {
-                            let event = Event::new(|| "MutexMap".to_string());
+                            let event = new_event!(|| "MutexMap".to_string());
                             let listener = event.listen();
                             *state = Some((event, 0));
                             listener

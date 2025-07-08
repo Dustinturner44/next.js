@@ -20,6 +20,7 @@ use turbo_tasks::{
     backend::{CellContent, TaskCollectiblesMap, TypedCellContent},
     event::{Event, EventListener},
     message_queue::CompilationEvent,
+    new_event,
     test_helpers::with_turbo_tasks_for_testing,
     util::{SharedError, StaticOrArc},
 };
@@ -51,7 +52,7 @@ impl VcStorage {
         let i = {
             let mut tasks = self.tasks.lock().unwrap();
             let i = tasks.len();
-            tasks.push(Task::Spawned(Event::new(move || {
+            tasks.push(Task::Spawned(new_event!(move || {
                 format!("Task({i})::event")
             })));
             i

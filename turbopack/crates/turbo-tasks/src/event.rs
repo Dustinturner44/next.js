@@ -27,25 +27,21 @@ pub struct Event {
 #[cfg(not(feature = "hanging_detection"))]
 impl Event {
     /// see [event_listener::Event]::new
+    #[allow(
+        clippy::new_without_default,
+        reason = "We don't want the Default trait to be consistent with the hanging_detection \
+                  version"
+    )]
     #[inline(always)]
-    pub fn new(_description: impl Fn() -> String + Sync + Send + 'static) -> Self {
+    pub fn new() -> Self {
         Self {
             event: event_listener::Event::new(),
         }
     }
 
     /// see [event_listener::Event]::listen
+    #[inline(always)]
     pub fn listen(&self) -> EventListener {
-        EventListener {
-            listener: self.event.listen(),
-        }
-    }
-
-    /// see [event_listener::Event]::listen
-    pub fn listen_with_note(
-        &self,
-        _note: impl Fn() -> String + Sync + Send + 'static,
-    ) -> EventListener {
         EventListener {
             listener: self.event.listen(),
         }
@@ -74,7 +70,7 @@ impl Event {
     pub fn listen(&self) -> EventListener {
         EventListener {
             description: self.description.clone(),
-            note: Arc::new(|| String::new()),
+            note: Arc::new(String::new),
             future: Some(Box::pin(timeout(
                 Duration::from_secs(10),
                 self.event.listen(),
@@ -210,3 +206,59 @@ impl Future for EventListener {
         Poll::Ready(())
     }
 }
+
+pub fn no_note() -> String {
+    String::new()
+}
+
+#[cfg(not(feature = "hanging_detection"))]
+#[macro_export]
+macro_rules! listen_event {
+    ($self:expr, $note:expr) => {
+        $self.listen()
+    };
+}
+
+#[cfg(not(feature = "hanging_detection"))]
+#[macro_export]
+macro_rules! new_event {
+    ($description:expr) => {
+        $crate::event::Event::new()
+    };
+}
+
+#[cfg(not(feature = "hanging_detection"))]
+#[macro_export]
+macro_rules! event_note {
+    ($note:expr) => {
+        $crate::event::no_note
+    };
+}
+
+#[cfg(feature = "hanging_detection")]
+#[macro_export]
+macro_rules! listen_event {
+    ($self:expr, $note:expr) => {
+        $self.listen_with_note($note)
+    };
+}
+
+#[cfg(feature = "hanging_detection")]
+#[macro_export]
+macro_rules! new_event {
+    ($description:expr) => {
+        $crate::event::Event::new($description)
+    };
+}
+
+#[cfg(feature = "hanging_detection")]
+#[macro_export]
+macro_rules! event_note {
+    ($note:expr) => {
+        $note
+    };
+}
+
+pub use event_note;
+pub use listen_event;
+pub use new_event;

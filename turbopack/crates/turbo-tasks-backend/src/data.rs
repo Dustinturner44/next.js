@@ -7,7 +7,7 @@ use turbo_tasks::{
     TypedSharedReference, ValueTypeId,
     backend::TurboTasksExecutionError,
     event::{Event, EventListener},
-    registry,
+    listen_event, new_event, registry,
 };
 
 use crate::{
@@ -89,12 +89,14 @@ pub struct ActivenessState {
 }
 
 impl ActivenessState {
-    pub fn new(id: TaskId) -> Self {
+    pub fn new(_id: TaskId) -> Self {
         Self {
             active_counter: 0,
             root_ty: None,
             active_until_clean: false,
-            all_clean_event: Event::new(move || format!("ActivenessState::all_clean_event {id:?}")),
+            all_clean_event: new_event!(move || format!(
+                "ActivenessState::all_clean_event {_id:?}"
+            )),
         }
     }
 
@@ -534,9 +536,9 @@ transient_traits!(InProgressCellState);
 impl Eq for InProgressCellState {}
 
 impl InProgressCellState {
-    pub fn new(task_id: TaskId, cell: CellId) -> Self {
+    pub fn new(_task_id: TaskId, _cell: CellId) -> Self {
         InProgressCellState {
-            event: Event::new(move || format!("InProgressCellState::event ({task_id} {cell:?})")),
+            event: new_event!(move || format!("InProgressCellState::event ({_task_id} {_cell:?})")),
         }
     }
 }
@@ -725,11 +727,11 @@ impl CachedDataItem {
 
     pub fn new_scheduled(
         reason: TaskExecutionReason,
-        description: impl Fn() -> String + Sync + Send + 'static,
+        _description: impl Fn() -> String + Sync + Send + 'static,
     ) -> Self {
         CachedDataItem::InProgress {
             value: InProgressState::Scheduled {
-                done_event: Event::new(move || format!("{} done_event", description())),
+                done_event: new_event!(move || format!("{} done_event", _description())),
                 reason,
             },
         }
@@ -737,11 +739,11 @@ impl CachedDataItem {
 
     pub fn new_scheduled_with_listener(
         reason: TaskExecutionReason,
-        description: impl Fn() -> String + Sync + Send + 'static,
-        note: impl Fn() -> String + Sync + Send + 'static,
+        _description: impl Fn() -> String + Sync + Send + 'static,
+        _note: impl Fn() -> String + Sync + Send + 'static,
     ) -> (Self, EventListener) {
-        let done_event = Event::new(move || format!("{} done_event", description()));
-        let listener = done_event.listen_with_note(note);
+        let done_event = new_event!(move || format!("{} done_event", _description()));
+        let listener = listen_event!(done_event, _note);
         (
             CachedDataItem::InProgress {
                 value: InProgressState::Scheduled { done_event, reason },

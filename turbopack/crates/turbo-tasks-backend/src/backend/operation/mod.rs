@@ -60,7 +60,7 @@ pub trait ExecuteContext<'e>: Sized {
     where
         T: Clone + Into<AnyOperation>;
     fn suspending_requested(&self) -> bool;
-    fn get_task_desc_fn(&self, task_id: TaskId) -> impl Fn() -> String + Send + Sync + 'static;
+    fn get_task_event_note(&self, task_id: TaskId) -> impl Fn() -> String + Send + Sync + 'static;
     fn get_task_description(&self, task_id: TaskId) -> String;
     fn should_track_children(&self) -> bool;
     fn should_track_dependencies(&self) -> bool;
@@ -260,8 +260,8 @@ where
         self.backend.suspending_requested()
     }
 
-    fn get_task_desc_fn(&self, task_id: TaskId) -> impl Fn() -> String + Send + Sync + 'static {
-        self.backend.get_task_desc_fn(task_id)
+    fn get_task_event_note(&self, task_id: TaskId) -> impl Fn() -> String + Send + Sync + 'static {
+        self.backend.get_task_event_note(task_id)
     }
 
     fn get_task_description(&self, task_id: TaskId) -> String {

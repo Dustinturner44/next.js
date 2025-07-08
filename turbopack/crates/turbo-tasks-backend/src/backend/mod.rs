@@ -32,8 +32,10 @@ use turbo_tasks::{
         Backend, BackendJobId, CachedTaskType, CellContent, TaskExecutionSpec, TransientTaskRoot,
         TransientTaskType, TurboTasksExecutionError, TypedCellContent,
     },
-    event::{Event, EventListener},
+    event::{Event, EventListener, event_note},
+    listen_event,
     message_queue::TimingEvent,
+    new_event,
     registry::{self, get_value_type_global_name},
     task_statistics::TaskStatisticsApi,
     trace::TraceRawVcs,
@@ -256,9 +258,9 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
             snapshot_completed: Condvar::new(),
             last_snapshot: AtomicU64::new(0),
             stopping: AtomicBool::new(false),
-            stopping_event: Event::new(|| "TurboTasksBackend::stopping_event".to_string()),
-            idle_start_event: Event::new(|| "TurboTasksBackend::idle_start_event".to_string()),
-            idle_end_event: Event::new(|| "TurboTasksBackend::idle_end_event".to_string()),
+            stopping_event: new_event!(|| "TurboTasksBackend::stopping_event".to_string()),
+            idle_start_event: new_event!(|| "TurboTasksBackend::idle_start_event".to_string()),
+            idle_end_event: new_event!(|| "TurboTasksBackend::idle_end_event".to_string()),
             #[cfg(feature = "verify_aggregation_graph")]
             is_idle: AtomicBool::new(false),
             task_statistics: TaskStatisticsApi::default(),
@@ -448,39 +450,42 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         let mut ctx = self.execute_context(turbo_tasks);
         let mut task = ctx.task(task_id, TaskDataCategory::All);
 
-        fn listen_to_done_event<B: BackingStorage>(
+        #[allow(dead_code, reason = "used for hanging detection")]
+        fn done_event_note<B: BackingStorage>(
             this: &TurboTasksBackendInner<B>,
             reader: Option<TaskId>,
-            done_event: &Event,
-        ) -> EventListener {
-            let reader_desc = reader.map(|r| this.get_task_desc_fn(r));
-            done_event.listen_with_note(move || {
+        ) -> impl Fn() -> String + Send + Sync + 'static {
+            let reader_desc = reader.map(|r| this.get_task_event_note(r));
+            move || {
                 if let Some(reader_desc) = reader_desc.as_ref() {
                     format!("try_read_task_output from {}", reader_desc())
                 } else {
                     "try_read_task_output (untracked)".to_string()
                 }
-            })
+            }
         }
 
         fn check_in_progress<B: BackingStorage>(
-            this: &TurboTasksBackendInner<B>,
+            _this: &TurboTasksBackendInner<B>,
             task: &impl TaskGuard,
-            reader: Option<TaskId>,
+            _reader: Option<TaskId>,
             ctx: &impl ExecuteContext<'_>,
         ) -> Option<std::result::Result<std::result::Result<RawVc, EventListener>, anyhow::Error>>
         {
             match get!(task, InProgress) {
-                Some(InProgressState::Scheduled { done_event, .. }) => {
-                    Some(Ok(Err(listen_to_done_event(this, reader, done_event))))
-                }
+                Some(InProgressState::Scheduled { done_event, .. }) => Some(Ok(Err(
+                    listen_event!(done_event, done_event_note(_this, _reader)),
+                ))),
                 Some(InProgressState::InProgress(box InProgressStateInner {
                     done,
                     done_event,
                     ..
                 })) => {
                     if !*done {
-                        Some(Ok(Err(listen_to_done_event(this, reader, done_event))))
+                        Some(Ok(Err(listen_event!(
+                            done_event,
+                            done_event_note(_this, _reader)
+                        ))))
                     } else {
                         None
                     }
@@ -557,7 +562,7 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
                     }
                     get!(task, Activeness).unwrap()
                 };
-                let listener = activeness.all_clean_event.listen_with_note(move || {
+                let listener = listen_event!(activeness.all_clean_event, move || {
                     format!("try_read_task_output (strongly consistent) from {reader:?}")
                 });
                 drop(task);
@@ -612,19 +617,21 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
             return result;
         }
 
-        let reader_desc = reader.map(|r| self.get_task_desc_fn(r));
-        let note = move || {
-            if let Some(reader_desc) = reader_desc.as_ref() {
-                format!("try_read_task_output (recompute) from {}", reader_desc())
-            } else {
-                "try_read_task_output (recompute, untracked)".to_string()
+        let note = event_note!({
+            let reader_desc = reader.map(|r| self.get_task_event_note(r));
+            move || {
+                if let Some(reader_desc) = reader_desc.as_ref() {
+                    format!("try_read_task_output (recompute) from {}", reader_desc())
+                } else {
+                    "try_read_task_output (recompute, untracked)".to_string()
+                }
             }
-        };
+        });
 
         // Output doesn't exist. We need to schedule the task to compute it.
         let (item, listener) = CachedDataItem::new_scheduled_with_listener(
             TaskExecutionReason::OutputNotAvailable,
-            self.get_task_desc_fn(task_id),
+            self.get_task_event_note(task_id),
             note,
         );
         // It's not possible that the task is InProgress at this point. If it is InProgress {
@@ -756,7 +763,7 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         } else if !is_scheduled
             && task.add(CachedDataItem::new_scheduled(
                 TaskExecutionReason::CellNotAvailable,
-                self.get_task_desc_fn(task_id),
+                self.get_task_event_note(task_id),
             ))
         {
             turbo_tasks.schedule(task_id);
@@ -769,24 +776,26 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         &self,
         task: &mut impl TaskGuard,
         task_id: TaskId,
-        reader: Option<TaskId>,
+        _reader: Option<TaskId>,
         cell: CellId,
     ) -> (EventListener, bool) {
-        let reader_desc = reader.map(|r| self.get_task_desc_fn(r));
-        let note = move || {
-            if let Some(reader_desc) = reader_desc.as_ref() {
-                format!("try_read_task_cell (in progress) from {}", reader_desc())
-            } else {
-                "try_read_task_cell (in progress, untracked)".to_string()
+        let _note = event_note!({
+            let reader_desc = _reader.map(|r| self.get_task_event_note(r));
+            move || {
+                if let Some(reader_desc) = reader_desc.as_ref() {
+                    format!("try_read_task_cell (in progress) from {}", reader_desc())
+                } else {
+                    "try_read_task_cell (in progress, untracked)".to_string()
+                }
             }
-        };
+        });
         if let Some(in_progress) = get!(task, InProgressCell { cell }) {
             // Someone else is already computing the cell
-            let listener = in_progress.event.listen_with_note(note);
+            let listener = listen_event!(in_progress.event, _note);
             return (listener, false);
         }
         let in_progress = InProgressCellState::new(task_id, cell);
-        let listener = in_progress.event.listen_with_note(note);
+        let listener = listen_event!(in_progress.event, _note);
         task.add_new(CachedDataItem::InProgressCell {
             cell,
             value: in_progress,
@@ -812,15 +821,16 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         None
     }
 
-    // TODO feature flag that for hanging detection only
-    fn get_task_desc_fn(&self, task_id: TaskId) -> impl Fn() -> String + Send + Sync + 'static {
-        let task_type = self.lookup_task_type(task_id);
-        move || {
-            task_type.as_ref().map_or_else(
-                || format!("{task_id:?} transient"),
-                |task_type| format!("{task_id:?} {task_type}"),
-            )
-        }
+    fn get_task_event_note(&self, _task_id: TaskId) -> impl Fn() -> String + Send + Sync + 'static {
+        event_note!({
+            let task_type = self.lookup_task_type(_task_id);
+            move || {
+                task_type.as_ref().map_or_else(
+                    || format!("{_task_id:?} transient"),
+                    |task_type| format!("{_task_id:?} {task_type}"),
+                )
+            }
+        })
     }
 
     fn snapshot(&self) -> Option<(Instant, bool)> {

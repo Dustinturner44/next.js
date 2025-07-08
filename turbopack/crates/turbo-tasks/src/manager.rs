@@ -34,9 +34,11 @@ use crate::{
     event::{Event, EventListener},
     id::{BackendJobId, ExecutionId, LocalTaskId, TRANSIENT_TASK_BIT, TraitTypeId},
     id_factory::IdFactoryWithReuse,
+    listen_event,
     macro_helpers::NativeFunction,
     magic_any::MagicAny,
     message_queue::{CompilationEvent, CompilationEventQueue},
+    new_event,
     raw_vc::{CellId, RawVc},
     registry,
     serialization_invalidation::SerializationInvalidator,
@@ -507,10 +509,10 @@ impl<B: Backend + 'static> TurboTasks<B> {
             scheduled_tasks: AtomicUsize::new(0),
             start: Default::default(),
             aggregated_update: Default::default(),
-            event: Event::new(|| "TurboTasks::event".to_string()),
-            event_start: Event::new(|| "TurboTasks::event_start".to_string()),
-            event_foreground: Event::new(|| "TurboTasks::event_foreground".to_string()),
-            event_background: Event::new(|| "TurboTasks::event_background".to_string()),
+            event: new_event!(|| "TurboTasks::event".to_string()),
+            event_start: new_event!(|| "TurboTasks::event_start".to_string()),
+            event_foreground: new_event!(|| "TurboTasks::event_foreground".to_string()),
+            event_background: new_event!(|| "TurboTasks::event_background".to_string()),
             program_start: Instant::now(),
             compilation_events: CompilationEventQueue::default(),
         });
@@ -794,7 +796,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
             .with(|gts| {
                 let mut gts_write = gts.write().unwrap();
                 let local_task_id = gts_write.create_local_task(LocalTask::Scheduled {
-                    done_event: Event::new({
+                    done_event: new_event!({
                         move || format!("LocalTask({task_type})::done_event")
                     }),
                 });
@@ -983,9 +985,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
         aggregation: Duration,
         timeout: Duration,
     ) -> Option<UpdateInfo> {
-        let listener = self
-            .event
-            .listen_with_note(|| "wait for update info".to_string());
+        let listener = listen_event!(self.event, || "wait for update info".to_string());
         let wait_for_finish = {
             let (update, reason_set) = &mut *self.aggregated_update.lock().unwrap();
             if aggregation.is_zero() {
@@ -1009,9 +1009,8 @@ impl<B: Backend + 'static> TurboTasks<B> {
                 listener.await;
             } else {
                 // wait for start, then wait for finish or timeout
-                let start_listener = self
-                    .event_start
-                    .listen_with_note(|| "wait for update info".to_string());
+                let start_listener =
+                    listen_event!(self.event_start, || "wait for update info".to_string());
                 if self.currently_scheduled_tasks.load(Ordering::Acquire) == 0 {
                     start_listener.await;
                 } else {
@@ -1029,7 +1028,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
                     () = tokio::time::sleep(aggregation) => {
                         break;
                     }
-                    () = self.event.listen_with_note(|| "wait for update info".to_string()) => {
+                    () = listen_event!(self.event, || "wait for update info".to_string()) => {
                         // Resets the sleep
                     }
                 }
@@ -1063,7 +1062,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
         self.backend.stopping(self);
         self.stopped.store(true, Ordering::Release);
         {
-            let listener = self.event.listen_with_note(|| "wait for stop".to_string());
+            let listener = listen_event!(self.event, || "wait for stop".to_string());
             if self.currently_scheduled_tasks.load(Ordering::Acquire) != 0 {
                 listener.await;
             }
@@ -1096,7 +1095,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
             TURBO_TASKS
                 .scope(this.clone(), async move {
                     while this.currently_scheduled_tasks.load(Ordering::Acquire) != 0 {
-                        let listener = this.event.listen_with_note(|| {
+                        let listener = listen_event!(this.event, || {
                             "background job waiting for execution".to_string()
                         });
                         if this.currently_scheduled_tasks.load(Ordering::Acquire) != 0 {

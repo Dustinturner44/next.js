@@ -11,7 +11,7 @@ use criterion::{
 };
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use tokio::runtime::Runtime;
-use turbo_tasks::event::Event;
+use turbo_tasks::event::new_event;
 use turbo_tasks_fs::rope::{Rope, RopeBuilder};
 
 fn bench_file_watching(c: &mut Criterion) {
@@ -32,7 +32,7 @@ fn bench_file_watching(c: &mut Criterion) {
         BenchmarkId::new("bench_file_watching", "change file"),
         move |b| {
             let (tx, rx) = channel();
-            let event = Arc::new(Event::new(|| "test event".to_string()));
+            let event = Arc::new(new_event!(|| "test event".to_string()));
 
             let mut watcher = RecommendedWatcher::new(tx, Config::default()).unwrap();
             watcher.watch(temp_path, RecursiveMode::Recursive).unwrap();

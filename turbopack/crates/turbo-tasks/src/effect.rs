@@ -22,6 +22,7 @@ use crate::{
     emit,
     event::{Event, EventListener},
     manager::turbo_tasks_future_scope,
+    new_event,
     trace::TraceRawVcs,
     util::SharedError,
 };
@@ -85,7 +86,7 @@ impl EffectInstance {
                     EffectState::NotStarted(_) => {
                         let EffectState::NotStarted(inner) = std::mem::replace(
                             &mut *guard,
-                            EffectState::Started(Event::new(|| "Effect".to_string())),
+                            EffectState::Started(new_event!(|| "Effect".to_string())),
                         ) else {
                             unreachable!();
                         };
