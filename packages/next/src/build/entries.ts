@@ -704,7 +704,10 @@ export async function createEntrypoints(
               page,
               name: serverBundlePath,
               pagePath: absolutePagePath,
-              rootParams: (staticInfo as AppPageStaticInfo).rootParams!,
+              rootParams:
+                (staticInfo as AppPageStaticInfo).rootParams?.map(
+                  (p) => p.param
+                ) || [],
               appDir,
               appPaths: matchedAppPaths,
               pageExtensions,
@@ -783,7 +786,10 @@ export async function createEntrypoints(
                 name: serverBundlePath,
                 page,
                 pagePath: absolutePagePath,
-                rootParams: (staticInfo as AppPageStaticInfo).rootParams!,
+                rootParams:
+                  (staticInfo as AppPageStaticInfo).rootParams?.map(
+                    (p) => p.param
+                  ) || [],
                 appDir: appDir!,
                 appPaths: matchedAppPaths,
                 pageExtensions,
