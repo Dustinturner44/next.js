@@ -571,7 +571,7 @@ impl SingleModuleGraph {
     /// Target nodes can be revisited (once per incoming edge).
     /// Edges are traversed in normal order, so should correspond to reference order.
     ///
-    /// * `entry` - The entry module to start the traversal from
+    /// * `entries` - The entry modules to start the traversal from
     /// * `state` - The state to be passed to the visitors
     /// * `visit_preorder` - Called before visiting the children of a node.
     ///    - Receives: (originating &SingleModuleGraphNode, edge &ChunkingType), target
