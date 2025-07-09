@@ -293,7 +293,7 @@ impl PreBatches {
         };
         let mut visited = FxHashSet::default();
         module_graph
-            .traverse_edges_from_entries_topological(
+            .traverse_edges_from_entries_dfs(
                 std::iter::once(ResolvedVc::upcast(entry)),
                 &mut state,
                 |parent_info, node, state| {

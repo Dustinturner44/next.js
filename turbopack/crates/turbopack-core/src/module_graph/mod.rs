@@ -563,12 +563,13 @@ impl SingleModuleGraph {
         Ok(())
     }
 
-    /// Traverses all reachable edges in topological order. The preorder visitor can be used to
-    /// forward state down the graph, and to skip subgraphs
+    /// Traverses all reachable edges in dfs order. The preorder visitor can be used to
+    /// forward state down the graph, and to skip subgraphs.
     ///
     /// Use this to collect modules in evaluation order.
     ///
-    /// Target nodes can be revisited (once per incoming edge).
+    /// Target nodes can be revisited (once per incoming edge) in the preorder_visitor, in the post
+    /// order visitor they are visited exactly once with the first edge they were discovered with.
     /// Edges are traversed in normal order, so should correspond to reference order.
     ///
     /// * `entries` - The entry modules to start the traversal from
@@ -580,7 +581,7 @@ impl SingleModuleGraph {
     /// * `visit_postorder` - Called after visiting the children of a node. Return
     ///    - Receives: (originating &SingleModuleGraphNode, edge &ChunkingType), target
     ///      &SingleModuleGraphNode, state &S
-    pub fn traverse_edges_from_entries_topological<'a, S>(
+    pub fn traverse_edges_from_entries_dfs<'a, S>(
         &'a self,
         entries: impl IntoIterator<Item = ResolvedVc<Box<dyn Module>>>,
         state: &mut S,
@@ -1304,15 +1305,16 @@ impl ModuleGraph {
         Ok(())
     }
 
-    /// Traverses all reachable edges in topological order. The preorder visitor can be used to
+    /// Traverses all reachable edges in dfs order. The preorder visitor can be used to
     /// forward state down the graph, and to skip subgraphs
     ///
     /// Use this to collect modules in evaluation order.
     ///
-    /// Target nodes can be revisited (once per incoming edge).
+    /// Target nodes can be revisited (once per incoming edge) in the preorder_visitor, in the post
+    /// order visitor they are visited exactly once with the first edge they were discovered with.
     /// Edges are traversed in normal order, so should correspond to reference order.
     ///
-    /// * `entry` - The entry module to start the traversal from
+    /// * `entries` - The entry modules to start the traversal from
     /// * `state` - The state to be passed to the visitors
     /// * `visit_preorder` - Called before visiting the children of a node.
     ///    - Receives: (originating &SingleModuleGraphNode, edge &ChunkingType), target
@@ -1322,7 +1324,7 @@ impl ModuleGraph {
     ///    - Receives: (originating &SingleModuleGraphNode, edge &ChunkingType), target
     ///      &SingleModuleGraphNode, state &S
     ///    - Can return [GraphTraversalAction]s to control the traversal
-    pub async fn traverse_edges_from_entries_topological<S>(
+    pub async fn traverse_edges_from_entries_dfs<S>(
         &self,
         entries: impl IntoIterator<Item = ResolvedVc<Box<dyn Module>>>,
         state: &mut S,
