@@ -873,8 +873,8 @@ function serializeReadableStream(request, task, stream) {
             tryStreamTask(request, streamTask),
             enqueueFlush(request),
             reader.read().then(progress, error);
-        } catch (x$9) {
-          error(x$9);
+        } catch (x$8) {
+          error(x$8);
         }
   }
   function error(reason) {
@@ -951,8 +951,8 @@ function serializeAsyncIterable(request, task, iterable, iterator) {
             tryStreamTask(request, streamTask),
             enqueueFlush(request),
             iterator.next().then(progress, error);
-        } catch (x$10) {
-          error(x$10);
+        } catch (x$9) {
+          error(x$9);
         }
   }
   function error(reason) {
@@ -2095,15 +2095,15 @@ function abort(request, reason) {
                     )
                   : reason,
             digest = logRecoverableError(request, error, null),
-            errorId$27 = request.nextChunkId++;
-          request.fatalError = errorId$27;
+            errorId$26 = request.nextChunkId++;
+          request.fatalError = errorId$26;
           request.pendingChunks++;
-          emitErrorChunk(request, errorId$27, digest, error, !1);
+          emitErrorChunk(request, errorId$26, digest, error, !1);
           abortableTasks.forEach(function (task) {
-            return abortTask(task, request, errorId$27);
+            return abortTask(task, request, errorId$26);
           });
           scheduleWork(function () {
-            return finishAbort(request, abortableTasks, errorId$27);
+            return finishAbort(request, abortableTasks, errorId$26);
           });
         }
       else {
@@ -2112,9 +2112,9 @@ function abort(request, reason) {
         null !== request.destination &&
           flushCompletedChunks(request, request.destination);
       }
-    } catch (error$28) {
-      logRecoverableError(request, error$28, null),
-        fatalError(request, error$28);
+    } catch (error$27) {
+      logRecoverableError(request, error$27, null),
+        fatalError(request, error$27);
     }
 }
 function resolveServerReference(bundlerConfig, id) {
@@ -2571,8 +2571,8 @@ function parseReadableStream(response, reference, type) {
             (previousBlockedChunk = chunk));
       } else {
         chunk = previousBlockedChunk;
-        var chunk$31 = createPendingChunk(response);
-        chunk$31.then(
+        var chunk$30 = createPendingChunk(response);
+        chunk$30.then(
           function (v) {
             return controller.enqueue(v);
           },
@@ -2580,10 +2580,10 @@ function parseReadableStream(response, reference, type) {
             return controller.error(e);
           }
         );
-        previousBlockedChunk = chunk$31;
+        previousBlockedChunk = chunk$30;
         chunk.then(function () {
-          previousBlockedChunk === chunk$31 && (previousBlockedChunk = null);
-          resolveModelChunk(chunk$31, json, -1);
+          previousBlockedChunk === chunk$30 && (previousBlockedChunk = null);
+          resolveModelChunk(chunk$30, json, -1);
         });
       }
     },
