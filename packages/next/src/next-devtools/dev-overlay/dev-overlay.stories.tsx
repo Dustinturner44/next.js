@@ -10,6 +10,7 @@ import {
   storybookDefaultOverlayState,
   useStorybookOverlayReducer,
 } from './storybook/use-overlay-reducer'
+import { DevOverlayContext } from '../dev-overlay.browser'
 
 const meta: Meta<typeof DevOverlay> = {
   component: DevOverlay,
@@ -39,35 +40,45 @@ function getNoSquashedHydrationErrorDetails() {
 
 const initialState: OverlayState = {
   ...storybookDefaultOverlayState,
-  errors,
+  // todo: i think hidden when errors for some reason
+  errors: [],
 }
 
 export const Default: Story = {
   render: function DevOverlayStory() {
     const [state, dispatch] = useStorybookOverlayReducer(initialState)
     return (
-      <>
-        <img
+      <div
+        style={{
+          height: '100vh',
+          backgroundColor: "black"
+     }} 
+      >
+        {/* get lots of real hard examples so we have better debug */}
+        {/* <img
           src={imgApp}
           style={{
             width: '100%',
             height: '100vh',
             objectFit: 'contain',
           }}
-        />
-        <DevOverlay
-          state={state}
-          dispatch={dispatch}
-          getSquashedHydrationErrorDetails={
-            // Testing like App Router where we no longer quash hydration errors
-            getNoSquashedHydrationErrorDetails
-          }
-        />
-      </>
+        /> */}
+        <DevOverlayContext
+          value={{
+            dispatch,
+            getSquashedHydrationErrorDetails:
+              getNoSquashedHydrationErrorDetails,
+            state,
+          }}
+        >
+          <DevOverlay />
+        </DevOverlayContext>
+      </div>
     )
   },
 }
 
+// todo: fix story with "Context arg provider" wrapper
 export const WithPanel: Story = {
   beforeEach: () => {
     process.env.__NEXT_DEVTOOL_NEW_PANEL_UI = 'true'
@@ -90,12 +101,12 @@ export const WithPanel: Story = {
           }}
         />
         <DevOverlay
-          state={state}
-          dispatch={dispatch}
-          getSquashedHydrationErrorDetails={
-            // Testing like App Router where we no longer quash hydration errors
-            getNoSquashedHydrationErrorDetails
-          }
+        // state={state}
+        // dispatch={dispatch}
+        // getSquashedHydrationErrorDetails={
+        //   // Testing like App Router where we no longer quash hydration errors
+        //   getNoSquashedHydrationErrorDetails
+        // }
         />
       </>
     )

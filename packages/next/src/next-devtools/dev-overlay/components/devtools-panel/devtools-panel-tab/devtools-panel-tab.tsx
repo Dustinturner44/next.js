@@ -37,10 +37,6 @@ export function DevToolsPanelTab({
     case 'settings':
       return (
         <SettingsTab
-          devToolsPosition={devToolsPosition}
-          scale={scale}
-          handlePositionChange={handlePositionChange}
-          handleScaleChange={handleScaleChange}
         />
       )
     case 'route':

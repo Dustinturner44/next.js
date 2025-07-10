@@ -3,8 +3,6 @@ import {
   ACTION_ERROR_OVERLAY_OPEN,
   ACTION_ERROR_OVERLAY_TOGGLE,
   STORAGE_KEY_POSITION,
-  type OverlayDispatch,
-  type OverlayState,
 } from '../../../shared'
 
 import { useState, useEffect, useRef, createContext, useContext } from 'react'
@@ -27,20 +25,16 @@ import {
 } from './dev-tools-info/preferences'
 import { Draggable } from './draggable'
 import { SegmentsExplorer } from './dev-tools-info/segments-explorer'
+import { useDevOverlayContext } from '../../../../dev-overlay.browser'
+import { useRenderErrorContext } from '../../../dev-overlay'
+import { css } from '../../../utils/css'
 
 // TODO: add E2E tests to cover different scenarios
 
 export function DevToolsIndicator({
-  state,
-  errorCount,
-  isBuildError,
-  ...props
+  scale,
+  setScale,
 }: {
-  state: OverlayState
-  dispatch: OverlayDispatch
-  errorCount: number
-  isBuildError: boolean
-
   scale: DevToolsScale
   setScale: (value: DevToolsScale) => void
 }) {
@@ -49,23 +43,15 @@ export function DevToolsIndicator({
 
   return (
     <DevToolsPopover
-      routerType={state.routerType}
-      semver={state.versionInfo.installed}
-      issueCount={errorCount}
-      isDevBuilding={state.buildingIndicator}
-      isDevRendering={state.renderingIndicator}
-      isStaticRoute={state.staticIndicator}
+      isDevToolsIndicatorVisible={isDevToolsIndicatorVisible}
+      scale={scale}
+      setScale={setScale}
       hide={() => {
         setIsDevToolsIndicatorVisible(false)
         fetch('/__nextjs_disable_dev_indicator', {
           method: 'POST',
         })
       }}
-      isTurbopack={!!process.env.TURBOPACK}
-      disabled={state.disableDevIndicator || !isDevToolsIndicatorVisible}
-      isBuildError={isBuildError}
-      page={state.page}
-      {...props}
     />
   )
 }
@@ -80,7 +66,7 @@ interface C {
 
 const Context = createContext({} as C)
 
-const OVERLAYS = {
+export const OVERLAYS = {
   Root: 'root',
   Turbo: 'turbo',
   Route: 'route',
@@ -93,38 +79,28 @@ export type Overlays = (typeof OVERLAYS)[keyof typeof OVERLAYS]
 const INDICATOR_PADDING = 20
 
 function DevToolsPopover({
-  routerType,
-  disabled,
-  issueCount,
-  isDevBuilding,
-  isDevRendering,
-  isStaticRoute,
-  isTurbopack,
-  isBuildError,
   hide,
-  dispatch,
   scale,
   setScale,
-  page,
+  isDevToolsIndicatorVisible,
 }: {
-  routerType: 'pages' | 'app'
-  disabled: boolean
-  issueCount: number
-  isStaticRoute: boolean
-  semver: string | undefined
-  isDevBuilding: boolean
-  isDevRendering: boolean
-  isTurbopack: boolean
-  isBuildError: boolean
   hide: () => void
-  dispatch: OverlayDispatch
   scale: DevToolsScale
   setScale: (value: DevToolsScale) => void
-  page: string
+  isDevToolsIndicatorVisible: boolean
 }) {
+  const { state, dispatch } = useDevOverlayContext()
+  const routerType = state.routerType
+  const issueCount = useRenderErrorContext().totalErrorCount
+  const isDevBuilding = state.buildingIndicator
+  const isDevRendering = state.renderingIndicator
+  const isStaticRoute = state.staticIndicator
+  const isTurbopack = !!process.env.TURBOPACK
+  const disabled = state.disableDevIndicator || !isDevToolsIndicatorVisible
+  const page = state.page
+
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
-
   const [open, setOpen] = useState<Overlays | null>(null)
   const [position, setPosition] = useState(getInitialPosition())
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -240,7 +216,10 @@ function DevToolsPopover({
     if (open === OVERLAYS.Root) {
       setOpen(null)
     } else {
+      console.log('opening overlays', OVERLAYS.Root)
+
       setOpen(OVERLAYS.Root)
+      // flush sync?
       setTimeout(() => {
         select('first')
       })
@@ -264,6 +243,7 @@ function DevToolsPopover({
   }
 
   const [vertical, horizontal] = position.split('-', 2)
+  // here it is ah
   const popover = { [vertical]: 'calc(100% + 8px)', [horizontal]: 0 }
 
   return (
@@ -276,6 +256,8 @@ function DevToolsPopover({
           boxShadow: 'none',
           [vertical]: `${INDICATOR_PADDING}px`,
           [horizontal]: `${INDICATOR_PADDING}px`,
+
+          // position:'absolute'
         } as CSSProperties
       }
     >
@@ -302,19 +284,16 @@ function DevToolsPopover({
           toggleErrorOverlay={toggleErrorOverlay}
           isDevBuilding={isDevBuilding}
           isDevRendering={isDevRendering}
-          isBuildError={isBuildError}
+          isBuildError={state.buildError !== null}
           scale={scale}
         />
       </Draggable>
 
       {/* Route Info */}
       <RouteInfo
-        isOpen={isRouteInfoOpen}
         close={closeToRootMenu}
-        triggerRef={triggerRef}
         style={popover}
-        routerType={routerType}
-        routeType={isStaticRoute ? 'Static' : 'Dynamic'}
+        isOpen={isRouteInfoOpen}
       />
 
       {/* Turbopack Info */}
@@ -524,7 +503,7 @@ function IssueCount({ children }: { children: number }) {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-export const DEV_TOOLS_INDICATOR_STYLES = `
+export const DEV_TOOLS_INDICATOR_STYLES = css`
   .dev-tools-indicator-menu {
     -webkit-font-smoothing: antialiased;
     display: flex;
@@ -535,6 +514,7 @@ export const DEV_TOOLS_INDICATOR_STYLES = `
     background-clip: padding-box;
     box-shadow: var(--shadow-menu);
     border-radius: var(--rounded-xl);
+    /* this was changed to absolute, we have it fixed for the other dev indicator menu  along with removing border incase something went wrong we should revert this*/
     position: absolute;
     font-family: var(--font-stack-sans);
     z-index: 3;

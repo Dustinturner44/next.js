@@ -10,49 +10,29 @@ import { Errors } from '../../../container/errors'
 import { useDelayedRender } from '../../../hooks/use-delayed-render'
 import type { ReadyRuntimeError } from '../../../utils/get-error-by-type'
 import type { HydrationErrorState } from '../../../../shared/hydration-error'
+import { useDevOverlayContext } from '../../../../dev-overlay.browser'
+import { useRenderErrorContext } from '../../../dev-overlay'
 
 const transitionDurationMs = 200
 
 export interface ErrorBaseProps {
   rendered: boolean
   transitionDurationMs: number
-  isTurbopack: boolean
-  versionInfo: OverlayState['versionInfo']
-  errorCount: number
 }
 
-export function ErrorOverlay({
-  state,
-  dispatch,
-  getSquashedHydrationErrorDetails,
-  runtimeErrors,
-  errorCount,
-}: {
-  state: OverlayState
-  dispatch: OverlayDispatch
-  getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
-  runtimeErrors: ReadyRuntimeError[]
-  errorCount: number
-}) {
-  const isTurbopack = !!process.env.TURBOPACK
+export function ErrorOverlay() {
+  const { state } = useDevOverlayContext()
+  const { runtimeErrors } = useRenderErrorContext()
 
   // This hook lets us do an exit animation before unmounting the component
   const { mounted, rendered } = useDelayedRender(state.isErrorOverlayOpen, {
     exitDelay: transitionDurationMs,
   })
 
-  const commonProps = {
-    rendered,
-    transitionDurationMs,
-    isTurbopack,
-    versionInfo: state.versionInfo,
-    errorCount,
-  }
-
   if (state.buildError !== null) {
     return (
       <BuildError
-        {...commonProps}
+        transitionDurationMs={transitionDurationMs}
         message={state.buildError}
         // This is not a runtime error, forcedly display error overlay
         rendered
@@ -74,14 +54,6 @@ export function ErrorOverlay({
   }
 
   return (
-    <Errors
-      {...commonProps}
-      debugInfo={state.debugInfo}
-      getSquashedHydrationErrorDetails={getSquashedHydrationErrorDetails}
-      runtimeErrors={runtimeErrors}
-      onClose={() => {
-        dispatch({ type: ACTION_ERROR_OVERLAY_CLOSE })
-      }}
-    />
+    <Errors transitionDurationMs={transitionDurationMs} rendered={rendered} />
   )
 }

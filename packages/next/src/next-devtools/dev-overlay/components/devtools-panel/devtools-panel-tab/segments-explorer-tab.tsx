@@ -7,8 +7,7 @@ function SegmentsExplorer({
   routerType: 'app' | 'pages'
   page: string
 }) {
-  const isAppRouter = routerType === 'app'
-  return <PageSegmentTree isAppRouter={isAppRouter} page={page} />
+  return <PageSegmentTree />
 }
 
 export function SegmentsExplorerTab({

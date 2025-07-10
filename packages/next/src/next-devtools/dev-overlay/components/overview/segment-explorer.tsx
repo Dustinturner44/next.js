@@ -16,6 +16,8 @@ import {
   isBoundaryFile,
   normalizeBoundaryFilename,
 } from '../../../../server/app-render/segment-explorer-path'
+import { ExternalIcon } from '../../icons/external'
+import { useDevOverlayContext } from '../../../dev-overlay.browser'
 
 const isFileNode = (node: SegmentTrieNode) => {
   return !!node.value?.type && !!node.value?.pagePath
@@ -99,15 +101,13 @@ function SegmentExplorerFooter({
   )
 }
 
-export function PageSegmentTree({
-  isAppRouter,
-  page,
-}: {
-  isAppRouter: boolean
-  page: string
-}) {
+export function PageSegmentTree() {
   const tree = useSegmentTree()
+  const {state}  = useDevOverlayContext()
 
+  const isAppRouter = state.routerType === 'app'
+
+  
   // Count active boundaries for the badge
   const activeBoundariesCount = useMemo(() => {
     return isAppRouter ? countActiveBoundaries(tree) : 0
@@ -122,7 +122,7 @@ export function PageSegmentTree({
 
   return (
     <div data-nextjs-devtools-panel-segments-explorer>
-      {isAppRouter && <PageRouteBar page={page} />}
+      {isAppRouter && <PageRouteBar page={state.page} />}
       <div
         className="segment-explorer-content"
         data-nextjs-devtool-segment-explorer
@@ -316,7 +316,7 @@ function PageSegmentTreeLayerPresentation({
 
                       const tooltipMessage = isBuiltin
                         ? `The default Next.js ${childNode.value.type} is being shown. You can customize this page by adding your own ${fileName} file to the app/ directory.`
-                        : `Open in editor`
+                        : null // `Open in editor`
 
                       return (
                         <Tooltip
@@ -346,7 +346,7 @@ function PageSegmentTreeLayerPresentation({
                             }}
                           >
                             {fileName}
-                            {isBuiltin && <InfoIcon />}
+                            {isBuiltin ? <InfoIcon /> : <ExternalIcon />}
                           </span>
                         </Tooltip>
                       )

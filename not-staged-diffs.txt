@@ -1,0 +1,2255 @@
+diff --git a/packages/next/.storybook/main.ts b/packages/next/.storybook/main.ts
+index 91222d9918..17fa7d000c 100644
+--- a/packages/next/.storybook/main.ts
++++ b/packages/next/.storybook/main.ts
+@@ -1,5 +1,7 @@
+ import type { StorybookConfig } from '@storybook/react-webpack5'
+-import { join, dirname } from 'path'
++import { join, dirname, resolve } from 'path'
++import { fileURLToPath } from 'url'
++
+ /**
+  * This function is used to resolve the absolute path of a package.
+  * It is needed in projects that use Yarn PnP or are set up within a monorepo.
+@@ -7,6 +9,9 @@ import { join, dirname } from 'path'
+ function getAbsolutePath(value: string): any {
+   return dirname(require.resolve(join(value, 'package.json')))
+ }
++import { createRequire } from 'module'
++const require = createRequire(import.meta.url)
++
+ const config: StorybookConfig = {
+   stories: ['../src/next-devtools/**/*.stories.tsx'],
+   addons: [
+@@ -32,5 +37,48 @@ const config: StorybookConfig = {
+       },
+     },
+   }),
++  webpackFinal: async (config) => {
++    // Find and override CSS rule to use the devtool style injection
++    const cssRule = config.module?.rules?.find((rule) => {
++      if (typeof rule !== 'object' || !rule) return false
++      if ('test' in rule && rule.test instanceof RegExp) {
++        return rule.test.test('.css')
++      }
++      return false
++    })
++
++    if (
++      cssRule &&
++      typeof cssRule === 'object' &&
++      'use' in cssRule &&
++      Array.isArray(cssRule.use)
++    ) {
++      // Find the style-loader in the use array
++      const styleLoaderIndex = cssRule.use.findIndex((loader) => {
++        if (typeof loader === 'string') return loader.includes('style-loader')
++        if (typeof loader === 'object' && loader && 'loader' in loader) {
++          return loader.loader?.includes('style-loader')
++        }
++        return false
++      })
++
++      if (styleLoaderIndex !== -1) {
++        // Replace with our custom configuration
++        cssRule.use[styleLoaderIndex] = {
++          loader: require.resolve('style-loader'),
++          options: {
++            injectType: 'styleTag',
++            insert: resolve(
++              dirname(fileURLToPath(import.meta.url)),
++              '../src/build/webpack/loaders/devtool/devtool-style-inject.js'
++            ),
++          },
++        }
++      }
++    }
++
++    return config
++  },
+ }
++
+ export default config
+diff --git a/packages/next/src/next-devtools/components/tooltip.tsx b/packages/next/src/next-devtools/components/tooltip.tsx
+index bf1a7162c0..02ba294640 100644
+--- a/packages/next/src/next-devtools/components/tooltip.tsx
++++ b/packages/next/src/next-devtools/components/tooltip.tsx
+@@ -7,7 +7,7 @@ type TooltipDirection = 'top' | 'bottom' | 'left' | 'right'
+ 
+ interface TooltipProps {
+   children: React.ReactNode
+-  title: string
++  title: string | null
+   direction?: TooltipDirection
+   container?: HTMLElement | React.RefObject<HTMLElement>
+   arrowSize?: number
+@@ -32,6 +32,9 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
+     },
+     ref
+   ) {
++    if (!title) {
++      return children
++    }
+     return (
+       <BaseTooltip.Provider>
+         <BaseTooltip.Root delay={0}>
+diff --git a/packages/next/src/next-devtools/dev-overlay.browser.tsx b/packages/next/src/next-devtools/dev-overlay.browser.tsx
+index a5a44d8555..6e1b9f2ab3 100644
+--- a/packages/next/src/next-devtools/dev-overlay.browser.tsx
++++ b/packages/next/src/next-devtools/dev-overlay.browser.tsx
+@@ -18,9 +18,17 @@ import {
+   ACTION_RENDERING_INDICATOR_HIDE,
+   ACTION_RENDERING_INDICATOR_SHOW,
+   ACTION_DEVTOOL_UPDATE_ROUTE_STATE,
++  type OverlayState,
++  type DispatcherEvent,
+ } from './dev-overlay/shared'
+ 
+-import { startTransition, useInsertionEffect } from 'react'
++import {
++  createContext,
++  startTransition,
++  useContext,
++  useInsertionEffect,
++  type ActionDispatch,
++} from 'react'
+ import { createRoot } from 'react-dom/client'
+ import { FontStyles } from './dev-overlay/font/font-styles'
+ import type { HydrationErrorState } from './shared/hydration-error'
+@@ -208,14 +216,26 @@ function DevOverlayRoot({
+     <>
+       {/* Fonts can only be loaded outside the Shadow DOM. */}
+       <FontStyles />
+-      <DevOverlay
+-        state={state}
+-        dispatch={dispatch}
+-        getSquashedHydrationErrorDetails={getSquashedHydrationErrorDetails}
+-      />
++      <DevOverlayContext
++        value={{
++          dispatch,
++          getSquashedHydrationErrorDetails,
++          state,
++        }}
++      >
++        <DevOverlay />
++      </DevOverlayContext>
+     </>
+   )
+ }
++export const DevOverlayContext = createContext<{
++  state: OverlayState & {
++    routerType: 'pages' | 'app'
++  }
++  dispatch: ActionDispatch<[action: DispatcherEvent]>
++  getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
++}>(null!)
++export const useDevOverlayContext = () => useContext(DevOverlayContext)
+ 
+ let isPagesMounted = false
+ let isAppMounted = false
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.stories.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.stories.tsx
+index 4d957bad50..5f6b5dcc50 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.stories.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.stories.tsx
+@@ -1,12 +1,12 @@
+ import type { Meta, StoryObj } from '@storybook/react'
+ import type { OverlayState } from '../../shared'
+ 
+-import { DevToolsIndicator } from './devtools-indicator'
++import { DevToolsIndicatorNew } from './devtools-indicator'
+ import { INITIAL_OVERLAY_STATE } from '../../shared'
+ import { withShadowPortal } from '../../storybook/with-shadow-portal'
+ 
+-const meta: Meta<typeof DevToolsIndicator> = {
+-  component: DevToolsIndicator,
++const meta: Meta<typeof DevToolsIndicatorNew> = {
++  component: DevToolsIndicatorNew,
+   parameters: {
+     layout: 'centered',
+   },
+@@ -37,7 +37,7 @@ const meta: Meta<typeof DevToolsIndicator> = {
+ }
+ 
+ export default meta
+-type Story = StoryObj<typeof DevToolsIndicator>
++type Story = StoryObj<typeof DevToolsIndicatorNew>
+ 
+ const state: OverlayState = {
+   ...INITIAL_OVERLAY_STATE,
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.tsx
+index 182f4ef0f8..7257afca7f 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/devtools-indicator.tsx
+@@ -16,35 +16,23 @@ import {
+   ACTION_ERROR_OVERLAY_OPEN,
+ } from '../../shared'
+ import { Draggable } from '../errors/dev-tools-indicator/draggable'
++import { useDevOverlayContext } from '../../../dev-overlay.browser'
++import { useRenderErrorContext } from '../../dev-overlay'
++import { usePanelContext } from '../../menu/context'
+ 
+ export const INDICATOR_PADDING = 20
+ 
+-export function DevToolsIndicator({
+-  state,
+-  dispatch,
+-  errorCount,
+-  isBuildError,
+-}: {
+-  state: OverlayState
+-  dispatch: OverlayDispatch
+-  errorCount: number
+-  isBuildError: boolean
+-}) {
+-  const [open, setOpen] = useState(false)
++export function DevToolsIndicatorNew() {
++  const { state, dispatch } = useDevOverlayContext()
++  const { setOpen, triggerRef, setPanel } = usePanelContext()
+ 
+   const [vertical, horizontal] = state.devToolsPosition.split('-', 2)
+ 
+-  const enableErrorOverlayMode = () => {
+-    dispatch({ type: ACTION_ERROR_OVERLAY_OPEN })
+-    // Open the DevTools panel to view as error overlay mode.
+-    dispatch({ type: ACTION_DEVTOOLS_PANEL_OPEN })
+-  }
+-
+-  const toggleDevToolsPanel = () => {
+-    dispatch({ type: ACTION_DEVTOOLS_PANEL_TOGGLE })
+-  }
++  // console.log('rendering next logo')
+ 
+   return (
++    // what is this toast doing??
++    // why are u hiding my precious
+     <Toast
+       data-nextjs-toast
+       style={
+@@ -54,16 +42,17 @@ export function DevToolsIndicator({
+           boxShadow: 'none',
+           [vertical]: `${INDICATOR_PADDING}px`,
+           [horizontal]: `${INDICATOR_PADDING}px`,
+-          visibility:
+-            state.isDevToolsPanelOpen || state.isErrorOverlayOpen
+-              ? 'hidden'
+-              : 'visible',
++          // visibility:
++          //   state.isDevToolsPanelOpen || state.isErrorOverlayOpen
++          //     ? 'hidden'
++          //     : 'visible' <-- todo add hiding,
+         } as CSSProperties
+       }
+     >
+       <Draggable
+         padding={INDICATOR_PADDING}
+-        onDragStart={() => setOpen(false)}
++        // er i don't think this makes sense in the context of the refactor, come back to this
++        onDragStart={() => setOpen(null)}
+         position={state.devToolsPosition}
+         setPosition={(p) => {
+           dispatch({
+@@ -75,19 +64,12 @@ export function DevToolsIndicator({
+       >
+         {/* Trigger */}
+         <NextLogo
+-          aria-haspopup="menu"
+-          aria-expanded={open}
+-          aria-controls="nextjs-dev-tools-menu"
+-          aria-label={`${open ? 'Close' : 'Open'} Next.js Dev Tools`}
+-          data-nextjs-dev-tools-button
+-          disabled={state.disableDevIndicator}
+-          issueCount={errorCount}
+-          onTriggerClick={toggleDevToolsPanel}
+-          toggleErrorOverlay={enableErrorOverlayMode}
+-          isDevBuilding={state.buildingIndicator}
+-          isDevRendering={state.renderingIndicator}
+-          isBuildError={isBuildError}
+-          scale={state.scale}
++          onTriggerClick={() => {
++            // dispatch({ type: ACTION_DEVTOOLS_PANEL_TOGGLE })
++            // onTriggerClick()
++            setPanel(prev => prev === 'panel-selector' ? null : 'panel-selector')
++          }}
++          ref={triggerRef}
+         />
+       </Draggable>
+     </Toast>
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/next-logo.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/next-logo.tsx
+index a575bbbd1b..bcbd6e51b4 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/next-logo.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-indicator/next-logo.tsx
+@@ -7,50 +7,51 @@ import { useMinimumLoadingTimeMultiple } from './hooks/use-minimum-loading-time-
+ import { Cross } from '../../icons/cross'
+ import { Warning } from '../../icons/warning'
+ import { css } from '../../utils/css'
+-
+-interface Props extends React.ComponentProps<'button'> {
+-  issueCount: number
+-  isDevBuilding: boolean
+-  isDevRendering: boolean
+-  isBuildError: boolean
+-  onTriggerClick: () => void
+-  toggleErrorOverlay: () => void
+-  scale: DevToolsScale
+-}
++import { useDevOverlayContext } from '../../../dev-overlay.browser'
++import { useRenderErrorContext } from '../../dev-overlay'
++import {
++  ACTION_DEVTOOLS_PANEL_OPEN,
++  ACTION_DEVTOOLS_PANEL_TOGGLE,
++  ACTION_ERROR_OVERLAY_OPEN,
++} from '../../shared'
++import { usePanelContext } from '../../menu/context'
++import { OVERLAYS } from '../errors/dev-tools-indicator/dev-tools-indicator'
+ 
+ const SHORT_DURATION_MS = 150
+ 
+-export function NextLogo({
+-  disabled,
+-  issueCount,
+-  isDevBuilding,
+-  isDevRendering,
+-  isBuildError,
+-  onTriggerClick,
+-  toggleErrorOverlay,
+-  scale = 1,
+-  ...props
+-}: Props) {
+-  const SIZE = 36 / scale
+-
+-  const hasError = issueCount > 0
++export function NextLogo({onTriggerClick, ...buttonProps}: {onTriggerClick: () => void} &React.ComponentProps<'button'>) {
++  const { state, dispatch } = useDevOverlayContext()
++  const { totalErrorCount } = useRenderErrorContext()
++  const SIZE = 36 / state.scale
++  // const [open, setOpen] = useState(false)
++  // todo: rename better: its indicator menu open something something
++  // also wait we are duplicating this totally need to dedupe
++  const { open, setOpen, setPanel } = usePanelContext()
++  const isMenuOpen = open === OVERLAYS.Root
++
++  const hasError = totalErrorCount > 0
+   const [isErrorExpanded, setIsErrorExpanded] = useState(hasError)
+   const [dismissed, setDismissed] = useState(false)
+-  const newErrorDetected = useUpdateAnimation(issueCount, SHORT_DURATION_MS)
++  const newErrorDetected = useUpdateAnimation(
++    totalErrorCount,
++    SHORT_DURATION_MS
++  )
+ 
+   const triggerRef = useRef<HTMLButtonElement | null>(null)
+   const ref = useRef<HTMLDivElement | null>(null)
+   const measuredWidth = useMeasureWidth(ref)
+ 
+   const isLoading = useMinimumLoadingTimeMultiple(
+-    isDevBuilding || isDevRendering
++    state.buildingIndicator || state.renderingIndicator
+   )
+-  const isExpanded = isErrorExpanded || disabled
++  const isExpanded = isErrorExpanded || state.disableDevIndicator
+   const width = measuredWidth === 0 ? 'auto' : measuredWidth
+ 
+   useEffect(() => {
+     setIsErrorExpanded(hasError)
+   }, [hasError])
++  console.log('its time for next logo',state.disableDevIndicator);
++  
+ 
+   return (
+     <div
+@@ -61,7 +62,10 @@ export function NextLogo({
+           '--duration-short': `${SHORT_DURATION_MS}ms`,
+           // if the indicator is disabled, hide the badge
+           // also allow the "disabled" state be dismissed, as long as there are no build errors
+-          display: disabled && (!hasError || dismissed) ? 'none' : 'block',
++          display:
++            state.disableDevIndicator && (!hasError || dismissed)
++              ? 'none'
++              : 'block',
+         } as React.CSSProperties
+       }
+     >
+@@ -396,15 +400,31 @@ export function NextLogo({
+       >
+         <div ref={ref}>
+           {/* Children */}
+-          {!disabled && (
++          {!state.disableDevIndicator && (
+             <button
++            id="next-logo"
+               ref={triggerRef}
+               data-next-mark
+               data-next-mark-loading={isLoading}
+-              onClick={onTriggerClick}
+-              {...props}
++              onClick={() => {
++
++                onTriggerClick()
++                // this is really stupid, especially with setOpen
++                // setPanel(prev => prev === 'panel-selector' ? null : 'panel-selector')
++                // dispatch({ type: ACTION_DEVTOOLS_PANEL_TOGGLE })
++              }}
++              disabled={state.disableDevIndicator}
++              aria-haspopup="menu"
++              aria-expanded={isMenuOpen}
++              aria-controls="nextjs-dev-tools-menu"
++              aria-label={`${isMenuOpen ? 'Close' : 'Open'} Next.js Dev Tools`}
++              data-nextjs-dev-tools-button
++              {...buttonProps}
+             >
+-              <NextMark isLoading={isLoading} isDevBuilding={isDevBuilding} />
++              <NextMark
++                isLoading={isLoading}
++                isDevBuilding={state.buildingIndicator}
++              />
+             </button>
+           )}
+           {isExpanded && (
+@@ -412,42 +432,46 @@ export function NextLogo({
+               <button
+                 data-issues-open
+                 aria-label="Open issues overlay"
+-                onClick={toggleErrorOverlay}
++                onClick={() => {
++                  dispatch({ type: ACTION_ERROR_OVERLAY_OPEN })
++                  // Open the DevTools panel to view as error overlay mode.
++                  dispatch({ type: ACTION_DEVTOOLS_PANEL_OPEN })
++                }}
+               >
+-                {disabled && (
++                {state.disableDevIndicator && (
+                   <div data-disabled-icon>
+                     <Warning />
+                   </div>
+                 )}
+                 <AnimateCount
+                   // Used the key to force a re-render when the count changes.
+-                  key={issueCount}
++                  key={totalErrorCount}
+                   animate={newErrorDetected}
+                   data-issues-count-animation
+                 >
+-                  {issueCount}
++                  {totalErrorCount}
+                 </AnimateCount>{' '}
+                 <div>
+                   Issue
+-                  {issueCount > 1 && (
++                  {totalErrorCount > 1 && (
+                     <span
+                       aria-hidden
+                       data-issues-count-plural
+                       // This only needs to animate once the count changes from 1 -> 2,
+                       // otherwise it should stay static between re-renders.
+-                      data-animate={newErrorDetected && issueCount === 2}
++                      data-animate={newErrorDetected && totalErrorCount === 2}
+                     >
+                       s
+                     </span>
+                   )}
+                 </div>
+               </button>
+-              {!isBuildError && (
++              {!state.buildError && (
+                 <button
+                   data-issues-collapse
+                   aria-label="Collapse issues badge"
+                   onClick={() => {
+-                    if (disabled) {
++                    if (state.disableDevIndicator) {
+                       setDismissed(true)
+                     } else {
+                       setIsErrorExpanded(false)
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/devtools-panel-tab.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/devtools-panel-tab.tsx
+index ade104a5bc..d34bf58577 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/devtools-panel-tab.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/devtools-panel-tab.tsx
+@@ -37,10 +37,6 @@ export function DevToolsPanelTab({
+     case 'settings':
+       return (
+         <SettingsTab
+-          devToolsPosition={devToolsPosition}
+-          scale={scale}
+-          handlePositionChange={handlePositionChange}
+-          handleScaleChange={handleScaleChange}
+         />
+       )
+     case 'route':
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/segments-explorer-tab.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/segments-explorer-tab.tsx
+index 7a1106b713..f62097b4f6 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/segments-explorer-tab.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/segments-explorer-tab.tsx
+@@ -7,8 +7,7 @@ function SegmentsExplorer({
+   routerType: 'app' | 'pages'
+   page: string
+ }) {
+-  const isAppRouter = routerType === 'app'
+-  return <PageSegmentTree isAppRouter={isAppRouter} page={page} />
++  return <PageSegmentTree />
+ }
+ 
+ export function SegmentsExplorerTab({
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/settings-tab.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/settings-tab.tsx
+index a3d79d7be0..993b167312 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/settings-tab.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel-tab/settings-tab.tsx
+@@ -2,12 +2,20 @@ import type { Corners } from '../../../shared'
+ 
+ import { useTheme } from '../hooks/use-theme'
+ import { Select } from '../../select/select'
+-import { STORAGE_KEY_THEME, NEXT_DEV_TOOLS_SCALE } from '../../../shared'
++import {
++  STORAGE_KEY_THEME,
++  NEXT_DEV_TOOLS_SCALE,
++  ACTION_DEVTOOLS_POSITION,
++  STORAGE_KEY_POSITION,
++  ACTION_DEVTOOLS_SCALE,
++  STORAGE_KEY_SCALE,
++} from '../../../shared'
+ import { css } from '../../../utils/css'
+ import LightIcon from '../../../icons/light-icon'
+ import DarkIcon from '../../../icons/dark-icon'
+ import SystemIcon from '../../../icons/system-icon'
+ import EyeIcon from '../../../icons/eye-icon'
++import { useDevOverlayContext } from '../../../../dev-overlay.browser'
+ 
+ function ThemeIcon({ theme }: { theme: 'dark' | 'light' | 'system' }) {
+   switch (theme) {
+@@ -22,17 +30,7 @@ function ThemeIcon({ theme }: { theme: 'dark' | 'light' | 'system' }) {
+   }
+ }
+ 
+-export function SettingsTab({
+-  devToolsPosition,
+-  scale,
+-  handlePositionChange,
+-  handleScaleChange,
+-}: {
+-  devToolsPosition: Corners
+-  scale: number
+-  handlePositionChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+-  handleScaleChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+-}) {
++export function SettingsTab() {
+   const [theme, setTheme] = useTheme()
+ 
+   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+@@ -73,6 +71,7 @@ export function SettingsTab({
+       // https://github.com/vercel/next.js/pull/80005
+     })
+   }
++  const { dispatch, state } = useDevOverlayContext()
+ 
+   function hide() {
+     fetch('/__nextjs_disable_dev_indicator', {
+@@ -112,8 +111,14 @@ export function SettingsTab({
+         <Select
+           id="position"
+           name="position"
+-          value={devToolsPosition}
+-          onChange={handlePositionChange}
++          value={state.devToolsPosition}
++          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
++            dispatch({
++              type: ACTION_DEVTOOLS_POSITION,
++              devToolsPosition: e.target.value as Corners,
++            })
++            localStorage.setItem(STORAGE_KEY_POSITION, e.target.value)
++          }}
+         >
+           <option value="bottom-left">Bottom Left</option>
+           <option value="bottom-right">Bottom Right</option>
+@@ -132,8 +137,14 @@ export function SettingsTab({
+         <Select
+           id="size"
+           name="size"
+-          value={scale}
+-          onChange={handleScaleChange}
++          value={state.scale}
++          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
++            dispatch({
++              type: ACTION_DEVTOOLS_SCALE,
++              scale: Number(e.target.value),
++            })
++            localStorage.setItem(STORAGE_KEY_SCALE, e.target.value)
++          }}
+         >
+           {Object.entries(NEXT_DEV_TOOLS_SCALE).map(([key, value]) => {
+             return (
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel.tsx
+index 40cdd2198a..c739706693 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/devtools-panel.tsx
+@@ -252,14 +252,38 @@ export function DevToolsPanel({
+ 
+             {!isFullscreen && (
+               <>
+-                <ResizeHandle direction="top" />
+-                <ResizeHandle direction="right" />
+-                <ResizeHandle direction="bottom" />
+-                <ResizeHandle direction="left" />
+-                <ResizeHandle direction="top-left" />
+-                <ResizeHandle direction="top-right" />
+-                <ResizeHandle direction="bottom-left" />
+-                <ResizeHandle direction="bottom-right" />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="top"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="right"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="bottom"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="left"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="top-left"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="top-right"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="bottom-left"
++                />
++                <ResizeHandle
++                  position={state.devToolsPanelPosition}
++                  direction="bottom-right"
++                />
+               </>
+             )}
+           </>
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.css b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.css
+index 24ce1b80ce..f1dc4a28d6 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.css
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.css
+@@ -11,7 +11,7 @@
+   /* todo smarter z index */
+   z-index: -1;
+   pointer-events: none;
+-  /* a normal exit animation curve- at this point the exit animation is */
++  /* a normal exit animation curve- aat this point the exit animation is */
+   /* immediately responsive so we don't need a bespoke curve */
+   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+   /* todo: better var? */
+@@ -20,14 +20,14 @@
+ 
+ /* start really fast because we start super hidden initially behind the panel, otherwise feels like an unintended animation delay */
+ .resize-container:hover ~ .resize-line {
+-  transition: transform 0.2s cubic-bezier(0.05, 0.9, 0.2, 1); /* Fast start for animate in */
++  transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+ }
+ 
+ .resize-container.right,
+ .resize-container.left {
+   top: 0;
+   height: 100%;
+-  width: 25px;
++  width: 15px;
+   cursor: ew-resize;
+ }
+ 
+@@ -37,97 +37,97 @@
+ .resize-container.top {
+   left: 0;
+   width: 100%;
+-  height: 25px;
++  height: 15px;
+   cursor: ns-resize;
+ }
+ 
+ .resize-container.top {
+-  top: -12px;
++  top: -7px;
+ }
+ .resize-container.bottom {
+-  bottom: -12px;
++  bottom: -7px;
+ }
+ .resize-container.left {
+-  left: -12px;
++  left: -7px;
+ }
+ .resize-container.right {
+-  right: -12px;
++  right: -7px;
+ }
+ 
+ .resize-container.top-left,
+ .resize-container.top-right,
+ .resize-container.bottom-left,
+ .resize-container.bottom-right {
+-  width: 32px;
+-  height: 32px;
++  width: 22px;
++  height: 22px;
+   z-index: 15;
+ }
+ 
+ .resize-container.top-left {
+-  top: -16px;
+-  left: -16px;
++  top: -11px;
++  left: -11px;
+   cursor: nwse-resize;
+ }
+ .resize-container.top-right {
+-  top: -16px;
+-  right: -16px;
++  top: -11px;
++  right: -11px;
+   cursor: nesw-resize;
+ }
+ .resize-container.bottom-left {
+-  bottom: -16px;
+-  left: -16px;
++  bottom: -11px;
++  left: -11px;
+   cursor: nesw-resize;
+ }
+ .resize-container.bottom-right {
+-  bottom: -16px;
+-  right: -16px;
++  bottom: -11px;
++  right: -11px;
+   cursor: nwse-resize;
+ }
+ 
+ .resize-line.top,
+ .resize-line.bottom {
+-  height: 28px;
++  height: 18px;
+   width: 100%;
+   background-color: var(--color-background-100);
+ }
+ 
+ .resize-line.left,
+ .resize-line.right {
+-  width: 28px;
++  width: 18px;
+   height: 100%;
+   background-color: var(--color-background-100);
+ }
+ 
+ .resize-line.top {
+-  top: -12px;
++  top: -7px;
+   left: calc(-1 * var(--border-left, 2px));
+   width: calc(100% + var(--border-horizontal, 4px));
+   border-radius: var(--rounded-md) var(--rounded-md) 0 0;
+-  transform: translateY(28px);
++  transform: translateY(18px);
+ }
+ 
+ .resize-line.bottom {
+-  bottom: -12px;
++  bottom: -7px;
+   left: calc(-1 * var(--border-left, 2px));
+   width: calc(100% + var(--border-horizontal, 4px));
+   border-radius: 0 0 var(--rounded-md) var(--rounded-md);
+-  transform: translateY(-28px);
++  transform: translateY(-18px);
+ }
+ 
+ .resize-line.left {
+   top: calc(-1 * var(--border-top, 2px));
+-  left: -12px;
++  left: -7px;
+   height: calc(100% + var(--border-vertical, 4px));
+   border-radius: var(--rounded-md) 0 0 var(--rounded-md);
+-  transform: translateX(28px);
++  transform: translateX(18px);
+ }
+ 
+ .resize-line.right {
+   top: calc(-1 * var(--border-top, 2px));
+-  right: -12px;
++  right: -7px;
+   height: calc(100% + var(--border-vertical, 4px));
+   border-radius: 0 var(--rounded-md) var(--rounded-md) 0;
+-  transform: translateX(-28px);
++  transform: translateX(-18px);
+ }
+ 
+ .resize-container.right:hover ~ .resize-line.right,
+@@ -149,14 +149,14 @@
+  * regardless of hover state 
+  */
+ .resize-container.no-hover.right:hover ~ .resize-line.right {
+-  transform: translateX(-28px);
++  transform: translateX(-20px);
+ }
+ .resize-container.no-hover.left:hover ~ .resize-line.left {
+-  transform: translateX(28px);
++  transform: translateX(20px);
+ }
+ .resize-container.no-hover.bottom:hover ~ .resize-line.bottom {
+-  transform: translateY(-28px);
++  transform: translateY(-20px);
+ }
+ .resize-container.no-hover.top:hover ~ .resize-line.top {
+-  transform: translateY(28px);
++  transform: translateY(20px);
+ }
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.tsx
+index bdf08d81d6..d231ab82e8 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-handle.tsx
+@@ -3,14 +3,19 @@ import type { Corners } from '../../../shared'
+ import { useResize, type ResizeDirection } from './resize-provider'
+ import './resize-handle.css'
+ 
+-const STORAGE_KEY_DIMENSIONS = 'nextjs-devtools-dimensions'
+-
+-export const ResizeHandle = ({ direction }: { direction: ResizeDirection }) => {
++export const ResizeHandle = ({
++  direction,
++  position,
++}: {
++  direction: ResizeDirection
++  position: Corners
++}) => {
+   const {
+     resizeRef,
+     minWidth,
+     minHeight,
+-    devToolsPosition,
++    storageKey,
++    // devToolsPosition,
+     draggingDirection,
+     setDraggingDirection,
+   } = useResize()
+@@ -44,13 +49,13 @@ export const ResizeHandle = ({ direction }: { direction: ResizeDirection }) => {
+     // we block the sides of the corner its in (bottom-left has bottom and left sides blocked from resizing)
+     // because there shouldn't be anywhere to resize, and if the user decides to resize from that point it
+     // would be unhandled/slightly janky (the component would have to re-magnetic-snap after the resize)
+-    if (devToolsPosition.split('-').includes(direction)) return false
++    if (position.split('-').includes(direction)) return false
+ 
+     // same logic as above, but the only corner resize that makes
+     // sense is the corner fully exposed (the opposing corner)
+     const isCorner = direction.includes('-')
+     if (isCorner) {
+-      const opposite = getOppositeCorner(devToolsPosition)
++      const opposite = getOppositeCorner(position)
+       return direction === opposite
+     }
+ 
+@@ -123,10 +128,7 @@ export const ResizeHandle = ({ direction }: { direction: ResizeDirection }) => {
+ 
+       // invariant ref exists
+       const { width, height } = resizeRef.current!.getBoundingClientRect()
+-      localStorage.setItem(
+-        STORAGE_KEY_DIMENSIONS,
+-        JSON.stringify({ width, height })
+-      )
++      localStorage.setItem(storageKey, JSON.stringify({ width, height }))
+     }
+     document.addEventListener('mousemove', handleMouseMove)
+     document.addEventListener('mouseup', handleMouseUp)
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-provider.tsx b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-provider.tsx
+index ae1360e60b..e1d39172bc 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-provider.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/devtools-panel/resize/resize-provider.tsx
+@@ -22,9 +22,10 @@ interface ResizeContextValue {
+   resizeRef: RefObject<HTMLElement | null>
+   minWidth: number
+   minHeight: number
+-  devToolsPosition: Corners
++  // devToolsPosition: Corners
+   draggingDirection: ResizeDirection | null
+   setDraggingDirection: (direction: ResizeDirection | null) => void
++  storageKey: string
+ }
+ 
+ const ResizeContext = createContext<ResizeContextValue>(null!)
+@@ -44,8 +45,8 @@ const constrainDimensions = (params: {
+   }
+ }
+ 
+-const parseResizeLocalStorage = () => {
+-  const savedDimensions = localStorage.getItem(STORAGE_KEY_DIMENSIONS)
++const parseResizeLocalStorage = (key: string) => {
++  const savedDimensions = localStorage.getItem(key)
+   if (!savedDimensions) return null
+   try {
+     const parsed = JSON.parse(savedDimensions)
+@@ -59,7 +60,7 @@ const parseResizeLocalStorage = () => {
+     }
+     return null
+   } catch (e) {
+-    localStorage.removeItem(STORAGE_KEY_DIMENSIONS)
++    localStorage.removeItem(key)
+     return null
+   }
+ }
+@@ -70,6 +71,7 @@ interface ResizeProviderProps {
+     minWidth?: number
+     minHeight?: number
+     devToolsPosition: Corners
++    storageKey?: string
+   }
+   children: React.ReactNode
+ }
+@@ -80,6 +82,8 @@ export const ResizeProvider = ({ value, children }: ResizeProviderProps) => {
+   const [draggingDirection, setDraggingDirection] =
+     useState<ResizeDirection | null>(null)
+ 
++  const storageKey = value.storageKey ?? STORAGE_KEY_DIMENSIONS
++
+   useLayoutEffect(() => {
+     const applyConstrainedDimensions = () => {
+       if (!value.resizeRef.current) return
+@@ -91,7 +95,7 @@ export const ResizeProvider = ({ value, children }: ResizeProviderProps) => {
+       // an optimization if this is too expensive is to maintain the current
+       // container size in a ref and update it on resize, which is essentially
+       // what we're doing here, just dumber
+-      const dim = parseResizeLocalStorage()
++      const dim = parseResizeLocalStorage(storageKey)
+       if (!dim) {
+         return
+       }
+@@ -110,7 +114,7 @@ export const ResizeProvider = ({ value, children }: ResizeProviderProps) => {
+     window.addEventListener('resize', applyConstrainedDimensions)
+     return () =>
+       window.removeEventListener('resize', applyConstrainedDimensions)
+-  }, [value.resizeRef, minWidth, minHeight])
++  }, [value.resizeRef, minWidth, minHeight, storageKey])
+ 
+   return (
+     <ResizeContext.Provider
+@@ -118,9 +122,10 @@ export const ResizeProvider = ({ value, children }: ResizeProviderProps) => {
+         resizeRef: value.resizeRef,
+         minWidth,
+         minHeight,
+-        devToolsPosition: value.devToolsPosition,
++        // devToolsPosition: value.devToolsPosition,
+         draggingDirection,
+         setDraggingDirection,
++        storageKey,
+       }}
+     >
+       {children}
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.stories.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.stories.tsx
+index 8105241149..74ef66f23c 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.stories.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.stories.tsx
+@@ -1,11 +1,11 @@
+ import type { Meta, StoryObj } from '@storybook/react'
+-import { DevToolsIndicator } from './dev-tools-indicator'
++import { DevOverlayStoryWrapper } from '../../../storybook/DevOverlayStoryWrapper'
+ import { withShadowPortal } from '../../../storybook/with-shadow-portal'
+ import type { VersionInfo } from '../../../../../server/dev/parse-version-info'
+ import type { OverlayState } from '../../../shared'
+ 
+-const meta: Meta<typeof DevToolsIndicator> = {
+-  component: DevToolsIndicator,
++const meta: Meta<typeof DevOverlayStoryWrapper> = {
++  component: DevOverlayStoryWrapper,
+   parameters: {
+     layout: 'centered',
+   },
+@@ -36,7 +36,7 @@ const meta: Meta<typeof DevToolsIndicator> = {
+ }
+ 
+ export default meta
+-type Story = StoryObj<typeof DevToolsIndicator>
++type Story = StoryObj<typeof DevOverlayStoryWrapper>
+ 
+ // Mock version info for stories
+ const mockVersionInfo: VersionInfo = {
+@@ -68,36 +68,31 @@ const state: OverlayState = {
+ }
+ 
+ export const StaticRoute: Story = {
+-  args: {
+-    errorCount: 0,
+-    state,
+-    dispatch: () => {},
+-  },
++  render: () => (
++    <DevOverlayStoryWrapper initialState={state} runtimeErrors={[]} />
++  ),
+ }
+ 
+ export const DynamicRoute: Story = {
+-  args: {
+-    errorCount: 0,
+-    state: {
+-      ...state,
+-      staticIndicator: false,
+-    },
+-    dispatch: () => {},
+-  },
++  render: () => (
++    <DevOverlayStoryWrapper
++      initialState={{ ...state, staticIndicator: false }}
++      runtimeErrors={[]}
++    />
++  ),
+ }
+ 
+ export const SingleError: Story = {
+-  args: {
+-    errorCount: 1,
+-    state,
+-    dispatch: () => {},
+-  },
++  render: () => (
++    <DevOverlayStoryWrapper initialState={state} runtimeErrors={[{} as any]} />
++  ),
+ }
+ 
+ export const MultipleErrors: Story = {
+-  args: {
+-    errorCount: 3,
+-    state,
+-    dispatch: () => {},
+-  },
++  render: () => (
++    <DevOverlayStoryWrapper
++      initialState={state}
++      runtimeErrors={[{}, {}, {}] as any}
++    />
++  ),
+ }
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.tsx
+index b943ec67e0..3d481fc574 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-indicator.tsx
+@@ -3,8 +3,6 @@ import {
+   ACTION_ERROR_OVERLAY_OPEN,
+   ACTION_ERROR_OVERLAY_TOGGLE,
+   STORAGE_KEY_POSITION,
+-  type OverlayDispatch,
+-  type OverlayState,
+ } from '../../../shared'
+ 
+ import { useState, useEffect, useRef, createContext, useContext } from 'react'
+@@ -27,20 +25,16 @@ import {
+ } from './dev-tools-info/preferences'
+ import { Draggable } from './draggable'
+ import { SegmentsExplorer } from './dev-tools-info/segments-explorer'
++import { useDevOverlayContext } from '../../../../dev-overlay.browser'
++import { useRenderErrorContext } from '../../../dev-overlay'
++import { css } from '../../../utils/css'
+ 
+ // TODO: add E2E tests to cover different scenarios
+ 
+ export function DevToolsIndicator({
+-  state,
+-  errorCount,
+-  isBuildError,
+-  ...props
++  scale,
++  setScale,
+ }: {
+-  state: OverlayState
+-  dispatch: OverlayDispatch
+-  errorCount: number
+-  isBuildError: boolean
+-
+   scale: DevToolsScale
+   setScale: (value: DevToolsScale) => void
+ }) {
+@@ -49,23 +43,15 @@ export function DevToolsIndicator({
+ 
+   return (
+     <DevToolsPopover
+-      routerType={state.routerType}
+-      semver={state.versionInfo.installed}
+-      issueCount={errorCount}
+-      isDevBuilding={state.buildingIndicator}
+-      isDevRendering={state.renderingIndicator}
+-      isStaticRoute={state.staticIndicator}
++      isDevToolsIndicatorVisible={isDevToolsIndicatorVisible}
++      scale={scale}
++      setScale={setScale}
+       hide={() => {
+         setIsDevToolsIndicatorVisible(false)
+         fetch('/__nextjs_disable_dev_indicator', {
+           method: 'POST',
+         })
+       }}
+-      isTurbopack={!!process.env.TURBOPACK}
+-      disabled={state.disableDevIndicator || !isDevToolsIndicatorVisible}
+-      isBuildError={isBuildError}
+-      page={state.page}
+-      {...props}
+     />
+   )
+ }
+@@ -80,7 +66,7 @@ interface C {
+ 
+ const Context = createContext({} as C)
+ 
+-const OVERLAYS = {
++export const OVERLAYS = {
+   Root: 'root',
+   Turbo: 'turbo',
+   Route: 'route',
+@@ -93,45 +79,34 @@ export type Overlays = (typeof OVERLAYS)[keyof typeof OVERLAYS]
+ const INDICATOR_PADDING = 20
+ 
+ function DevToolsPopover({
+-  routerType,
+-  disabled,
+-  issueCount,
+-  isDevBuilding,
+-  isDevRendering,
+-  isStaticRoute,
+-  isTurbopack,
+-  isBuildError,
+   hide,
+-  dispatch,
+   scale,
+   setScale,
+-  page,
++  isDevToolsIndicatorVisible,
+ }: {
+-  routerType: 'pages' | 'app'
+-  disabled: boolean
+-  issueCount: number
+-  isStaticRoute: boolean
+-  semver: string | undefined
+-  isDevBuilding: boolean
+-  isDevRendering: boolean
+-  isTurbopack: boolean
+-  isBuildError: boolean
+   hide: () => void
+-  dispatch: OverlayDispatch
+   scale: DevToolsScale
+   setScale: (value: DevToolsScale) => void
+-  page: string
++  isDevToolsIndicatorVisible: boolean
+ }) {
++  const { state, dispatch } = useDevOverlayContext()
++  const routerType = state.routerType
++  const issueCount = useRenderErrorContext().totalErrorCount
++  const isDevBuilding = state.buildingIndicator
++  const isDevRendering = state.renderingIndicator
++  const isStaticRoute = state.staticIndicator
++  const isTurbopack = !!process.env.TURBOPACK
++  const disabled = state.disableDevIndicator || !isDevToolsIndicatorVisible
++  const page = state.page
++
+   const menuRef = useRef<HTMLDivElement>(null)
+   const triggerRef = useRef<HTMLButtonElement | null>(null)
+-
+   const [open, setOpen] = useState<Overlays | null>(null)
+   const [position, setPosition] = useState(getInitialPosition())
+   const [selectedIndex, setSelectedIndex] = useState(-1)
+ 
+   const isMenuOpen = open === OVERLAYS.Root
+   const isTurbopackInfoOpen = open === OVERLAYS.Turbo
+-  const isRouteInfoOpen = open === OVERLAYS.Route
+   const isPreferencesOpen = open === OVERLAYS.Preferences
+   const isSegmentExplorerOpen = open === OVERLAYS.SegmentExplorer
+ 
+@@ -240,7 +215,10 @@ function DevToolsPopover({
+     if (open === OVERLAYS.Root) {
+       setOpen(null)
+     } else {
++      console.log('opening overlays', OVERLAYS.Root)
++
+       setOpen(OVERLAYS.Root)
++      // flush sync?
+       setTimeout(() => {
+         select('first')
+       })
+@@ -302,20 +280,13 @@ function DevToolsPopover({
+           toggleErrorOverlay={toggleErrorOverlay}
+           isDevBuilding={isDevBuilding}
+           isDevRendering={isDevRendering}
+-          isBuildError={isBuildError}
++          isBuildError={state.buildError !== null}
+           scale={scale}
+         />
+       </Draggable>
+ 
+       {/* Route Info */}
+-      <RouteInfo
+-        isOpen={isRouteInfoOpen}
+-        close={closeToRootMenu}
+-        triggerRef={triggerRef}
+-        style={popover}
+-        routerType={routerType}
+-        routeType={isStaticRoute ? 'Static' : 'Dynamic'}
+-      />
++      <RouteInfo />
+ 
+       {/* Turbopack Info */}
+       <TurbopackInfo
+@@ -524,7 +495,7 @@ function IssueCount({ children }: { children: number }) {
+ 
+ //////////////////////////////////////////////////////////////////////////////////////
+ 
+-export const DEV_TOOLS_INDICATOR_STYLES = `
++export const DEV_TOOLS_INDICATOR_STYLES = css`
+   .dev-tools-indicator-menu {
+     -webkit-font-smoothing: antialiased;
+     display: flex;
+@@ -535,6 +506,7 @@ export const DEV_TOOLS_INDICATOR_STYLES = `
+     background-clip: padding-box;
+     box-shadow: var(--shadow-menu);
+     border-radius: var(--rounded-xl);
++    /* this was changed to absolute, we have it fixed for the other dev indicator menu  along with removing border incase something went wrong we should revert this*/
+     position: absolute;
+     font-family: var(--font-stack-sans);
+     z-index: 3;
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/dev-tools-info.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/dev-tools-info.tsx
+index 31380461ee..a4c29d252f 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/dev-tools-info.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/dev-tools-info.tsx
+@@ -1,6 +1,7 @@
+ import { useRef } from 'react'
+ import { MENU_DURATION_MS, useClickOutside, useFocusTrap } from '../utils'
+ import { useDelayedRender } from '../../../../hooks/use-delayed-render'
++import { css } from '../../../../utils/css'
+ 
+ export interface DevToolsInfoPropsCore {
+   isOpen: boolean
+@@ -42,15 +43,38 @@ export function DevToolsInfo({
+   if (!mounted) {
+     return null
+   }
+-
++  // TODO: this is a case of me changing styles for new that will break
++  // old, need to fork
+   return (
+     <div
+       tabIndex={-1}
+       role="dialog"
+       ref={ref}
+-      data-info-popover
++      // data-info-popover
+       {...props}
+       data-rendered={rendered}
++
++      style={{
++        // height: '100%'
++        WebkitFontSmoothing: 'antialiased',
++        display: 'flex',
++        flexDirection: 'column',
++        alignItems: 'flex-start',
++        // background: 'var(--color-background-100)',
++        // border: '1px solid var(--color-gray-alpha-400)',
++        // backgroundClip: 'padding-box',
++        boxShadow: 'var(--shadow-menu)',
++        borderRadius: 'var(--rounded-xl)',
++        position: 'absolute',
++        fontFamily: 'var(--font-stack-sans)',
++        zIndex: 3,
++        overflow: 'hidden',
++        opacity: rendered ? 1 : 0,
++        outline: 0,
++        minWidth: '350px',
++        transition: 'opacity var(--animate-out-duration-ms) var(--animate-out-timing-function)',
++        scale: rendered ? 1 : undefined,
++      }}
+     >
+       <div className="dev-tools-info-container">
+         <div className="dev-tools-info-header">
+@@ -84,7 +108,7 @@ export function DevToolsInfo({
+   )
+ }
+ 
+-export const DEV_TOOLS_INFO_STYLES = `
++export const DEV_TOOLS_INFO_STYLES = css`
+   [data-info-popover] {
+     -webkit-font-smoothing: antialiased;
+     display: flex;
+@@ -135,7 +159,7 @@ export const DEV_TOOLS_INFO_STYLES = `
+   .dev-tools-info-close-button {
+     all: unset;
+     width: 20px;
+-    height: 20px;    
++    height: 20px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/route-info.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/route-info.tsx
+index 4c18da6e5c..9bcd60ebe5 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/route-info.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/route-info.tsx
+@@ -1,6 +1,7 @@
+ import type { HTMLProps } from 'react'
+ import type { DevToolsInfoPropsCore } from './dev-tools-info'
+ import { DevToolsInfo } from './dev-tools-info'
++import { useDevOverlayContext } from '../../../../../dev-overlay.browser'
+ 
+ function StaticRouteContent({ routerType }: { routerType: 'pages' | 'app' }) {
+   return (
+@@ -110,32 +111,36 @@ const learnMoreLink = {
+   },
+ } as const
+ 
+-export function RouteInfo({
+-  routeType,
+-  routerType,
+-  ...props
+-}: {
+-  routeType: 'Static' | 'Dynamic'
+-  routerType: 'pages' | 'app'
+-} & DevToolsInfoPropsCore &
+-  HTMLProps<HTMLDivElement>) {
+-  const isStaticRoute = routeType === 'Static'
++export function RouteInfoBody() {
++  const { state } = useDevOverlayContext()
+ 
+-  const learnMore = isStaticRoute
+-    ? learnMoreLink[routerType].static
+-    : learnMoreLink[routerType].dynamic
++  const isStaticRoute = state.staticIndicator
+ 
++  return isStaticRoute ? (
++    <StaticRouteContent routerType={state.routerType} />
++  ) : (
++    <DynamicRouteContent routerType={state.routerType} />
++  )
++}
++
++export function RouteInfo() {
++  const { state } = useDevOverlayContext()
++
++  const routeType = state.staticIndicator ? 'Static' : 'Dynamic'
++
++  const learnMore = state.staticIndicator
++    ? learnMoreLink[state.routerType].static
++    : learnMoreLink[state.routerType].dynamic
++// FOR OLD UI NEED TO PASS DOWN THE EVENT HANDLERS
+   return (
+     <DevToolsInfo
+       title={`${routeType} Route`}
+       learnMoreLink={learnMore}
+-      {...props}
++      close={() => {}}
++      isOpen={true}
++      triggerRef={{ current: null }}
+     >
+-      {isStaticRoute ? (
+-        <StaticRouteContent routerType={routerType} />
+-      ) : (
+-        <DynamicRouteContent routerType={routerType} />
+-      )}
++      <RouteInfoBody />
+     </DevToolsInfo>
+   )
+ }
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/segments-explorer.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/segments-explorer.tsx
+index edc1f3b6d7..c652dc764b 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/segments-explorer.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/segments-explorer.tsx
+@@ -2,19 +2,16 @@ import { PageSegmentTree } from '../../../overview/segment-explorer'
+ import { DevToolsInfo, type DevToolsInfoPropsCore } from './dev-tools-info'
+ 
+ export function SegmentsExplorer({
+-  routerType,
+-  page,
+   ...props
+ }: DevToolsInfoPropsCore &
+   React.HTMLProps<HTMLDivElement> & {
+     routerType: 'app' | 'pages'
+     page: string
+   }) {
+-  const isAppRouter = routerType === 'app'
+   return (
+     <DevToolsInfo title="Route Info" {...props}>
+       <div data-nextjs-segments-explorer>
+-        <PageSegmentTree isAppRouter={isAppRouter} page={page} />
++        <PageSegmentTree />
+       </div>
+     </DevToolsInfo>
+   )
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/turbopack-info.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/turbopack-info.tsx
+index 9fef23500e..688ae1375b 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/turbopack-info.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/dev-tools-info/turbopack-info.tsx
+@@ -2,15 +2,9 @@ import { DevToolsInfo, type DevToolsInfoPropsCore } from './dev-tools-info'
+ import { CopyButton } from '../../../copy-button'
+ import type { HTMLProps } from 'react'
+ 
+-export function TurbopackInfo(
+-  props: DevToolsInfoPropsCore & HTMLProps<HTMLDivElement>
+-) {
++export function TurbopackInfoBody() {
+   return (
+-    <DevToolsInfo
+-      title="Turbopack"
+-      learnMoreLink="https://nextjs.org/docs/app/api-reference/turbopack"
+-      {...props}
+-    >
++    <>
+       <article className="dev-tools-info-article">
+         <p className="dev-tools-info-paragraph">
+           Turbopack is an incremental bundler optimized for JavaScript and
+@@ -96,6 +90,20 @@ export function TurbopackInfo(
+           </pre>
+         </div>
+       </div>
++    </>
++  )
++}
++
++export function TurbopackInfo(
++  props: DevToolsInfoPropsCore & HTMLProps<HTMLDivElement>
++) {
++  return (
++    <DevToolsInfo
++      title="Turbopack"
++      learnMoreLink="https://nextjs.org/docs/app/api-reference/turbopack"
++      {...props}
++    >
++      <TurbopackInfoBody />
+     </DevToolsInfo>
+   )
+ }
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/draggable.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/draggable.tsx
+index 71e1ae9994..7b2d991467 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/draggable.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/draggable.tsx
+@@ -1,5 +1,6 @@
+ import type { Corners } from '../../../shared'
+ import { useCallback, useLayoutEffect, useRef } from 'react'
++import { useDragContext } from './drag-context'
+ 
+ interface Point {
+   x: number
+@@ -19,6 +20,7 @@ export function Draggable({
+   onDragStart,
+   dragHandleSelector,
+   disableDrag = false,
++  avoidZone,
+   ...props
+ }: {
+   children: React.ReactElement
+@@ -28,9 +30,16 @@ export function Draggable({
+   onDragStart?: () => void
+   dragHandleSelector?: string
+   disableDrag?: boolean
++  style?: React.CSSProperties
++  avoidZone?: {
++    square: number
++    corner: Corners
++    padding: number
++  }
+ }) {
+   const { ref, animate, ...drag } = useDrag({
+     disabled: disableDrag,
++    handles: useDragContext()?.handles,
+     threshold: 5,
+     onDragStart,
+     onDragEnd,
+@@ -94,49 +103,54 @@ export function Draggable({
+       const isRight = corner.includes('right')
+       const isBottom = corner.includes('bottom')
+ 
+-      return {
+-        x: isRight
+-          ? window.innerWidth - scrollbarWidth - offset - triggerWidth
+-          : 0,
+-        y: isBottom ? window.innerHeight - offset - triggerHeight : 0,
++      // Base positions flush against the chosen corner
++      let x = isRight
++        ? window.innerWidth - scrollbarWidth - offset - triggerWidth
++        : 0
++      let y = isBottom ? window.innerHeight - offset - triggerHeight : 0
++
++      // Apply avoidZone offset if this corner is occupied. We only move along
++      // the vertical axis to keep the panel within the viewport. For bottom
++      // corners we move the panel up, for top corners we move it down.
++      if (avoidZone && avoidZone.corner === corner) {
++        const delta = avoidZone.square + avoidZone.padding
++        if (isBottom) {
++          // move up
++          y -= delta
++        } else {
++          // move down
++          y += delta
++        }
+       }
++
++      return { x, y }
+     }
+ 
+     const basePosition = getAbsolutePosition(currentCorner)
+ 
+-    // Calculate all corner positions relative to the current corner
++    // Helper to compute relative translation from the current corner.
++    function rel(pos: Point): Point {
++      return {
++        x: pos.x - basePosition.x,
++        y: pos.y - basePosition.y,
++      }
++    }
++
+     return {
+-      'top-left': {
+-        x: 0 - basePosition.x,
+-        y: 0 - basePosition.y,
+-      },
+-      'top-right': {
+-        x:
+-          window.innerWidth -
+-          scrollbarWidth -
+-          offset -
+-          triggerWidth -
+-          basePosition.x,
+-        y: 0 - basePosition.y,
+-      },
+-      'bottom-left': {
+-        x: 0 - basePosition.x,
+-        y: window.innerHeight - offset - triggerHeight - basePosition.y,
+-      },
+-      'bottom-right': {
+-        x:
+-          window.innerWidth -
+-          scrollbarWidth -
+-          offset -
+-          triggerWidth -
+-          basePosition.x,
+-        y: window.innerHeight - offset - triggerHeight - basePosition.y,
+-      },
++      'top-left': rel(getAbsolutePosition('top-left')),
++      'top-right': rel(getAbsolutePosition('top-right')),
++      'bottom-left': rel(getAbsolutePosition('bottom-left')),
++      'bottom-right': rel(getAbsolutePosition('bottom-right')),
+     }
+   }
+ 
+   return (
+-    <div {...props} ref={ref} {...drag} style={{ touchAction: 'none' }}>
++    <div
++      {...props}
++      ref={ref}
++      {...drag}
++      style={{ touchAction: 'none', ...props.style }}
++    >
+       {children}
+     </div>
+   )
+@@ -150,6 +164,7 @@ interface UseDragOptions {
+   onAnimationEnd?: (corner: Corner) => void
+   threshold: number // Minimum movement before drag starts
+   dragHandleSelector?: string
++  handles?: Set<HTMLElement>
+ }
+ 
+ interface Velocity {
+@@ -234,18 +249,32 @@ export function useDrag(options: UseDragOptions) {
+   }
+ 
+   function isValidDragHandle(target: EventTarget | null): boolean {
+-    if (!options.dragHandleSelector || !ref.current || !target) {
+-      return true // If no selector provided, entire element is draggable
++    if (!target || !ref.current) return true
++
++    if (options.handles && options.handles.size > 0) {
++      let node: HTMLElement | null = target as HTMLElement
++      while (node && node !== ref.current) {
++        if (options.handles.has(node)) return true
++        node = node.parentElement
++      }
++      return false
+     }
+ 
+-    const element = target as Element
+-    if (!element.matches) {
++    if (options.dragHandleSelector) {
++      const selector = options.dragHandleSelector
++      const element = target as Element
++      if (element.matches && element.matches(selector)) return true
++      let parent = element.parentElement
++      while (parent && parent !== ref.current) {
++        if (parent.matches && parent.matches(selector)) {
++          return true
++        }
++        parent = parent.parentElement
++      }
+       return false
+     }
+ 
+-    // Check if the target element directly matches the drag handle selector
+-    // This excludes children elements, only allowing drag from the exact element
+-    return element.matches(options.dragHandleSelector)
++    return true
+   }
+ 
+   function onPointerDown(e: React.PointerEvent) {
+@@ -253,7 +282,7 @@ export function useDrag(options: UseDragOptions) {
+       return // ignore right click
+     }
+ 
+-    // Check if the pointer down event is on a valid drag handle
++    // Restrict drag initiation to valid handles if any registered
+     if (!isValidDragHandle(e.target)) {
+       return
+     }
+@@ -328,6 +357,13 @@ export function useDrag(options: UseDragOptions) {
+     options.onDragEnd?.(translation.current, velocity)
+   }
+ 
++  if (options.disabled) {
++    return {
++      ref,
++      animate,
++    }
++  }
++
+   return {
+     ref,
+     onPointerDown,
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/utils.ts b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/utils.ts
+index 58f2fed02b..552f12ebaa 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/utils.ts
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/dev-tools-indicator/utils.ts
+@@ -100,19 +100,21 @@ export function useClickOutside(
+         return
+       }
+ 
++      const cushion = 10
++
+       if (
+         !(rootRef.current?.getBoundingClientRect()
+-          ? event.clientX >= rootRef.current.getBoundingClientRect()!.left &&
+-            event.clientX <= rootRef.current.getBoundingClientRect()!.right &&
+-            event.clientY >= rootRef.current.getBoundingClientRect()!.top &&
+-            event.clientY <= rootRef.current.getBoundingClientRect()!.bottom
++          ? event.clientX >= rootRef.current.getBoundingClientRect()!.left - cushion &&
++            event.clientX <= rootRef.current.getBoundingClientRect()!.right + cushion &&
++            event.clientY >= rootRef.current.getBoundingClientRect()!.top - cushion &&
++            event.clientY <= rootRef.current.getBoundingClientRect()!.bottom + cushion
+           : false) &&
+         !(triggerRef.current?.getBoundingClientRect()
+-          ? event.clientX >= triggerRef.current.getBoundingClientRect()!.left &&
++          ? event.clientX >= triggerRef.current.getBoundingClientRect()!.left - cushion &&
+             event.clientX <=
+-              triggerRef.current.getBoundingClientRect()!.right &&
+-            event.clientY >= triggerRef.current.getBoundingClientRect()!.top &&
+-            event.clientY <= triggerRef.current.getBoundingClientRect()!.bottom
++              triggerRef.current.getBoundingClientRect()!.right + cushion &&
++            event.clientY >= triggerRef.current.getBoundingClientRect()!.top - cushion &&
++            event.clientY <= triggerRef.current.getBoundingClientRect()!.bottom + cushion
+           : false)
+       ) {
+         close()
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/error-overlay/error-overlay.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/error-overlay/error-overlay.tsx
+index d329f6d8f9..a0b4152add 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/error-overlay/error-overlay.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/error-overlay/error-overlay.tsx
+@@ -10,49 +10,29 @@ import { Errors } from '../../../container/errors'
+ import { useDelayedRender } from '../../../hooks/use-delayed-render'
+ import type { ReadyRuntimeError } from '../../../utils/get-error-by-type'
+ import type { HydrationErrorState } from '../../../../shared/hydration-error'
++import { useDevOverlayContext } from '../../../../dev-overlay.browser'
++import { useRenderErrorContext } from '../../../dev-overlay'
+ 
+ const transitionDurationMs = 200
+ 
+ export interface ErrorBaseProps {
+   rendered: boolean
+   transitionDurationMs: number
+-  isTurbopack: boolean
+-  versionInfo: OverlayState['versionInfo']
+-  errorCount: number
+ }
+ 
+-export function ErrorOverlay({
+-  state,
+-  dispatch,
+-  getSquashedHydrationErrorDetails,
+-  runtimeErrors,
+-  errorCount,
+-}: {
+-  state: OverlayState
+-  dispatch: OverlayDispatch
+-  getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
+-  runtimeErrors: ReadyRuntimeError[]
+-  errorCount: number
+-}) {
+-  const isTurbopack = !!process.env.TURBOPACK
++export function ErrorOverlay() {
++  const { state } = useDevOverlayContext()
++  const { runtimeErrors } = useRenderErrorContext()
+ 
+   // This hook lets us do an exit animation before unmounting the component
+   const { mounted, rendered } = useDelayedRender(state.isErrorOverlayOpen, {
+     exitDelay: transitionDurationMs,
+   })
+ 
+-  const commonProps = {
+-    rendered,
+-    transitionDurationMs,
+-    isTurbopack,
+-    versionInfo: state.versionInfo,
+-    errorCount,
+-  }
+-
+   if (state.buildError !== null) {
+     return (
+       <BuildError
+-        {...commonProps}
++        transitionDurationMs={transitionDurationMs}
+         message={state.buildError}
+         // This is not a runtime error, forcedly display error overlay
+         rendered
+@@ -74,14 +54,6 @@ export function ErrorOverlay({
+   }
+ 
+   return (
+-    <Errors
+-      {...commonProps}
+-      debugInfo={state.debugInfo}
+-      getSquashedHydrationErrorDetails={getSquashedHydrationErrorDetails}
+-      runtimeErrors={runtimeErrors}
+-      onClose={() => {
+-        dispatch({ type: ACTION_ERROR_OVERLAY_CLOSE })
+-      }}
+-    />
++    <Errors transitionDurationMs={transitionDurationMs} rendered={rendered} />
+   )
+ }
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/errors/overlay/overlay.tsx b/packages/next/src/next-devtools/dev-overlay/components/errors/overlay/overlay.tsx
+index 99cc804677..d451e401a8 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/errors/overlay/overlay.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/errors/overlay/overlay.tsx
+@@ -1,10 +1,11 @@
++import { css } from '../../../utils/css'
+ import { Overlay, type OverlayProps } from '../../overlay/overlay'
+ 
+ export function ErrorOverlayOverlay({ children, ...props }: OverlayProps) {
+   return <Overlay {...props}>{children}</Overlay>
+ }
+ 
+-export const OVERLAY_STYLES = `
++export const OVERLAY_STYLES = css`
+   [data-nextjs-dialog-overlay] {
+     padding: initial;
+     top: 10vh;
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/overlay/styles.tsx b/packages/next/src/next-devtools/dev-overlay/components/overlay/styles.tsx
+index 5695631976..6de7efacaa 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/overlay/styles.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/overlay/styles.tsx
+@@ -1,4 +1,6 @@
+-const styles = `
++import { css } from "../../utils/css"
++
++const styles = css`
+   [data-nextjs-dialog-overlay] {
+     position: fixed;
+     top: 0;
+diff --git a/packages/next/src/next-devtools/dev-overlay/components/overview/segment-explorer.tsx b/packages/next/src/next-devtools/dev-overlay/components/overview/segment-explorer.tsx
+index 2c58525667..e979c34882 100644
+--- a/packages/next/src/next-devtools/dev-overlay/components/overview/segment-explorer.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/components/overview/segment-explorer.tsx
+@@ -16,6 +16,8 @@ import {
+   isBoundaryFile,
+   normalizeBoundaryFilename,
+ } from '../../../../server/app-render/segment-explorer-path'
++import { ExternalIcon } from '../../icons/external'
++import { useDevOverlayContext } from '../../../dev-overlay.browser'
+ 
+ const isFileNode = (node: SegmentTrieNode) => {
+   return !!node.value?.type && !!node.value?.pagePath
+@@ -99,15 +101,13 @@ function SegmentExplorerFooter({
+   )
+ }
+ 
+-export function PageSegmentTree({
+-  isAppRouter,
+-  page,
+-}: {
+-  isAppRouter: boolean
+-  page: string
+-}) {
++export function PageSegmentTree() {
+   const tree = useSegmentTree()
++  const {state}  = useDevOverlayContext()
++
++  const isAppRouter = state.routerType === 'app'
+ 
++  
+   // Count active boundaries for the badge
+   const activeBoundariesCount = useMemo(() => {
+     return isAppRouter ? countActiveBoundaries(tree) : 0
+@@ -122,7 +122,7 @@ export function PageSegmentTree({
+ 
+   return (
+     <div data-nextjs-devtools-panel-segments-explorer>
+-      {isAppRouter && <PageRouteBar page={page} />}
++      {isAppRouter && <PageRouteBar page={state.page} />}
+       <div
+         className="segment-explorer-content"
+         data-nextjs-devtool-segment-explorer
+@@ -316,7 +316,7 @@ function PageSegmentTreeLayerPresentation({
+ 
+                       const tooltipMessage = isBuiltin
+                         ? `The default Next.js ${childNode.value.type} is being shown. You can customize this page by adding your own ${fileName} file to the app/ directory.`
+-                        : `Open in editor`
++                        : null // `Open in editor`
+ 
+                       return (
+                         <Tooltip
+@@ -346,7 +346,7 @@ function PageSegmentTreeLayerPresentation({
+                             }}
+                           >
+                             {fileName}
+-                            {isBuiltin && <InfoIcon />}
++                            {isBuiltin ? <InfoIcon /> : <ExternalIcon />}
+                           </span>
+                         </Tooltip>
+                       )
+diff --git a/packages/next/src/next-devtools/dev-overlay/container/errors.stories.tsx b/packages/next/src/next-devtools/dev-overlay/container/errors.stories.tsx
+index 5c0dc1976b..87b8ee5901 100644
+--- a/packages/next/src/next-devtools/dev-overlay/container/errors.stories.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/container/errors.stories.tsx
+@@ -16,6 +16,7 @@ const meta: Meta<typeof Errors> = {
+ export default meta
+ type Story = StoryObj<typeof Errors>
+ 
++// todo: update the stories to be wrapped in context providers necessary, instead of passing props directly, before they expected props
+ export const Default: Story = {
+   args: {
+     getSquashedHydrationErrorDetails: () => null,
+diff --git a/packages/next/src/next-devtools/dev-overlay/container/errors.tsx b/packages/next/src/next-devtools/dev-overlay/container/errors.tsx
+index 556d225e4f..d641d99aa2 100644
+--- a/packages/next/src/next-devtools/dev-overlay/container/errors.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/container/errors.tsx
+@@ -18,6 +18,9 @@ import type { ReadyRuntimeError } from '../utils/get-error-by-type'
+ import type { ErrorBaseProps } from '../components/errors/error-overlay/error-overlay'
+ import type { HydrationErrorState } from '../../shared/hydration-error'
+ import { useActiveRuntimeError } from '../hooks/use-active-runtime-error'
++import { useDevOverlayContext } from '../../dev-overlay.browser'
++import { useRenderErrorContext } from '../dev-overlay'
++import { ACTION_ERROR_OVERLAY_CLOSE } from '../shared'
+ 
+ export interface ErrorsProps extends ErrorBaseProps {
+   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
+@@ -111,15 +114,15 @@ export function useErrorDetails(
+   }, [error, getSquashedHydrationErrorDetails])
+ }
+ 
+-export function Errors({
+-  getSquashedHydrationErrorDetails,
+-  runtimeErrors,
+-  debugInfo,
+-  onClose,
+-  ...props
+-}: ErrorsProps) {
++export function Errors({transitionDurationMs,rendered}:{transitionDurationMs: number, rendered:boolean}) {
+   const dialogResizerRef = useRef<HTMLDivElement | null>(null)
+ 
++  const {getSquashedHydrationErrorDetails, dispatch,state} = useDevOverlayContext()
++  const {runtimeErrors} = useRenderErrorContext()
++  const onClose = () => {
++    dispatch({ type: ACTION_ERROR_OVERLAY_CLOSE })
++  }
++
+   const {
+     isLoading,
+     errorCode,
+@@ -162,13 +165,15 @@ export function Errors({
+         )
+       }
+       onClose={isServerError ? undefined : onClose}
+-      debugInfo={debugInfo}
++      debugInfo={state.debugInfo}
+       error={error}
+       runtimeErrors={runtimeErrors}
+       activeIdx={activeIdx}
+       setActiveIndex={setActiveIndex}
+       dialogResizerRef={dialogResizerRef}
+-      {...props}
++      // {...props}
++      transitionDurationMs={transitionDurationMs}
++      rendered={rendered}
+     >
+       <div className="error-overlay-notes-container">
+         {notes ? (
+diff --git a/packages/next/src/next-devtools/dev-overlay/dev-overlay.stories.tsx b/packages/next/src/next-devtools/dev-overlay/dev-overlay.stories.tsx
+index 68ab6c82e0..0cb6974fe4 100644
+--- a/packages/next/src/next-devtools/dev-overlay/dev-overlay.stories.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/dev-overlay.stories.tsx
+@@ -10,6 +10,7 @@ import {
+   storybookDefaultOverlayState,
+   useStorybookOverlayReducer,
+ } from './storybook/use-overlay-reducer'
++import { DevOverlayContext } from '../dev-overlay.browser'
+ 
+ const meta: Meta<typeof DevOverlay> = {
+   component: DevOverlay,
+@@ -39,7 +40,8 @@ function getNoSquashedHydrationErrorDetails() {
+ 
+ const initialState: OverlayState = {
+   ...storybookDefaultOverlayState,
+-  errors,
++  // todo: i think hidden when errors for some reason
++  errors: [],
+ }
+ 
+ export const Default: Story = {
+@@ -47,6 +49,7 @@ export const Default: Story = {
+     const [state, dispatch] = useStorybookOverlayReducer(initialState)
+     return (
+       <>
++        {/* get lots of real hard examples so we have better debug */}
+         <img
+           src={imgApp}
+           style={{
+@@ -55,19 +58,22 @@ export const Default: Story = {
+             objectFit: 'contain',
+           }}
+         />
+-        <DevOverlay
+-          state={state}
+-          dispatch={dispatch}
+-          getSquashedHydrationErrorDetails={
+-            // Testing like App Router where we no longer quash hydration errors
+-            getNoSquashedHydrationErrorDetails
+-          }
+-        />
++        <DevOverlayContext
++          value={{
++            dispatch,
++            getSquashedHydrationErrorDetails:
++              getNoSquashedHydrationErrorDetails,
++            state,
++          }}
++        >
++          <DevOverlay />
++        </DevOverlayContext>
+       </>
+     )
+   },
+ }
+ 
++// todo: fix story with "Context arg provider" wrapper
+ export const WithPanel: Story = {
+   beforeEach: () => {
+     process.env.__NEXT_DEVTOOL_NEW_PANEL_UI = 'true'
+@@ -90,12 +96,12 @@ export const WithPanel: Story = {
+           }}
+         />
+         <DevOverlay
+-          state={state}
+-          dispatch={dispatch}
+-          getSquashedHydrationErrorDetails={
+-            // Testing like App Router where we no longer quash hydration errors
+-            getNoSquashedHydrationErrorDetails
+-          }
++        // state={state}
++        // dispatch={dispatch}
++        // getSquashedHydrationErrorDetails={
++        //   // Testing like App Router where we no longer quash hydration errors
++        //   getNoSquashedHydrationErrorDetails
++        // }
+         />
+       </>
+     )
+diff --git a/packages/next/src/next-devtools/dev-overlay/dev-overlay.tsx b/packages/next/src/next-devtools/dev-overlay/dev-overlay.tsx
+index c05bd092bf..d5f814fba9 100644
+--- a/packages/next/src/next-devtools/dev-overlay/dev-overlay.tsx
++++ b/packages/next/src/next-devtools/dev-overlay/dev-overlay.tsx
+@@ -1,11 +1,18 @@
+ import {
+   ACTION_DEVTOOLS_PANEL_OPEN,
+   ACTION_ERROR_OVERLAY_OPEN,
++  type DispatcherEvent,
+   type OverlayDispatch,
+   type OverlayState,
+ } from './shared'
+ 
+-import { useState } from 'react'
++import {
++  createContext,
++  useContext,
++  useRef,
++  useState,
++  type ActionDispatch,
++} from 'react'
+ 
+ import { ShadowPortal } from './components/shadow-portal'
+ import { Base } from './styles/base'
+@@ -13,23 +20,30 @@ import { ComponentStyles } from './styles/component-styles'
+ import { CssReset } from './styles/css-reset'
+ import { Colors } from './styles/colors'
+ import { ErrorOverlay } from './components/errors/error-overlay/error-overlay'
+-import { DevToolsIndicator } from './components/errors/dev-tools-indicator/dev-tools-indicator'
++import {
++  DevToolsIndicator,
++  type Overlays,
++} from './components/errors/dev-tools-indicator/dev-tools-indicator'
+ import { RenderError } from './container/runtime-error/render-error'
+ import { DarkTheme } from './styles/dark-theme'
+ import { useDevToolsScale } from './components/errors/dev-tools-indicator/dev-tools-info/preferences'
+ import type { HydrationErrorState } from '../shared/hydration-error'
+-import { DevToolsIndicator as DevToolsIndicatorNew } from './components/devtools-indicator/devtools-indicator'
++import { DevToolsIndicatorNew as DevToolsIndicatorNew } from './components/devtools-indicator/devtools-indicator'
+ import { DevToolsPanel } from './components/devtools-panel/devtools-panel'
++import type { ReadyRuntimeError } from './utils/get-error-by-type'
++import { useDevOverlayContext } from '../dev-overlay.browser'
++import { PanelRouter } from './menu/panel-router'
++import { PanelContext, type PanelStateKind } from './menu/context'
++
++export const RenderErrorContext = createContext<{
++  runtimeErrors: ReadyRuntimeError[]
++  totalErrorCount: number
++}>(null!)
+ 
+-export function DevOverlay({
+-  state,
+-  dispatch,
+-  getSquashedHydrationErrorDetails,
+-}: {
+-  state: OverlayState
+-  dispatch: OverlayDispatch
+-  getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
+-}) {
++export const useRenderErrorContext = () => useContext(RenderErrorContext)
++
++export function DevOverlay() {
++  const { dispatch, state } = useDevOverlayContext()
+   const [scale, setScale] = useDevToolsScale()
+   const [isPrevBuildError, setIsPrevBuildError] = useState(false)
+ 
+@@ -47,7 +61,13 @@ export function DevOverlay({
+     }
+     setIsPrevBuildError(isBuildError)
+   }
++  // stupid state same thing
++  const [panel, setPanel] = useState<PanelStateKind | null>(null)
++  const [open, setOpen] = useState<Overlays | null>(null)
+ 
++  const triggerRef = useRef<HTMLButtonElement>(null)
++  // // @ts-expect-error
++  // process.env.__NEXT_DEVTOOL_NEW_PANEL_UI = true
+   return (
+     <ShadowPortal>
+       <CssReset />
+@@ -58,56 +78,34 @@ export function DevOverlay({
+       <ComponentStyles />
+       <DarkTheme />
+ 
++      {/* todo: render error should provide this context, probably shouldn't have render props at all tbh */}
+       <RenderError state={state} dispatch={dispatch} isAppDir={true}>
+         {({ runtimeErrors, totalErrorCount }) => {
+           return (
+-            <>
+-              {state.showIndicator &&
+-                (process.env.__NEXT_DEVTOOL_NEW_PANEL_UI ? (
+-                  <>
+-                    <DevToolsIndicatorNew
+-                      state={state}
+-                      dispatch={dispatch}
+-                      errorCount={totalErrorCount}
+-                      isBuildError={isBuildError}
+-                    />
+-
+-                    {(state.isDevToolsPanelOpen ||
+-                      state.isErrorOverlayOpen) && (
+-                      <DevToolsPanel
+-                        state={state}
+-                        dispatch={dispatch}
+-                        issueCount={totalErrorCount}
+-                        runtimeErrors={runtimeErrors}
+-                        getSquashedHydrationErrorDetails={
+-                          getSquashedHydrationErrorDetails
+-                        }
+-                      />
+-                    )}
+-                  </>
+-                ) : (
+-                  <>
+-                    <DevToolsIndicator
+-                      scale={scale}
+-                      setScale={setScale}
+-                      state={state}
+-                      dispatch={dispatch}
+-                      errorCount={totalErrorCount}
+-                      isBuildError={isBuildError}
+-                    />
+-
+-                    <ErrorOverlay
+-                      state={state}
+-                      dispatch={dispatch}
+-                      getSquashedHydrationErrorDetails={
+-                        getSquashedHydrationErrorDetails
+-                      }
+-                      runtimeErrors={runtimeErrors}
+-                      errorCount={totalErrorCount}
+-                    />
+-                  </>
+-                ))}
+-            </>
++            <PanelContext
++              value={{
++                triggerRef,
++                panel,
++                setPanel,
++                open,
++                setOpen,
++              }}
++            >
++              <RenderErrorContext value={{ runtimeErrors, totalErrorCount }}>
++                {state.showIndicator &&
++                  (process.env.__NEXT_DEVTOOL_NEW_PANEL_UI ? (
++                    <>
++                      <PanelRouter />
++                      <DevToolsIndicatorNew />
++                    </>
++                  ) : (
++                    <>
++                      <DevToolsIndicator scale={scale} setScale={setScale} />
++                      <ErrorOverlay />
++                    </>
++                  ))}
++              </RenderErrorContext>
++            </PanelContext>
+           )
+         }}
+       </RenderError>
+diff --git a/packages/next/src/next-devtools/dev-overlay/shared.ts b/packages/next/src/next-devtools/dev-overlay/shared.ts
+index 68dc51a9bf..52c159bf1b 100644
+--- a/packages/next/src/next-devtools/dev-overlay/shared.ts
++++ b/packages/next/src/next-devtools/dev-overlay/shared.ts
+@@ -49,6 +49,7 @@ export interface OverlayState {
+   isErrorOverlayOpen: boolean
+   isDevToolsPanelOpen: boolean
+   devToolsPosition: Corners
++  devToolsPanelPosition: Corners
+   scale: number
+   page: string
+ }
+@@ -79,11 +80,13 @@ export const ACTION_DEVTOOLS_PANEL_CLOSE = 'devtools-panel-close'
+ export const ACTION_DEVTOOLS_PANEL_TOGGLE = 'devtools-panel-toggle'
+ 
+ export const ACTION_DEVTOOLS_POSITION = 'devtools-position'
++export const ACTION_DEVTOOLS_PANEL_POSITION = 'devtools-panel-position'
+ export const ACTION_DEVTOOLS_SCALE = 'devtools-scale'
+ export const ACTION_RESTART_SERVER_BUTTON = 'restart-server-button'
+ 
+ export const STORAGE_KEY_THEME = '__nextjs-dev-tools-theme'
+ export const STORAGE_KEY_POSITION = '__nextjs-dev-tools-position'
++export const STORAGE_KEY_PANEL_POSITION = '__nextjs-dev-tools-panel-position'
+ export const STORAGE_KEY_SCALE = '__nextjs-dev-tools-scale'
+ export const STORAGE_KEY_ACTIVE_TAB = '__nextjs-devtools-active-tab'
+ 
+@@ -172,6 +175,11 @@ export interface DevToolsIndicatorPositionAction {
+   devToolsPosition: Corners
+ }
+ 
++export interface DevToolsPanelPositionAction {
++  type: typeof ACTION_DEVTOOLS_PANEL_POSITION
++  devToolsPanelPosition: Corners
++}
++
+ export interface DevToolsScaleAction {
+   type: typeof ACTION_DEVTOOLS_SCALE
+   scale: number
+@@ -209,6 +217,7 @@ export type DispatcherEvent =
+   | DevToolsPanelCloseAction
+   | DevToolsPanelToggleAction
+   | DevToolsIndicatorPositionAction
++  | DevToolsPanelPositionAction
+   | DevToolsScaleAction
+   | DevToolUpdateRouteStateAction
+   | RestartServerButtonAction
+@@ -231,6 +240,42 @@ function getStackIgnoringStrictMode(stack: string | undefined) {
+ const shouldDisableDevIndicator =
+   process.env.__NEXT_DEV_INDICATOR?.toString() === 'false'
+ 
++// todo redo
++function getStoredPosition(): Corners {
++  if (typeof localStorage !== 'undefined') {
++    const stored = localStorage.getItem(STORAGE_KEY_POSITION)
++    if (
++      stored &&
++      ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(stored)
++    ) {
++      return stored as Corners
++    }
++  }
++  const envPosition = process.env.__NEXT_DEV_INDICATOR_POSITION
++  if (
++    envPosition &&
++    ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(
++      envPosition
++    )
++  ) {
++    return envPosition as Corners
++  }
++  return 'bottom-left'
++}
++
++function getStoredPanelPosition(): Corners | null {
++  if (typeof localStorage !== 'undefined') {
++    const stored = localStorage.getItem(STORAGE_KEY_PANEL_POSITION)
++    if (
++      stored &&
++      ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(stored)
++    ) {
++      return stored as Corners
++    }
++  }
++  return null
++}
++
+ export const INITIAL_OVERLAY_STATE: Omit<
+   OverlayState,
+   'isErrorOverlayOpen' | 'routerType'
+@@ -254,7 +299,8 @@ export const INITIAL_OVERLAY_STATE: Omit<
+   debugInfo: { devtoolsFrontendUrl: undefined },
+   isDevToolsPanelOpen: false,
+   showRestartServerButton: false,
+-  devToolsPosition: 'bottom-left',
++  devToolsPosition: getStoredPosition(),
++  devToolsPanelPosition: getStoredPanelPosition() ?? 'bottom-left',
+   scale: NEXT_DEV_TOOLS_SCALE.Medium,
+   page: '',
+ }
+@@ -431,6 +477,13 @@ export function useErrorOverlayReducer(
+         case ACTION_DEVTOOLS_POSITION: {
+           return { ...state, devToolsPosition: action.devToolsPosition }
+         }
++        // todo remove
++        case ACTION_DEVTOOLS_PANEL_POSITION: {
++          return {
++            ...state,
++            devToolsPanelPosition: action.devToolsPanelPosition,
++          }
++        }
+         case ACTION_DEVTOOLS_SCALE: {
+           return { ...state, scale: action.scale }
+         }
+diff --git a/packages/next/src/next-devtools/dev-overlay/storybook/use-overlay-reducer.ts b/packages/next/src/next-devtools/dev-overlay/storybook/use-overlay-reducer.ts
+index be8fa3eb44..bf0655b722 100644
+--- a/packages/next/src/next-devtools/dev-overlay/storybook/use-overlay-reducer.ts
++++ b/packages/next/src/next-devtools/dev-overlay/storybook/use-overlay-reducer.ts
+@@ -3,6 +3,7 @@ import type { DispatcherEvent, OverlayState } from '../shared'
+ import { useReducer } from 'react'
+ import {
+   ACTION_DEVTOOLS_POSITION,
++  ACTION_DEVTOOLS_PANEL_POSITION,
+   ACTION_DEVTOOLS_PANEL_CLOSE,
+   ACTION_DEVTOOLS_PANEL_TOGGLE,
+   ACTION_ERROR_OVERLAY_CLOSE,
+@@ -49,6 +50,10 @@ export function useStorybookOverlayReducer(initialState?: OverlayState) {
+         case ACTION_DEVTOOLS_POSITION: {
+           return { ...state, devToolsPosition: action.devToolsPosition }
+         }
++        // todo remove
++        case ACTION_DEVTOOLS_PANEL_POSITION: {
++          return { ...state, devToolsPanelPosition: action.devToolsPanelPosition }
++        }
+         case ACTION_DEVTOOLS_SCALE: {
+           return { ...state, scale: action.scale }
+         }

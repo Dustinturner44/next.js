@@ -18,6 +18,9 @@ import type { ReadyRuntimeError } from '../utils/get-error-by-type'
 import type { ErrorBaseProps } from '../components/errors/error-overlay/error-overlay'
 import type { HydrationErrorState } from '../../shared/hydration-error'
 import { useActiveRuntimeError } from '../hooks/use-active-runtime-error'
+import { useDevOverlayContext } from '../../dev-overlay.browser'
+import { useRenderErrorContext } from '../dev-overlay'
+import { ACTION_ERROR_OVERLAY_CLOSE } from '../shared'
 
 export interface ErrorsProps extends ErrorBaseProps {
   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
@@ -111,14 +114,14 @@ export function useErrorDetails(
   }, [error, getSquashedHydrationErrorDetails])
 }
 
-export function Errors({
-  getSquashedHydrationErrorDetails,
-  runtimeErrors,
-  debugInfo,
-  onClose,
-  ...props
-}: ErrorsProps) {
+export function Errors({transitionDurationMs,rendered}:{transitionDurationMs: number, rendered:boolean}) {
   const dialogResizerRef = useRef<HTMLDivElement | null>(null)
+
+  const {getSquashedHydrationErrorDetails, dispatch,state} = useDevOverlayContext()
+  const {runtimeErrors} = useRenderErrorContext()
+  const onClose = () => {
+    dispatch({ type: ACTION_ERROR_OVERLAY_CLOSE })
+  }
 
   const {
     isLoading,
@@ -162,13 +165,15 @@ export function Errors({
         )
       }
       onClose={isServerError ? undefined : onClose}
-      debugInfo={debugInfo}
+      debugInfo={state.debugInfo}
       error={error}
       runtimeErrors={runtimeErrors}
       activeIdx={activeIdx}
       setActiveIndex={setActiveIndex}
       dialogResizerRef={dialogResizerRef}
-      {...props}
+      // {...props}
+      transitionDurationMs={transitionDurationMs}
+      rendered={rendered}
     >
       <div className="error-overlay-notes-container">
         {notes ? (

@@ -49,6 +49,7 @@ export interface OverlayState {
   isErrorOverlayOpen: boolean
   isDevToolsPanelOpen: boolean
   devToolsPosition: Corners
+  devToolsPanelPosition: Corners
   scale: number
   page: string
 }
@@ -79,11 +80,13 @@ export const ACTION_DEVTOOLS_PANEL_CLOSE = 'devtools-panel-close'
 export const ACTION_DEVTOOLS_PANEL_TOGGLE = 'devtools-panel-toggle'
 
 export const ACTION_DEVTOOLS_POSITION = 'devtools-position'
+export const ACTION_DEVTOOLS_PANEL_POSITION = 'devtools-panel-position'
 export const ACTION_DEVTOOLS_SCALE = 'devtools-scale'
 export const ACTION_RESTART_SERVER_BUTTON = 'restart-server-button'
 
 export const STORAGE_KEY_THEME = '__nextjs-dev-tools-theme'
 export const STORAGE_KEY_POSITION = '__nextjs-dev-tools-position'
+export const STORAGE_KEY_PANEL_POSITION = '__nextjs-dev-tools-panel-position'
 export const STORAGE_KEY_SCALE = '__nextjs-dev-tools-scale'
 export const STORAGE_KEY_ACTIVE_TAB = '__nextjs-devtools-active-tab'
 
@@ -172,6 +175,11 @@ export interface DevToolsIndicatorPositionAction {
   devToolsPosition: Corners
 }
 
+export interface DevToolsPanelPositionAction {
+  type: typeof ACTION_DEVTOOLS_PANEL_POSITION
+  devToolsPanelPosition: Corners
+}
+
 export interface DevToolsScaleAction {
   type: typeof ACTION_DEVTOOLS_SCALE
   scale: number
@@ -209,6 +217,7 @@ export type DispatcherEvent =
   | DevToolsPanelCloseAction
   | DevToolsPanelToggleAction
   | DevToolsIndicatorPositionAction
+  | DevToolsPanelPositionAction
   | DevToolsScaleAction
   | DevToolUpdateRouteStateAction
   | RestartServerButtonAction
@@ -230,6 +239,42 @@ function getStackIgnoringStrictMode(stack: string | undefined) {
 
 const shouldDisableDevIndicator =
   process.env.__NEXT_DEV_INDICATOR?.toString() === 'false'
+
+// todo redo
+function getStoredPosition(): Corners {
+  if (typeof localStorage !== 'undefined') {
+    const stored = localStorage.getItem(STORAGE_KEY_POSITION)
+    if (
+      stored &&
+      ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(stored)
+    ) {
+      return stored as Corners
+    }
+  }
+  const envPosition = process.env.__NEXT_DEV_INDICATOR_POSITION
+  if (
+    envPosition &&
+    ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(
+      envPosition
+    )
+  ) {
+    return envPosition as Corners
+  }
+  return 'bottom-left'
+}
+
+function getStoredPanelPosition(): Corners | null {
+  if (typeof localStorage !== 'undefined') {
+    const stored = localStorage.getItem(STORAGE_KEY_PANEL_POSITION)
+    if (
+      stored &&
+      ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(stored)
+    ) {
+      return stored as Corners
+    }
+  }
+  return null
+}
 
 export const INITIAL_OVERLAY_STATE: Omit<
   OverlayState,
@@ -254,7 +299,8 @@ export const INITIAL_OVERLAY_STATE: Omit<
   debugInfo: { devtoolsFrontendUrl: undefined },
   isDevToolsPanelOpen: false,
   showRestartServerButton: false,
-  devToolsPosition: 'bottom-left',
+  devToolsPosition: getStoredPosition(),
+  devToolsPanelPosition: getStoredPanelPosition() ?? 'bottom-left',
   scale: NEXT_DEV_TOOLS_SCALE.Medium,
   page: '',
 }
@@ -430,6 +476,13 @@ export function useErrorOverlayReducer(
         }
         case ACTION_DEVTOOLS_POSITION: {
           return { ...state, devToolsPosition: action.devToolsPosition }
+        }
+        // todo remove
+        case ACTION_DEVTOOLS_PANEL_POSITION: {
+          return {
+            ...state,
+            devToolsPanelPosition: action.devToolsPanelPosition,
+          }
         }
         case ACTION_DEVTOOLS_SCALE: {
           return { ...state, scale: action.scale }

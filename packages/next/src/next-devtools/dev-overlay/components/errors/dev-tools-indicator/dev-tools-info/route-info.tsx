@@ -1,6 +1,7 @@
 import type { HTMLProps } from 'react'
 import type { DevToolsInfoPropsCore } from './dev-tools-info'
 import { DevToolsInfo } from './dev-tools-info'
+import { useDevOverlayContext } from '../../../../../dev-overlay.browser'
 
 function StaticRouteContent({ routerType }: { routerType: 'pages' | 'app' }) {
   return (
@@ -110,32 +111,38 @@ const learnMoreLink = {
   },
 } as const
 
-export function RouteInfo({
-  routeType,
-  routerType,
-  ...props
-}: {
-  routeType: 'Static' | 'Dynamic'
-  routerType: 'pages' | 'app'
-} & DevToolsInfoPropsCore &
-  HTMLProps<HTMLDivElement>) {
-  const isStaticRoute = routeType === 'Static'
+export function RouteInfoBody() {
+  const { state } = useDevOverlayContext()
 
-  const learnMore = isStaticRoute
-    ? learnMoreLink[routerType].static
-    : learnMoreLink[routerType].dynamic
+  const isStaticRoute = state.staticIndicator
 
+  return isStaticRoute ? (
+    <StaticRouteContent routerType={state.routerType} />
+  ) : (
+    <DynamicRouteContent routerType={state.routerType} />
+  )
+}
+
+export function RouteInfo({ isOpen,close,...props}: { isOpen: boolean , close: () => void} & HTMLProps<HTMLDivElement>) {
+  const { state } = useDevOverlayContext()
+
+  const routeType = state.staticIndicator ? 'Static' : 'Dynamic'
+
+  const learnMore = state.staticIndicator
+    ? learnMoreLink[state.routerType].static
+    : learnMoreLink[state.routerType].dynamic
+// FOR OLD UI NEED TO PASS DOWN THE EVENT HANDLERS
   return (
     <DevToolsInfo
       title={`${routeType} Route`}
       learnMoreLink={learnMore}
+      close={close}
+      isOpen={isOpen}
+      triggerRef={{ current: null }}
       {...props}
+      // style={style}
     >
-      {isStaticRoute ? (
-        <StaticRouteContent routerType={routerType} />
-      ) : (
-        <DynamicRouteContent routerType={routerType} />
-      )}
+      <RouteInfoBody />
     </DevToolsInfo>
   )
 }
