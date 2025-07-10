@@ -85,7 +85,7 @@ export function preprocessStackTrace(
 ): string {
   const toForwardSlashes = (p: string) => p.replace(/\\/g, '/')
 
-  return stackTrace
+  const trace = stackTrace
     .split('\n')
     .map((line) => {
       const match = line.match(/^(\s*at\s+.*?)\s+\(([^)]+)\)$/)
@@ -110,6 +110,9 @@ export function preprocessStackTrace(
       return line
     })
     .join('\n')
+
+  console.log('trace', trace)
+  return trace
 }
 
 const cache = new LRUCache<
@@ -131,8 +134,10 @@ async function getSourceMappedStackFramesInternal(
         stack: stackTrace,
       }
     }
+    console.log('frames', frames)
 
     const mappingResults = await mapFramesUsingBundler(frames, ctx)
+    console.log('results', mappingResults)
 
     const processedFrames = mappingResults
       .map((result, index) => ({
