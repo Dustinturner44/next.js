@@ -1939,10 +1939,10 @@ impl Endpoint for AppEndpoint {
         };
 
         async move {
-            let output = self.output().await?;
-            let output_assets = self.output().output_assets();
-            let node_root = this.app_project.project().node_root();
-            let node_root_ref = &node_root.await?;
+            let output = self.output();
+            let output_assets = output.output_assets();
+            let output = output.await?;
+            let node_root = &*this.app_project.project().node_root().await?;
 
             let (server_paths, client_paths) = if this
                 .app_project
@@ -1951,8 +1951,9 @@ impl Endpoint for AppEndpoint {
                 .await?
                 .is_development()
             {
-                let node_root = this.app_project.project().node_root().await?.clone_value();
-                let server_paths = all_server_paths(output_assets, node_root).owned().await?;
+                let server_paths = all_server_paths(output_assets, node_root.clone())
+                    .owned()
+                    .await?;
 
                 let client_relative_root = this
                     .app_project
@@ -1971,7 +1972,7 @@ impl Endpoint for AppEndpoint {
 
             let written_endpoint = match *output {
                 AppEndpointOutput::NodeJs { rsc_chunk, .. } => EndpointOutputPaths::NodeJs {
-                    server_entry_path: node_root_ref
+                    server_entry_path: node_root
                         .get_path_to(&*rsc_chunk.path().await?)
                         .context("Node.js chunk entry path must be inside the node root")?
                         .to_string(),

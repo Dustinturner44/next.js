@@ -15,7 +15,8 @@ use turbopack::css::chunk::CssChunkPlaceable;
 use turbopack_core::{
     module::Module,
     module_graph::{
-        GraphTraversalAction, SingleModuleGraph, chunk_group_info::RoaringBitmapWrapper,
+        GraphTraversalAction, SingleModuleGraph, SingleModuleGraphModuleNode,
+        chunk_group_info::RoaringBitmapWrapper,
     },
 };
 
@@ -56,7 +57,7 @@ impl ClientReferencesSet {
         let bitmap = &self
             .server_components_for_client_references
             .get(&module)
-            .expect("the passed module should be a client reference module")
+            .expect("Module should be a client reference module")
             .0;
 
         bitmap
@@ -139,20 +140,26 @@ pub async fn map_client_references(
                             true
                         }
                     };
-                    if let Some((parent_module, _)) = parent_info {
+                    if let Some((SingleModuleGraphModuleNode{module: parent_module}, _)) = parent_info
+                    // Skip self cycles such as in
+                    // test/e2e/app-dir/dynamic-import/app/page.tsx where a very-dynamic import induces a
+                    // self cycle. They don't introduce new bits anyway.
+                    && module != *parent_module
+                    {
                         // copy parent bits down.  visit_preorder always visits parents before
                         // children so we can assert that the parent it set.
                         let [Some(current), Some(parent)] =
-                            parent_modules.get_disjoint_mut([&module, &parent_module.module])
+                            parent_modules.get_disjoint_mut([&module, parent_module])
                         else {
                             unreachable!()
                         };
                         // inherit the server components from the newly observed parent.
-                        // check if we are adding new bits and thus need to revisit children
+                        // check if we are adding new bits and thus need to revisit children unless we are already planning to because this is a new node.
                         if !should_visit_children {
                             let len = current.len();
                             *current |= &*parent;
-                            should_visit_children |= len != current.len(); // did we find new bits
+                             // did we find new bits? If so visit the children again
+                            should_visit_children |= len != current.len();
                         } else {
                             *current |= &*parent;
                         }
