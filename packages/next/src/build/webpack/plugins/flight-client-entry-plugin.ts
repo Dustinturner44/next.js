@@ -69,6 +69,7 @@ type Actions = {
     layer: {
       [name: string]: string
     }
+    exportName: string
   }
 }
 
@@ -954,6 +955,7 @@ export class FlightClientEntryPlugin {
           currentCompilerServerActions[id] = {
             workers: {},
             layer: {},
+            exportName: '',
           }
         }
         currentCompilerServerActions[id].workers[bundlePath] = {
@@ -1042,6 +1044,14 @@ export class FlightClientEntryPlugin {
   async createActionAssets(compilation: webpack.Compilation) {
     const serverActions: ActionManifest['node'] = {}
     const edgeServerActions: ActionManifest['edge'] = {}
+    // actionId -> { exportedName, file }
+    const actionIdInfoMapping: Record<
+      string,
+      {
+        exportedName: string
+        file: string
+      }
+    > = {}
 
     traverseModules(compilation, (mod, _chunk, chunkGroup, modId) => {
       // Go through all action entries and record the module ID for each entry.
@@ -1051,7 +1061,45 @@ export class FlightClientEntryPlugin {
         modId &&
         /next-flight-action-entry-loader/.test(mod.request)
       ) {
-        const fromClient = /&__client_imported__=true/.test(mod.request)
+        const normalModule = mod as webpack.NormalModule
+        // const fromClient = /&__client_imported__=true/.test(mod.request)
+        const actionLoaderOptions = normalModule.loaders.find((loaderItem) => {
+          return /next-flight-action-entry-loader/.test(loaderItem.loader)
+        })?.options
+
+        // parse the options as search params
+        const searchParams = Object.fromEntries(
+          new URLSearchParams(actionLoaderOptions || '')
+        )
+
+        const fromClient = searchParams.__client_imported__ === 'true'
+        const actionData: [string, { id: string; exportedName: string }[]][] =
+          JSON.parse(searchParams.actions || '[]')
+
+        // actionData: [
+        // '<project-root>/app/client/actions.js',
+        // [
+        //   {
+        //     id: '<hash id>',
+        //     exportedName: 'getHeaders'
+        //   },
+        //   {
+        //     id: '<hash id>',
+        //     exportedName: 'redirectAction'
+        //   }
+        // ]
+
+        // add mapping to actionFileExportNamesMapping
+        for (const action of actionData) {
+          const actionFile = action[0]
+          const actionExportNames = action[1]
+          for (const actionExportName of actionExportNames) {
+            actionIdInfoMapping[actionExportName.id] = {
+              exportedName: actionExportName.exportedName,
+              file: actionFile,
+            }
+          }
+        }
 
         const mapping = this.isEdgeServer
           ? pluginState.edgeServerActionModules
@@ -1077,6 +1125,7 @@ export class FlightClientEntryPlugin {
               : 'server'
           ]
         action.workers[name] = modId!
+        action.exportName = actionIdInfoMapping[id].exportedName
       }
       serverActions[id] = action
     }
@@ -1091,6 +1140,7 @@ export class FlightClientEntryPlugin {
               : 'server'
           ]
         action.workers[name] = modId!
+        action.exportName = actionIdInfoMapping[id].exportedName
       }
       edgeServerActions[id] = action
     }

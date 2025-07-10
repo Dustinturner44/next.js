@@ -618,6 +618,12 @@ export async function handleAction({
 
   const actionWasForwarded = Boolean(req.headers['x-action-forwarded'])
 
+  const exportName = actionId
+    ? serverActionsManifest[
+        process.env.NEXT_RUNTIME === 'edge' ? 'edge' : 'node'
+      ][actionId]?.exportName
+    : 'UnknownAction'
+
   if (actionId) {
     const forwardedWorker = selectWorkerForForwarding(
       actionId,
@@ -1002,6 +1008,12 @@ export async function handleAction({
             actionId!
           ]
 
+        console.log(
+          '[SERVER ACTION]',
+          `${exportName}(`,
+          boundActionArguments,
+          ')'
+        )
         const returnVal = await executeActionAndPrepareForRender(
           actionHandler,
           boundActionArguments,

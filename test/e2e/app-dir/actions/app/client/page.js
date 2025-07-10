@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 
-import double, {
+import {
+  double,
   inc,
   dec,
   redirectAction,

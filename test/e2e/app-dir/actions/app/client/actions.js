@@ -23,7 +23,7 @@ export async function dec(value) {
   return value - 1
 }
 
-export default async function (value) {
+export async function double(value) {
   console.log('this_is_sensitive_info')
   return value * 2
 }

@@ -198,6 +198,7 @@ export class TurbopackManifestLoader {
         const action = (actionEntries[key] ??= {
           workers: {},
           layer: {},
+          exportName: '',
         })
         Object.assign(action.workers, other[key].workers)
         Object.assign(action.layer, other[key].layer)
