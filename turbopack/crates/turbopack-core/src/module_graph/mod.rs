@@ -1793,3 +1793,270 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
         }
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    use anyhow::Result;
+    use rustc_hash::FxHashMap;
+    use turbo_rcstr::{RcStr, rcstr};
+    use turbo_tasks::{ResolvedVc, TryJoinIterExt, Vc};
+    use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
+    use turbo_tasks_fs::{FileSystem, FileSystemPath, VirtualFileSystem};
+
+    use crate::{
+        asset::{Asset, AssetContent},
+        ident::AssetIdent,
+        module::Module,
+        module_graph::{
+            GraphEntries, GraphTraversalAction, SingleModuleGraph,
+            chunk_group_info::ChunkGroupEntry,
+        },
+        reference::{ModuleReference, ModuleReferences, SingleChunkableModuleReference},
+        resolve::ExportUsage,
+    };
+
+    #[tokio::test]
+    async fn traverse_dfs_from_entries_diamond() {
+        run_graph_test(
+            vec![rcstr!("a.js")],
+            {
+                let mut deps = FxHashMap::default();
+                // A classic diamond dependency on d
+                deps.insert(rcstr!("a.js"), vec![rcstr!("b.js"), rcstr!("c.js")]);
+                deps.insert(rcstr!("b.js"), vec![rcstr!("d.js")]);
+                deps.insert(rcstr!("c.js"), vec![rcstr!("d.js")]);
+                deps
+            },
+            |graph, entry_modules, module_to_name| {
+                let mut preorder_visits = Vec::new();
+                let mut postorder_visits = Vec::new();
+
+                graph.traverse_edges_from_entries_dfs(
+                    entry_modules,
+                    &mut (),
+                    |parent, target, _| {
+                        preorder_visits.push((
+                            parent
+                                .map(|(node, _)| module_to_name.get(&node.module).unwrap().clone()),
+                            module_to_name.get(&target.module()).unwrap().clone(),
+                        ));
+                        Ok(GraphTraversalAction::Continue)
+                    },
+                    |parent, target, _| {
+                        postorder_visits.push((
+                            parent
+                                .map(|(node, _)| module_to_name.get(&node.module).unwrap().clone()),
+                            module_to_name.get(&target.module()).unwrap().clone(),
+                        ));
+                        Ok(())
+                    },
+                )?;
+                assert_eq!(
+                    vec![
+                        (None, rcstr!("a.js")),
+                        (Some(rcstr!("a.js")), rcstr!("b.js")),
+                        (Some(rcstr!("b.js")), rcstr!("d.js")),
+                        (Some(rcstr!("a.js")), rcstr!("c.js")),
+                        (Some(rcstr!("c.js")), rcstr!("d.js"))
+                    ],
+                    preorder_visits
+                );
+                assert_eq!(
+                    vec![
+                        (Some(rcstr!("b.js")), rcstr!("d.js")),
+                        (Some(rcstr!("a.js")), rcstr!("b.js")),
+                        (Some(rcstr!("c.js")), rcstr!("d.js")),
+                        (Some(rcstr!("a.js")), rcstr!("c.js")),
+                        (None, rcstr!("a.js"))
+                    ],
+                    postorder_visits
+                );
+                Ok(())
+            },
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn traverse_dfs_from_entries_cycle() {
+        run_graph_test(
+            vec![rcstr!("a.js")],
+            {
+                let mut deps = FxHashMap::default();
+                // A cycle of length 3
+                deps.insert(rcstr!("a.js"), vec![rcstr!("b.js")]);
+                deps.insert(rcstr!("b.js"), vec![rcstr!("c.js")]);
+                deps.insert(rcstr!("c.js"), vec![rcstr!("a.js")]);
+                deps
+            },
+            |graph, entry_modules, module_to_name| {
+                let mut preorder_visits = Vec::new();
+                let mut postorder_visits = Vec::new();
+
+                graph.traverse_edges_from_entries_dfs(
+                    entry_modules,
+                    &mut (),
+                    |parent, target, _| {
+                        preorder_visits.push((
+                            parent
+                                .map(|(node, _)| module_to_name.get(&node.module).unwrap().clone()),
+                            module_to_name.get(&target.module()).unwrap().clone(),
+                        ));
+                        Ok(GraphTraversalAction::Continue)
+                    },
+                    |parent, target, _| {
+                        postorder_visits.push((
+                            parent
+                                .map(|(node, _)| module_to_name.get(&node.module).unwrap().clone()),
+                            module_to_name.get(&target.module()).unwrap().clone(),
+                        ));
+                        Ok(())
+                    },
+                )?;
+                assert_eq!(
+                    vec![
+                        (None, rcstr!("a.js")),
+                        (Some(rcstr!("a.js")), rcstr!("b.js")),
+                        (Some(rcstr!("b.js")), rcstr!("c.js")),
+                        (Some(rcstr!("c.js")), rcstr!("a.js")),
+                    ],
+                    preorder_visits
+                );
+                assert_eq!(
+                    vec![
+                        (Some(rcstr!("c.js")), rcstr!("a.js")),
+                        (Some(rcstr!("b.js")), rcstr!("c.js")),
+                        (Some(rcstr!("a.js")), rcstr!("b.js")),
+                        (None, rcstr!("a.js"))
+                    ],
+                    postorder_visits
+                );
+                Ok(())
+            },
+        )
+        .await;
+    }
+
+    #[turbo_tasks::value(shared)]
+    struct TestRepo {
+        repo: FxHashMap<FileSystemPath, Vec<FileSystemPath>>,
+    }
+    #[turbo_tasks::value]
+    struct MockModule {
+        path: FileSystemPath,
+        repo: ResolvedVc<TestRepo>,
+    }
+    #[turbo_tasks::value_impl]
+    impl MockModule {
+        #[turbo_tasks::function]
+        fn new(path: FileSystemPath, repo: ResolvedVc<TestRepo>) -> Vc<Self> {
+            Self { path, repo }.cell()
+        }
+    }
+
+    #[turbo_tasks::value_impl]
+    impl Asset for MockModule {
+        #[turbo_tasks::function]
+        fn content(&self) -> Vc<AssetContent> {
+            todo!()
+        }
+    }
+
+    #[turbo_tasks::value_impl]
+    impl Module for MockModule {
+        #[turbo_tasks::function]
+        fn ident(&self) -> Vc<AssetIdent> {
+            AssetIdent::from_path(self.path.clone())
+        }
+
+        #[turbo_tasks::function]
+        async fn references(&self) -> Result<Vc<ModuleReferences>> {
+            let repo = self.repo.await?;
+            let references = match repo.repo.get(&self.path) {
+                Some(deps) => {
+                    deps.iter()
+                        .map(|p| {
+                            Vc::upcast::<Box<dyn ModuleReference>>(
+                                SingleChunkableModuleReference::new(
+                                    Vc::upcast(MockModule::new(p.clone(), *self.repo)),
+                                    rcstr!("normal-dep"),
+                                    ExportUsage::all(),
+                                ),
+                            )
+                            .to_resolved()
+                        })
+                        .try_join()
+                        .await?
+                }
+                None => vec![],
+            };
+
+            Ok(Vc::cell(references))
+        }
+    }
+
+    /// Constructs a graph based on the dependencies describes in the adjacency lists below and then
+    /// calls the [test_fn]
+    async fn run_graph_test(
+        entries: Vec<RcStr>,
+        graph: FxHashMap<RcStr, Vec<RcStr>>,
+        test_fn: impl FnOnce(
+            &SingleModuleGraph,
+            Vec<ResolvedVc<Box<dyn Module>>>,
+            FxHashMap<ResolvedVc<Box<dyn Module>>, RcStr>,
+        ) -> Result<()>
+        + Send
+        + 'static,
+    ) {
+        crate::register();
+
+        let tt = turbo_tasks::TurboTasks::new(TurboTasksBackend::new(
+            BackendOptions::default(),
+            noop_backing_storage(),
+        ));
+        tt.run_once(async move {
+            let fs = VirtualFileSystem::new_with_name(rcstr!("test"));
+            let root = fs.root().await?;
+
+            let repo = TestRepo {
+                repo: graph
+                    .iter()
+                    .map(|(k, v)| {
+                        (
+                            root.join(k).unwrap(),
+                            v.iter().map(|f| root.join(f).unwrap()).collect(),
+                        )
+                    })
+                    .collect(),
+            }
+            .cell();
+            let entry_modules = entries
+                .iter()
+                .map(|e| {
+                    Vc::upcast::<Box<dyn Module>>(MockModule::new(root.join(e).unwrap(), repo))
+                        .to_resolved()
+                })
+                .try_join()
+                .await?;
+            let graph = SingleModuleGraph::new_with_entries(
+                GraphEntries::cell(GraphEntries(vec![ChunkGroupEntry::Entry(
+                    entry_modules.clone(),
+                )])),
+                false,
+            )
+            .await?;
+
+            let module_to_name = graph
+                .modules
+                .keys()
+                .map(|m| async move { Ok((*m, m.ident().await?.path.path.clone())) })
+                .try_join()
+                .await?
+                .into_iter()
+                .collect();
+            test_fn(&*graph, entry_modules, module_to_name)
+        })
+        .await
+        .unwrap();
+    }
+}
