@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{Instrument, Span};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
-    CollectiblesSource, FxIndexMap, NonLocalValue, ReadRef, ResolvedVc, TryJoinIterExt,
+    CollectiblesSource, FxIndexMap, FxIndexSet, NonLocalValue, ReadRef, ResolvedVc, TryJoinIterExt,
     ValueToString, Vc,
     debug::ValueDebugFormat,
     graph::{AdjacencyMap, GraphTraversal, Visit, VisitControlFlow},
@@ -561,6 +561,69 @@ impl SingleModuleGraph {
         }
 
         Ok(())
+    }
+
+    /// Traverses all reachable nodes and also continue revisiting them as long the visitor returns
+    /// GraphTraversalAction::Continue. The visitor is responsible for the runtime complexity and
+    /// eventual termination of the traversal. This corresponds to computing a fixed point state for
+    /// the graph.
+    ///
+    /// Nodes are (re)visited according to the returned priority of the node, prioritizing high
+    /// values. This priority is intended to be used a heuristic to reduce the number of
+    /// retraversals.
+    ///
+    /// * `entries` - The entry modules to start the traversal from
+    /// * `state` - The state to be passed to the callbacks
+    /// * `visit` - Called for a specific edge
+    ///    - Receives: (originating &SingleModuleGraphNode, edge &ChunkingType), target
+    ///      &SingleModuleGraphNode
+    ///    - Return [GraphTraversalAction]s to control the traversal
+    ///
+    /// Returns the number of node visits (i.e. higher than the node count if there are
+    /// retraversals).
+    pub fn traverse_edges_from_entries_fixed_point<'a>(
+        &'a self,
+        entries: impl IntoIterator<Item = ResolvedVc<Box<dyn Module>>>,
+        mut visit: impl FnMut(
+            Option<(&'a SingleModuleGraphModuleNode, &'a RefData)>,
+            &'a SingleModuleGraphNode,
+        ) -> Result<GraphTraversalAction>,
+    ) -> Result<usize> {
+        let mut queue =
+            FxIndexSet::from_iter(entries.into_iter().map(|n| self.get_module(n).unwrap()));
+
+        for index in &queue {
+            // We should only ever revisit an entry point if we find another path to it from another
+            // entry point, so we don't really care about the return value here.
+            visit(None, self.graph.node_weight(*index).unwrap())?;
+        }
+
+        let mut visit_count = 0;
+        while let Some(index) = queue.pop() {
+            let node = match self.graph.node_weight(index).unwrap() {
+                SingleModuleGraphNode::Module(single_module_graph_module_node) => {
+                    single_module_graph_module_node
+                }
+                _ => {
+                    continue; // we don't traverse into parent graphs
+                }
+            };
+            visit_count += 1;
+            for edge in self
+                .graph
+                .edges_directed(index, petgraph::Direction::Outgoing)
+            {
+                let refdata = edge.weight();
+                let target_index = edge.target();
+                let target = self.graph.node_weight(edge.target()).unwrap();
+                let action = visit(Some((node, refdata)), target)?;
+                if action == GraphTraversalAction::Continue {
+                    queue.insert(target_index);
+                }
+            }
+        }
+
+        Ok(visit_count)
     }
 
     /// Traverses all reachable edges in dfs order. The preorder visitor can be used to
