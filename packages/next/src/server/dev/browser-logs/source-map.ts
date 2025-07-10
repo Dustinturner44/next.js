@@ -137,7 +137,17 @@ async function getSourceMappedStackFramesInternal(
     console.log('frames', frames)
 
     const mappingResults = await mapFramesUsingBundler(frames, ctx)
-    console.log('results', mappingResults)
+    console.log(
+      'results',
+      mappingResults.map((x) =>
+        x.status === 'rejected'
+          ? 'rej'
+          : {
+              originalCodeFrame: x.value.originalCodeFrame,
+              ...x.value.originalStackFrame,
+            }
+      )
+    )
 
     const processedFrames = mappingResults
       .map((result, index) => ({
