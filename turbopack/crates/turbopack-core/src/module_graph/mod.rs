@@ -2000,6 +2000,57 @@ pub mod tests {
         .await;
     }
 
+    #[tokio::test]
+    async fn traverse_edges_from_entries_fixed_point_diamond() {
+        run_graph_test(
+            vec![rcstr!("a.js")],
+            {
+                let mut deps = FxHashMap::default();
+                // A cycle of length 3
+                deps.insert(rcstr!("a.js"), vec![rcstr!("b.js")]);
+                deps.insert(rcstr!("b.js"), vec![rcstr!("c.js")]);
+                deps.insert(rcstr!("c.js"), vec![rcstr!("a.js")]);
+                deps
+            },
+            |graph, entry_modules, module_to_name| {
+                let mut visits = Vec::new();
+                let mut count = 0;
+
+                graph.traverse_edges_from_entries_fixed_point(
+                    entry_modules,
+                    |parent, target| {
+                        visits.push((
+                            parent
+                                .map(|(node, _)| module_to_name.get(&node.module).unwrap().clone()),
+                            module_to_name.get(&target.module()).unwrap().clone(),
+                        ));
+                        count += 1;
+
+                        // We are a cycle so we need to break the loop eventually
+                        Ok(if count < 6 {
+                            GraphTraversalAction::Continue
+                        } else {
+                            GraphTraversalAction::Skip
+                        })
+                    },
+                )?;
+                assert_eq!(
+                    vec![
+                        (None, rcstr!("a.js")),
+                        (Some(rcstr!("a.js")), rcstr!("b.js")),
+                        (Some(rcstr!("b.js")), rcstr!("c.js")),
+                        (Some(rcstr!("c.js")), rcstr!("a.js")),
+                        (Some(rcstr!("a.js")), rcstr!("b.js")),
+                        (Some(rcstr!("b.js")), rcstr!("c.js")),
+                    ],
+                    visits
+                );
+
+                Ok(())
+            },
+        )
+        .await;
+    }
     #[turbo_tasks::value(shared)]
     struct TestRepo {
         repo: FxHashMap<FileSystemPath, Vec<FileSystemPath>>,
