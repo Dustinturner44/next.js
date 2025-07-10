@@ -2,7 +2,6 @@ import { findSourceMap, type SourceMap } from 'module'
 import path from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { SourceMapConsumer } from 'next/dist/compiled/source-map08'
-import { getSourceMapFromFile } from './get-source-map-from-file'
 import {
   devirtualizeReactServerURL,
   findApplicableSourceMapPayload,
@@ -329,18 +328,6 @@ async function getSource(
 
   if (path.isAbsolute(sourceURL)) {
     sourceURL = pathToFileURL(sourceURL).href
-  }
-
-  if (sourceURL.startsWith('file:')) {
-    const sourceMap = await getSourceMapFromFile(sourceURL)
-    return sourceMap
-      ? {
-          type: 'file',
-          sourceMap,
-          ignoredSources: getIgnoredSources(sourceMap),
-          moduleURL: sourceURL,
-        }
-      : undefined
   }
 
   // webpack-internal:///./src/hello.tsx => ./src/hello.tsx
