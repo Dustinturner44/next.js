@@ -599,15 +599,14 @@ impl SingleModuleGraph {
         let graph = &self.graph;
         let entries = entries.into_iter().map(|e| self.get_module(e).unwrap());
 
-        enum TopologicalPass {
+        enum Pass {
             Visit,
             ExpandAndVisit,
         }
 
         #[allow(clippy::type_complexity)] // This is a temporary internal structure
-        let mut stack: Vec<(TopologicalPass, Option<(NodeIndex, EdgeIndex)>, NodeIndex)> = entries
-            .map(|e| (TopologicalPass::ExpandAndVisit, None, e))
-            .collect();
+        let mut stack: Vec<(Pass, Option<(NodeIndex, EdgeIndex)>, NodeIndex)> =
+            entries.map(|e| (Pass::ExpandAndVisit, None, e)).collect();
         let mut expanded = FxHashSet::default();
         while let Some((pass, parent, current)) = stack.pop() {
             let parent_arg = parent.map(|parent| {
@@ -622,24 +621,20 @@ impl SingleModuleGraph {
                 )
             });
             match pass {
-                TopologicalPass::Visit => {
+                Pass::Visit => {
                     visit_postorder(parent_arg, graph.node_weight(current).unwrap(), state)?;
                 }
-                TopologicalPass::ExpandAndVisit => match graph.node_weight(current).unwrap() {
+                Pass::ExpandAndVisit => match graph.node_weight(current).unwrap() {
                     current_node @ SingleModuleGraphNode::Module(_) => {
                         let action = visit_preorder(parent_arg, current_node, state)?;
                         if action == GraphTraversalAction::Exclude {
                             continue;
                         }
-                        stack.push((TopologicalPass::Visit, parent, current));
+                        stack.push((Pass::Visit, parent, current));
                         if action == GraphTraversalAction::Continue && expanded.insert(current) {
                             stack.extend(iter_neighbors_rev(graph, current).map(
                                 |(edge, child)| {
-                                    (
-                                        TopologicalPass::ExpandAndVisit,
-                                        Some((current, edge)),
-                                        child,
-                                    )
+                                    (Pass::ExpandAndVisit, Some((current, edge)), child)
                                 },
                             ));
                         }
@@ -1343,19 +1338,16 @@ impl ModuleGraph {
 
         let entries = entries.into_iter().collect::<Vec<_>>();
 
-        enum TopologicalPass {
+        enum Pass {
             Visit,
             ExpandAndVisit,
         }
         #[allow(clippy::type_complexity)] // This is a temporary internal structure
-        let mut stack: Vec<(
-            TopologicalPass,
-            Option<(GraphNodeIndex, EdgeIndex)>,
-            GraphNodeIndex,
-        )> = Vec::with_capacity(entries.len());
+        let mut stack: Vec<(Pass, Option<(GraphNodeIndex, EdgeIndex)>, GraphNodeIndex)> =
+            Vec::with_capacity(entries.len());
         for entry in entries.into_iter().rev() {
             stack.push((
-                TopologicalPass::ExpandAndVisit,
+                Pass::ExpandAndVisit,
                 None,
                 ModuleGraph::get_entry(&graphs, entry).await?,
             ));
@@ -1374,15 +1366,15 @@ impl ModuleGraph {
             };
             let current_node = get_node!(graphs, current)?;
             match pass {
-                TopologicalPass::Visit => {
+                Pass::Visit => {
                     visit_postorder(parent_arg, current_node, state)?;
                 }
-                TopologicalPass::ExpandAndVisit => {
+                Pass::ExpandAndVisit => {
                     let action = visit_preorder(parent_arg, current_node, state)?;
                     if action == GraphTraversalAction::Exclude {
                         continue;
                     }
-                    stack.push((TopologicalPass::Visit, parent, current));
+                    stack.push((Pass::Visit, parent, current));
                     if action == GraphTraversalAction::Continue && expanded.insert(current) {
                         let graph = &graphs[current.graph_idx()].graph;
                         let (neighbors_rev, current) = match graph
@@ -1400,7 +1392,7 @@ impl ModuleGraph {
                         };
                         stack.extend(neighbors_rev.map(|(edge, child)| {
                             (
-                                TopologicalPass::ExpandAndVisit,
+                                Pass::ExpandAndVisit,
                                 Some((current, edge)),
                                 GraphNodeIndex {
                                     graph_idx: current.graph_idx,
