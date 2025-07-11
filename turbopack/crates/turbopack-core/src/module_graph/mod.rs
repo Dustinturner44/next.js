@@ -1799,7 +1799,7 @@ pub mod tests {
     use anyhow::Result;
     use rustc_hash::FxHashMap;
     use turbo_rcstr::{RcStr, rcstr};
-    use turbo_tasks::{ResolvedVc, TryJoinIterExt, Vc};
+    use turbo_tasks::{ReadRef, ResolvedVc, TryJoinIterExt, Vc};
     use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
     use turbo_tasks_fs::{FileSystem, FileSystemPath, VirtualFileSystem};
 
@@ -2001,7 +2001,7 @@ pub mod tests {
         entries: Vec<RcStr>,
         graph: FxHashMap<RcStr, Vec<RcStr>>,
         test_fn: impl FnOnce(
-            &SingleModuleGraph,
+            ReadRef<SingleModuleGraph>,
             Vec<ResolvedVc<Box<dyn Module>>>,
             FxHashMap<ResolvedVc<Box<dyn Module>>, RcStr>,
         ) -> Result<()>
@@ -2054,7 +2054,7 @@ pub mod tests {
                 .await?
                 .into_iter()
                 .collect();
-            test_fn(&*graph, entry_modules, module_to_name)
+            test_fn(graph, entry_modules, module_to_name)
         })
         .await
         .unwrap();
