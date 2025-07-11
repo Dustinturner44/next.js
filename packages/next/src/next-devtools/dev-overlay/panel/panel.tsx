@@ -126,7 +126,6 @@ export function DynamicPanel({
     <ResizeProvider
       value={{
         resizeRef,
-
         minWidth,
         minHeight,
         devToolsPosition: state.devToolsPosition,
