@@ -3,6 +3,7 @@ import type { DispatcherEvent, OverlayState } from '../shared'
 import { useReducer } from 'react'
 import {
   ACTION_DEVTOOLS_POSITION,
+  ACTION_DEVTOOLS_PANEL_POSITION,
   ACTION_DEVTOOLS_PANEL_CLOSE,
   ACTION_DEVTOOLS_PANEL_TOGGLE,
   ACTION_ERROR_OVERLAY_CLOSE,
@@ -16,7 +17,7 @@ import {
 export const storybookDefaultOverlayState: OverlayState = {
   ...INITIAL_OVERLAY_STATE,
   routerType: 'app',
-  isErrorOverlayOpen: true,
+  isErrorOverlayOpen: false,
   showIndicator: true,
   versionInfo: {
     installed: '15.4.0',
@@ -48,6 +49,13 @@ export function useStorybookOverlayReducer(initialState?: OverlayState) {
         }
         case ACTION_DEVTOOLS_POSITION: {
           return { ...state, devToolsPosition: action.devToolsPosition }
+        }
+        // todo remove
+        case ACTION_DEVTOOLS_PANEL_POSITION: {
+          return {
+            ...state,
+            devToolsPanelPosition: action.devToolsPanelPosition,
+          }
         }
         case ACTION_DEVTOOLS_SCALE: {
           return { ...state, scale: action.scale }
