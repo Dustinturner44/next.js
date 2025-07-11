@@ -6472,11 +6472,11 @@
   },
   "test/e2e/app-dir/error-on-next-codemod-comment/error-on-next-codemod-comment.test.ts": {
     "passed": [
-      "app-dir - error-on-next-codemod-comment should disappear the error when you replace with bypass comment",
-      "app-dir - error-on-next-codemod-comment should disappear the error when you rre the codemod comment",
-      "app-dir - error-on-next-codemod-comment should error with inline comment as well"
+      "app-dir - error-on-next-codemod-comment should disappear the error when you replace with bypass comment"
     ],
     "failed": [
+      "app-dir - error-on-next-codemod-comment should disappear the error when you rre the codemod comment",
+      "app-dir - error-on-next-codemod-comment should error with inline comment as well",
       "app-dir - error-on-next-codemod-comment should error with swc if you have codemod comments left"
     ],
     "pending": [],
