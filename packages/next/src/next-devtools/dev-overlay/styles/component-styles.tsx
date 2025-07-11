@@ -19,6 +19,7 @@ import { ENVIRONMENT_NAME_LABEL_STYLES } from '../components/errors/environment-
 import { DEV_TOOLS_INFO_STYLES } from '../components/errors/dev-tools-indicator/dev-tools-info/dev-tools-info'
 import { DEV_TOOLS_INFO_TURBOPACK_INFO_STYLES } from '../components/errors/dev-tools-indicator/dev-tools-info/turbopack-info'
 import { DEV_TOOLS_INFO_ROUTE_INFO_STYLES } from '../components/errors/dev-tools-indicator/dev-tools-info/route-info'
+import { SERVER_ACTIONS_INFO_STYLES } from '../components/errors/dev-tools-indicator/dev-tools-info/server-actions-info'
 import { DEV_TOOLS_INFO_USER_PREFERENCES_STYLES } from '../components/errors/dev-tools-indicator/dev-tools-info/user-preferences'
 import { FADER_STYLES } from '../components/fader'
 import { RESTART_SERVER_BUTTON_STYLES } from '../components/errors/error-overlay-toolbar/restart-server-button'
@@ -26,6 +27,7 @@ import { DEVTOOLS_PANEL_STYLES } from '../components/devtools-panel/devtools-pan
 import { DEVTOOLS_PANEL_FOOTER_STYLES } from '../components/devtools-panel/devtools-panel-footer'
 import { DEVTOOLS_PANEL_VERSION_INFO_STYLES } from '../components/devtools-panel/devtools-panel-version-info'
 import { DEVTOOLS_PANEL_TAB_SETTINGS_STYLES } from '../components/devtools-panel/devtools-panel-tab/settings-tab'
+import { SERVER_ACTIONS_TAB_STYLES } from '../components/devtools-panel/devtools-panel-tab/server-actions-tab'
 import { CALL_STACK_STYLES } from '../components/call-stack/call-stack'
 import { DEVTOOLS_PANEL_TAB_ISSUES_STYLES } from '../components/devtools-panel/devtools-panel-tab/issues-tab/issues-tab'
 import { DEVTOOLS_PANEL_TAB_ISSUES_SIDEBAR_STYLES } from '../components/devtools-panel/devtools-panel-tab/issues-tab/issues-tab-sidebar'
@@ -63,12 +65,14 @@ export function ComponentStyles() {
         ${DEV_TOOLS_INFO_STYLES}
         ${DEV_TOOLS_INFO_TURBOPACK_INFO_STYLES}
         ${DEV_TOOLS_INFO_ROUTE_INFO_STYLES}
+        ${SERVER_ACTIONS_INFO_STYLES}
         ${DEV_TOOLS_INFO_USER_PREFERENCES_STYLES}
         ${FADER_STYLES}
         ${DEVTOOLS_PANEL_STYLES}
         ${DEVTOOLS_PANEL_FOOTER_STYLES}
         ${DEVTOOLS_PANEL_VERSION_INFO_STYLES}
         ${DEVTOOLS_PANEL_TAB_SETTINGS_STYLES}
+        ${SERVER_ACTIONS_TAB_STYLES}
         ${DEVTOOLS_PANEL_TAB_ISSUES_STYLES}
         ${DEVTOOLS_PANEL_TAB_ISSUES_EMPTY_CONTENT_STYLES}
         ${DEVTOOLS_PANEL_TAB_ISSUES_SIDEBAR_STYLES}

@@ -13,6 +13,7 @@ import { NextLogo } from './next-logo'
 import { useDelayedRender } from '../../../hooks/use-delayed-render'
 import { TurbopackInfo } from './dev-tools-info/turbopack-info'
 import { RouteInfo } from './dev-tools-info/route-info'
+import { ServerActionsInfo } from './dev-tools-info/server-actions-info'
 import GearIcon from '../../../icons/gear-icon'
 import { UserPreferences } from './dev-tools-info/user-preferences'
 import {
@@ -88,6 +89,7 @@ const OVERLAYS = {
   Root: 'root',
   Turbo: 'turbo',
   Route: 'route',
+  ServerActions: 'server-actions',
   Preferences: 'preferences',
   SegmentExplorer: 'segment-explorer',
 } as const
@@ -149,6 +151,7 @@ function DevToolsPopover({
   const isMenuOpen = open === OVERLAYS.Root
   const isTurbopackInfoOpen = open === OVERLAYS.Turbo
   const isRouteInfoOpen = open === OVERLAYS.Route
+  const isServerActionsInfoOpen = open === OVERLAYS.ServerActions
   const isPreferencesOpen = open === OVERLAYS.Preferences
   const isSegmentExplorerOpen = open === OVERLAYS.SegmentExplorer
 
@@ -347,6 +350,14 @@ function DevToolsPopover({
         routeType={isStaticRoute ? 'Static' : 'Dynamic'}
       />
 
+      {/* Server Actions Info */}
+      <ServerActionsInfo
+        isOpen={isServerActionsInfoOpen}
+        close={closeToRootMenu}
+        triggerRef={triggerRef}
+        style={popover}
+      />
+
       {/* Turbopack Info */}
       <TurbopackInfo
         isOpen={isTurbopackInfoOpen}
@@ -422,6 +433,13 @@ function DevToolsPopover({
                 onClick={() => setOpen(OVERLAYS.Route)}
                 data-nextjs-route-type={isStaticRoute ? 'static' : 'dynamic'}
               />
+              <MenuItem
+                title="View server action logs in real-time."
+                label="Server Actions Monitor"
+                index={2}
+                value={<ChevronRight />}
+                onClick={() => setOpen(OVERLAYS.ServerActions)}
+              />
               {isTurbopack ? (
                 <MenuItem
                   title="Turbopack is enabled."
@@ -430,7 +448,7 @@ function DevToolsPopover({
                 />
               ) : (
                 <MenuItem
-                  index={2}
+                  index={3}
                   title="Learn about Turbopack and how to enable it in your application."
                   label="Try Turbopack"
                   value={<ChevronRight />}
@@ -445,7 +463,7 @@ function DevToolsPopover({
                 label="Preferences"
                 value={<GearIcon />}
                 onClick={() => setOpen(OVERLAYS.Preferences)}
-                index={isTurbopack ? 2 : 3}
+                index={isTurbopack ? 3 : 4}
               />
               {process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER ? (
                 <MenuItem
@@ -453,7 +471,7 @@ function DevToolsPopover({
                   label="Route Info"
                   value={<ChevronRight />}
                   onClick={() => setOpen(OVERLAYS.SegmentExplorer)}
-                  index={isTurbopack ? 3 : 4}
+                  index={isTurbopack ? 4 : 5}
                 />
               ) : null}
             </div>

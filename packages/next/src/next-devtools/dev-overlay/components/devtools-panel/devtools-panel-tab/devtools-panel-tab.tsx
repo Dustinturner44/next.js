@@ -7,6 +7,7 @@ import type { HydrationErrorState } from '../../../../shared/hydration-error'
 import { SettingsTab } from './settings-tab'
 import { IssuesTab } from './issues-tab/issues-tab'
 import { SegmentsExplorerTab } from './segments-explorer-tab'
+import { ServerActionsTab } from './server-actions-tab'
 
 export function DevToolsPanelTab({
   activeTab,
@@ -45,6 +46,8 @@ export function DevToolsPanelTab({
       )
     case 'route':
       return <SegmentsExplorerTab routerType={routerType} page={page} />
+    case 'server-actions':
+      return <ServerActionsTab />
     case 'issues':
       return (
         <IssuesTab

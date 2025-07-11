@@ -362,7 +362,18 @@ function processMessage(obj: HMR_ACTION_TYPES) {
       break
     }
     case HMR_ACTIONS_SENT_TO_BROWSER.SERVER_LOGS: {
-      // Display server logs in browser console
+      // Send server logs to devtools panel
+      const serverActionsLogHandler = (window as any).__NEXT_SERVER_ACTIONS_LOG_HANDLER
+      if (serverActionsLogHandler) {
+        obj.entries.forEach(entry => {
+          serverActionsLogHandler({
+            ...entry,
+            id: `${entry.timestamp}-${Math.random()}`
+          })
+        })
+      }
+      
+      // Also display in browser console as fallback
       obj.entries.forEach(entry => {
         const method = console[entry.level] || console.log
         const timestamp = new Date(entry.timestamp).toLocaleTimeString()

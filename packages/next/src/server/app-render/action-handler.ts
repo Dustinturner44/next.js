@@ -1020,7 +1020,7 @@ export async function handleAction({
         if (ctx.renderOpts.serverLogCapture) {
           ctx.renderOpts.serverLogCapture.captureLog(
             'log',
-            ['[SERVER ACTION]', `${exportName}(`, boundActionArguments, ')'],
+            [`${exportName}`, boundActionArguments],
             // from page
             'server-action',
           )

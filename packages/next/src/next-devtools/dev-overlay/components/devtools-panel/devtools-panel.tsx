@@ -27,7 +27,7 @@ import { MinimizeIcon } from '../../icons/minimize'
 import { ResizeProvider } from './resize/resize-provider'
 import { ResizeHandle } from './resize/resize-handle'
 
-export type DevToolsPanelTabType = 'issues' | 'route' | 'settings'
+export type DevToolsPanelTabType = 'issues' | 'route' | 'server-actions' | 'settings'
 
 function useSessionState<T extends string>(
   key: string,
@@ -195,6 +195,14 @@ export function DevToolsPanel({
                         onClick={() => setActiveTab('route')}
                       >
                         Route Info
+                      </button>
+                      <button
+                        data-nextjs-devtools-panel-header-tab={
+                          activeTab === 'server-actions'
+                        }
+                        onClick={() => setActiveTab('server-actions')}
+                      >
+                        Server Actions
                       </button>
                       <button
                         data-nextjs-devtools-panel-header-tab={
