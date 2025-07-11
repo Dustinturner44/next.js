@@ -99,6 +99,7 @@ import { getRestartDevServerMiddleware } from '../../next-devtools/server/restar
 import { backgroundLogCompilationEvents } from '../../shared/lib/turbopack/compilation-events'
 import { getSupportedBrowsers } from '../../build/utils'
 import { receiveBrowserLogsTurbopack } from './browser-logs/receive-logs'
+import { ServerLogCapture } from './server-logs/capture-logs'
 
 const wsServer = new ws.Server({ noServer: true })
 const isTestMode = !!(
@@ -158,7 +159,8 @@ export async function createHotReloaderTurbopack(
   opts: SetupOpts & { isSrcDir: boolean },
   serverFields: ServerFields,
   distDir: string,
-  resetFetch: () => void
+  resetFetch: () => void,
+  serverLogCapture?: ServerLogCapture
 ): Promise<NextJsHotReloaderInterface> {
   const dev = true
   const buildId = 'development'
@@ -1133,8 +1135,21 @@ export async function createHotReloaderTurbopack(
         wsClient.terminate()
       }
       clients.clear()
+      
+      // Disconnect and unregister server log capture when closing
+      logCapture.disable()
+    },
+
+    getLogCapture() {
+      return logCapture
     },
   }
+  
+  // Use the shared server log capture instance
+  const logCapture = serverLogCapture!
+  logCapture.setSendFunction((action: HMR_ACTION_TYPES) => {
+    hotReloader.send(action)
+  })
 
   handleEntrypointsSubscription().catch((err) => {
     console.error(err)

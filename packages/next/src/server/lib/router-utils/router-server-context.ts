@@ -40,6 +40,8 @@ export type RouterServerContext = Record<
     logErrorWithOriginalStack?: (err: unknown, type: string) => void
     // allow setting ISR status in dev
     setIsrStatus?: (key: string, value: boolean | null) => void
+    // server log capture instance for dev mode
+    serverLogCapture?: import('../../dev/server-logs/capture-logs').ServerLogCapture
   }
 >
 

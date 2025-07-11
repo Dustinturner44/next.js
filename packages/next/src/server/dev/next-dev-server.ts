@@ -234,6 +234,8 @@ export default class DevServer extends Server {
       )
     }
 
+    this.renderOpts.serverLogCapture = (options.bundlerService as any)?.bundler?.serverFields?.serverLogCapture
+
     const { pagesDir, appDir } = findPagesDir(this.dir)
     this.pagesDir = pagesDir
     this.appDir = appDir

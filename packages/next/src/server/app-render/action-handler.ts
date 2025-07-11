@@ -618,10 +618,10 @@ export async function handleAction({
 
   const actionWasForwarded = Boolean(req.headers['x-action-forwarded'])
 
-  const exportName = actionId
+  const { exportName } = actionId
     ? serverActionsManifest[
         process.env.NEXT_RUNTIME === 'edge' ? 'edge' : 'node'
-      ][actionId]?.exportName
+      ][actionId] || {}
     : 'UnknownAction'
 
   if (actionId) {
@@ -1008,12 +1008,24 @@ export async function handleAction({
             actionId!
           ]
 
-        console.log(
-          '[SERVER ACTION]',
-          `${exportName}(`,
-          boundActionArguments,
-          ')'
-        )
+        // Log to console for backward compatibility
+        // console.log(
+        //   '[SERVER ACTION]',
+        //   `${exportName}(`,
+        //   boundActionArguments,
+        //   ')'
+        // )
+        
+        // Also capture for hot reloader forwarding in development
+        if (ctx.renderOpts.serverLogCapture) {
+          ctx.renderOpts.serverLogCapture.captureLog(
+            'log',
+            ['[SERVER ACTION]', `${exportName}(`, boundActionArguments, ')'],
+            // from page
+            'server-action',
+          )
+        }
+        
         const returnVal = await executeActionAndPrepareForRender(
           actionHandler,
           boundActionArguments,

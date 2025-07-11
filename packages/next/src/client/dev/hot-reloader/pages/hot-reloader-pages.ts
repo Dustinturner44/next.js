@@ -361,6 +361,20 @@ function processMessage(obj: HMR_ACTION_TYPES) {
       dispatcher.onRefresh()
       break
     }
+    case HMR_ACTIONS_SENT_TO_BROWSER.SERVER_LOGS: {
+      // Display server logs in browser console
+      obj.entries.forEach(entry => {
+        const method = console[entry.level] || console.log
+        const timestamp = new Date(entry.timestamp).toLocaleTimeString()
+        method(
+          `%c[${entry.source}] %c${timestamp}`,
+          'color: #0070f3; font-weight: bold;',
+          'color: #666; font-size: 0.9em;',
+          ...entry.args
+        )
+      })
+      break
+    }
     default: {
       if (customHmrEventHandler) {
         customHmrEventHandler(obj)

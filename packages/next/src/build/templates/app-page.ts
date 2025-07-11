@@ -476,7 +476,7 @@ export async function handler(
           devtoolSegmentExplorer:
             nextConfig.experimental.devtoolSegmentExplorer,
           reactMaxHeadersLength: nextConfig.reactMaxHeadersLength,
-
+          serverLogCapture: routerServerContext?.serverLogCapture,
           multiZoneDraftMode,
           incrementalCache: getRequestMeta(req, 'incrementalCache'),
           cacheLifeProfiles: nextConfig.experimental.cacheLife,

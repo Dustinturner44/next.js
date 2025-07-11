@@ -83,6 +83,7 @@ import {
   TurbopackInternalError,
 } from '../../../shared/lib/turbopack/utils'
 import { getDefineEnv } from '../../../build/define-env'
+import { ServerLogCapture } from '../../dev/server-logs/capture-logs'
 
 export type SetupOpts = {
   renderServer: LazyRenderServerInstance
@@ -129,6 +130,7 @@ export type ServerFields = {
   >[]
   setIsrStatus?: (key: string, value: boolean) => void
   resetFetch?: () => void
+  serverLogCapture?: import('../../dev/server-logs/capture-logs').ServerLogCapture
 }
 
 async function verifyTypeScript(opts: SetupOpts) {
@@ -192,8 +194,13 @@ async function startWatcher(
     logging: nextConfig.logging !== false,
   })
 
+  // Create a single ServerLogCapture instance to be shared between hot reloader and server
+  
+  const serverLogCapture = new ServerLogCapture()
+  serverFields.serverLogCapture = serverLogCapture
+
   const hotReloader: NextJsHotReloaderInterface = opts.turbo
-    ? await createHotReloaderTurbopack(opts, serverFields, distDir, resetFetch)
+    ? await createHotReloaderTurbopack(opts, serverFields, distDir, resetFetch, serverLogCapture)
     : new HotReloaderWebpack(opts.dir, {
         isSrcDir: opts.isSrcDir,
         appDir,
@@ -209,9 +216,13 @@ async function startWatcher(
         rewrites: opts.fsChecker.rewrites,
         previewProps: opts.fsChecker.prerenderManifest.preview,
         resetFetch,
+        serverLogCapture,
       })
 
   await hotReloader.start()
+
+  // serverLogCapture is already set in serverFields above
+  // The hot reloader now uses the same shared instance
 
   // have to write this after starting hot-reloader since that
   // cleans the dist dir

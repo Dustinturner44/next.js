@@ -559,6 +559,8 @@ export default abstract class Server<
       process.env.NEXT_DEPLOYMENT_ID = this.nextConfig.deploymentId || ''
     }
 
+    const captureMod = (this.serverOptions as any).serverFields.serverLogCapture
+
     this.renderOpts = {
       dir: this.dir,
       supportsDynamicResponse: true,
@@ -614,6 +616,8 @@ export default abstract class Server<
       reactMaxHeadersLength: this.nextConfig.reactMaxHeadersLength,
       devtoolSegmentExplorer:
         this.nextConfig.experimental.devtoolSegmentExplorer,
+      // Add serverLogCapture instance from serverFields if available (dev mode)
+      serverLogCapture: captureMod,
     }
 
     // Initialize next/config with the environment configuration

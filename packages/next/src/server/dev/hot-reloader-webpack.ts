@@ -91,6 +91,7 @@ import getWebpackBundler from '../../shared/lib/get-webpack-bundler'
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
 import { checkPersistentCacheInvalidationAndCleanup } from '../../build/webpack/cache-invalidation'
 import { receiveBrowserLogsWebpack } from './browser-logs/receive-logs'
+import { ServerLogCapture } from './server-logs/capture-logs'
 
 const MILLISECONDS_IN_NANOSECOND = BigInt(1_000_000)
 
@@ -264,6 +265,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
   private devtoolsFrontendUrl: string | undefined
   private reloadAfterInvalidation: boolean = false
   private isSrcDir: boolean
+  private logCapture: ServerLogCapture
 
   public serverStats: webpack.Stats | null
   public edgeServerStats: webpack.Stats | null
@@ -286,6 +288,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       appDir,
       telemetry,
       resetFetch,
+      serverLogCapture,
     }: {
       config: NextConfigComplete
       isSrcDir: boolean
@@ -298,6 +301,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       appDir?: string
       telemetry: Telemetry
       resetFetch: () => void
+      serverLogCapture?: ServerLogCapture
     }
   ) {
     this.hasAmpEntrypoints = false
@@ -321,12 +325,17 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     this.config = config
     this.previewProps = previewProps
     this.rewrites = rewrites
-    this.hotReloaderSpan = trace('hot-reloader', undefined, {
+        this.hotReloaderSpan = trace('hot-reloader', undefined, {
       version: process.env.__NEXT_VERSION as string,
     })
     // Ensure the hotReloaderSpan is flushed immediately as it's the parentSpan for all processing
     // of the current `next dev` invocation.
     this.hotReloaderSpan.stop()
+    
+    // Use the shared server log capture instance
+    this.logCapture = serverLogCapture!
+    
+    this.logCapture.setSendFunction((action) => this.send(action))
   }
 
   public async run(
@@ -1653,6 +1662,10 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     this.webpackHotMiddleware!.publish(action)
   }
 
+  public getLogCapture() {
+    return this.logCapture
+  }
+
   public async ensurePage({
     page,
     clientOnly,
@@ -1696,5 +1709,8 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
 
   public close() {
     this.webpackHotMiddleware?.close()
+    
+    // Disconnect and unregister server log capture when closing
+    this.logCapture.disable()
   }
 }

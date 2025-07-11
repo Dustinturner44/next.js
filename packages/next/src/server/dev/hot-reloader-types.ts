@@ -26,6 +26,7 @@ export const enum HMR_ACTIONS_SENT_TO_BROWSER {
   TURBOPACK_CONNECTED = 'turbopack-connected',
   ISR_MANIFEST = 'isrManifest',
   DEV_INDICATOR = 'devIndicator',
+  SERVER_LOGS = 'serverLogs',
 }
 
 interface ServerErrorAction {
@@ -124,6 +125,16 @@ export interface DevIndicatorAction {
   devIndicator: DevIndicatorServerState
 }
 
+export interface ServerLogsAction {
+  action: HMR_ACTIONS_SENT_TO_BROWSER.SERVER_LOGS
+  entries: Array<{
+    level: 'log' | 'info' | 'warn' | 'error' | 'debug'
+    args: any[]
+    timestamp: number
+    source: 'server-action' | 'server' | 'edge-server'
+  }>
+}
+
 export type HMR_ACTION_TYPES =
   | TurbopackMessageAction
   | TurbopackConnectedAction
@@ -141,6 +152,7 @@ export type HMR_ACTION_TYPES =
   | ServerErrorAction
   | AppIsrManifestAction
   | DevIndicatorAction
+  | ServerLogsAction
 
 export type TurbopackMsgToBrowser =
   | { type: HMR_ACTIONS_SENT_TO_BROWSER.TURBOPACK_MESSAGE; data: any }
@@ -193,4 +205,5 @@ export interface NextJsHotReloaderInterface {
     url?: string
   }): Promise<void>
   close(): void
+  getLogCapture?(): import('./server-logs/capture-logs').ServerLogCapture
 }

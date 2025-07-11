@@ -242,6 +242,7 @@ export interface RenderOptsPartial {
     authInterrupts: boolean
   }
   postponed?: string
+  serverLogCapture?: import('../dev/server-logs/capture-logs').ServerLogCapture
 
   /**
    * Should wait for react stream allReady to resolve all suspense boundaries,

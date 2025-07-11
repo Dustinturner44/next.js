@@ -692,6 +692,7 @@ export async function initialize(opts: {
       ? handlers.server.logErrorWithOriginalStack.bind(handlers.server)
       : (err: unknown) => !opts.quiet && Log.error(err),
     setIsrStatus: devBundlerService?.setIsrStatus.bind(devBundlerService),
+    serverLogCapture: renderServerOpts.serverFields?.serverLogCapture,
   }
 
   const logError = async (
