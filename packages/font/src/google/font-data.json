@@ -16001,6 +16001,44 @@
     "styles": ["normal"],
     "subsets": ["latin"]
   },
+  "TikTok Sans": {
+    "weights": ["300", "400", "500", "600", "700", "800", "900", "variable"],
+    "styles": ["normal"],
+    "axes": [
+      {
+        "tag": "opsz",
+        "min": 12,
+        "max": 36,
+        "defaultValue": 14
+      },
+      {
+        "tag": "slnt",
+        "min": -6,
+        "max": 0,
+        "defaultValue": 0
+      },
+      {
+        "tag": "wdth",
+        "min": 75,
+        "max": 150,
+        "defaultValue": 100
+      },
+      {
+        "tag": "wght",
+        "min": 300,
+        "max": 900,
+        "defaultValue": 400
+      }
+    ],
+    "subsets": [
+      "cyrillic",
+      "cyrillic-ext",
+      "greek",
+      "latin",
+      "latin-ext",
+      "vietnamese"
+    ]
+  },
   "Tillana": {
     "weights": ["400", "500", "600", "700", "800"],
     "styles": ["normal"],
