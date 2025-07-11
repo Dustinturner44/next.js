@@ -1995,8 +1995,20 @@ pub mod tests {
         }
     }
 
-    /// Constructs a graph based on the dependencies describes in the adjacency lists below and then
-    /// calls the [test_fn]
+    /// Constructs a graph based on the provided dependency adjacency lists and calls the given test
+    /// function.
+    ///
+    /// # Parameters
+    /// - `entries`: A vector of entry module names (as `RcStr`). These are the starting points for
+    ///   the graph.
+    /// - `graph`: A map from module name (`RcStr`) to a vector of its dependency module names
+    ///   (`RcStr`). Represents the adjacency list of the graph.
+    /// - `test_fn`: A function that is called with:
+    ///     - `ReadRef<SingleModuleGraph>`: The constructed module graph.
+    ///     - `Vec<ResolvedVc<Box<dyn Module>>>`: The resolved entry modules.
+    ///     - `FxHashMap<ResolvedVc<Box<dyn Module>>, RcStr>`: A mapping from module to its name for
+    ///       easier analysis in tests.
+    ///   The function should return a `Result<()>`.
     async fn run_graph_test(
         entries: Vec<RcStr>,
         graph: FxHashMap<RcStr, Vec<RcStr>>,
@@ -2046,6 +2058,10 @@ pub mod tests {
             )
             .await?;
 
+            // Create a simple name mapping to make analyzing the visitors easier.
+            // Technically they could always pull this name off of the
+            // `module.ident().await?.path.path` themselves but that `await` is trick in the
+            // visitors so precomputing this helps.
             let module_to_name = graph
                 .modules
                 .keys()
