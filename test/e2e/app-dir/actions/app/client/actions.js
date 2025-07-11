@@ -28,6 +28,32 @@ export async function double(value) {
   return value * 2
 }
 
+export async function updateUser(id, name, email, age) {
+  console.log('Updating user with complex data')
+  // Simulate user update
+  return {
+    id,
+    name,
+    email,
+    age,
+    updatedAt: new Date().toISOString()
+  }
+}
+
+export async function calculatePrice(basePrice, tax, discount, shipping) {
+  console.log('Calculating final price with multiple factors')
+  const subtotal = basePrice - discount
+  const taxAmount = subtotal * (tax / 100)
+  const total = subtotal + taxAmount + shipping
+  return {
+    basePrice,
+    discount,
+    tax: taxAmount,
+    shipping,
+    total: Math.round(total * 100) / 100
+  }
+}
+
 export async function redirectAction(path) {
   redirect(path)
 }

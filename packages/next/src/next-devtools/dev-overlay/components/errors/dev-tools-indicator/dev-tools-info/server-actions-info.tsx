@@ -20,7 +20,7 @@ export function ServerActionsInfo(
   // Store logs in a global handler that can be accessed by HMR
   useEffect(() => {
     const handleServerLog = (logEntry: ServerActionLogEntry) => {
-      setLogs(prev => [logEntry, ...prev.slice(0, 2)]) // Keep only 3 logs, new ones at top
+      setLogs(prev => [logEntry, ...prev.slice(0, 49)]) // Keep up to 50 logs, new ones at top
       setNewLogId(logEntry.id) // Mark this log as new
       
       // Remove the new marker after animation completes
@@ -53,24 +53,30 @@ export function ServerActionsInfo(
   }
 
   const formatServerAction = (args: any[]) => {
-    if (args.length < 4) {
-      // Fallback for unexpected format
-      return args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ')
-    }
+    // if (args.length < 4) {
+    //   // Fallback for unexpected format
+    //   return args.map(arg => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ')
+    // }
 
     // Expected format: ['[SERVER ACTION]', 'functionName(', arguments, ')']
-    const functionNameWithParen = args[1] // e.g., "slowInc("
-    const functionArgs = args[2] // e.g., [-6, 2]
+    const functionNameWithParen = args[0] // e.g., "slowInc"
+    const functionArgs = args[1] // e.g., [-6, 2]
     
     // Extract function name (remove the opening parenthesis)
-    const functionName = functionNameWithParen.replace('(', '')
+    const functionName = functionNameWithParen
     
     // Format arguments as comma-separated values
     let formattedArgs = ''
     if (Array.isArray(functionArgs)) {
       formattedArgs = functionArgs.map(arg => {
         if (typeof arg === 'string') {
-          return `"${arg}"`
+          let result = `"${arg}"`
+          // find the first space as separator, frist part is function name, second part is arguments
+          const spaceIndex = arg.indexOf(' ')
+          if (spaceIndex !== -1) {
+            result = arg.slice(0, spaceIndex) + `" ${arg.slice(spaceIndex)}`
+          }
+          return result
         }
         if (typeof arg === 'object' && arg !== null) {
           try {
@@ -127,7 +133,7 @@ export function ServerActionsInfo(
           {logs.length === 0 ? (
             <div className="server-actions-info-empty">
               <p>No server action logs yet.</p>
-              {/* <p>Execute server actions to see the latest 3 logs here.</p> */}
+              <p>Execute server actions to see them here.</p>
             </div>
           ) : (
             <div className="server-actions-info-logs">
@@ -217,9 +223,30 @@ export const SERVER_ACTIONS_INFO_STYLES = `
 
   .server-actions-info-content {
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
     background: var(--color-gray-100);
     min-height: 150px;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-400) var(--color-gray-200);
+  }
+
+  .server-actions-info-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .server-actions-info-content::-webkit-scrollbar-track {
+    background: var(--color-gray-200);
+    border-radius: 3px;
+  }
+
+  .server-actions-info-content::-webkit-scrollbar-thumb {
+    background: var(--color-gray-400);
+    border-radius: 3px;
+  }
+
+  .server-actions-info-content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-500);
   }
 
   .server-actions-info-empty {
@@ -243,11 +270,11 @@ export const SERVER_ACTIONS_INFO_STYLES = `
   }
 
   .server-actions-info-log-entry {
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid var(--color-gray-300);
     font-family: var(--font-stack-monospace);
-    font-size: 11px;
-    line-height: 1.4;
+    font-size: 14px;
+    line-height: 1.5;
     background: var(--color-background-100);
     border-radius: 4px;
     margin-bottom: 4px;
@@ -281,15 +308,15 @@ export const SERVER_ACTIONS_INFO_STYLES = `
   .server-actions-info-log-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
+    gap: 10px;
+    margin-bottom: 6px;
     opacity: 0.8;
   }
 
   .server-actions-info-log-timestamp {
     color: var(--color-gray-600);
     font-weight: 500;
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .server-actions-info-log-level {
@@ -304,7 +331,7 @@ export const SERVER_ACTIONS_INFO_STYLES = `
   }
 
   .server-actions-info-log-content {
-    margin-left: 12px;
+    margin-left: 14px;
   }
 
   .server-actions-info-log-content pre {
@@ -312,18 +339,22 @@ export const SERVER_ACTIONS_INFO_STYLES = `
     white-space: nowrap;
     overflow-x: auto;
     color: var(--color-gray-1000);
-    font-size: 11px;
+    font-size: 14px;
+    font-weight: 500;
     scrollbar-width: thin;
     scrollbar-color: var(--color-gray-400) transparent;
   }
 
   .server-actions-info-log-content .function-name {
     font-weight: bold;
-    color: var(--color-blue-700);
+    color: var(--color-amber-700);
+    font-size: 14px;
   }
 
   .server-actions-info-log-content .function-params {
     color: var(--color-gray-1000);
+    font-weight: 500;
+    font-size: 14px;
   }
 
   .server-actions-info-log-content pre::-webkit-scrollbar {

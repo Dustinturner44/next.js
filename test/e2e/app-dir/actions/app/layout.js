@@ -22,6 +22,11 @@ export default function RootLayout({ children }) {
               Client and Server
             </Link>
           </div>
+          <div>
+            <Link id="navigate-monitor" href="/monitor">
+              🚀 Server Actions Monitor Demo
+            </Link>
+          </div>
         </div>
         {children}
       </body>
