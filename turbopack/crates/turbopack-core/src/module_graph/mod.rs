@@ -568,19 +568,18 @@ impl SingleModuleGraph {
     /// eventual termination of the traversal. This corresponds to computing a fixed point state for
     /// the graph.
     ///
-    /// Nodes are (re)visited according to the returned priority of the node, prioritizing high
-    /// values. This priority is intended to be used a heuristic to reduce the number of
-    /// retraversals.
+    /// It is guaranteed that the parent node passed to the `visit` function, if any, has
+    /// already been passed to `visit`.
     ///
     /// * `entries` - The entry modules to start the traversal from
     /// * `state` - The state to be passed to the callbacks
     /// * `visit` - Called for a specific edge
-    ///    - Receives: (originating &SingleModuleGraphNode, edge &ChunkingType), target
+    ///    - Receives: Option(originating &SingleModuleGraphNode, edge &ChunkingType), target
     ///      &SingleModuleGraphNode
     ///    - Return [GraphTraversalAction]s to control the traversal
     ///
-    /// Returns the number of node visits (i.e. higher than the node count if there are
-    /// retraversals).
+    /// Returns the number of node visits (i.e. higher than the node
+    /// count if there are retraversals).
     pub fn traverse_edges_from_entries_fixed_point<'a>(
         &'a self,
         entries: impl IntoIterator<Item = ResolvedVc<Box<dyn Module>>>,
@@ -2001,7 +2000,7 @@ pub mod tests {
     }
 
     #[tokio::test]
-    async fn traverse_edges_from_entries_fixed_point_diamond() {
+    async fn traverse_edges_from_entries_fixed_point_cycle() {
         run_graph_test(
             vec![rcstr!("a.js")],
             {
@@ -2040,6 +2039,7 @@ pub mod tests {
                         (Some(rcstr!("a.js")), rcstr!("b.js")),
                         (Some(rcstr!("b.js")), rcstr!("c.js")),
                         (Some(rcstr!("c.js")), rcstr!("a.js")),
+                        // we start following the cycle again
                         (Some(rcstr!("a.js")), rcstr!("b.js")),
                         (Some(rcstr!("b.js")), rcstr!("c.js")),
                     ],

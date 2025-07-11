@@ -146,15 +146,14 @@ pub async fn map_client_references(
                     // self cycle. They don't introduce new bits anyway.
                     && module != *parent_module
                     {
-                        // copy parent bits down.  visit_preorder always visits parents before
-                        // children so we can assert that the parent it set.
+                        // copy parent bits down.  `traverse_edges_from_entries_fixed_point`` always visits parents before
+                        // children so we can simply assert that the parent it set.
                         let [Some(current), Some(parent)] =
                             parent_modules.get_disjoint_mut([&module, parent_module])
                         else {
                             unreachable!()
                         };
-                        // inherit the server components from the newly observed parent.
-                        // check if we are adding new bits and thus need to revisit children unless we are already planning to because this is a new node.
+                        // Check if we are adding new bits and thus need to revisit children unless we are already planning to because this is a new node.
                         if !should_visit_children {
                             let len = current.len();
                             *current |= &*parent;
