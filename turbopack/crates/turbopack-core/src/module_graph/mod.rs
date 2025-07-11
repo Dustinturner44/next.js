@@ -2008,7 +2008,6 @@ pub mod tests {
     ///     - `Vec<ResolvedVc<Box<dyn Module>>>`: The resolved entry modules.
     ///     - `FxHashMap<ResolvedVc<Box<dyn Module>>, RcStr>`: A mapping from module to its name for
     ///       easier analysis in tests.
-    ///   The function should return a `Result<()>`.
     async fn run_graph_test(
         entries: Vec<RcStr>,
         graph: FxHashMap<RcStr, Vec<RcStr>>,
