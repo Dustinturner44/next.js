@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{Instrument, Span};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
-    CollectiblesSource, FxIndexMap, FxIndexSet, NonLocalValue, ReadRef, ResolvedVc, TryJoinIterExt,
+    CollectiblesSource, FxIndexMap, NonLocalValue, ReadRef, ResolvedVc, TryJoinIterExt,
     ValueToString, Vc,
     debug::ValueDebugFormat,
     graph::{AdjacencyMap, GraphTraversal, Visit, VisitControlFlow},
@@ -588,17 +588,20 @@ impl SingleModuleGraph {
             &'a SingleModuleGraphNode,
         ) -> Result<GraphTraversalAction>,
     ) -> Result<usize> {
-        let mut queue =
-            FxIndexSet::from_iter(entries.into_iter().map(|n| self.get_module(n).unwrap()));
+        let mut queue = VecDeque::default();
+        let mut queue_set = FxHashSet::default();
 
-        for index in &queue {
-            // We should only ever revisit an entry point if we find another path to it from another
-            // entry point, so we don't really care about the return value here.
-            visit(None, self.graph.node_weight(*index).unwrap())?;
+        for module in entries {
+            let index = self.get_module(module).unwrap();
+            let action = visit(None, self.graph.node_weight(index).unwrap())?;
+            if action == GraphTraversalAction::Continue && queue_set.insert(index) {
+                queue.push_back(index);
+            }
         }
 
         let mut visit_count = 0;
-        while let Some(index) = queue.pop() {
+        while let Some(index) = queue.pop_front() {
+            queue_set.remove(&index);
             let node = match self.graph.node_weight(index).unwrap() {
                 SingleModuleGraphNode::Module(single_module_graph_module_node) => {
                     single_module_graph_module_node
@@ -616,8 +619,8 @@ impl SingleModuleGraph {
                 let target_index = edge.target();
                 let target = self.graph.node_weight(edge.target()).unwrap();
                 let action = visit(Some((node, refdata)), target)?;
-                if action == GraphTraversalAction::Continue {
-                    queue.insert(target_index);
+                if action == GraphTraversalAction::Continue && queue_set.insert(target_index) {
+                    queue.push_back(target_index);
                 }
             }
         }
