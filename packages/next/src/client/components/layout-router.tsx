@@ -116,11 +116,6 @@ function findDOMNode(
   return internal_reactDOMfindDOMNode(instance)
 }
 
-const hiddenProperties = {
-  display: 'none',
-  visibility: 'hidden',
-  'content-visibility': 'hidden',
-} as const
 /**
  * Check if a HTMLElement is hidden or fixed/sticky position
  */
@@ -140,19 +135,7 @@ function shouldSkipElement(element: HTMLElement) {
     return true
   }
 
-  if (element.offsetParent) {
-    return false
-  }
-
-  if ('checkVisibility' in element) {
-    return !element.checkVisibility()
-  }
-
-  return (
-    Array.from(Object.entries(hiddenProperties)).some(
-      ([property, value]) => computedStyle.getPropertyValue(property) === value
-    ) || parseFloat(computedStyle.opacity) === 0
-  )
+  return computedStyle.display === 'none'
 }
 
 /**
