@@ -120,6 +120,10 @@ function findDOMNode(
  * Check if a HTMLElement is hidden or fixed/sticky position
  */
 function shouldSkipElement(element: HTMLElement) {
+  if (element.tagName === 'HTML' || element.tagName === 'BODY') {
+    return false
+  }
+
   // we ignore fixed or sticky positioned elements since they'll likely pass the "in-viewport" check
   // and will result in a situation we bail on scroll because of something like a fixed nav,
   // even though the actual page content is offscreen
@@ -133,11 +137,7 @@ function shouldSkipElement(element: HTMLElement) {
     return true
   }
 
-  return (
-    element.offsetParent === null &&
-    element.tagName !== 'HTML' &&
-    element.tagName !== 'BODY'
-  )
+  return element.offsetParent === null
 }
 
 /**
