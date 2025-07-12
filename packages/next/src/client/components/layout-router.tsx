@@ -116,24 +116,21 @@ function findDOMNode(
   return internal_reactDOMfindDOMNode(instance)
 }
 
-const rectProperties = [
-  'bottom',
-  'height',
-  'left',
-  'right',
-  'top',
-  'width',
-  'x',
-  'y',
-] as const
+const hiddenProperties = {
+  'display': 'none',
+  'visibility': 'hidden',
+  'content-visibility': 'hidden',
+ } as const
 /**
  * Check if a HTMLElement is hidden or fixed/sticky position
  */
 function shouldSkipElement(element: HTMLElement) {
+  const computedStyle = getComputedStyle(element)
+
   // we ignore fixed or sticky positioned elements since they'll likely pass the "in-viewport" check
   // and will result in a situation we bail on scroll because of something like a fixed nav,
   // even though the actual page content is offscreen
-  if (['sticky', 'fixed'].includes(getComputedStyle(element).position)) {
+  if (['sticky', 'fixed'].includes(computedStyle.position)) {
     if (process.env.NODE_ENV === 'development') {
       console.warn(
         'Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element:',
@@ -143,10 +140,19 @@ function shouldSkipElement(element: HTMLElement) {
     return true
   }
 
-  // Uses `getBoundingClientRect` to check if the element is hidden instead of `offsetParent`
-  // because `offsetParent` doesn't consider document/body
-  const rect = element.getBoundingClientRect()
-  return rectProperties.every((item) => rect[item] === 0)
+  if (element.offsetParent) {
+    return false
+  }
+
+  // If checkVisibility is available, use it to check if the element is hidden
+  if ('checkVisibility' in element) {
+    return !element.checkVisibility()
+  }
+
+  return Array.from(Object.entries(hiddenProperties)).some(
+      ([property, value]) => computedStyle.getPropertyValue(property) === value
+    ) ||
+    parseFloat(computedStyle.opacity) === 0
 }
 
 /**
