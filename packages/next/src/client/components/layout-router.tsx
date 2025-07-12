@@ -144,7 +144,6 @@ function shouldSkipElement(element: HTMLElement) {
     return false
   }
 
-  // If checkVisibility is available, use it to check if the element is hidden
   if ('checkVisibility' in element) {
     return !element.checkVisibility()
   }
