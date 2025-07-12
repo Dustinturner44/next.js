@@ -117,10 +117,10 @@ function findDOMNode(
 }
 
 const hiddenProperties = {
-  'display': 'none',
-  'visibility': 'hidden',
+  display: 'none',
+  visibility: 'hidden',
   'content-visibility': 'hidden',
- } as const
+} as const
 /**
  * Check if a HTMLElement is hidden or fixed/sticky position
  */
@@ -149,10 +149,11 @@ function shouldSkipElement(element: HTMLElement) {
     return !element.checkVisibility()
   }
 
-  return Array.from(Object.entries(hiddenProperties)).some(
+  return (
+    Array.from(Object.entries(hiddenProperties)).some(
       ([property, value]) => computedStyle.getPropertyValue(property) === value
-    ) ||
-    parseFloat(computedStyle.opacity) === 0
+    ) || parseFloat(computedStyle.opacity) === 0
+  )
 }
 
 /**
