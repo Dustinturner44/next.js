@@ -120,12 +120,10 @@ function findDOMNode(
  * Check if a HTMLElement is hidden or fixed/sticky position
  */
 function shouldSkipElement(element: HTMLElement) {
-  const computedStyle = getComputedStyle(element)
-
   // we ignore fixed or sticky positioned elements since they'll likely pass the "in-viewport" check
   // and will result in a situation we bail on scroll because of something like a fixed nav,
   // even though the actual page content is offscreen
-  if (['sticky', 'fixed'].includes(computedStyle.position)) {
+  if (['sticky', 'fixed'].includes(getComputedStyle(element).position)) {
     if (process.env.NODE_ENV === 'development') {
       console.warn(
         'Skipping auto-scroll behavior due to `position: sticky` or `position: fixed` on element:',
@@ -135,7 +133,11 @@ function shouldSkipElement(element: HTMLElement) {
     return true
   }
 
-  return computedStyle.display === 'none'
+  return (
+    element.offsetParent === null &&
+    element.tagName !== 'HTML' &&
+    element.tagName !== 'BODY'
+  )
 }
 
 /**
