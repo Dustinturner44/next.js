@@ -8,6 +8,7 @@ interface HubProject {
   description?: string
   githubUrl?: string
   publishedAt: number
+  screenshotUrl?: string
 }
 
 export const HubPanel: React.FC = () => {
@@ -187,31 +188,67 @@ export const HubPanel: React.FC = () => {
                 transition: 'all 0.2s',
               }}
             >
-              <div style={{ position: 'relative', paddingTop: '56.25%' }}>
-                <iframe
-                  src={project.deploymentUrl}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    pointerEvents: 'none',
-                  }}
-                  title={project.projectName}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => window.open(project.deploymentUrl, '_blank')}
-                />
+              <div
+                style={{
+                  position: 'relative',
+                  paddingTop: '56.25%',
+                  backgroundColor: 'var(--color-gray-alpha-200)',
+                  cursor: 'pointer',
+                }}
+                onClick={() => window.open(project.deploymentUrl, '_blank')}
+              >
+                {project.screenshotUrl ? (
+                  <img
+                    src={project.screenshotUrl}
+                    alt={`Screenshot of ${project.projectName}`}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                    onError={(e) => {
+                      // Hide image if it fails to load
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      color: 'var(--color-gray-600)',
+                      fontSize: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                      style={{ margin: '0 auto 8px' }}
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="18"
+                        height="18"
+                        rx="2"
+                        ry="2"
+                      ></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <div>No preview available</div>
+                  </div>
+                )}
               </div>
 
               <div style={{ padding: '12px' }}>
