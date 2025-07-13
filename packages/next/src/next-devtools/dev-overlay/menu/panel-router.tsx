@@ -32,6 +32,7 @@ import { useDev0Context } from '../context/dev-zero-context'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
 import { HubPanel } from '../components/hub-panel/hub-panel'
+import { useSidebarContext } from '../context/sidebar-context'
 import { css } from '../utils/css'
 
 const MenuPanel = () => {
@@ -40,6 +41,7 @@ const MenuPanel = () => {
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
   const { projects, createProject, isLoading } = useDev0Context()
+  const { toggleSidebar, isOpen: sidebarIsOpen } = useSidebarContext()
 
   const visibleProjects = projects.filter(
     (p) => p.status === 'running' || p.status === 'creating'
@@ -138,6 +140,17 @@ const MenuPanel = () => {
       footer: true,
       attributes: {
         'data-create-project': true,
+      },
+    },
+    {
+      label: sidebarIsOpen ? 'Close Sidebar' : 'Open Sidebar',
+      value: sidebarIsOpen ? '⏩' : '⏪',
+      onClick: () => {
+        toggleSidebar()
+      },
+      footer: true,
+      attributes: {
+        'data-sidebar-toggle': true,
       },
     },
     {

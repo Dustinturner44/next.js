@@ -1,6 +1,7 @@
 import type { Corners } from '../../../shared'
 import { useCallback, useLayoutEffect, useRef } from 'react'
 import { useDragContext } from './drag-context'
+import { useSidebarContext } from '../../../context/sidebar-context'
 
 interface Point {
   x: number
@@ -37,6 +38,8 @@ export function Draggable({
     padding: number
   }
 }) {
+  const { isOpen: sidebarIsOpen, width: sidebarWidth } = useSidebarContext()
+  
   const { ref, animate, ...drag } = useDrag({
     disabled: disableDrag,
     handles: useDragContext()?.handles,
@@ -45,6 +48,8 @@ export function Draggable({
     onDragEnd,
     onAnimationEnd,
     dragHandleSelector,
+    sidebarIsOpen,
+    sidebarWidth,
   })
 
   function onDragEnd(translation: Point, velocity: Point) {
@@ -97,14 +102,18 @@ export function Draggable({
     const triggerHeight = ref.current?.offsetHeight || 0
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth
+    
+    // Calculate available width considering sidebar
+    const sidebarOffset = sidebarIsOpen ? sidebarWidth : 0
+    const availableWidth = window.innerWidth - scrollbarWidth - sidebarOffset
 
     function getAbsolutePosition(corner: Corners) {
       const isRight = corner.includes('right')
       const isBottom = corner.includes('bottom')
 
-      // Base positions flush against the chosen corner
+      // Base positions flush against the chosen corner, considering sidebar
       let x = isRight
-        ? window.innerWidth - scrollbarWidth - offset - triggerWidth
+        ? availableWidth - offset - triggerWidth
         : 0
       let y = isBottom ? window.innerHeight - offset - triggerHeight : 0
 
@@ -163,6 +172,8 @@ interface UseDragOptions {
   threshold: number // Minimum movement before drag starts
   dragHandleSelector?: string
   handles?: Set<HTMLElement>
+  sidebarIsOpen: boolean
+  sidebarWidth: number
 }
 
 interface Velocity {
@@ -309,7 +320,14 @@ export function useDrag(options: UseDragOptions) {
 
     if (machine.current.state !== 'drag') return
 
-    const currentPosition = { x: e.clientX, y: e.clientY }
+    // Constrain pointer position to available space (excluding sidebar)
+    const sidebarOffset = options.sidebarIsOpen ? options.sidebarWidth : 0
+    const maxX = window.innerWidth - sidebarOffset
+    
+    const constrainedX = Math.max(0, Math.min(e.clientX, maxX))
+    const constrainedY = Math.max(0, Math.min(e.clientY, window.innerHeight))
+    
+    const currentPosition = { x: constrainedX, y: constrainedY }
 
     const dx = currentPosition.x - origin.current.x
     const dy = currentPosition.y - origin.current.y

@@ -77,6 +77,24 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
         return
       }
 
+      // Handle forwarded mouse events from iframe
+      if (event.data.type === 'iframe-mouse-event') {
+        const { eventType, clientX, clientY, button, buttons } = event.data
+        
+        // Create and dispatch a synthetic mouse event on the parent document
+        const syntheticEvent = new MouseEvent(eventType, {
+          clientX,
+          clientY,
+          button,
+          buttons,
+          bubbles: true,
+          cancelable: true
+        })
+        
+        document.dispatchEvent(syntheticEvent)
+        return
+      }
+
       // Handle custom messages from the iframe
       if (event.data.type?.startsWith('dev0-')) {
         const messageType = event.data.type.replace('dev0-', '')

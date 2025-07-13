@@ -16,6 +16,8 @@ import { PanelRouter } from './menu/panel-router'
 import { PanelRouterContext, type PanelStateKind } from './menu/context'
 import type { OverlayState, OverlayDispatch } from './shared'
 import { Dev0Provider } from './context/dev-zero-context'
+import { SidebarProvider } from './context/sidebar-context'
+import { DevSidebar } from './components/sidebar/dev-sidebar'
 
 export const RenderErrorContext = createContext<{
   runtimeErrors: ReadyRuntimeError[]
@@ -88,31 +90,34 @@ export function DevOverlay({
                     value={{ runtimeErrors, totalErrorCount }}
                   >
                     <Dev0Provider>
-                      <PanelRouterContext
-                        value={{
-                          panels,
-                          setPanels,
-                          openPanel,
-                          closePanel,
-                          togglePanel,
-                          closeAllPanels,
-                          triggerRef,
-                          selectedIndex,
-                          setSelectedIndex,
-                        }}
-                      >
-                        <ErrorOverlay
-                          state={state}
-                          dispatch={dispatch}
-                          getSquashedHydrationErrorDetails={
-                            getSquashedHydrationErrorDetails
-                          }
-                          runtimeErrors={runtimeErrors}
-                          errorCount={totalErrorCount}
-                        />
-                        <PanelRouter />
-                        <DevToolsIndicatorNew />
-                      </PanelRouterContext>
+                      <SidebarProvider>
+                        <PanelRouterContext
+                          value={{
+                            panels,
+                            setPanels,
+                            openPanel,
+                            closePanel,
+                            togglePanel,
+                            closeAllPanels,
+                            triggerRef,
+                            selectedIndex,
+                            setSelectedIndex,
+                          }}
+                        >
+                          <ErrorOverlay
+                            state={state}
+                            dispatch={dispatch}
+                            getSquashedHydrationErrorDetails={
+                              getSquashedHydrationErrorDetails
+                            }
+                            runtimeErrors={runtimeErrors}
+                            errorCount={totalErrorCount}
+                          />
+                          <PanelRouter />
+                          <DevToolsIndicatorNew />
+                          <DevSidebar />
+                        </PanelRouterContext>
+                      </SidebarProvider>
                     </Dev0Provider>
                   </RenderErrorContext>
                 </>

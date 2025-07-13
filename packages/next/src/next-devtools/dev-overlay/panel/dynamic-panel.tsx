@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, useEffect, type CSSProperties } from 'react'
 import { useDevOverlayContext } from '../../dev-overlay.browser'
 import { INDICATOR_PADDING } from '../components/devtools-indicator/devtools-indicator'
+import { useSidebarContext } from '../context/sidebar-context'
 import { ResizeHandle } from '../components/devtools-panel/resize/resize-handle'
 import { ResizeProvider } from '../components/devtools-panel/resize/resize-provider'
 import {
@@ -153,6 +154,7 @@ export function DynamicPanel({
     : `${STORAGE_KEY_PANEL_POSITION_PREFIX}_${name}`
 
   const { dispatch, state } = useDevOverlayContext()
+  const { isOpen: sidebarIsOpen, width: sidebarWidth } = useSidebarContext()
   const devtoolsPanelPosition =
     state.devToolsPanelPosition[positionStorageKey] ?? state.devToolsPosition
   const [panelVertical, panelHorizontal] = devtoolsPanelPosition.split('-', 2)
@@ -194,9 +196,15 @@ export function DynamicPanel({
       ? indicatorOffset
       : INDICATOR_PADDING
 
+  // Calculate horizontal offset considering sidebar
+  const sidebarOffset = sidebarIsOpen ? sidebarWidth : 0
+  const horizontalOffset = panelHorizontal === 'right' && sidebarIsOpen 
+    ? INDICATOR_PADDING + sidebarOffset 
+    : INDICATOR_PADDING
+
   const positionStyle = {
     [panelVertical]: `${verticalOffset}px`,
-    [panelHorizontal]: `${INDICATOR_PADDING}px`,
+    [panelHorizontal]: `${horizontalOffset}px`,
     [panelVertical === 'top' ? 'bottom' : 'top']: 'auto',
     [panelHorizontal === 'left' ? 'right' : 'left']: 'auto',
   } as CSSProperties
