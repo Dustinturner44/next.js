@@ -15,6 +15,7 @@ import { DevToolsIndicatorNew } from './components/devtools-indicator/devtools-i
 import { PanelRouter } from './menu/panel-router'
 import { PanelRouterContext, type PanelStateKind } from './menu/context'
 import type { OverlayState, OverlayDispatch } from './shared'
+import { Dev0Provider } from './context/dev-zero-context'
 
 export const RenderErrorContext = createContext<{
   runtimeErrors: ReadyRuntimeError[]
@@ -58,27 +59,29 @@ export function DevOverlay({
                   <RenderErrorContext
                     value={{ runtimeErrors, totalErrorCount }}
                   >
-                    <PanelRouterContext
-                      value={{
-                        panel,
-                        setPanel,
-                        triggerRef,
-                        selectedIndex,
-                        setSelectedIndex,
-                      }}
-                    >
-                      <ErrorOverlay
-                        state={state}
-                        dispatch={dispatch}
-                        getSquashedHydrationErrorDetails={
-                          getSquashedHydrationErrorDetails
-                        }
-                        runtimeErrors={runtimeErrors}
-                        errorCount={totalErrorCount}
-                      />
-                      <PanelRouter />
-                      <DevToolsIndicatorNew />
-                    </PanelRouterContext>
+                    <Dev0Provider>
+                      <PanelRouterContext
+                        value={{
+                          panel,
+                          setPanel,
+                          triggerRef,
+                          selectedIndex,
+                          setSelectedIndex,
+                        }}
+                      >
+                        <ErrorOverlay
+                          state={state}
+                          dispatch={dispatch}
+                          getSquashedHydrationErrorDetails={
+                            getSquashedHydrationErrorDetails
+                          }
+                          runtimeErrors={runtimeErrors}
+                          errorCount={totalErrorCount}
+                        />
+                        <PanelRouter />
+                        <DevToolsIndicatorNew />
+                      </PanelRouterContext>
+                    </Dev0Provider>
                   </RenderErrorContext>
                 </>
               ) : (

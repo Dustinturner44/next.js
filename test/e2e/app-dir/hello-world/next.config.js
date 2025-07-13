@@ -1,6 +1,11 @@
 /**
  * @type {import('next').NextConfig}
  */
-const nextConfig = {}
+const nextConfig = {
+  experimental: {
+    devtoolNewPanelUI: true,
+    devtoolSegmentExplorer: true,
+  },
+}
 
 module.exports = nextConfig

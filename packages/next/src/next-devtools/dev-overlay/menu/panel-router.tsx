@@ -127,12 +127,24 @@ const useToggleDevtoolsVisibility = () => {
 
 export const PanelRouter = () => {
   const { state } = useDevOverlayContext()
-  const { triggerRef } = usePanelRouterContext()
+  const { triggerRef, panel, setPanel } = usePanelRouterContext()
   const toggleDevtools = useToggleDevtoolsVisibility()
 
   const [hideShortcut] = useHideShortcutStorage()
+
+  // Open panel selector with Command+K
+  const openPanelSelector = () => {
+    if (panel !== 'panel-selector') {
+      setPanel('panel-selector')
+    }
+  }
+
   useShortcuts(
-    hideShortcut ? { [hideShortcut]: toggleDevtools } : {},
+    {
+      ...(hideShortcut ? { [hideShortcut]: toggleDevtools } : {}),
+      'cmd+k': openPanelSelector,
+      'ctrl+k': openPanelSelector,
+    },
     triggerRef
   )
   return (
