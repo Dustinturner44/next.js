@@ -27,7 +27,7 @@ export const CommandPalette = ({
       }
   >
 }) => {
-  const { closePanel, triggerRef, setSelectedIndex, selectedIndex, panels } =
+  const { closePanel, triggerRef, setSelectedIndex, selectedIndex, panels, bringPanelToFront, getPanelZIndex } =
     usePanelRouterContext()
   const { mounted } = usePanelContext()
   const [searchQuery, setSearchQuery] = useState('')
@@ -72,6 +72,7 @@ export const CommandPalette = ({
   useLayoutEffect(() => {
     paletteRef.current?.focus()
     searchInputRef.current?.focus()
+    bringPanelToFront('panel-selector')
     selectMenuItem({
       index: selectedIndex === -1 ? 'first' : selectedIndex,
       paletteRef,
@@ -173,6 +174,7 @@ export const CommandPalette = ({
     <div
       ref={paletteRef}
       onKeyDown={onPaletteKeydown}
+      onMouseDown={() => bringPanelToFront('panel-selector')}
       id="nextjs-command-palette"
       role="dialog"
       aria-label="Command Palette"
@@ -188,7 +190,7 @@ export const CommandPalette = ({
         borderRadius: 'var(--rounded-xl)',
         position: 'fixed',
         fontFamily: 'var(--font-stack-sans)',
-        zIndex: 9999, // Higher than dynamic panels
+        zIndex: Math.max(getPanelZIndex('panel-selector'), 9999), // Ensure it's always on top
         overflow: 'hidden',
         opacity: 1,
         width: '320px',

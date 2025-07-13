@@ -238,6 +238,9 @@ export function DynamicPanel({
   const maxHeight = resolvedDimensions.maxHeight
 
   const panelSize = useMemo(() => getStoredPanelSize(name), [name])
+  
+  // Calculate z-index outside of style object to ensure it updates
+  const zIndex = getPanelZIndex(name)
 
   // Focus panel when it mounts to ensure escape key closes panel first
   useLayoutEffect(() => {
@@ -312,7 +315,7 @@ export function DynamicPanel({
         onMouseDown={() => bringPanelToFront(name)}
         style={{
           position: 'fixed',
-          zIndex: getPanelZIndex(name),
+          zIndex: zIndex,
           outline: 'none',
           ...positionStyle,
           ...(isResizable
