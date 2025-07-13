@@ -32,7 +32,8 @@ import { useDev0Context } from '../context/dev-zero-context'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 
 const MenuPanel = () => {
-  const { setPanel, setSelectedIndex } = usePanelRouterContext()
+  const { togglePanel, openPanel, closeAllPanels, setSelectedIndex } =
+    usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
   const { projects, createProject, isLoading } = useDev0Context()
@@ -42,7 +43,7 @@ const MenuPanel = () => {
   const handleCreateProject = async () => {
     const newProject = await createProject()
     if (newProject && newProject.status === 'running') {
-      setPanel(`dev0-project-${newProject.name}`)
+      openPanel(`dev0-project-${newProject.name}` as PanelStateKind)
     }
   }
 
@@ -52,7 +53,7 @@ const MenuPanel = () => {
       label: 'Issues',
       value: <IssueCount>{totalErrorCount}</IssueCount>,
       onClick: () => {
-        setPanel(null)
+        closeAllPanels()
         setSelectedIndex(-1)
         if (totalErrorCount > 0) {
           dispatch({
@@ -65,7 +66,7 @@ const MenuPanel = () => {
       title: `Current route is ${state.staticIndicator ? 'static' : 'dynamic'}.`,
       label: 'Route',
       value: state.staticIndicator ? 'Static' : 'Dynamic',
-      onClick: () => setPanel('route-type'),
+      onClick: () => togglePanel('route-type'),
       attributes: {
         'data-nextjs-route-type': state.staticIndicator ? 'static' : 'dynamic',
       },
@@ -81,12 +82,12 @@ const MenuPanel = () => {
             'Learn about Turbopack and how to enable it in your application.',
           label: 'Try Turbopack',
           value: <ChevronRight />,
-          onClick: () => setPanel('turbo-info'),
+          onClick: () => togglePanel('turbo-info'),
         },
     !!process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER && {
       label: 'Route Info',
       value: <ChevronRight />,
-      onClick: () => setPanel('segment-explorer'),
+      onClick: () => togglePanel('segment-explorer'),
       attributes: {
         'data-segment-explorer': true,
       },
@@ -97,7 +98,8 @@ const MenuPanel = () => {
   const projectItems = runningProjects.map((project) => ({
     label: project.name,
     value: <ChevronRight />,
-    onClick: () => setPanel(`dev0-project-${project.name}`),
+    onClick: () =>
+      togglePanel(`dev0-project-${project.name}` as PanelStateKind),
     attributes: {
       'data-dev0-project': project.name,
     },
@@ -117,7 +119,7 @@ const MenuPanel = () => {
     {
       label: 'Preferences',
       value: <GearIcon />,
-      onClick: () => setPanel('preferences'),
+      onClick: () => togglePanel('preferences'),
       footer: true,
       attributes: {
         'data-preferences': true,
@@ -159,23 +161,21 @@ const useToggleDevtoolsVisibility = () => {
 
 export const PanelRouter = () => {
   const { state } = useDevOverlayContext()
-  const { triggerRef, panel, setPanel } = usePanelRouterContext()
+  const { triggerRef, togglePanel } = usePanelRouterContext()
   const toggleDevtools = useToggleDevtoolsVisibility()
 
   const [hideShortcut] = useHideShortcutStorage()
 
-  // Open panel selector with Command+K
-  const openPanelSelector = () => {
-    if (panel !== 'panel-selector') {
-      setPanel('panel-selector')
-    }
+  // Toggle panel selector with Command+K
+  const togglePanelSelector = () => {
+    togglePanel('panel-selector')
   }
 
   useShortcuts(
     {
       ...(hideShortcut ? { [hideShortcut]: toggleDevtools } : {}),
-      'cmd+k': openPanelSelector,
-      'ctrl+k': openPanelSelector,
+      'cmd+k': togglePanelSelector,
+      'ctrl+k': togglePanelSelector,
     },
     triggerRef
   )
@@ -347,7 +347,7 @@ const InfoFooter = ({ href }: { href: string }) => {
 
 const UserPreferencesWrapper = () => {
   const { dispatch, state } = useDevOverlayContext()
-  const { setPanel, setSelectedIndex } = usePanelRouterContext()
+  const { closeAllPanels, setSelectedIndex } = usePanelRouterContext()
   const updateAllPanelPositions = useUpdateAllPanelPositions()
 
   const [hideShortcut, setHideShortcut] = useHideShortcutStorage()
@@ -383,7 +383,7 @@ const UserPreferencesWrapper = () => {
             disabled: true,
           })
           setSelectedIndex(-1)
-          setPanel(null)
+          closeAllPanels()
           fetch('/__nextjs_disable_dev_indicator', {
             method: 'POST',
           })
@@ -406,8 +406,9 @@ function PanelRoute({
   children: React.ReactNode
   name: PanelStateKind | `dev0-project-${string}`
 }) {
-  const { panel } = usePanelRouterContext()
-  const { mounted, rendered } = useDelayedRender(name === panel, {
+  const { panels } = usePanelRouterContext()
+  const isActive = panels.has(name as PanelStateKind)
+  const { mounted, rendered } = useDelayedRender(isActive, {
     enterDelay: 0,
     exitDelay: MENU_DURATION_MS,
   })

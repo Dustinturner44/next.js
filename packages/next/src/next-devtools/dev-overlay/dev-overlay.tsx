@@ -34,11 +34,39 @@ export function DevOverlay({
   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
 }) {
   const [scale, setScale] = useDevToolsScale()
-  const [panel, setPanel] = useState<null | PanelStateKind>(null)
+  const [panels, setPanels] = useState<Set<PanelStateKind>>(new Set())
   const isBuildError = state.buildError !== null
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
   const triggerRef = useRef<HTMLButtonElement>(null)
+
+  const openPanel = (panel: PanelStateKind) => {
+    setPanels((prev) => new Set([...prev, panel]))
+  }
+
+  const closePanel = (panel: PanelStateKind) => {
+    setPanels((prev) => {
+      const next = new Set(prev)
+      next.delete(panel)
+      return next
+    })
+  }
+
+  const togglePanel = (panel: PanelStateKind) => {
+    setPanels((prev) => {
+      const next = new Set(prev)
+      if (next.has(panel)) {
+        next.delete(panel)
+      } else {
+        next.add(panel)
+      }
+      return next
+    })
+  }
+
+  const closeAllPanels = () => {
+    setPanels(new Set())
+  }
   return (
     <ShadowPortal>
       <CssReset />
@@ -62,8 +90,12 @@ export function DevOverlay({
                     <Dev0Provider>
                       <PanelRouterContext
                         value={{
-                          panel,
-                          setPanel,
+                          panels,
+                          setPanels,
+                          openPanel,
+                          closePanel,
+                          togglePanel,
+                          closeAllPanels,
                           triggerRef,
                           selectedIndex,
                           setSelectedIndex,

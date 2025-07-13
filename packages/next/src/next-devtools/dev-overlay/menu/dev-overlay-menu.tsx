@@ -24,7 +24,7 @@ export const DevtoolMenu = ({
         title?: string
         label: string
         value: React.ReactNode
-        attributes?: Record<string, string | boolean>
+        attributes?: Record<string, string | boolean | undefined>
         footer?: boolean
       }
   >

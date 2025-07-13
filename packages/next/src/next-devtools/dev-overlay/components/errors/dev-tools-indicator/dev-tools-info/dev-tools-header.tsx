@@ -1,5 +1,9 @@
 import React, { useLayoutEffect, useRef } from 'react'
-import { usePanelRouterContext } from '../../../../menu/context'
+import {
+  usePanelRouterContext,
+  type PanelStateKind,
+} from '../../../../menu/context'
+import { usePanelContext } from '../../../../menu/panel-router'
 import { css } from '../../../../utils/css'
 
 interface DevToolsHeaderProps {
@@ -11,7 +15,8 @@ export function DevToolsHeader({
   children,
   ref,
 }: DevToolsHeaderProps & { ref?: React.Ref<HTMLDivElement> }) {
-  const { setPanel } = usePanelRouterContext()
+  const { closePanel } = usePanelRouterContext()
+  const { name } = usePanelContext()
   const buttonRef = useRef<HTMLButtonElement>(null)
   useLayoutEffect(() => {
     buttonRef.current?.focus()
@@ -46,7 +51,7 @@ export function DevToolsHeader({
         id="_next-devtools-panel-close"
         className="dev-tools-info-close-button"
         onClick={() => {
-          setPanel('panel-selector')
+          closePanel(name as PanelStateKind)
         }}
         aria-label="Close devtools panel"
         style={{

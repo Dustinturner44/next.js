@@ -25,6 +25,8 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
           height: '100%',
           border: 'none',
           backgroundColor: 'white',
+          borderBottomLeftRadius: 'var(--rounded-lg)',
+          borderBottomRightRadius: 'var(--rounded-lg)',
         }}
         title={`Dev-0 Project: ${projectName}`}
       />

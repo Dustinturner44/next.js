@@ -14,8 +14,12 @@ export type PanelStateKind =
   | `dev0-project-${string}`
 
 export const PanelRouterContext = createContext<{
-  panel: PanelStateKind | null
-  setPanel: Dispatch<SetStateAction<PanelStateKind | null>>
+  panels: Set<PanelStateKind>
+  setPanels: Dispatch<SetStateAction<Set<PanelStateKind>>>
+  openPanel: (panel: PanelStateKind) => void
+  closePanel: (panel: PanelStateKind) => void
+  togglePanel: (panel: PanelStateKind) => void
+  closeAllPanels: () => void
   triggerRef: React.RefObject<HTMLButtonElement | null>
   selectedIndex: number
   setSelectedIndex: Dispatch<SetStateAction<number>>

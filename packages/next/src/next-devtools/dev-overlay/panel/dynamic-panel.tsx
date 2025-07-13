@@ -9,7 +9,7 @@ import {
 } from '../components/errors/dev-tools-indicator/drag-context'
 import { Draggable } from '../components/errors/dev-tools-indicator/draggable'
 import { useClickOutsideAndEscape } from '../components/errors/dev-tools-indicator/utils'
-import { usePanelRouterContext } from '../menu/context'
+import { usePanelRouterContext, type PanelStateKind } from '../menu/context'
 import { usePanelContext } from '../menu/panel-router'
 import {
   ACTION_DEVTOOLS_PANEL_POSITION,
@@ -142,7 +142,7 @@ export function DynamicPanel({
       }
   closeOnClickOutside?: boolean
 }) {
-  const { setPanel } = usePanelRouterContext()
+  const { closePanel, triggerRef } = usePanelRouterContext()
   const { name, mounted } = usePanelContext()
   const resizeStorageKey = sharePanelSizeGlobally
     ? STORE_KEY_SHARED_PANEL_SIZE
@@ -157,7 +157,6 @@ export function DynamicPanel({
     state.devToolsPanelPosition[positionStorageKey] ?? state.devToolsPosition
   const [panelVertical, panelHorizontal] = devtoolsPanelPosition.split('-', 2)
   const resizeContainerRef = useRef<HTMLDivElement>(null)
-  const { triggerRef } = usePanelRouterContext()
 
   useClickOutsideAndEscape(
     resizeContainerRef,
@@ -166,12 +165,12 @@ export function DynamicPanel({
     (reason) => {
       switch (reason) {
         case 'escape': {
-          setPanel('panel-selector')
+          closePanel(name as PanelStateKind)
           return
         }
         case 'outside': {
           if (closeOnClickOutside) {
-            setPanel('panel-selector')
+            closePanel(name as PanelStateKind)
           }
           return
         }
