@@ -30,6 +30,7 @@ import { useShortcuts } from '../hooks/use-shortcuts'
 import { useUpdateAllPanelPositions } from '../components/devtools-indicator/devtools-indicator'
 import { useDev0Context } from '../context/dev-zero-context'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
+import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
 
 const MenuPanel = () => {
   const { togglePanel, openPanel, closeAllPanels, setSelectedIndex } =
@@ -320,7 +321,7 @@ const Dev0ProjectRoutes = () => {
                 width: 800 / state.scale,
               },
             }}
-            header={<DevToolsHeader title={project.name} />}
+            header={<Dev0Header projectName={project.name} />}
           >
             <Dev0Panel projectName={project.name} port={project.port!} />
           </DynamicPanel>
