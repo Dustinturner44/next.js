@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { usePanelRouterContext, type PanelStateKind } from '../../menu/context'
 import { usePanelContext } from '../../menu/panel-router'
 import { useDev0Context } from '../../context/dev-zero-context'
@@ -26,6 +26,10 @@ export function Dev0Header({
   const [deployError, setDeployError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [copiedPath, setCopiedPath] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [githubUrl, setGithubUrl] = useState<string | null>(null)
+  const [isCreatingRepo, setIsCreatingRepo] = useState(false)
+  const [githubInput, setGithubInput] = useState('')
 
   const handleCopyPath = () => {
     navigator.clipboard.writeText(projectPath)
@@ -98,18 +102,84 @@ export function Dev0Header({
     }
   }
 
+  useEffect(() => {
+    // Fetch GitHub URL from server if it exists
+    const fetchGithubUrl = async () => {
+      try {
+        const response = await fetch(`http://localhost:40000/get-github-url/${projectName}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.githubUrl) {
+            setGithubUrl(data.githubUrl)
+            setGithubInput(data.githubUrl)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch GitHub URL:', error)
+      }
+    }
+    fetchGithubUrl()
+  }, [projectName])
+
+  const handleCreateRepo = async () => {
+    setIsCreatingRepo(true)
+    try {
+      const response = await fetch('http://localhost:40000/create-github-repo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectName, projectPath }),
+      })
+
+      const data = await response.json()
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      if (data.githubUrl) {
+        setGithubUrl(data.githubUrl)
+        setGithubInput(data.githubUrl)
+      }
+    } catch (error) {
+      console.error('Failed to create GitHub repo:', error)
+      alert(`Failed to create repository: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsCreatingRepo(false)
+    }
+  }
+
+  const handleSaveGithubUrl = async () => {
+    try {
+      const response = await fetch('http://localhost:40000/save-github-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectName, githubUrl: githubInput }),
+      })
+
+      if (response.ok) {
+        setGithubUrl(githubInput)
+      }
+    } catch (error) {
+      console.error('Failed to save GitHub URL:', error)
+    }
+  }
+
   return (
-    <div
-      style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '8px 20px',
-        userSelect: 'none',
-        borderBottom: '1px solid var(--color-gray-alpha-400)',
-      }}
-    >
+    <>
+      <div
+        style={{
+          width: '100%',
+          borderBottom: '1px solid var(--color-gray-alpha-400)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 20px',
+            userSelect: 'none',
+          }}
+        >
       <div
         style={{
           display: 'flex',
@@ -333,6 +403,39 @@ export function Dev0Header({
         </button>
 
         <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="expand-button"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '4px',
+            color: 'var(--color-gray-900)',
+            transition: 'all 0.2s',
+          }}
+          aria-label={isExpanded ? 'Collapse' : 'Expand'}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            style={{
+              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s',
+            }}
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <button
           id="_next-devtools-panel-close"
           className="dev-tools-info-close-button"
           onClick={() => closePanel(name as PanelStateKind)}
@@ -352,6 +455,162 @@ export function Dev0Header({
         >
           <XIcon />
         </button>
+        </div>
+        
+        {isExpanded && (
+          <div
+            style={{
+              padding: '16px 20px',
+              backgroundColor: 'var(--color-background-200)',
+              borderTop: '1px solid var(--color-gray-alpha-400)',
+            }}
+          >
+            <div style={{ marginBottom: '16px' }}>
+              <h4
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '12px',
+                  fontWeight: 'normal',
+                  color: 'var(--color-gray-700)',
+                }}
+              >
+                Local Path
+              </h4>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  padding: '8px',
+                  backgroundColor: 'var(--color-background-100)',
+                  borderRadius: '4px',
+                  border: '1px solid var(--color-gray-alpha-400)',
+                }}
+              >
+                <span style={{ flex: 1, color: 'var(--color-text-primary)' }}>
+                  {projectPath}
+                </span>
+                <button
+                  onClick={handleCopyPath}
+                  className="copy-path-button"
+                  style={{
+                    padding: '4px',
+                    borderRadius: '3px',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    color: copiedPath ? 'var(--color-green-700)' : 'var(--color-gray-700)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {copiedPath ? '✓' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h4
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '12px',
+                  fontWeight: 'normal',
+                  color: 'var(--color-gray-700)',
+                }}
+              >
+                GitHub Repository
+              </h4>
+              {githubUrl ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px',
+                    backgroundColor: 'var(--color-background-100)',
+                    borderRadius: '4px',
+                    border: '1px solid var(--color-gray-alpha-400)',
+                  }}
+                >
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      flex: 1,
+                      color: 'var(--color-blue-700)',
+                      textDecoration: 'none',
+                      fontSize: '12px',
+                    }}
+                  >
+                    {githubUrl}
+                  </a>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    alignItems: 'stretch',
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="https://github.com/username/repo"
+                    value={githubInput}
+                    onChange={(e) => setGithubInput(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      fontSize: '12px',
+                      backgroundColor: 'var(--color-background-100)',
+                      border: '1px solid var(--color-gray-alpha-400)',
+                      borderRadius: '4px',
+                      color: 'var(--color-text-primary)',
+                      outline: 'none',
+                    }}
+                  />
+                  {githubInput ? (
+                    <button
+                      onClick={handleSaveGithubUrl}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '12px',
+                        backgroundColor: 'var(--color-blue-700)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Save
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleCreateRepo}
+                      disabled={isCreatingRepo}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '12px',
+                        backgroundColor: 'var(--color-gray-900)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isCreatingRepo ? 'not-allowed' : 'pointer',
+                        opacity: isCreatingRepo ? 0.6 : 1,
+                      }}
+                    >
+                      {isCreatingRepo ? 'Creating...' : 'Create Repo'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{css`
@@ -375,6 +634,10 @@ export function Dev0Header({
           background-color: var(--color-gray-alpha-200) !important;
         }
 
+        .expand-button:hover {
+          background-color: var(--color-gray-alpha-200) !important;
+        }
+
         .spinner {
           width: 12px;
           height: 12px;
@@ -390,7 +653,7 @@ export function Dev0Header({
           }
         }
       `}</style>
-    </div>
+    </>
   )
 }
 

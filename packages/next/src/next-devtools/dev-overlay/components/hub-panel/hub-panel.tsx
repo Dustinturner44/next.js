@@ -267,6 +267,43 @@ export const HubPanel: React.FC = () => {
                       >
                         GitHub
                       </a>
+                      <span>•</span>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          try {
+                            const response = await fetch('http://localhost:40000/clone-and-register', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                githubUrl: project.githubUrl,
+                                projectName: project.projectName,
+                              }),
+                            })
+                            
+                            const data = await response.json()
+                            if (data.error) {
+                              alert(`Failed to clone: ${data.error}`)
+                            } else {
+                              alert('Project cloned and started successfully!')
+                            }
+                          } catch (error) {
+                            alert(`Failed to clone: ${error instanceof Error ? error.message : 'Unknown error'}`)
+                          }
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-blue-700)',
+                          cursor: 'pointer',
+                          fontSize: '11px',
+                          padding: 0,
+                          textDecoration: 'none',
+                        }}
+                        className="clone-button"
+                      >
+                        Clone Locally
+                      </button>
                     </>
                   )}
                 </div>
@@ -294,6 +331,10 @@ export const HubPanel: React.FC = () => {
 
         .spinning {
           animation: spin 1s linear infinite;
+        }
+
+        .clone-button:hover {
+          text-decoration: underline !important;
         }
 
         @keyframes spin {
