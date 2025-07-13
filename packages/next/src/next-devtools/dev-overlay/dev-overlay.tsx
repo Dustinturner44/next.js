@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState } from 'react'
+import { createContext, useContext, useRef, useState, useCallback } from 'react'
 import { ShadowPortal } from './components/shadow-portal'
 import { Base } from './styles/base'
 import { ComponentStyles } from './styles/component-styles'
@@ -76,18 +76,18 @@ export function DevOverlay({
     setPanelZOrder([])
   }
 
-  const bringPanelToFront = (panel: string) => {
+  const bringPanelToFront = useCallback((panel: string) => {
     setPanelZOrder((prev) => {
       const filtered = prev.filter(p => p !== panel)
       return [...filtered, panel]
     })
-  }
+  }, [])
 
-  const getPanelZIndex = (panel: string) => {
+  const getPanelZIndex = useCallback((panel: string) => {
     const baseZIndex = 2147483646
     const index = panelZOrder.indexOf(panel)
     return index === -1 ? baseZIndex : baseZIndex + index + 1
-  }
+  }, [panelZOrder])
   return (
     <ShadowPortal>
       <CssReset />

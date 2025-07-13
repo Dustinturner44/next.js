@@ -1,6 +1,6 @@
 import { useDevOverlayContext } from '../../dev-overlay.browser'
 import { useClickOutsideAndEscape } from '../components/errors/dev-tools-indicator/utils'
-import { useLayoutEffect, useRef, useState, useMemo } from 'react'
+import { useLayoutEffect, useRef, useState, useMemo, useEffect } from 'react'
 import {
   MenuContext,
   MenuItem,
@@ -72,7 +72,6 @@ export const CommandPalette = ({
   useLayoutEffect(() => {
     paletteRef.current?.focus()
     searchInputRef.current?.focus()
-    bringPanelToFront('panel-selector')
     selectMenuItem({
       index: selectedIndex === -1 ? 'first' : selectedIndex,
       paletteRef,
@@ -80,6 +79,11 @@ export const CommandPalette = ({
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  
+  // Bring palette to front in a separate effect
+  useEffect(() => {
+    bringPanelToFront('panel-selector')
+  }, []) // Only run once on mount
 
   // Filter items based on search query
   const filteredItems = useMemo(() => {

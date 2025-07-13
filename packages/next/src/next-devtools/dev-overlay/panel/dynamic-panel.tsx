@@ -242,16 +242,27 @@ export function DynamicPanel({
   // Calculate z-index outside of style object to ensure it updates
   const zIndex = getPanelZIndex(name)
 
+  // Bring panel to front only once when it first mounts
+  useEffect(() => {
+    bringPanelToFront(name)
+  }, []) // Only run once on mount
+
   // Focus panel when it mounts to ensure escape key closes panel first
+  // Only auto-focus if the panel was opened from keyboard (e.g., command palette)
   useLayoutEffect(() => {
     if (mounted && resizeContainerRef.current) {
-      // Small delay to ensure panel is fully rendered
-      setTimeout(() => {
-        resizeContainerRef.current?.focus()
-        bringPanelToFront(name)
-      }, 50)
+      // Check if the previously focused element was the command palette or search input
+      const previouslyFocused = document.activeElement
+      const wasKeyboardTriggered = previouslyFocused?.closest('#nextjs-command-palette') !== null
+      
+      if (wasKeyboardTriggered) {
+        // Small delay to ensure panel is fully rendered
+        setTimeout(() => {
+          resizeContainerRef.current?.focus()
+        }, 50)
+      }
     }
-  }, [mounted, bringPanelToFront, name])
+  }, [mounted])
 
   // Handle escape key with proper event capturing
   useEffect(() => {
