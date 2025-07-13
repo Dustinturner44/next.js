@@ -11,6 +11,7 @@ export type PanelStateKind =
   | 'segment-explorer'
   | 'panel-selector'
   | 'turbo-info'
+  | 'hub'
   | `dev0-project-${string}`
 
 export const PanelRouterContext = createContext<{

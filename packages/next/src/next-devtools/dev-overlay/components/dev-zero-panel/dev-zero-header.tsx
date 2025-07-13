@@ -6,9 +6,10 @@ import { css } from '../../utils/css'
 
 interface Dev0HeaderProps {
   projectName: string
+  projectPath: string
 }
 
-export function Dev0Header({ projectName }: Dev0HeaderProps) {
+export function Dev0Header({ projectName, projectPath }: Dev0HeaderProps) {
   const { closePanel } = usePanelRouterContext()
   const { name } = usePanelContext()
   const { fetchProjects } = useDev0Context()
@@ -17,6 +18,13 @@ export function Dev0Header({ projectName }: Dev0HeaderProps) {
   const [deploymentUrl, setDeploymentUrl] = useState<string | null>(null)
   const [deployError, setDeployError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [copiedPath, setCopiedPath] = useState(false)
+
+  const handleCopyPath = () => {
+    navigator.clipboard.writeText(projectPath)
+    setCopiedPath(true)
+    setTimeout(() => setCopiedPath(false), 2000)
+  }
 
   const handleDeploy = async () => {
     setIsDeploying(true)
@@ -95,16 +103,96 @@ export function Dev0Header({ projectName }: Dev0HeaderProps) {
         borderBottom: '1px solid var(--color-gray-alpha-400)',
       }}
     >
-      <h3
+      <div
         style={{
-          margin: 0,
-          fontSize: '14px',
-          color: 'var(--color-text-primary)',
-          fontWeight: 'normal',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          minWidth: 0,
+          flex: 1,
+          marginRight: '16px',
         }}
       >
-        {projectName}
-      </h3>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: '14px',
+            color: 'var(--color-text-primary)',
+            fontWeight: 'normal',
+          }}
+        >
+          {projectName}
+        </h3>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            minWidth: 0,
+          }}
+        >
+          <span
+            style={{
+              fontSize: '11px',
+              color: 'var(--color-gray-700)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              flex: 1,
+            }}
+            title={projectPath}
+          >
+            {projectPath}
+          </span>
+          <button
+            onClick={handleCopyPath}
+            className="copy-path-button"
+            style={{
+              padding: '2px',
+              borderRadius: '3px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              color: copiedPath
+                ? 'var(--color-green-700)'
+                : 'var(--color-gray-700)',
+              fontSize: '10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'all 0.2s',
+            }}
+            title={copiedPath ? 'Copied!' : 'Copy path'}
+          >
+            {copiedPath ? (
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ) : (
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {deploymentUrl && (
@@ -274,6 +362,10 @@ export function Dev0Header({ projectName }: Dev0HeaderProps) {
 
         .deployment-link:hover {
           background-color: var(--color-blue-alpha-200) !important;
+        }
+
+        .copy-path-button:hover {
+          background-color: var(--color-gray-alpha-200) !important;
         }
 
         .spinner {

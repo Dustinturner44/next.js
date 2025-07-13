@@ -31,6 +31,7 @@ import { useUpdateAllPanelPositions } from '../components/devtools-indicator/dev
 import { useDev0Context } from '../context/dev-zero-context'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
+import { HubPanel } from '../components/hub-panel/hub-panel'
 import { css } from '../utils/css'
 
 const MenuPanel = () => {
@@ -120,6 +121,15 @@ const MenuPanel = () => {
   }))
 
   const footerItems = [
+    {
+      label: 'Hub',
+      value: <ChevronRight />,
+      onClick: () => togglePanel('hub'),
+      footer: true,
+      attributes: {
+        'data-hub': true,
+      },
+    },
     {
       label: 'Create New Project',
       value: isLoading ? 'Creating...' : '+',
@@ -324,6 +334,26 @@ export const PanelRouter = () => {
       </PanelRoute>
 
       <Dev0ProjectRoutes />
+
+      <PanelRoute name="hub">
+        <DynamicPanel
+          sharePanelSizeGlobally={false}
+          sizeConfig={{
+            kind: 'resizable',
+            maxHeight: '90vh',
+            maxWidth: '90vw',
+            minHeight: 400 / state.scale,
+            minWidth: 600 / state.scale,
+            initialSize: {
+              height: 600 / state.scale,
+              width: 800 / state.scale,
+            },
+          }}
+          header={<DevToolsHeader title="Dev Tools Hub" />}
+        >
+          <HubPanel />
+        </DynamicPanel>
+      </PanelRoute>
     </>
   )
 }
@@ -353,7 +383,12 @@ const Dev0ProjectRoutes = () => {
                 width: 800 / state.scale,
               },
             }}
-            header={<Dev0Header projectName={project.name} />}
+            header={
+              <Dev0Header
+                projectName={project.name}
+                projectPath={project.cwd}
+              />
+            }
           >
             <Dev0Panel projectName={project.name} port={project.port!} />
           </DynamicPanel>
