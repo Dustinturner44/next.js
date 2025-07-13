@@ -12,6 +12,7 @@ export type PanelStateKind =
   | 'panel-selector'
   | 'turbo-info'
   | 'hub'
+  | 'fork-url'
   | `dev0-project-${string}`
 
 export const PanelRouterContext = createContext<{

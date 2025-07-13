@@ -134,9 +134,7 @@ export const DevSidebar = () => {
         right: 0,
         width: `${width}px`,
         height: '100vh',
-        backgroundColor: 'var(--color-background-100)',
-        borderLeft: '1px solid var(--color-gray-alpha-400)',
-        boxShadow: '-4px 0 12px rgba(0, 0, 0, 0.15)',
+        backgroundColor: '#000',
         pointerEvents: 'auto',
         fontFamily: 'var(--font-stack-sans)',
         zIndex: 9999,
@@ -146,7 +144,26 @@ export const DevSidebar = () => {
         transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
       }}
     >
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {/* Subtle left border */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '1px',
+          height: '100%',
+          background: 'rgba(255, 255, 255, 0.1)',
+          zIndex: 10,
+        }}
+      />
+      
+      {/* Terminal content */}
+      <div style={{ 
+        position: 'relative', 
+        width: '100%', 
+        height: '100%',
+        backgroundColor: '#000',
+      }}>
         <iframe
           ref={iframeRef}
           src={`http://localhost:4262?session=${encodeURIComponent(terminalSessionId)}&cwd=${encodeURIComponent('/Users/robby')}&shell=${encodeURIComponent('/bin/zsh')}`}
@@ -154,6 +171,7 @@ export const DevSidebar = () => {
             width: '100%',
             height: '100%',
             border: 'none',
+            backgroundColor: '#000',
           }}
           title="Terminal"
         />
@@ -182,15 +200,17 @@ export const DevSidebar = () => {
         style={{
           position: 'absolute',
           top: 0,
-          left: '-2px',
-          width: '4px',
+          left: 0,
+          width: '6px',
           height: '100%',
           cursor: 'ew-resize',
-          backgroundColor: isResizing ? 'var(--color-blue-600)' : 'transparent',
+          backgroundColor: 'transparent',
+          zIndex: 20,
+          transition: 'background-color 0.2s ease',
         }}
         onMouseEnter={(e) => {
           if (!isResizing) {
-            e.currentTarget.style.backgroundColor = 'var(--color-gray-alpha-300)'
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
           }
         }}
         onMouseLeave={(e) => {

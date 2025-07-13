@@ -32,12 +32,13 @@ import { useUpdateAllPanelPositions } from '../components/devtools-indicator/dev
 import { useDev0Context } from '../context/dev-zero-context'
 import { Dev0ProjectPanel } from '../components/dev-zero-panel/dev-zero-project-panel'
 import { HubPanel } from '../components/hub-panel/hub-panel'
+import { ForkUrlPanel } from '../components/fork-url/fork-url-panel'
 import { useSidebarContext } from '../context/sidebar-context'
 import { css } from '../utils/css'
 import React from 'react'
 
 const MenuPanel = () => {
-  const { togglePanel, closeAllPanels, setSelectedIndex } =
+  const { togglePanel, closeAllPanels, setSelectedIndex,panels } =
     usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
@@ -87,8 +88,22 @@ const MenuPanel = () => {
           title:
             'Learn about Turbopack and how to enable it in your application.',
           label: 'Try Turbopack',
-          value: <ChevronRight />,
+          value: panels.has('turbo-info') ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ChevronRight />
+              <span style={{ 
+                width: '6px', 
+                height: '6px', 
+                borderRadius: '50%', 
+                backgroundColor: 'var(--color-green-700)',
+                boxShadow: '0 0 0 1px var(--color-green-200)'
+              }} />
+            </span>
+          ) : <ChevronRight />,
           onClick: () => togglePanel('turbo-info'),
+          attributes: {
+            'data-panel-active': panels.has('turbo-info') ? 'true' : 'false',
+          },
         },
     !!process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER && {
       label: 'Route Info',
@@ -144,6 +159,27 @@ const MenuPanel = () => {
       },
     },
     {
+      label: 'Fork URL',
+      value: panels.has('fork-url') ? (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>🔗</span>
+          <span style={{ 
+            width: '6px', 
+            height: '6px', 
+            borderRadius: '50%', 
+            backgroundColor: 'var(--color-green-700)',
+            boxShadow: '0 0 0 1px var(--color-green-200)'
+          }} />
+        </span>
+      ) : '🔗',
+      onClick: () => togglePanel('fork-url'),
+      footer: true,
+      attributes: {
+        'data-fork-url': true,
+        'data-panel-active': panels.has('fork-url') ? 'true' : 'false',
+      },
+    },
+    {
       label: sidebarIsOpen ? 'Close Sidebar' : 'Open Sidebar',
       value: sidebarIsOpen ? '⏩' : '⏪',
       onClick: () => {
@@ -184,6 +220,28 @@ const MenuPanel = () => {
           to {
             transform: rotate(360deg);
           }
+        }
+
+        /* Style active menu items */
+        .dev-tools-indicator-item[data-panel-active='true'] {
+          background-color: var(--color-gray-alpha-100);
+          position: relative;
+        }
+
+        .dev-tools-indicator-item[data-panel-active='true']::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 60%;
+          background-color: var(--color-green-700);
+          border-radius: 0 2px 2px 0;
+        }
+
+        .dev-tools-indicator-item[data-panel-active='true']:hover {
+          background-color: var(--color-gray-alpha-200);
         }
       `}</style>
     </>
@@ -351,6 +409,21 @@ export const PanelRouter = () => {
       </PanelRoute>
 
       <Dev0ProjectRoutes />
+
+      <PanelRoute name="fork-url">
+        <DynamicPanel
+          sharePanelSizeGlobally={false}
+          sizeConfig={{
+            kind: 'fixed',
+            height: 280 / state.scale,
+            width: 400 / state.scale,
+          }}
+          closeOnClickOutside
+          header={<DevToolsHeader title="Fork from URL" />}
+        >
+          <ForkUrlPanel />
+        </DynamicPanel>
+      </PanelRoute>
 
       <PanelRoute name="hub">
         <DynamicPanel
