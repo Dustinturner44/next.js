@@ -66,14 +66,6 @@ export function Dev0Header({
   }
 
   const handleDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${projectName}? This cannot be undone.`
-      )
-    ) {
-      return
-    }
-
     setIsDeleting(true)
 
     try {
@@ -94,9 +86,7 @@ export function Dev0Header({
       await fetchProjects()
     } catch (error) {
       console.error('Delete error:', error)
-      alert(
-        `Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`
-      )
+      // Could add a toast notification here instead of alert
     } finally {
       setIsDeleting(false)
     }
@@ -106,7 +96,9 @@ export function Dev0Header({
     // Fetch GitHub URL from server if it exists
     const fetchGithubUrl = async () => {
       try {
-        const response = await fetch(`http://localhost:40000/get-github-url/${projectName}`)
+        const response = await fetch(
+          `http://localhost:40000/get-github-url/${projectName}`
+        )
         if (response.ok) {
           const data = await response.json()
           if (data.githubUrl) {
@@ -124,11 +116,14 @@ export function Dev0Header({
   const handleCreateRepo = async () => {
     setIsCreatingRepo(true)
     try {
-      const response = await fetch('http://localhost:40000/create-github-repo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectName, projectPath }),
-      })
+      const response = await fetch(
+        'http://localhost:40000/create-github-repo',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectName, projectPath }),
+        }
+      )
 
       const data = await response.json()
       if (data.error) {
@@ -141,7 +136,9 @@ export function Dev0Header({
       }
     } catch (error) {
       console.error('Failed to create GitHub repo:', error)
-      alert(`Failed to create repository: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error(
+        `Failed to create repository: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
     } finally {
       setIsCreatingRepo(false)
     }
@@ -180,283 +177,85 @@ export function Dev0Header({
             userSelect: 'none',
           }}
         >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          minWidth: 0,
-          flex: 1,
-          marginRight: '16px',
-        }}
-      >
-        <h3
-          style={{
-            margin: 0,
-            fontSize: '14px',
-            color: 'var(--color-text-primary)',
-            fontWeight: 'normal',
-          }}
-        >
-          {projectName}
-        </h3>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            minWidth: 0,
-          }}
-        >
-          <span
+          <div
             style={{
-              fontSize: '11px',
-              color: 'var(--color-gray-700)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '2px',
               minWidth: 0,
               flex: 1,
+              marginRight: '16px',
             }}
-            title={projectPath}
           >
-            {projectPath}
-          </span>
-          <button
-            onClick={handleCopyPath}
-            className="copy-path-button"
-            style={{
-              padding: '2px',
-              borderRadius: '3px',
-              border: 'none',
-              backgroundColor: 'transparent',
-              color: copiedPath
-                ? 'var(--color-green-700)'
-                : 'var(--color-gray-700)',
-              fontSize: '10px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              transition: 'all 0.2s',
-            }}
-            title={copiedPath ? 'Copied!' : 'Copy path'}
-          >
-            {copiedPath ? (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            ) : (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {deploymentUrl && (
-          <a
-            href={deploymentUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="deployment-link"
-            style={{
-              color: 'var(--color-blue-700)',
-              textDecoration: 'none',
-              fontSize: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              transition: 'background-color 0.2s',
-            }}
-            title={deploymentUrl}
-          >
-            <span
+            <h3
               style={{
-                maxWidth: '200px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                margin: 0,
+                fontSize: '14px',
+                color: 'var(--color-text-primary)',
+                fontWeight: 'normal',
               }}
             >
-              {new URL(deploymentUrl).hostname}
-            </span>
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-          </a>
-        )}
+              {projectName}
+            </h3>
+          </div>
 
-        <button
-          onClick={handleDeploy}
-          disabled={isDeploying}
-          className="deploy-button"
-          style={{
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: isDeploying
-              ? 'var(--color-gray-600)'
-              : 'var(--color-gray-900)',
-            fontSize: '12px',
-            fontWeight: 500,
-            cursor: isDeploying ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            transition: 'all 0.2s',
-          }}
-          title={deployError || 'Deploy to Vercel'}
-        >
-          {isDeploying ? (
-            <>
-              <span className="spinner" />
-              <span>Deploying...</span>
-            </>
-          ) : (
-            <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="expand-button"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px',
+                color: 'var(--color-gray-900)',
+                transition: 'all 0.2s',
+              }}
+              aria-label={isExpanded ? 'Collapse' : 'Expand'}
+            >
               <svg
-                width="14"
-                height="14"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                style={{
+                  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                }}
               >
-                <polyline points="16 16 12 12 8 16"></polyline>
-                <line x1="12" y1="12" x2="12" y2="21"></line>
-                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"></path>
-                <polyline points="16 16 12 12 8 16"></polyline>
+                <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
-              <span>Deploy</span>
-            </>
-          )}
-        </button>
+            </button>
 
-        <button
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="delete-button"
-          style={{
-            padding: '4px 8px',
-            borderRadius: '4px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: isDeleting
-              ? 'var(--color-gray-600)'
-              : 'var(--color-red-700)',
-            fontSize: '12px',
-            fontWeight: 500,
-            cursor: isDeleting ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            transition: 'all 0.2s',
-          }}
-          title="Delete project"
-        >
-          {isDeleting ? (
-            <span className="spinner" />
-          ) : (
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+            <button
+              id="_next-devtools-panel-close"
+              className="dev-tools-info-close-button"
+              onClick={() => closePanel(name as PanelStateKind)}
+              aria-label="Close devtools panel"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px',
+                color: 'var(--color-gray-900)',
+                transition: 'background-color 0.2s',
+              }}
             >
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-            </svg>
-          )}
-        </button>
-
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="expand-button"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '4px',
-            color: 'var(--color-gray-900)',
-            transition: 'all 0.2s',
-          }}
-          aria-label={isExpanded ? 'Collapse' : 'Expand'}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{
-              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s',
-            }}
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-
-        <button
-          id="_next-devtools-panel-close"
-          className="dev-tools-info-close-button"
-          onClick={() => closePanel(name as PanelStateKind)}
-          aria-label="Close devtools panel"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '4px',
-            color: 'var(--color-gray-900)',
-            transition: 'background-color 0.2s',
-          }}
-        >
-          <XIcon />
-        </button>
+              <XIcon />
+            </button>
+          </div>
         </div>
-        
+
         {isExpanded && (
           <div
             style={{
@@ -500,7 +299,9 @@ export function Dev0Header({
                     borderRadius: '3px',
                     border: 'none',
                     backgroundColor: 'transparent',
-                    color: copiedPath ? 'var(--color-green-700)' : 'var(--color-gray-700)',
+                    color: copiedPath
+                      ? 'var(--color-green-700)'
+                      : 'var(--color-gray-700)',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -509,6 +310,120 @@ export function Dev0Header({
                 >
                   {copiedPath ? '✓' : 'Copy'}
                 </button>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <h4
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '12px',
+                  fontWeight: 'normal',
+                  color: 'var(--color-gray-700)',
+                }}
+              >
+                Deployment
+              </h4>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <button
+                  onClick={handleDeploy}
+                  disabled={isDeploying}
+                  className="deploy-button"
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid var(--color-gray-alpha-400)',
+                    backgroundColor: 'var(--color-background-100)',
+                    color: isDeploying
+                      ? 'var(--color-gray-600)'
+                      : 'var(--color-gray-900)',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    cursor: isDeploying ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s',
+                  }}
+                  title={deployError || 'Deploy to Vercel'}
+                >
+                  {isDeploying ? (
+                    <>
+                      <span className="spinner" />
+                      <span>Deploying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="16 16 12 12 8 16"></polyline>
+                        <line x1="12" y1="12" x2="12" y2="21"></line>
+                        <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"></path>
+                        <polyline points="16 16 12 12 8 16"></polyline>
+                      </svg>
+                      <span>Deploy</span>
+                    </>
+                  )}
+                </button>
+
+                {deploymentUrl && (
+                  <a
+                    href={deploymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="deployment-link"
+                    style={{
+                      color: 'var(--color-blue-700)',
+                      textDecoration: 'none',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '8px 12px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--color-gray-alpha-400)',
+                      backgroundColor: 'var(--color-background-100)',
+                      transition: 'all 0.2s',
+                    }}
+                    title={deploymentUrl}
+                  >
+                    <span
+                      style={{
+                        maxWidth: '200px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {new URL(deploymentUrl).hostname}
+                    </span>
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </a>
+                )}
               </div>
             </div>
 
@@ -609,6 +524,63 @@ export function Dev0Header({
                 </div>
               )}
             </div>
+
+            <div style={{ marginTop: '16px' }}>
+              <h4
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '12px',
+                  fontWeight: 'normal',
+                  color: 'var(--color-gray-700)',
+                }}
+              >
+                Actions
+              </h4>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="delete-button"
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--color-red-alpha-400)',
+                  backgroundColor: 'var(--color-background-100)',
+                  color: isDeleting
+                    ? 'var(--color-gray-600)'
+                    : 'var(--color-red-700)',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.2s',
+                }}
+                title="Delete project"
+              >
+                {isDeleting ? (
+                  <>
+                    <span className="spinner" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                    </svg>
+                    <span>Delete Project</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -620,14 +592,17 @@ export function Dev0Header({
 
         .deploy-button:not(:disabled):hover {
           background-color: var(--color-gray-alpha-200) !important;
+          border-color: var(--color-gray-alpha-600) !important;
         }
 
         .delete-button:not(:disabled):hover {
-          background-color: var(--color-red-alpha-200) !important;
+          background-color: var(--color-red-alpha-100) !important;
+          border-color: var(--color-red-alpha-600) !important;
         }
 
         .deployment-link:hover {
-          background-color: var(--color-blue-alpha-200) !important;
+          background-color: var(--color-blue-alpha-100) !important;
+          border-color: var(--color-blue-alpha-600) !important;
         }
 
         .copy-path-button:hover {

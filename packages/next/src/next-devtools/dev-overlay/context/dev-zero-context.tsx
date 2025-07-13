@@ -179,6 +179,16 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     fetchProjects()
+
+    // Listen for refresh events
+    const handleRefresh = () => {
+      fetchProjects()
+    }
+
+    window.addEventListener('dev0-refresh-projects', handleRefresh)
+    return () => {
+      window.removeEventListener('dev0-refresh-projects', handleRefresh)
+    }
   }, [fetchProjects])
 
   return (
