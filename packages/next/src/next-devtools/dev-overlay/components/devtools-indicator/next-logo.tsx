@@ -20,8 +20,8 @@ export function NextLogoNew({
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
   const SIZE = BASE_LOGO_SIZE / state.scale
-  const { panel, triggerRef, setPanel } = usePanelRouterContext()
-  const isMenuOpen = panel === 'panel-selector'
+  const { panels, triggerRef, closeAllPanels } = usePanelRouterContext()
+  const isMenuOpen = panels.has('panel-selector')
 
   const hasError = totalErrorCount > 0
   const [isErrorExpanded, setIsErrorExpanded] = useState(hasError)
@@ -420,7 +420,7 @@ export function NextLogoNew({
                 onClick={() => {
                   // wait this is wrong
                   dispatch({ type: ACTION_ERROR_OVERLAY_OPEN })
-                  setPanel(null)
+                  closeAllPanels()
                 }}
               >
                 {state.disableDevIndicator && (

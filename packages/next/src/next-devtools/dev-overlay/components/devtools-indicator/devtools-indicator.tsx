@@ -22,7 +22,7 @@ export const INDICATOR_PADDING = 20
 
 export function DevToolsIndicatorNew() {
   const { state, dispatch } = useDevOverlayContext()
-  const { panel, setPanel, setSelectedIndex } = usePanelRouterContext()
+  const { panels, togglePanel, setSelectedIndex } = usePanelRouterContext()
   const updateAllPanelPositions = useUpdateAllPanelPositions()
 
   const [vertical, horizontal] = state.devToolsPosition.split('-', 2)
@@ -45,7 +45,7 @@ export function DevToolsIndicatorNew() {
     >
       <Draggable
         // avoids a lot of weird edge cases that would cause jank if the logo and panel were de-synced
-        disableDrag={panel !== null}
+        disableDrag={panels.size > 0}
         padding={INDICATOR_PADDING}
         position={state.devToolsPosition}
         setPosition={(p) => {
@@ -60,12 +60,9 @@ export function DevToolsIndicatorNew() {
       >
         <NextLogoNew
           onTriggerClick={() => {
-            const newPanel =
-              panel === 'panel-selector' ? null : 'panel-selector'
-            setPanel(newPanel)
-            if (!newPanel) {
+            togglePanel('panel-selector')
+            if (panels.has('panel-selector')) {
               setSelectedIndex(-1)
-              return
             }
           }}
         />

@@ -7,7 +7,7 @@ import {
   MenuContext,
   MenuItem,
 } from '../components/errors/dev-tools-indicator/dev-tools-indicator'
-import { usePanelRouterContext } from './context'
+import { usePanelRouterContext, type PanelStateKind } from './context'
 import { usePanelContext } from './panel-router'
 
 export const DevtoolMenu = ({
@@ -30,7 +30,7 @@ export const DevtoolMenu = ({
   >
 }) => {
   const { state } = useDevOverlayContext()
-  const { setPanel, triggerRef, setSelectedIndex, selectedIndex } =
+  const { closePanel, triggerRef, setSelectedIndex, selectedIndex } =
     usePanelRouterContext()
   const { mounted } = usePanelContext()
 
@@ -45,7 +45,7 @@ export const DevtoolMenu = ({
     (reason) => {
       switch (reason) {
         case 'escape': {
-          setPanel(null)
+          closePanel('panel-selector' as PanelStateKind)
           setSelectedIndex(-1)
           return
         }
@@ -53,7 +53,7 @@ export const DevtoolMenu = ({
           if (!closeOnClickOutside) {
             return
           }
-          setPanel(null)
+          closePanel('panel-selector' as PanelStateKind)
           setSelectedIndex(-1)
           return
         }
