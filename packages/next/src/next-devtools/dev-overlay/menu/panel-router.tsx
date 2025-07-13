@@ -31,21 +31,22 @@ import { useUpdateAllPanelPositions } from '../components/devtools-indicator/dev
 import { useDev0Context } from '../context/dev-zero-context'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
+import { css } from '../utils/css'
 
 const MenuPanel = () => {
-  const { togglePanel, openPanel, closeAllPanels, setSelectedIndex } =
+  const { togglePanel, closeAllPanels, setSelectedIndex } =
     usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
   const { projects, createProject, isLoading } = useDev0Context()
 
-  const runningProjects = projects.filter((p) => p.status === 'running')
+  const visibleProjects = projects.filter(
+    (p) => p.status === 'running' || p.status === 'creating'
+  )
 
   const handleCreateProject = async () => {
-    const newProject = await createProject()
-    if (newProject && newProject.status === 'running') {
-      openPanel(`dev0-project-${newProject.name}` as PanelStateKind)
-    }
+    await createProject()
+    // Don't auto-open panel, let the project appear in the menu
   }
 
   const baseItems = [
@@ -96,13 +97,25 @@ const MenuPanel = () => {
   ].filter(Boolean)
 
   // Add dev-0 projects
-  const projectItems = runningProjects.map((project) => ({
-    label: project.name,
-    value: <ChevronRight />,
-    onClick: () =>
-      togglePanel(`dev0-project-${project.name}` as PanelStateKind),
+  const projectItems = visibleProjects.map((project) => ({
+    label: project.status === 'creating' ? 'Creating project...' : project.name,
+    value:
+      project.status === 'creating' ? (
+        <span
+          className="loading-spinner"
+          style={{ width: '14px', height: '14px' }}
+        />
+      ) : (
+        <ChevronRight />
+      ),
+    onClick:
+      project.status === 'creating'
+        ? undefined
+        : () => togglePanel(`dev0-project-${project.name}` as PanelStateKind),
+    disabled: project.status === 'creating',
     attributes: {
       'data-dev0-project': project.name,
+      'data-dev0-status': project.status,
     },
   }))
 
@@ -128,7 +141,26 @@ const MenuPanel = () => {
     },
   ]
 
-  return <DevtoolMenu items={[...baseItems, ...projectItems, ...footerItems]} />
+  return (
+    <>
+      <DevtoolMenu items={[...baseItems, ...projectItems, ...footerItems]} />
+      <style>{css`
+        .loading-spinner {
+          display: inline-block;
+          border: 2px solid var(--color-gray-alpha-400);
+          border-top-color: var(--color-gray-900);
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
+    </>
+  )
 }
 
 // a little hacky but it does the trick
