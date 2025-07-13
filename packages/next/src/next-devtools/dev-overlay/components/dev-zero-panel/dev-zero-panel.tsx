@@ -5,15 +5,51 @@ import { Dev0RPC } from '../../utils/dev0-rpc'
 interface Dev0PanelProps {
   projectName: string
   port: number
+  refreshKey?: number
 }
 
-export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
+export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refreshKey = 0 }) => {
   const iframeUrl = `http://localhost:${port}`
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [isInstrumentationReady, setIsInstrumentationReady] = useState(false)
+  const [hasError, setHasError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const rpcRef = useRef<Dev0RPC | null>(null)
+  const retryIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Handle refresh from parent
+  useEffect(() => {
+    if (refreshKey > 0 && iframeRef.current) {
+      setIsLoading(true)
+      setHasLoaded(false)
+      setHasError(false)
+      iframeRef.current.src = `${iframeUrl}?refresh=${refreshKey}`
+    }
+  }, [refreshKey, iframeUrl])
+
+  // Auto-retry logic
+  useEffect(() => {
+    if (hasError) {
+      retryIntervalRef.current = setInterval(() => {
+        setRetryCount(prev => prev + 1)
+        setHasError(false)
+        setIsLoading(true)
+        setHasLoaded(false)
+        // Force iframe reload
+        if (iframeRef.current) {
+          iframeRef.current.src = `${iframeUrl}?retry=${Date.now()}`
+        }
+      }, 2000)
+
+      return () => {
+        if (retryIntervalRef.current) {
+          clearInterval(retryIntervalRef.current)
+        }
+      }
+    }
+  }, [hasError, iframeUrl])
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -151,6 +187,10 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
         rpcRef.current.dispose()
         rpcRef.current = null
       }
+      // Clean up retry interval
+      if (retryIntervalRef.current) {
+        clearInterval(retryIntervalRef.current)
+      }
     }
   }, [projectName, port])
 
@@ -167,7 +207,122 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
         contain: 'layout size style',
       }}
     >
-      {isLoading && !hasLoaded && (
+      {hasError && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: '#0a0a0a',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '16px',
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              width: '48px',
+              height: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderRadius: '50%',
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div
+            style={{
+              textAlign: 'center',
+              color: '#e5e5e5',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '16px',
+                fontWeight: 500,
+                marginBottom: '8px',
+              }}
+            >
+              Failed to load {projectName}
+            </div>
+            <div
+              style={{
+                fontSize: '14px',
+                color: '#a3a3a3',
+              }}
+            >
+              The project at port {port} is not responding
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '8px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <div
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  borderTopColor: '#fff',
+                  borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                }}
+              />
+              <div
+                style={{
+                  fontSize: '13px',
+                  color: '#a3a3a3',
+                }}
+              >
+                Retrying in 2 seconds...
+              </div>
+            </div>
+            {retryCount > 0 && (
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: '#737373',
+                }}
+              >
+                Retry attempt {retryCount}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {isLoading && !hasLoaded && !hasError && (
         <div
           style={{
             position: 'absolute',
@@ -202,7 +357,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
       )}
 
       {/* Instrumentation status indicator */}
-      {hasLoaded && (
+      {hasLoaded && !hasError && (
         <div
           style={{
             position: 'absolute',
@@ -234,9 +389,16 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
         ref={iframeRef}
         src={iframeUrl}
         onLoad={() => {
+          // Clear any existing retry interval
+          if (retryIntervalRef.current) {
+            clearInterval(retryIntervalRef.current)
+            retryIntervalRef.current = null
+          }
+          
           // Add a small delay to ensure the iframe content is rendered
           setTimeout(() => {
             setHasLoaded(true)
+            setHasError(false)
             setTimeout(() => {
               setIsLoading(false)
               // Initialize RPC when iframe is loaded
@@ -261,6 +423,11 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
             }, 300)
           }, 100)
         }}
+        onError={() => {
+          setHasError(true)
+          setIsLoading(false)
+          setHasLoaded(false)
+        }}
         style={{
           width: '100%',
           height: '100%',
@@ -268,8 +435,9 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port }) => {
           backgroundColor: 'transparent',
           borderBottomLeftRadius: 'var(--rounded-lg)',
           borderBottomRightRadius: 'var(--rounded-lg)',
-          opacity: hasLoaded ? 1 : 0,
+          opacity: hasLoaded && !hasError ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
+          display: hasError ? 'none' : 'block',
         }}
         title={`Dev-0 Project: ${projectName}`}
       />

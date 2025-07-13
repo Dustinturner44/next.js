@@ -8,16 +8,21 @@ interface Dev0HeaderProps {
   projectName: string
   projectPath: string
   deploymentUrl?: string
+  port?: number
+  onRefresh?: () => void
 }
 
 export function Dev0Header({
   projectName,
   projectPath,
   deploymentUrl: initialDeploymentUrl,
+  port,
+  onRefresh,
 }: Dev0HeaderProps) {
   const { closePanel } = usePanelRouterContext()
   const { name } = usePanelContext()
   const { fetchProjects } = useDev0Context()
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const [isDeploying, setIsDeploying] = useState(false)
   const [deploymentUrl, setDeploymentUrl] = useState<string | null>(
@@ -197,9 +202,75 @@ export function Dev0Header({
             >
               {projectName}
             </h3>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '11px',
+                color: 'var(--color-gray-600)',
+                backgroundColor: 'var(--color-gray-alpha-100)',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                fontFamily: 'monospace',
+              }}
+            >
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M2 12h20"></path>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>localhost:{port || '3000'}</span>
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => {
+                if (onRefresh) {
+                  onRefresh()
+                }
+                setIsRefreshing(true)
+                setTimeout(() => setIsRefreshing(false), 1000)
+              }}
+              className="refresh-button"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px',
+                color: 'var(--color-gray-900)',
+                transition: 'all 0.2s',
+              }}
+              aria-label="Refresh iframe"
+              title="Refresh iframe"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={isRefreshing ? 'refresh-spin' : ''}
+              >
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+            </button>
+
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="expand-button"
@@ -613,6 +684,10 @@ export function Dev0Header({
           background-color: var(--color-gray-alpha-200) !important;
         }
 
+        .refresh-button:hover {
+          background-color: var(--color-gray-alpha-200) !important;
+        }
+
         .spinner {
           width: 12px;
           height: 12px;
@@ -623,6 +698,19 @@ export function Dev0Header({
         }
 
         @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .refresh-spin {
+          animation: refresh-spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes refresh-spin {
+          from {
+            transform: rotate(0deg);
+          }
           to {
             transform: rotate(360deg);
           }

@@ -30,11 +30,11 @@ import { useHideShortcutStorage } from '../components/errors/dev-tools-indicator
 import { useShortcuts } from '../hooks/use-shortcuts'
 import { useUpdateAllPanelPositions } from '../components/devtools-indicator/devtools-indicator'
 import { useDev0Context } from '../context/dev-zero-context'
-import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
-import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
+import { Dev0ProjectPanel } from '../components/dev-zero-panel/dev-zero-project-panel'
 import { HubPanel } from '../components/hub-panel/hub-panel'
 import { useSidebarContext } from '../context/sidebar-context'
 import { css } from '../utils/css'
+import React from 'react'
 
 const MenuPanel = () => {
   const { togglePanel, closeAllPanels, setSelectedIndex } =
@@ -385,31 +385,7 @@ const Dev0ProjectRoutes = () => {
     <>
       {runningProjects.map((project) => (
         <PanelRoute key={project.name} name={`dev0-project-${project.name}`}>
-          <DynamicPanel
-            sharePanelSizeGlobally={false}
-            sharePanelPositionGlobally={false}
-            draggable
-            sizeConfig={{
-              kind: 'resizable',
-              maxHeight: '90vh',
-              maxWidth: '90vw',
-              minHeight: 400 / state.scale,
-              minWidth: 600 / state.scale,
-              initialSize: {
-                height: 600 / state.scale,
-                width: 800 / state.scale,
-              },
-            }}
-            header={
-              <Dev0Header
-                projectName={project.name}
-                projectPath={project.absolutePath || project.cwd}
-                deploymentUrl={project.deploymentUrl}
-              />
-            }
-          >
-            <Dev0Panel projectName={project.name} port={project.port!} />
-          </DynamicPanel>
+          <Dev0ProjectPanel project={project} />
         </PanelRoute>
       ))}
     </>
