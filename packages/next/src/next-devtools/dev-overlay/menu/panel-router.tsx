@@ -100,8 +100,8 @@ const MenuPanel = () => {
     },
   ].filter(Boolean)
 
-  // Add dev-0 projects
-  const projectItems = visibleProjects.map((project) => ({
+  // Add dev-0 projects (reverse to show newest first)
+  const projectItems = visibleProjects.reverse().map((project) => ({
     label: project.status === 'creating' ? 'Creating project...' : project.name,
     value:
       project.status === 'creating' ? (

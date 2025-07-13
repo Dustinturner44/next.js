@@ -27,7 +27,7 @@ export const CommandPalette = ({
       }
   >
 }) => {
-  const { closePanel, triggerRef, setSelectedIndex, selectedIndex } =
+  const { closePanel, triggerRef, setSelectedIndex, selectedIndex, panels } =
     usePanelRouterContext()
   const { mounted } = usePanelContext()
   const [searchQuery, setSearchQuery] = useState('')
@@ -42,9 +42,15 @@ export const CommandPalette = ({
     (reason) => {
       switch (reason) {
         case 'escape': {
-          closePanel('panel-selector' as PanelStateKind)
-          setSelectedIndex(-1)
-          setSearchQuery('')
+          // Only handle escape if the command palette has focus
+          const hasFocus = document.activeElement === paletteRef.current || 
+                          paletteRef.current?.contains(document.activeElement)
+          
+          if (hasFocus) {
+            closePanel('panel-selector' as PanelStateKind)
+            setSelectedIndex(-1)
+            setSearchQuery('')
+          }
           return
         }
         case 'outside': {
@@ -77,19 +83,26 @@ export const CommandPalette = ({
   // Filter items based on search query
   const filteredItems = useMemo(() => {
     const definedItems = items.filter((item) => !!item)
+    const footerItems = definedItems.filter((item) => item.footer)
+    const nonFooterItems = definedItems.filter((item) => !item.footer)
+    
     if (!searchQuery.trim()) {
-      return definedItems
+      return { itemsAboveFooter: nonFooterItems, itemsBelowFooter: footerItems }
     }
-    return definedItems.filter((item) =>
+    
+    // Only filter non-footer items, always show footer items
+    const filteredNonFooter = nonFooterItems.filter((item) =>
       item.label.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    
+    return { itemsAboveFooter: filteredNonFooter, itemsBelowFooter: footerItems }
   }, [items, searchQuery])
 
-  const itemsAboveFooter = filteredItems.filter((item) => !item.footer)
-  const itemsBelowFooter = filteredItems.filter((item) => item.footer)
+  const { itemsAboveFooter, itemsBelowFooter } = filteredItems
 
   function onPaletteKeydown(e: React.KeyboardEvent<HTMLDivElement | null>) {
-    const clickableItems = filteredItems.filter((item) => item.onClick)
+    const allFilteredItems = [...itemsAboveFooter, ...itemsBelowFooter]
+    const clickableItems = allFilteredItems.filter((item) => item.onClick)
     const totalClickableItems = clickableItems.length
 
     switch (e.key) {
@@ -126,6 +139,25 @@ export const CommandPalette = ({
           closePanel('panel-selector' as PanelStateKind)
           setSelectedIndex(-1)
           setSearchQuery('')
+        }
+        break
+      case 'Escape':
+        // This is handled by useClickOutsideAndEscape
+        break
+      case 'n':
+        if (e.ctrlKey) {
+          e.preventDefault()
+          const nextCtrl =
+            selectedIndex >= totalClickableItems - 1 ? 0 : selectedIndex + 1
+          selectMenuItem({ index: nextCtrl, paletteRef, setSelectedIndex })
+        }
+        break
+      case 'p':
+        if (e.ctrlKey) {
+          e.preventDefault()
+          const prevCtrl =
+            selectedIndex <= 0 ? totalClickableItems - 1 : selectedIndex - 1
+          selectMenuItem({ index: prevCtrl, paletteRef, setSelectedIndex })
         }
         break
       default:
@@ -196,6 +228,18 @@ export const CommandPalette = ({
               e.preventDefault()
               paletteRef.current?.focus()
               onPaletteKeydown(e as any)
+            } else if (e.key === 'n' && e.ctrlKey) {
+              e.preventDefault()
+              paletteRef.current?.focus()
+              onPaletteKeydown(e as any)
+            } else if (e.key === 'p' && e.ctrlKey) {
+              e.preventDefault()
+              paletteRef.current?.focus()
+              onPaletteKeydown(e as any)
+            } else if (e.key === 'Enter') {
+              e.preventDefault()
+              paletteRef.current?.focus()
+              onPaletteKeydown(e as any)
             }
           }}
         />
@@ -205,6 +249,7 @@ export const CommandPalette = ({
         value={{
           selectedIndex,
           setSelectedIndex,
+          closeMenu: () => {}, // Don't close palette when clicking items
         }}
       >
         {/* Scrollable main items area */}
@@ -236,7 +281,7 @@ export const CommandPalette = ({
             </div>
           )}
           
-          {filteredItems.length === 0 && searchQuery.trim() && (
+          {itemsAboveFooter.length === 0 && searchQuery.trim() && (
             <div style={{ 
               padding: '20px', 
               textAlign: 'center', 

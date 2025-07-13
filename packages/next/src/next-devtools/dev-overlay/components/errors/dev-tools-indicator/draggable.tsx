@@ -61,12 +61,27 @@ export function Draggable({
       return
     }
 
-    const projectedPosition = {
-      x: translation.x + project(velocity.x),
-      y: translation.y + project(velocity.y),
+    // Calculate velocity magnitude
+    const velocityMagnitude = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y)
+    
+    // Only snap to corners if velocity is above threshold (e.g., 1500 pixels/second)
+    const VELOCITY_THRESHOLD = 1500
+    
+    if (velocityMagnitude > VELOCITY_THRESHOLD) {
+      // High velocity - snap to nearest corner based on projected position
+      const projectedPosition = {
+        x: translation.x + project(velocity.x),
+        y: translation.y + project(velocity.y),
+      }
+      const nearestCorner = getNearestCorner(projectedPosition)
+      animate(nearestCorner)
+    } else {
+      // Low velocity - stay at current position
+      // Just remove the transition and keep the current translate
+      if (ref.current) {
+        ref.current.style.transition = 'none'
+      }
     }
-    const nearestCorner = getNearestCorner(projectedPosition)
-    animate(nearestCorner)
   }
 
   function onAnimationEnd({ corner }: Corner) {

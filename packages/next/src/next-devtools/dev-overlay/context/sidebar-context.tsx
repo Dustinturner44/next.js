@@ -61,7 +61,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
 
   const openSidebar = useCallback(() => setIsOpen(true), [])
   const closeSidebar = useCallback(() => setIsOpen(false), [])
-  const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), [])
+  const toggleSidebar = useCallback(() => setIsOpen(( prev:any ) => !prev), [])
 
   return (
     <SidebarContext.Provider

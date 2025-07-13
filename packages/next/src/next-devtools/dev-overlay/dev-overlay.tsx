@@ -39,11 +39,13 @@ export function DevOverlay({
   const [panels, setPanels] = useState<Set<PanelStateKind>>(new Set())
   const isBuildError = state.buildError !== null
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [panelZOrder, setPanelZOrder] = useState<string[]>([])
 
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const openPanel = (panel: PanelStateKind) => {
     setPanels((prev) => new Set([...prev, panel]))
+    bringPanelToFront(panel)
   }
 
   const closePanel = (panel: PanelStateKind) => {
@@ -52,6 +54,7 @@ export function DevOverlay({
       next.delete(panel)
       return next
     })
+    setPanelZOrder((prev) => prev.filter(p => p !== panel))
   }
 
   const togglePanel = (panel: PanelStateKind) => {
@@ -59,8 +62,10 @@ export function DevOverlay({
       const next = new Set(prev)
       if (next.has(panel)) {
         next.delete(panel)
+        setPanelZOrder((prevZ) => prevZ.filter(p => p !== panel))
       } else {
         next.add(panel)
+        bringPanelToFront(panel)
       }
       return next
     })
@@ -68,6 +73,20 @@ export function DevOverlay({
 
   const closeAllPanels = () => {
     setPanels(new Set())
+    setPanelZOrder([])
+  }
+
+  const bringPanelToFront = (panel: string) => {
+    setPanelZOrder((prev) => {
+      const filtered = prev.filter(p => p !== panel)
+      return [...filtered, panel]
+    })
+  }
+
+  const getPanelZIndex = (panel: string) => {
+    const baseZIndex = 2147483646
+    const index = panelZOrder.indexOf(panel)
+    return index === -1 ? baseZIndex : baseZIndex + index + 1
   }
   return (
     <ShadowPortal>
@@ -102,6 +121,8 @@ export function DevOverlay({
                             triggerRef,
                             selectedIndex,
                             setSelectedIndex,
+                            bringPanelToFront,
+                            getPanelZIndex,
                           }}
                         >
                           <ErrorOverlay

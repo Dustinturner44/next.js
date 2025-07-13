@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, type CSSProperties } from 'react'
+import { useMemo, useRef, useState, useEffect, useLayoutEffect, type CSSProperties } from 'react'
 import { useDevOverlayContext } from '../../dev-overlay.browser'
 import { INDICATOR_PADDING } from '../components/devtools-indicator/devtools-indicator'
 import { useSidebarContext } from '../context/sidebar-context'
@@ -143,7 +143,7 @@ export function DynamicPanel({
       }
   closeOnClickOutside?: boolean
 }) {
-  const { closePanel, triggerRef, panels } = usePanelRouterContext()
+  const { closePanel, triggerRef, panels, bringPanelToFront, getPanelZIndex } = usePanelRouterContext()
   const { name, mounted } = usePanelContext()
   const resizeStorageKey = sharePanelSizeGlobally
     ? STORE_KEY_SHARED_PANEL_SIZE
@@ -167,7 +167,7 @@ export function DynamicPanel({
     (reason) => {
       switch (reason) {
         case 'escape': {
-          closePanel(name as PanelStateKind)
+          // Escape is handled by our custom handler above
           return
         }
         case 'outside': {
@@ -239,6 +239,59 @@ export function DynamicPanel({
 
   const panelSize = useMemo(() => getStoredPanelSize(name), [name])
 
+  // Focus panel when it mounts to ensure escape key closes panel first
+  useLayoutEffect(() => {
+    if (mounted && resizeContainerRef.current) {
+      // Small delay to ensure panel is fully rendered
+      setTimeout(() => {
+        resizeContainerRef.current?.focus()
+        bringPanelToFront(name)
+      }, 50)
+    }
+  }, [mounted, bringPanelToFront, name])
+
+  // Handle escape key with proper event capturing
+  useEffect(() => {
+    if (!mounted) return
+
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape' && resizeContainerRef.current) {
+        // Check if this panel or its children have focus
+        const hasFocus = document.activeElement === resizeContainerRef.current || 
+                        resizeContainerRef.current.contains(document.activeElement)
+        
+        if (hasFocus) {
+          e.stopPropagation()
+          e.preventDefault()
+          closePanel(name as PanelStateKind)
+          
+          // Check if this was the last panel (besides command palette)
+          const remainingPanels = Array.from(panels).filter(p => p !== name && p !== 'panel-selector')
+          
+          // If command palette is open and this was the last other panel, focus it
+          if (panels.has('panel-selector' as PanelStateKind) && remainingPanels.length === 0) {
+            setTimeout(() => {
+              const commandPalette = document.getElementById('nextjs-command-palette')
+              if (commandPalette) {
+                commandPalette.focus()
+                // Also focus the search input
+                const searchInput = commandPalette.querySelector('input')
+                searchInput?.focus()
+              }
+            }, 50)
+          }
+        }
+      }
+    }
+
+    // Use capture phase to handle event before it bubbles
+    document.addEventListener('keydown', handleEscape, true)
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape, true)
+    }
+  }, [mounted, closePanel, name, panels])
+
   return (
     <ResizeProvider
       value={{
@@ -256,9 +309,10 @@ export function DynamicPanel({
       <div
         tabIndex={-1}
         ref={resizeContainerRef}
+        onMouseDown={() => bringPanelToFront(name)}
         style={{
           position: 'fixed',
-          zIndex: 2147483646,
+          zIndex: getPanelZIndex(name),
           outline: 'none',
           ...positionStyle,
           ...(isResizable

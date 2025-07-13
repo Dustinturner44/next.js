@@ -24,6 +24,8 @@ export const PanelRouterContext = createContext<{
   triggerRef: React.RefObject<HTMLButtonElement | null>
   selectedIndex: number
   setSelectedIndex: Dispatch<SetStateAction<number>>
+  bringPanelToFront: (panel: string) => void
+  getPanelZIndex: (panel: string) => number
 }>(null!)
 
 export const usePanelRouterContext = () => useContext(PanelRouterContext)
