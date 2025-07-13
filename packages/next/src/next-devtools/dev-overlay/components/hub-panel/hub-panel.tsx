@@ -67,22 +67,64 @@ export const HubPanel: React.FC = () => {
           backgroundColor: 'var(--color-background-200)',
         }}
       >
-        <input
-          type="text"
-          placeholder="Search projects..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+        <div
           style={{
-            width: '100%',
-            padding: '8px 12px',
-            fontSize: '13px',
-            backgroundColor: 'var(--color-background-100)',
-            border: '1px solid var(--color-gray-alpha-400)',
-            borderRadius: '6px',
-            color: 'var(--color-text-primary)',
-            outline: 'none',
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center',
           }}
-        />
+        >
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              fontSize: '13px',
+              backgroundColor: 'var(--color-background-100)',
+              border: '1px solid var(--color-gray-alpha-400)',
+              borderRadius: '6px',
+              color: 'var(--color-text-primary)',
+              outline: 'none',
+            }}
+          />
+          <button
+            onClick={fetchHubProjects}
+            disabled={isLoading}
+            style={{
+              padding: '8px 12px',
+              fontSize: '13px',
+              backgroundColor: 'var(--color-background-100)',
+              border: '1px solid var(--color-gray-alpha-400)',
+              borderRadius: '6px',
+              color: 'var(--color-text-primary)',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.2s',
+            }}
+            className="refresh-button"
+            title="Refresh projects"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={isLoading ? 'spinning' : ''}
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path>
+            </svg>
+            {isLoading ? 'Loading...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       <div
@@ -241,6 +283,24 @@ export const HubPanel: React.FC = () => {
 
         input:focus {
           border-color: var(--color-blue-700) !important;
+        }
+
+        .refresh-button:not(:disabled):hover {
+          background-color: var(--color-gray-alpha-200) !important;
+          border-color: var(--color-gray-alpha-600) !important;
+        }
+
+        .spinning {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>

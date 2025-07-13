@@ -7,15 +7,22 @@ import { css } from '../../utils/css'
 interface Dev0HeaderProps {
   projectName: string
   projectPath: string
+  deploymentUrl?: string
 }
 
-export function Dev0Header({ projectName, projectPath }: Dev0HeaderProps) {
+export function Dev0Header({
+  projectName,
+  projectPath,
+  deploymentUrl: initialDeploymentUrl,
+}: Dev0HeaderProps) {
   const { closePanel } = usePanelRouterContext()
   const { name } = usePanelContext()
   const { fetchProjects } = useDev0Context()
 
   const [isDeploying, setIsDeploying] = useState(false)
-  const [deploymentUrl, setDeploymentUrl] = useState<string | null>(null)
+  const [deploymentUrl, setDeploymentUrl] = useState<string | null>(
+    initialDeploymentUrl || null
+  )
   const [deployError, setDeployError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [copiedPath, setCopiedPath] = useState(false)

@@ -14,6 +14,7 @@ interface Dev0Project {
   cwd: string
   createdAt: number
   isOptimistic?: boolean
+  deploymentUrl?: string
 }
 
 interface Dev0ContextType {
