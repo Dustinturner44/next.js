@@ -403,7 +403,7 @@ const Dev0ProjectRoutes = () => {
             header={
               <Dev0Header
                 projectName={project.name}
-                projectPath={project.cwd}
+                projectPath={project.absolutePath || project.cwd}
                 deploymentUrl={project.deploymentUrl}
               />
             }
