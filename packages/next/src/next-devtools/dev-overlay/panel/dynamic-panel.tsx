@@ -143,7 +143,7 @@ export function DynamicPanel({
       }
   closeOnClickOutside?: boolean
 }) {
-  const { closePanel, triggerRef } = usePanelRouterContext()
+  const { closePanel, triggerRef, panels } = usePanelRouterContext()
   const { name, mounted } = usePanelContext()
   const resizeStorageKey = sharePanelSizeGlobally
     ? STORE_KEY_SHARED_PANEL_SIZE
@@ -202,9 +202,23 @@ export function DynamicPanel({
     ? INDICATOR_PADDING + sidebarOffset 
     : INDICATOR_PADDING
 
+  // Check if command palette is open
+  const isCommandPaletteOpen = panels.has('panel-selector' as PanelStateKind)
+  
+  // Adjust position if command palette is open and panel would overlap
+  let adjustedVerticalOffset = verticalOffset
+  let adjustedHorizontalOffset = horizontalOffset
+  
+  if (isCommandPaletteOpen && panelVertical === 'bottom' && panelHorizontal === 'left') {
+    // Move panel to avoid command palette (320px width + 20px padding + 20px spacing)
+    adjustedHorizontalOffset = Math.max(horizontalOffset, 360)
+    // Also ensure panel is above command palette (480px max height + 60px bottom offset)
+    adjustedVerticalOffset = Math.max(verticalOffset, 80)
+  }
+
   const positionStyle = {
-    [panelVertical]: `${verticalOffset}px`,
-    [panelHorizontal]: `${horizontalOffset}px`,
+    [panelVertical]: `${adjustedVerticalOffset}px`,
+    [panelHorizontal]: `${adjustedHorizontalOffset}px`,
     [panelVertical === 'top' ? 'bottom' : 'top']: 'auto',
     [panelHorizontal === 'left' ? 'right' : 'left']: 'auto',
   } as CSSProperties
@@ -264,8 +278,8 @@ export function DynamicPanel({
           <Draggable
             dragHandleSelector=".resize-container"
             avoidZone={{
-              corner: state.devToolsPosition,
-              square: 25 / state.scale,
+              corner: panels.has('panel-selector' as PanelStateKind) ? 'bottom-left' : state.devToolsPosition,
+              square: panels.has('panel-selector' as PanelStateKind) ? 360 : 25 / state.scale,
               padding: INDICATOR_PADDING,
             }}
             padding={INDICATOR_PADDING}

@@ -1,5 +1,6 @@
 import { usePanelRouterContext, type PanelStateKind } from './context'
-import { ChevronRight, DevtoolMenu, IssueCount } from './dev-overlay-menu'
+import { ChevronRight, IssueCount } from './dev-overlay-menu'
+import { CommandPalette } from './command-palette'
 import { DynamicPanel } from '../panel/dynamic-panel'
 import {
   learnMoreLink,
@@ -166,7 +167,10 @@ const MenuPanel = () => {
 
   return (
     <>
-      <DevtoolMenu items={[...baseItems, ...projectItems, ...footerItems]} />
+      <CommandPalette 
+        items={[...baseItems, ...projectItems, ...footerItems]} 
+        closeOnClickOutside={false}
+      />
       <style>{css`
         .loading-spinner {
           display: inline-block;
@@ -230,8 +234,8 @@ export const PanelRouter = () => {
   useShortcuts(
     {
       ...(hideShortcut ? { [hideShortcut]: toggleDevtools } : {}),
-      'cmd+k': togglePanelSelector,
-      'ctrl+k': togglePanelSelector,
+      'Meta+k': togglePanelSelector,
+      'Control+k': togglePanelSelector,
     },
     triggerRef
   )
