@@ -28,72 +28,104 @@ import { UserPreferencesBody } from '../components/errors/dev-tools-indicator/de
 import { useHideShortcutStorage } from '../components/errors/dev-tools-indicator/dev-tools-info/preferences'
 import { useShortcuts } from '../hooks/use-shortcuts'
 import { useUpdateAllPanelPositions } from '../components/devtools-indicator/devtools-indicator'
+import { useDev0Context } from '../context/dev-zero-context'
+import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 
 const MenuPanel = () => {
   const { setPanel, setSelectedIndex } = usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
-  return (
-    <DevtoolMenu
-      items={[
-        totalErrorCount > 0 && {
-          title: `${totalErrorCount} ${totalErrorCount === 1 ? 'issue' : 'issues'} found. Click to view details in the dev overlay.`,
-          label: 'Issues',
-          value: <IssueCount>{totalErrorCount}</IssueCount>,
-          onClick: () => {
-            setPanel(null)
-            setSelectedIndex(-1)
-            if (totalErrorCount > 0) {
-              dispatch({
-                type: ACTION_ERROR_OVERLAY_OPEN,
-              })
-            }
-          },
-        },
-        {
-          title: `Current route is ${state.staticIndicator ? 'static' : 'dynamic'}.`,
-          label: 'Route',
-          value: state.staticIndicator ? 'Static' : 'Dynamic',
-          onClick: () => setPanel('route-type'),
-          attributes: {
-            'data-nextjs-route-type': state.staticIndicator
-              ? 'static'
-              : 'dynamic',
-          },
-        },
-        !!process.env.TURBOPACK
-          ? {
-              title: 'Turbopack is enabled.',
-              label: 'Turbopack',
-              value: 'Enabled',
-            }
-          : {
-              title:
-                'Learn about Turbopack and how to enable it in your application.',
-              label: 'Try Turbopack',
-              value: <ChevronRight />,
-              onClick: () => setPanel('turbo-info'),
-            },
-        !!process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER && {
-          label: 'Route Info',
+  const { projects, createProject, isLoading } = useDev0Context()
+
+  const runningProjects = projects.filter((p) => p.status === 'running')
+
+  const handleCreateProject = async () => {
+    const newProject = await createProject()
+    if (newProject && newProject.status === 'running') {
+      setPanel(`dev0-project-${newProject.name}`)
+    }
+  }
+
+  const baseItems = [
+    totalErrorCount > 0 && {
+      title: `${totalErrorCount} ${totalErrorCount === 1 ? 'issue' : 'issues'} found. Click to view details in the dev overlay.`,
+      label: 'Issues',
+      value: <IssueCount>{totalErrorCount}</IssueCount>,
+      onClick: () => {
+        setPanel(null)
+        setSelectedIndex(-1)
+        if (totalErrorCount > 0) {
+          dispatch({
+            type: ACTION_ERROR_OVERLAY_OPEN,
+          })
+        }
+      },
+    },
+    {
+      title: `Current route is ${state.staticIndicator ? 'static' : 'dynamic'}.`,
+      label: 'Route',
+      value: state.staticIndicator ? 'Static' : 'Dynamic',
+      onClick: () => setPanel('route-type'),
+      attributes: {
+        'data-nextjs-route-type': state.staticIndicator ? 'static' : 'dynamic',
+      },
+    },
+    !!process.env.TURBOPACK
+      ? {
+          title: 'Turbopack is enabled.',
+          label: 'Turbopack',
+          value: 'Enabled',
+        }
+      : {
+          title:
+            'Learn about Turbopack and how to enable it in your application.',
+          label: 'Try Turbopack',
           value: <ChevronRight />,
-          onClick: () => setPanel('segment-explorer'),
-          attributes: {
-            'data-segment-explorer': true,
-          },
+          onClick: () => setPanel('turbo-info'),
         },
-        {
-          label: 'Preferences',
-          value: <GearIcon />,
-          onClick: () => setPanel('preferences'),
-          footer: true,
-          attributes: {
-            'data-preferences': true,
-          },
-        },
-      ]}
-    />
-  )
+    !!process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER && {
+      label: 'Route Info',
+      value: <ChevronRight />,
+      onClick: () => setPanel('segment-explorer'),
+      attributes: {
+        'data-segment-explorer': true,
+      },
+    },
+  ].filter(Boolean)
+
+  // Add dev-0 projects
+  const projectItems = runningProjects.map((project) => ({
+    label: project.name,
+    value: <ChevronRight />,
+    onClick: () => setPanel(`dev0-project-${project.name}`),
+    attributes: {
+      'data-dev0-project': project.name,
+    },
+  }))
+
+  const footerItems = [
+    {
+      label: 'Create New Project',
+      value: isLoading ? 'Creating...' : '+',
+      onClick: handleCreateProject,
+      disabled: isLoading,
+      footer: true,
+      attributes: {
+        'data-create-project': true,
+      },
+    },
+    {
+      label: 'Preferences',
+      value: <GearIcon />,
+      onClick: () => setPanel('preferences'),
+      footer: true,
+      attributes: {
+        'data-preferences': true,
+      },
+    },
+  ]
+
+  return <DevtoolMenu items={[...baseItems, ...projectItems, ...footerItems]} />
 }
 
 // a little hacky but it does the trick
@@ -257,6 +289,43 @@ export const PanelRouter = () => {
           </div>
         </DynamicPanel>
       </PanelRoute>
+
+      <Dev0ProjectRoutes />
+    </>
+  )
+}
+
+const Dev0ProjectRoutes = () => {
+  const { projects } = useDev0Context()
+  const { state } = useDevOverlayContext()
+
+  const runningProjects = projects.filter((p) => p.status === 'running')
+
+  return (
+    <>
+      {runningProjects.map((project) => (
+        <PanelRoute key={project.name} name={`dev0-project-${project.name}`}>
+          <DynamicPanel
+            sharePanelSizeGlobally={false}
+            sharePanelPositionGlobally={false}
+            draggable
+            sizeConfig={{
+              kind: 'resizable',
+              maxHeight: '90vh',
+              maxWidth: '90vw',
+              minHeight: 400 / state.scale,
+              minWidth: 600 / state.scale,
+              initialSize: {
+                height: 600 / state.scale,
+                width: 800 / state.scale,
+              },
+            }}
+            header={<DevToolsHeader title={project.name} />}
+          >
+            <Dev0Panel projectName={project.name} port={project.port!} />
+          </DynamicPanel>
+        </PanelRoute>
+      ))}
     </>
   )
 }
@@ -335,7 +404,7 @@ function PanelRoute({
   name,
 }: {
   children: React.ReactNode
-  name: PanelStateKind
+  name: PanelStateKind | `dev0-project-${string}`
 }) {
   const { panel } = usePanelRouterContext()
   const { mounted, rendered } = useDelayedRender(name === panel, {
