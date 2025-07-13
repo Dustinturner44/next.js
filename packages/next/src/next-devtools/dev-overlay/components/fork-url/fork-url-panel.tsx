@@ -30,53 +30,71 @@ export function ForkUrlPanel() {
 
     try {
       // First, find the project in the hub by deployment URL
-      const hubResponse = await fetch('http://localhost:40000/get-hub-projects')
+      const hubResponse = await fetch('http://localhost:40000/hub/projects')
+      if (!hubResponse.ok) {
+        throw new Error('Failed to fetch hub projects')
+      }
+      
       const hubData = await hubResponse.json()
 
       if (!hubData.projects || !Array.isArray(hubData.projects)) {
-        throw new Error('Failed to fetch hub projects')
+        throw new Error('No projects found in hub')
       }
 
+      // Clean up the URL to match better
+      const cleanUrl = url.trim().replace(/\/$/, '') // Remove trailing slash
+      
       // Find project with matching deployment URL
-      const project = hubData.projects.find((p: any) => 
-        p.deploymentUrl && (
-          p.deploymentUrl === url || 
-          p.deploymentUrl.includes(url) || 
-          url.includes(p.deploymentUrl)
-        )
-      )
+      const project = hubData.projects.find((p: any) => {
+        if (!p.deploymentUrl) return false
+        const cleanDeploymentUrl = p.deploymentUrl.trim().replace(/\/$/, '')
+        return cleanDeploymentUrl === cleanUrl || 
+               cleanDeploymentUrl.includes(cleanUrl) || 
+               cleanUrl.includes(cleanDeploymentUrl)
+      })
 
       if (!project) {
         throw new Error('No project found with that deployment URL')
       }
 
-      // Check if already forked
-      const existingProject = projects.find(p => p.name === project.name)
-      if (existingProject) {
+      // Check if already have a project with similar name
+      const existingProject = projects.find(p => 
+        p.name === project.name || 
+        p.name === project.projectName ||
+        p.name.includes(project.projectName) ||
+        project.projectName.includes(p.name)
+      )
+      
+      if (existingProject && existingProject.status === 'running') {
         setSuccess(true)
         setTimeout(() => {
           closePanel('fork-url')
           // Open the existing project panel
-          togglePanel(`dev0-project-${project.name}`)
+          togglePanel(`dev0-project-${existingProject.name}`)
         }, 1000)
         return
       }
 
-      // Fork the project
-      const forkResponse = await fetch('http://localhost:40000/fork-project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          owner: project.owner,
-          name: project.name,
-          isTemplate: project.isTemplate || false,
-        }),
-      })
+      // If project has a GitHub URL, clone it
+      if (project.githubUrl) {
+        const cloneResponse = await fetch('http://localhost:40000/clone-and-register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            githubUrl: project.githubUrl,
+            projectName: project.projectName || project.name,
+          }),
+        })
 
-      const forkData = await forkResponse.json()
+        const cloneData = await cloneResponse.json()
 
-      if (!forkResponse.ok) {
-        throw new Error(forkData.error || 'Fork failed')
+        if (!cloneResponse.ok) {
+          throw new Error(cloneData.error || 'Clone failed')
+        }
+      } else {
+        // Otherwise just create a new project
+        // This is a fallback - ideally all hub projects should have GitHub URLs
+        throw new Error('This project does not have a GitHub URL to fork from')
       }
 
       // Refresh projects list
@@ -87,7 +105,9 @@ export function ForkUrlPanel() {
       // Close this panel and open the new project after a short delay
       setTimeout(() => {
         closePanel('fork-url')
-        togglePanel(`dev0-project-${project.name}`)
+        // Use the actual project name returned from cloning
+        const newProjectName = projects[projects.length - 1]?.name || project.projectName || project.name
+        togglePanel(`dev0-project-${newProjectName}`)
       }, 1500)
 
     } catch (error) {
