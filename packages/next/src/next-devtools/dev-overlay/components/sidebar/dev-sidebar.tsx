@@ -8,6 +8,18 @@ export const DevSidebar = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null)
   const resizeRef = useRef<HTMLDivElement>(null)
+  
+  // Generate persistent session ID for this devtools instance
+  const [terminalSessionId] = useState(() => {
+    // Try to get existing session from localStorage or create new one
+    const existing = localStorage.getItem('devtools-terminal-session')
+    if (existing) {
+      return existing
+    }
+    const newSession = `devtools-session-${Date.now()}`
+    localStorage.setItem('devtools-terminal-session', newSession)
+    return newSession
+  })
 
   // Find or create a container near the root of the page for the portal
   useEffect(() => {
@@ -137,7 +149,7 @@ export const DevSidebar = () => {
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
         <iframe
           ref={iframeRef}
-          src="http://localhost:4262"
+          src={`http://localhost:4262?session=${encodeURIComponent(terminalSessionId)}&cwd=${encodeURIComponent('/Users/robby')}&shell=${encodeURIComponent('/bin/zsh')}`}
           style={{
             width: '100%',
             height: '100%',
