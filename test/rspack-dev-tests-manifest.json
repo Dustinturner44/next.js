@@ -2748,6 +2748,7 @@
   "test/development/app-dir/segment-explorer/segment-explorer.test.ts": {
     "passed": [
       "segment-explorer should cleanup on soft navigation",
+      "segment-explorer should display boundary selector when a segment has only boundary files",
       "segment-explorer should display parallel routes default page when present",
       "segment-explorer should handle show file segments in order",
       "segment-explorer should handle special built-in not-found segments",
@@ -6472,11 +6473,11 @@
   },
   "test/e2e/app-dir/error-on-next-codemod-comment/error-on-next-codemod-comment.test.ts": {
     "passed": [
-      "app-dir - error-on-next-codemod-comment should disappear the error when you replace with bypass comment",
-      "app-dir - error-on-next-codemod-comment should disappear the error when you rre the codemod comment",
-      "app-dir - error-on-next-codemod-comment should error with inline comment as well"
+      "app-dir - error-on-next-codemod-comment should disappear the error when you replace with bypass comment"
     ],
     "failed": [
+      "app-dir - error-on-next-codemod-comment should disappear the error when you rre the codemod comment",
+      "app-dir - error-on-next-codemod-comment should error with inline comment as well",
       "app-dir - error-on-next-codemod-comment should error with swc if you have codemod comments left"
     ],
     "pending": [],
@@ -8766,6 +8767,26 @@
       "router autoscrolling on navigation vertical scroll should scroll to top of document when navigating between to pages without layout",
       "router autoscrolling on navigation vertical scroll should scroll to top of document with new metadata",
       "router autoscrolling on navigation vertical scroll should scroll to top of page when scrolling to phe top of the document wouldn't have the page in the viewport"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/router-disable-smooth-scroll/router-disable-smooth-scroll.legacy.test.ts": {
+    "passed": [
+      "router smooth scroll optimization (legacy with data attribute) should not warn when data attribute is present even in legacy mode",
+      "router smooth scroll optimization (legacy) should work with smooth scroll CSS and warn in development"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/router-disable-smooth-scroll/router-disable-smooth-scroll.optimized.test.ts": {
+    "passed": [
+      "router smooth scroll optimization (optimized early exit) should exit early when CSS smooth scroll detected but no data attribute",
+      "router smooth scroll optimization (optimized) should work with smooth scroll CSS and data attribute without warning"
     ],
     "failed": [],
     "pending": [],
@@ -12943,16 +12964,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/amphtml-custom-validator/test/index.test.js": {
-    "passed": [
-      "AMP Custom Validator development mode should run in development mode successfully",
-      "AMP Custom Validator production mode should build and start successfully"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/amphtml-fragment-style/test/index.test.js": {
     "passed": [
       "AMP Fragment Styles production mode adds styles from fragment in AMP mode correctly"
@@ -13267,18 +13278,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/app-dir-export/test/dynamicpage-prod.test.ts": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "app dir - with output export - dynamic api route prod production mode should work in prod with dynamicPage 'error'",
-      "app dir - with output export - dynamic api route prod production mode should work in prod with dynamicPage 'force-dynamic'",
-      "app dir - with output export - dynamic api route prod production mode should work in prod with dynamicPage 'force-static'",
-      "app dir - with output export - dynamic api route prod production mode should work in prod with dynamicPage undefined"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/app-dir-export/test/start.test.ts": {
     "passed": [],
     "failed": [],
@@ -13439,13 +13438,6 @@
       "Babel should allow setting targets to a string",
       "Babel should allow setting targets.browsers"
     ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/babel-next-image/babel-next-image.test.js": {
-    "passed": ["babel-next-image should work with babel and next/image"],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -13695,19 +13687,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/client-shallow-routing/test/index.test.js": {
-    "passed": [
-      "Client Shallow Routing development mode should not shallowly navigate back in history when current page was not shallow",
-      "Client Shallow Routing development mode should not shallowly navigate forwards in history when current page was not shallow"
-    ],
-    "failed": [],
-    "pending": [
-      "Client Shallow Routing production mode should not shallowly navigate back in history when current page was not shallow",
-      "Client Shallow Routing production mode should not shallowly navigate forwards in history when current page was not shallow"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/compression/test/index.test.js": {
     "passed": ["Compression should compress responses by default"],
     "failed": [],
@@ -13892,18 +13871,6 @@
       "create-next-app with package manager bun should use bun for --use-bun flag with example",
       "create-next-app with package manager bun should use bun when user-agent is bun",
       "create-next-app with package manager bun should use bun when user-agent is bun with example"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/create-next-app/package-manager/npm.test.ts": {
-    "passed": [
-      "create-next-app with package manager npm should use npm for --use-npm flag",
-      "create-next-app with package manager npm should use npm for --use-npm flag with example",
-      "create-next-app with package manager npm should use npm when user-agent is npm",
-      "create-next-app with package manager npm should use npm when user-agent is npm with example"
     ],
     "failed": [],
     "pending": [],
@@ -14184,30 +14151,6 @@
       "Valid CSS Module Usage from within node_modules production mode should've prerendered with relevant data",
       "Valid Nested CSS Module Usage from within node_modules production mode should've emitted a single CSS file",
       "Valid Nested CSS Module Usage from within node_modules production mode should've prerendered with relevant data"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/css/test/basic-global-support.test.js": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Basic Global Support production mode useLightnincsss(false) should've emitted a single CSS file",
-      "Basic Global Support production mode useLightnincsss(true) should've emitted a single CSS file",
-      "Basic Global Support with special characters in path production mode useLightnincsss(false) should've emitted a single CSS file",
-      "Basic Global Support with special characters in path production mode useLightnincsss(true) should've emitted a single CSS file",
-      "Basic Global Support with src/ dir production mode useLightnincsss(false) should've emitted a single CSS file",
-      "Basic Global Support with src/ dir production mode useLightnincsss(true) should've emitted a single CSS file",
-      "CSS URL via `file-loader` and asset prefix (1) production mode should've emitted expected files",
-      "CSS URL via `file-loader` and asset prefix (2) production mode should've emitted expected files",
-      "CSS URL via `file-loader` production mode useLightnincsss(false) should've emitted expected files",
-      "CSS URL via `file-loader` production mode useLightnincsss(true) should've emitted expected files",
-      "Multi Global Support (reversed) production mode useLightnincsss(false) should've emitted a single CSS file",
-      "Multi Global Support (reversed) production mode useLightnincsss(true) should've emitted a single CSS file",
-      "Multi Global Support production mode useLightnincsss(false) should've emitted a single CSS file",
-      "Multi Global Support production mode useLightnincsss(true) should've emitted a single CSS file",
-      "Nested @import() Global Support production mode useLightnincsss(false) should've emitted a single CSS file",
-      "Nested @import() Global Support production mode useLightnincsss(true) should've emitted a single CSS file"
     ],
     "flakey": [],
     "runtimeError": false
@@ -14708,25 +14651,6 @@
       "Custom Server using HTTPS Error when rendering without starting slash production mode should warn in production mode",
       "Custom Server using HTTPS with dynamic assetPrefix should contain customServer in NEXT_DATA",
       "Custom Server using HTTPS with generateEtags enabled production mode response includes etag header"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/data-fetching-errors/test/index.test.js": {
-    "passed": [
-      "GS(S)P Page Errors development mode should show error for getServerSideProps as component member",
-      "GS(S)P Page Errors development mode should show error for getStaticPaths as component member",
-      "GS(S)P Page Errors development mode should show error for getStaticProps as component member",
-      "GS(S)P Page Errors development mode should show error for undefined getServerSideProps",
-      "GS(S)P Page Errors development mode should show error for undefined getStaticProps"
-    ],
-    "failed": [],
-    "pending": [
-      "GS(S)P Page Errors production mode Error stack printed to stderr",
-      "GS(S)P Page Errors production mode should show error for getServerSideProps as component member",
-      "GS(S)P Page Errors production mode should show error for getStaticPaths as component member",
-      "GS(S)P Page Errors production mode should show error for getStaticProps as component member",
-      "GS(S)P Page Errors production mode should show error for undefined getStaticProps"
     ],
     "flakey": [],
     "runtimeError": false
@@ -15268,35 +15192,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/edge-runtime-configurable-guards/test/index.test.js": {
-    "passed": [
-      "Edge runtime configurable guards Edge API with use of Function as a type does not warn in dev at runtime",
-      "Edge runtime configurable guards Middleware with use of Function as a type does not warn in dev at runtime"
-    ],
-    "failed": [
-      "Edge runtime configurable guards Edge API using lib with allowed, used dynamic code still warns in dev at runtime",
-      "Edge runtime configurable guards Edge API using lib with unallowed, used dynamic code warns in dev at runtime",
-      "Edge runtime configurable guards Edge API with allowed, used dynamic code still warns in dev at runtime",
-      "Edge runtime configurable guards Middleware using lib with allowed, used dynamic code still warns in dev at runtime",
-      "Edge runtime configurable guards Middleware using lib with unallowed, used dynamic code warns in dev at runtime",
-      "Edge runtime configurable guards Middleware with allowed, used dynamic code still warns in dev at runtime",
-      "Edge runtime configurable guards Multiple functions with different configurations warns in dev for allowed code",
-      "Edge runtime configurable guards Multiple functions with different configurations warns in dev for unallowed code"
-    ],
-    "pending": [
-      "Edge runtime configurable guards Edge API using lib with allowed, unused dynamic code production mode build and does not warn at runtime",
-      "Edge runtime configurable guards Edge API using lib with unallowed, used dynamic code production mode fails to build because of dynamic code evaluation",
-      "Edge runtime configurable guards Edge API with allowed, unused dynamic code production mode build and does not warn at runtime",
-      "Edge runtime configurable guards Edge API with use of Function as a type production mode build and does not warn at runtime",
-      "Edge runtime configurable guards Middleware using lib with allowed, unused dynamic code production mode build and does not warn at runtime",
-      "Edge runtime configurable guards Middleware using lib with unallowed, used dynamic code production mode fails to build because of dynamic code evaluation",
-      "Edge runtime configurable guards Middleware with allowed, unused dynamic code production mode build and does not warn at runtime",
-      "Edge runtime configurable guards Middleware with use of Function as a type production mode build and does not warn at runtime",
-      "Edge runtime configurable guards Multiple functions with different configurations production mode fails to build because of unallowed code"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/edge-runtime-dynamic-code/test/index.test.js": {
     "passed": [
       "Edge route usage of dynamic code evaluation development mode does not show a warning when running WebAssembly.instantiate with a module parameter",
@@ -15606,24 +15501,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/eslint/test/next-build.test.js": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Next Build production mode base directories are linted by default during builds",
-      "Next Build production mode custom directories",
-      "Next Build production mode empty directories do not fail the build",
-      "Next Build production mode eslint cache lives in the user defined build directory",
-      "Next Build production mode eslint caching is enabled",
-      "Next Build production mode eslint ignored directories do not fail the build",
-      "Next Build production mode ignore during builds",
-      "Next Build production mode invalid older eslint version",
-      "Next Build production mode missing Next.js plugin",
-      "Next Build production mode shows warnings and errors"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/eslint/test/next-lint.test.js": {
     "passed": [
       "Next Lint First Time Setup  creates .eslintrc.json file with a default app router configuration",
@@ -15817,29 +15694,6 @@
     "pending": [
       "bundle pages externals with config.bundlePagesRouterDependencies production mode should have no externals with the config set",
       "bundle pages externals with config.bundlePagesRouterDependencies production mode should respect the serverExternalPackages config"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/fallback-false-rewrite/test/index.test.js": {
-    "passed": [
-      "fallback: false rewrite development mode should behave properly when accessing the dynamic param directly",
-      "fallback: false rewrite development mode should not rewrite for path from fallback: false SSR",
-      "fallback: false rewrite development mode should not rewrite for path from fallback: false client",
-      "fallback: false rewrite development mode should rewrite correctly for path above fallback: false SSR",
-      "fallback: false rewrite development mode should rewrite correctly for path above fallback: false client",
-      "fallback: false rewrite development mode should rewrite correctly for path at same level as fallback: false SSR",
-      "fallback: false rewrite development mode should rewrite correctly for path at same level as fallback: false client"
-    ],
-    "failed": [],
-    "pending": [
-      "fallback: false rewrite production mode should behave properly when accessing the dynamic param directly",
-      "fallback: false rewrite production mode should not rewrite for path from fallback: false SSR",
-      "fallback: false rewrite production mode should not rewrite for path from fallback: false client",
-      "fallback: false rewrite production mode should rewrite correctly for path above fallback: false SSR",
-      "fallback: false rewrite production mode should rewrite correctly for path above fallback: false client",
-      "fallback: false rewrite production mode should rewrite correctly for path at same level as fallback: false SSR",
-      "fallback: false rewrite production mode should rewrite correctly for path at same level as fallback: false client"
     ],
     "flakey": [],
     "runtimeError": false
@@ -17359,56 +17213,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/gssp-redirect-base-path/test/index.test.js": {
-    "passed": [
-      "GS(S)P Redirect Support development mode should apply permanent redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support development mode should apply redirect when GSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support development mode should apply redirect when GSP page is navigated to client-side (internal)",
-      "GS(S)P Redirect Support development mode should apply redirect when GSSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support development mode should apply redirect when GSSP page is navigated to client-side (internal dynamic)",
-      "GS(S)P Redirect Support development mode should apply redirect when GSSP page is navigated to client-side (internal normal)",
-      "GS(S)P Redirect Support development mode should apply redirect when fallback GSP page is visited directly (external domain)",
-      "GS(S)P Redirect Support development mode should apply redirect when fallback GSP page is visited directly (external)",
-      "GS(S)P Redirect Support development mode should apply redirect when fallback GSP page is visited directly (internal dynamic)",
-      "GS(S)P Redirect Support development mode should apply redirect when fallback GSP page is visited directly (internal normal)",
-      "GS(S)P Redirect Support development mode should apply redirect when fallback GSSP page is visited directly (external domain)",
-      "GS(S)P Redirect Support development mode should apply statusCode 301 redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support development mode should apply statusCode 303 redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support development mode should apply temporary redirect when visited directly basePath false for GSSP page",
-      "GS(S)P Redirect Support development mode should apply temporary redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support development mode should not replace history of the origin page when GSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support development mode should not replace history of the origin page when GSP page is navigated to client-side (internal)",
-      "GS(S)P Redirect Support development mode should not replace history of the origin page when GSSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support development mode should not replace history of the origin page when GSSP page is navigated to client-side (internal normal)"
-    ],
-    "failed": [],
-    "pending": [
-      "GS(S)P Redirect Support production mode should apply permanent redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support production mode should apply redirect when GSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support production mode should apply redirect when GSP page is navigated to client-side (internal)",
-      "GS(S)P Redirect Support production mode should apply redirect when GSSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support production mode should apply redirect when GSSP page is navigated to client-side (internal dynamic)",
-      "GS(S)P Redirect Support production mode should apply redirect when GSSP page is navigated to client-side (internal normal)",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSP page is visited directly (external domain)",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSP page is visited directly (external)",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSP page is visited directly (internal dynamic)",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSP page is visited directly (internal dynamic) 2nd visit",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSP page is visited directly (internal normal)",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSP page is visited directly (internal normal) 2nd visit",
-      "GS(S)P Redirect Support production mode should apply redirect when fallback GSSP page is visited directly (external domain)",
-      "GS(S)P Redirect Support production mode should apply statusCode 301 redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support production mode should apply statusCode 303 redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support production mode should apply temporary redirect when visited directly basePath false for GSSP page",
-      "GS(S)P Redirect Support production mode should apply temporary redirect when visited directly for GSSP page",
-      "GS(S)P Redirect Support production mode should error for redirect during prerendering",
-      "GS(S)P Redirect Support production mode should not replace history of the origin page when GSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support production mode should not replace history of the origin page when GSP page is navigated to client-side (internal)",
-      "GS(S)P Redirect Support production mode should not replace history of the origin page when GSSP page is navigated to client-side (external)",
-      "GS(S)P Redirect Support production mode should not replace history of the origin page when GSSP page is navigated to client-side (internal normal)"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/gssp-redirect-with-rewrites/test/index.test.js": {
     "passed": [
       "getServerSideProps redirects should fallback to browser navigation for an unknown URL",
@@ -18012,157 +17816,6 @@
     "failed": [],
     "pending": [
       "Image Generation production mode should generate the image without errors"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/image-optimizer/test/content-disposition-type.test.ts": {
-    "passed": [
-      "with contentDispositionType inline dev support with next.config.js recursive url is not allowed should fail with encoded relative image url",
-      "with contentDispositionType inline dev support with next.config.js recursive url is not allowed should fail with relative image url with assetPrefix",
-      "with contentDispositionType inline dev support with next.config.js recursive url is not allowed should fail with relative next image url",
-      "with contentDispositionType inline dev support with next.config.js recursive url is not allowed should pass with absolute next image url",
-      "with contentDispositionType inline dev support with next.config.js should automatically detect image type when content-type is octet-stream",
-      "with contentDispositionType inline dev support with next.config.js should compress avif smaller than webp at q=100",
-      "with contentDispositionType inline dev support with next.config.js should compress avif smaller than webp at q=50",
-      "with contentDispositionType inline dev support with next.config.js should compress avif smaller than webp at q=75",
-      "with contentDispositionType inline dev support with next.config.js should downlevel avif format to jpeg for old Safari",
-      "with contentDispositionType inline dev support with next.config.js should downlevel webp format to jpeg for old Safari",
-      "with contentDispositionType inline dev support with next.config.js should emit blur svg when width is 8 in dev but not prod",
-      "with contentDispositionType inline dev support with next.config.js should emit blur svg when width is less than 8 in dev but not prod",
-      "with contentDispositionType inline dev support with next.config.js should error if the image file does not exist",
-      "with contentDispositionType inline dev support with next.config.js should error if the resource isn't a valid image",
-      "with contentDispositionType inline dev support with next.config.js should fail when domain is not defined in next.config.js",
-      "with contentDispositionType inline dev support with next.config.js should fail when internal url is not an image",
-      "with contentDispositionType inline dev support with next.config.js should fail when q is greater than 100",
-      "with contentDispositionType inline dev support with next.config.js should fail when q is less than 1",
-      "with contentDispositionType inline dev support with next.config.js should fail when q is missing",
-      "with contentDispositionType inline dev support with next.config.js should fail when q is not a number",
-      "with contentDispositionType inline dev support with next.config.js should fail when q is not an integer",
-      "with contentDispositionType inline dev support with next.config.js should fail when url fails to load an image",
-      "with contentDispositionType inline dev support with next.config.js should fail when url has file protocol",
-      "with contentDispositionType inline dev support with next.config.js should fail when url has ftp protocol",
-      "with contentDispositionType inline dev support with next.config.js should fail when url is missing",
-      "with contentDispositionType inline dev support with next.config.js should fail when url is protocol relative",
-      "with contentDispositionType inline dev support with next.config.js should fail when url is too long",
-      "with contentDispositionType inline dev support with next.config.js should fail when w is 0",
-      "with contentDispositionType inline dev support with next.config.js should fail when w is less than 0",
-      "with contentDispositionType inline dev support with next.config.js should fail when w is missing",
-      "with contentDispositionType inline dev support with next.config.js should fail when w is not a number",
-      "with contentDispositionType inline dev support with next.config.js should fail when w is not an integer",
-      "with contentDispositionType inline dev support with next.config.js should fail when width is not in next.config.js",
-      "with contentDispositionType inline dev support with next.config.js should handle concurrent requests",
-      "with contentDispositionType inline dev support with next.config.js should handle non-ascii characters in image url",
-      "with contentDispositionType inline dev support with next.config.js should maintain animated gif",
-      "with contentDispositionType inline dev support with next.config.js should maintain animated png",
-      "with contentDispositionType inline dev support with next.config.js should maintain animated png 2",
-      "with contentDispositionType inline dev support with next.config.js should maintain animated webp",
-      "with contentDispositionType inline dev support with next.config.js should maintain bmp",
-      "with contentDispositionType inline dev support with next.config.js should maintain icns",
-      "with contentDispositionType inline dev support with next.config.js should maintain ico format",
-      "with contentDispositionType inline dev support with next.config.js should maintain jpg format for old Safari",
-      "with contentDispositionType inline dev support with next.config.js should maintain pic/pct",
-      "with contentDispositionType inline dev support with next.config.js should maintain png format for old Safari",
-      "with contentDispositionType inline dev support with next.config.js should normalize invalid status codes",
-      "with contentDispositionType inline dev support with next.config.js should not allow svg with application header",
-      "with contentDispositionType inline dev support with next.config.js should not allow svg with comma header",
-      "with contentDispositionType inline dev support with next.config.js should not allow svg with uppercase header",
-      "with contentDispositionType inline dev support with next.config.js should not allow svg with wrong header",
-      "with contentDispositionType inline dev support with next.config.js should not allow vector svg",
-      "with contentDispositionType inline dev support with next.config.js should not resize if requested width is larger than original source image",
-      "with contentDispositionType inline dev support with next.config.js should resize absolute url from localhost",
-      "with contentDispositionType inline dev support with next.config.js should resize avif",
-      "with contentDispositionType inline dev support with next.config.js should resize avif and maintain format",
-      "with contentDispositionType inline dev support with next.config.js should resize gif (not animated)",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url and new Chrome accept header as avif",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url and old Chrome accept header as webp",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url and png accept header",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url and webp Firefox accept header",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url with invalid accept header as gif",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url with invalid accept header as png",
-      "with contentDispositionType inline dev support with next.config.js should resize relative url with invalid accept header as tiff",
-      "with contentDispositionType inline dev support with next.config.js should resize tiff",
-      "with contentDispositionType inline dev support with next.config.js should return home page",
-      "with contentDispositionType inline dev support with next.config.js should set 304 status without body when etag matches if-none-match",
-      "with contentDispositionType inline dev support with next.config.js should set cache-control to immutable for static images",
-      "with contentDispositionType inline dev support with next.config.js should timeout for upstream image exceeding 7 seconds",
-      "with contentDispositionType inline dev support with next.config.js should use cache and stale-while-revalidate when query is the same for external image",
-      "with contentDispositionType inline dev support with next.config.js should use cache and stale-while-revalidate when query is the same for internal image",
-      "with contentDispositionType inline dev support with next.config.js should use cached image file when parameters are the same for animated gif"
-    ],
-    "failed": [],
-    "pending": [
-      "with contentDispositionType inline Production Mode Server support with next.config.js recursive url is not allowed should fail with encoded relative image url",
-      "with contentDispositionType inline Production Mode Server support with next.config.js recursive url is not allowed should fail with relative image url with assetPrefix",
-      "with contentDispositionType inline Production Mode Server support with next.config.js recursive url is not allowed should fail with relative next image url",
-      "with contentDispositionType inline Production Mode Server support with next.config.js recursive url is not allowed should pass with absolute next image url",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should automatically detect image type when content-type is octet-stream",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should compress avif smaller than webp at q=100",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should compress avif smaller than webp at q=50",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should compress avif smaller than webp at q=75",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should downlevel avif format to jpeg for old Safari",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should downlevel webp format to jpeg for old Safari",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should emit blur svg when width is 8 in dev but not prod",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should emit blur svg when width is less than 8 in dev but not prod",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should error if the image file does not exist",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should error if the resource isn't a valid image",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when domain is not defined in next.config.js",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when internal url is not an image",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when q is greater than 100",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when q is less than 1",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when q is missing",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when q is not a number",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when q is not an integer",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when url fails to load an image",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when url has file protocol",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when url has ftp protocol",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when url is missing",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when url is protocol relative",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when url is too long",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when w is 0",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when w is less than 0",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when w is missing",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when w is not a number",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when w is not an integer",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should fail when width is not in next.config.js",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should handle concurrent requests",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should handle non-ascii characters in image url",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain animated gif",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain animated png",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain animated png 2",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain animated webp",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain bmp",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain icns",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain ico format",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain jpg format for old Safari",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain pic/pct",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should maintain png format for old Safari",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should normalize invalid status codes",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should not allow svg with application header",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should not allow svg with comma header",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should not allow svg with uppercase header",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should not allow svg with wrong header",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should not allow vector svg",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should not resize if requested width is larger than original source image",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize absolute url from localhost",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize avif",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize avif and maintain format",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize gif (not animated)",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url and new Chrome accept header as avif",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url and old Chrome accept header as webp",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url and png accept header",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url and webp Firefox accept header",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url with invalid accept header as gif",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url with invalid accept header as png",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize relative url with invalid accept header as tiff",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should resize tiff",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should return home page",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should set 304 status without body when etag matches if-none-match",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should set cache-control to immutable for static images",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should timeout for upstream image exceeding 7 seconds",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should use cache and stale-while-revalidate when query is the same for external image",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should use cache and stale-while-revalidate when query is the same for internal image",
-      "with contentDispositionType inline Production Mode Server support with next.config.js should use cached image file when parameters are the same for animated gif"
     ],
     "flakey": [],
     "runtimeError": false
@@ -19209,16 +18862,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/invalid-page-automatic-static-optimization/test/index.test.js": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Invalid Page automatic static optimization production mode Fails softly with descriptive error",
-      "Invalid Page automatic static optimization production mode handles non-error correctly"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/invalid-revalidate-values/test/index.test.js": {
     "passed": [
       "Invalid revalidate values should not show error for false revalidate value",
@@ -19425,18 +19068,6 @@
       "Middleware validation during build production mode given a middleware returning a text body with NextResponse does not throw an error",
       "Middleware validation during build production mode given a middleware returning an undefined body builds successfully"
     ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/middleware-dev-update/test/index.test.js": {
-    "passed": [
-      "Middleware development errors when matcher is added sends response correctly",
-      "Middleware development errors when middleware is added sends response correctly",
-      "Middleware development errors when middleware is removed and re-added sends response correctly",
-      "Middleware development errors when middleware is removed sends response correctly"
-    ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
@@ -19703,20 +19334,6 @@
       "Image Component Tests production mode SSR Lazy Loading Tests should not have loaded the second image immediately",
       "Image Component Tests production mode SSR Lazy Loading Tests should not have loaded the third image after scrolling down",
       "Image Component Tests production mode SSR Lazy Loading Tests should pass through classes on a lazy loaded image"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/next-image-legacy/custom-resolver/test/index.test.ts": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Custom Resolver Tests production mode Client-side Custom Loader Tests Should use a custom resolver for image URL",
-      "Custom Resolver Tests production mode Client-side Custom Loader Tests should add a srcset based on the custom resolver",
-      "Custom Resolver Tests production mode Client-side Custom Loader Tests should support the unoptimized attribute",
-      "Custom Resolver Tests production mode SSR Custom Loader Tests Should use a custom resolver for image URL",
-      "Custom Resolver Tests production mode SSR Custom Loader Tests should add a srcset based on the custom resolver",
-      "Custom Resolver Tests production mode SSR Custom Loader Tests should support the unoptimized attribute"
     ],
     "flakey": [],
     "runtimeError": false
@@ -20111,19 +19728,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/next-image-new/asset-prefix/test/index.test.js": {
-    "passed": [
-      "Image Component assetPrefix Tests development mode should include assetPrefix when placeholder=blur during next dev",
-      "Image Component assetPrefix Tests development mode should not log a deprecation warning about using `images.domains`"
-    ],
-    "failed": [],
-    "pending": [
-      "Image Component assetPrefix Tests production mode should not log a deprecation warning about using `images.domains`",
-      "Image Component assetPrefix Tests production mode should use base64 data url with placeholder=blur during next start"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/next-image-new/base-path/test/index.test.js": {
     "passed": [
       "Image Component basePath Tests development mode should correctly ignore prose styles",
@@ -20450,21 +20054,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/next-image-new/typescript/test/index.test.ts": {
-    "passed": [
-      "TypeScript Image Component development mode should have image types when enabled",
-      "TypeScript Image Component development mode should print error when invalid Image usage",
-      "TypeScript Image Component development mode should render the valid Image usage and not print error",
-      "TypeScript Image Component should remove global image types when disabled (dev)"
-    ],
-    "failed": [],
-    "pending": [
-      "TypeScript Image Component production mode should fail to build invalid usage of the Image component",
-      "TypeScript Image Component production mode should remove global image types when disabled"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/next-image-new/unicode/test/index.test.ts": {
     "passed": [
       "Image Component Unicode Image URL development mode should load external image with space",
@@ -20666,18 +20255,6 @@
       "Page Extensions production mode should throw if pageExtensions is an empty array",
       "Page Extensions production mode should use the default pageExtensions if set to undefined"
     ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/plugin-mdx-rs/test/index.test.js": {
-    "passed": [
-      "MDX-rs Configuration MDX-rs Plugin support should render an MDX page correctly",
-      "MDX-rs Configuration MDX-rs Plugin support should render an MDX page with component correctly",
-      "MDX-rs Configuration MDX-rs Plugin support should render an MDX page with globally provided components (from `mdx-components.js`) correctly",
-      "MDX-rs Configuration MDX-rs Plugin support with mdx transform options should render an MDX page correctly"
-    ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
@@ -20908,19 +20485,6 @@
     "failed": [],
     "pending": [
       "Production Custom Build Directory production mode With basic usage should render the page"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/production-config/test/index.test.js": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Production Config Usage production mode env should allow __ within env key",
-      "Production Config Usage production mode env should fail with NEXT_RUNTIME in env key",
-      "Production Config Usage production mode env should fail with NODE_ in env key",
-      "Production Config Usage production mode env should fail with leading __ in env key",
-      "Production Config Usage production mode with generateBuildId should add the custom buildid"
     ],
     "flakey": [],
     "runtimeError": false
@@ -21201,17 +20765,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/rewrite-with-browser-history/test/index.test.js": {
-    "passed": [
-      "rewrites persist with browser history actions development mode back-button should go back to rewritten path successfully"
-    ],
-    "failed": [],
-    "pending": [
-      "rewrites persist with browser history actions production mode back-button should go back to rewritten path successfully"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/rewrites-client-resolving/test/index.test.js": {
     "passed": [
       "Client-side rewrites resolving development mode should break rewrites chain after matching /category",
@@ -21452,38 +21005,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/script-loader/test/index.test.js": {
-    "passed": [
-      "Next.js Script - Primary Strategies - Strict Mode Does not duplicate inline scripts",
-      "Next.js Script - Primary Strategies - Strict Mode onReady fires after load event and then on every subsequent re-mount",
-      "Next.js Script - Primary Strategies - Strict Mode onReady should only fires once after loaded (issue #39993)",
-      "Next.js Script - Primary Strategies - Strict Mode onload fires correctly",
-      "Next.js Script - Primary Strategies - Strict Mode priority afterInteractive",
-      "Next.js Script - Primary Strategies - Strict Mode priority beforeInteractive",
-      "Next.js Script - Primary Strategies - Strict Mode priority beforeInteractive - older version",
-      "Next.js Script - Primary Strategies - Strict Mode priority beforeInteractive on navigate",
-      "Next.js Script - Primary Strategies - Strict Mode priority beforeInteractive with inline script",
-      "Next.js Script - Primary Strategies - Strict Mode priority beforeInteractive with inline script should execute",
-      "Next.js Script - Primary Strategies - Strict Mode priority lazyOnload"
-    ],
-    "failed": [],
-    "pending": [
-      "Next.js Script - Primary Strategies - Production Mode production mode Does not duplicate inline scripts",
-      "Next.js Script - Primary Strategies - Production Mode production mode Error message is shown if Partytown is not installed locally",
-      "Next.js Script - Primary Strategies - Production Mode production mode onReady fires after load event and then on every subsequent re-mount",
-      "Next.js Script - Primary Strategies - Production Mode production mode onReady should only fires once after loaded (issue #39993)",
-      "Next.js Script - Primary Strategies - Production Mode production mode onload fires correctly",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority afterInteractive",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive - older version",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive on navigate",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive with inline script",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive with inline script should execute",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority lazyOnload"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/scroll-back-restoration/test/index.test.js": {
     "passed": [
       "Scroll Back Restoration Support development mode should restore the scroll position on navigating back"
@@ -21711,15 +21232,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/trailing-slash-dist/test/index.test.js": {
-    "passed": [
-      "Trailing slash in distDir development mode supports trailing slash"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/trailing-slashes-href-resolving/test/index.test.js": {
     "passed": [
       "href resolving trailing-slash development mode should route to /another/ correctly",
@@ -21896,24 +21408,6 @@
       "TypeScript onlyRemoveTypeImports production mode should render a normal page correctly",
       "TypeScript onlyRemoveTypeImports production mode should render a page with type import correctly"
     ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/typescript-paths/test/index.test.js": {
-    "passed": [
-      "typescript paths default behavior should alias components",
-      "typescript paths default behavior should not resolve to .d.ts files",
-      "typescript paths default behavior should resolve a single matching alias",
-      "typescript paths default behavior should resolve the first item in the array first",
-      "typescript paths default behavior should resolve the second item in as a fallback",
-      "typescript paths without baseurl default behavior should alias components",
-      "typescript paths without baseurl default behavior should not resolve to .d.ts files",
-      "typescript paths without baseurl default behavior should resolve a single matching alias",
-      "typescript paths without baseurl default behavior should resolve the first item in the array first",
-      "typescript paths without baseurl default behavior should resolve the second item in as a fallback"
-    ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
