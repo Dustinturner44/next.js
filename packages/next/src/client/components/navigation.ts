@@ -167,6 +167,10 @@ function getSelectedLayoutSegmentPath(
   if (first) {
     // Use the provided parallel route key on the first parallel route
     node = tree[1][parallelRouteKey]
+
+    if (parallelRouteKey !== 'children') {
+      return getSelectedLayoutSegmentPath(node, 'children')
+    }
   } else {
     // After first parallel route prefer children, if there's no children pick the first parallel route.
     const parallelRoutes = tree[1]
@@ -182,9 +186,7 @@ function getSelectedLayoutSegmentPath(
     return segmentPath
   }
 
-  if (segmentValue !== 'children' && !segmentValue.startsWith('@')) {
-    segmentPath.push(segmentValue)
-  }
+  segmentPath.push(segmentValue)
 
   return getSelectedLayoutSegmentPath(
     node,

@@ -183,38 +183,7 @@ describe('app dir - hooks', () => {
   })
 
   describe('useSelectedLayoutSegments with parallel routes', () => {
-    it.each`
-      path                                                    | defaultSegments | headerSegments
-      ${'/hooks/use-selected-layout-segment-parallel/first'}  | ${['first']}    | ${['first']}
-      ${'/hooks/use-selected-layout-segment-parallel/second'} | ${['second']}   | ${['second']}
-      ${'/hooks/use-selected-layout-segment-parallel/third'}  | ${['third']}    | ${['third']}
-    `(
-      'should not include "children" or "@" markers in results at $path',
-      async ({ path, defaultSegments, headerSegments }) => {
-        const $ = await next.render$(path)
-
-        const collectedDefaultSegments = JSON.parse(
-          $('#default-segments').text()
-        )
-        const collectedHeaderSegments = JSON.parse($('#header-segments').text())
-
-        const allSegments = [
-          ...collectedDefaultSegments,
-          ...collectedHeaderSegments,
-        ]
-
-        expect(allSegments).not.toContain('children')
-
-        expect(collectedDefaultSegments).toEqual(defaultSegments)
-        expect(collectedHeaderSegments).toEqual(headerSegments)
-
-        expect(allSegments.every((segment) => !segment.startsWith('@'))).toBe(
-          true
-        )
-      }
-    )
-
-    it('should filter out internal routing segments from both parallel routes', async () => {
+    it('should filter out the children internal routing segment from parallel routes', async () => {
       const $ = await next.render$(
         '/hooks/use-selected-layout-segment-parallel/test'
       )
@@ -225,8 +194,29 @@ describe('app dir - hooks', () => {
       expect(defaultSegments).toEqual(['test'])
       expect(headerSegments).toEqual(['test'])
 
-      expect($('#header-page').text()).toContain('Parallel-Header: test')
-      expect($('#children-page').text()).toContain('Page-Children: test')
+      expect($('#header-segment-page').text()).toContain(
+        '@header/[segment]: test'
+      )
+      expect($('#segment-page').text()).toContain('/[segment]: test')
+    })
+
+    it('should filter NOT filter out user defined routing segments', async () => {
+      const $ = await next.render$(
+        '/hooks/use-selected-layout-segment-parallel/test/children'
+      )
+
+      const defaultSegments = JSON.parse($('#default-segments').text())
+      const headerSegments = JSON.parse($('#header-segments').text())
+
+      expect(defaultSegments).toEqual(['test', 'children'])
+      expect(headerSegments).toEqual(['test', 'children'])
+
+      expect($('#header-segment-children-page').text()).toContain(
+        '@header/[segment]/children: test/children'
+      )
+      expect($('#segment-children-page').text()).toContain(
+        '/[segment]/children: test/children'
+      )
     })
   })
 })

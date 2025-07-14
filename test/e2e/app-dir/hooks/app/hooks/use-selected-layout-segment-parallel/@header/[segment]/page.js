@@ -1,8 +1,8 @@
-export default async function HeaderPage({ params }) {
+export default async function HeaderSegmentPage({ params }) {
   const { segment } = await params
   return (
-    <div id="header-page">
-      <h1>Parallel-Header: {segment}</h1>
+    <div id="header-segment-page">
+      <p>@header/[segment]: {segment}</p>
     </div>
   )
 }
