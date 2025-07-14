@@ -253,6 +253,12 @@ const flightDataPathHeadKey = 'h'
 const getFlightViewportKey = (requestId: string) => requestId + 'v'
 const getFlightMetadataKey = (requestId: string) => requestId + 'm'
 
+const filterStackFrame =
+  process.env.NODE_ENV !== 'production'
+    ? (require('../lib/source-maps') as typeof import('../lib/source-maps'))
+        .filterStackFrameDEV
+    : undefined
+
 interface ParsedRequestHeaders {
   /**
    * Router state provided from the client-side router. Used to handle rendering
@@ -643,6 +649,7 @@ async function generateDynamicFlightRenderResult(
     {
       onError,
       temporaryReferences: options?.temporaryReferences,
+      filterStackFrame,
     }
   )
 
@@ -742,6 +749,7 @@ async function warmupDevRender(
     rscPayload,
     clientReferenceManifest.clientModules,
     {
+      filterStackFrame,
       onError,
       signal: renderController.signal,
     }
@@ -1220,6 +1228,9 @@ async function renderToHTMLOrFlightImpl(
     const shouldTrackModuleLoading = () => {
       if (!renderOpts.experimental.dynamicIO) {
         return false
+      }
+      if (renderOpts.dev) {
+        return true
       }
       const workUnitStore = workUnitAsyncStorage.getStore()
       return !!(
@@ -1899,12 +1910,7 @@ async function renderToStream(
               onError: serverComponentsErrorHandler,
               environmentName: () =>
                 requestStore.prerenderPhase === true ? 'Prerender' : 'Server',
-              filterStackFrame(url: string, _functionName: string): boolean {
-                // The default implementation filters out <anonymous> stack frames
-                // but we want to retain them because current Server Components and
-                // built-in Components in parent stacks don't have source location.
-                return !url.startsWith('node:') && !url.includes('node_modules')
-              },
+              filterStackFrame,
             }
           )
         },
@@ -1940,6 +1946,7 @@ async function renderToStream(
           RSCPayload,
           clientReferenceManifest.clientModules,
           {
+            filterStackFrame,
             onError: serverComponentsErrorHandler,
           }
         )
@@ -2158,6 +2165,7 @@ async function renderToStream(
       errorRSCPayload,
       clientReferenceManifest.clientModules,
       {
+        filterStackFrame,
         onError: serverComponentsErrorHandler,
       }
     )
@@ -2357,6 +2365,7 @@ async function spawnDynamicValidationInDev(
     initialServerPayload,
     clientReferenceManifest.clientModules,
     {
+      filterStackFrame,
       onError: (err) => {
         const digest = getDigestForWellKnownError(err)
 
@@ -2558,6 +2567,7 @@ async function spawnDynamicValidationInDev(
     ctx,
     isNotFound
   )
+
   const reactServerResult = await createReactServerPrerenderResult(
     prerenderAndAbortInSequentialTasks(
       async () => {
@@ -2570,6 +2580,7 @@ async function spawnDynamicValidationInDev(
           finalAttemptRSCPayload,
           clientReferenceManifest.clientModules,
           {
+            filterStackFrame,
             onError: (err: unknown) => {
               if (
                 finalServerController.signal.aborted &&
@@ -2985,6 +2996,7 @@ async function prerenderToStream(
         initialServerPayload,
         clientReferenceManifest.clientModules,
         {
+          filterStackFrame,
           onError: (err) => {
             const digest = getDigestForWellKnownError(err)
 
@@ -3193,6 +3205,7 @@ async function prerenderToStream(
                 finalAttemptRSCPayload,
                 clientReferenceManifest.clientModules,
                 {
+                  filterStackFrame,
                   onError: (err: unknown) => {
                     return serverComponentsErrorHandler(err)
                   },
@@ -3470,6 +3483,7 @@ async function prerenderToStream(
             RSCPayload,
             clientReferenceManifest.clientModules,
             {
+              filterStackFrame,
               onError: serverComponentsErrorHandler,
             }
           )
@@ -3689,6 +3703,7 @@ async function prerenderToStream(
         ctx,
         res.statusCode === 404
       )
+
       const reactServerResult = (reactServerPrerenderResult =
         await createReactServerPrerenderResultFromRender(
           workUnitAsyncStorage.run(
@@ -3697,6 +3712,7 @@ async function prerenderToStream(
             RSCPayload,
             clientReferenceManifest.clientModules,
             {
+              filterStackFrame,
               onError: serverComponentsErrorHandler,
             }
           )
@@ -3867,6 +3883,7 @@ async function prerenderToStream(
       errorRSCPayload,
       clientReferenceManifest.clientModules,
       {
+        filterStackFrame,
         onError: serverComponentsErrorHandler,
       }
     )
