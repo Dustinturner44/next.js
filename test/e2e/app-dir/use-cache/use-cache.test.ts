@@ -449,9 +449,12 @@ describe('use-cache', () => {
         await next.readFile('.next/prerender-manifest.json')
       ) as PrerenderManifest
 
+      const withCacheComponents =
+        process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true'
+
       let prerenderedRoutes = Object.entries(prerenderManifest.routes)
 
-      if (withPPR || withCacheComponents) {
+      if (withCacheComponents) {
         // For the purpose of this test we don't consider an incomplete shell.
         prerenderedRoutes = prerenderedRoutes.filter(([pathname, route]) => {
           const filename = pathname.replace(/^\//, '').replace(/^$/, 'index')
@@ -542,7 +545,7 @@ describe('use-cache', () => {
       // config for the page.
       expect(routes['/cache-tag'].initialRevalidateSeconds).toBe(42)
 
-      if (withPPR) {
+      if (process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true') {
         // cache life profile "weeks"
         expect(dynamicRoutes['/[id]'].fallbackRevalidate).toBe(604800)
         expect(dynamicRoutes['/[id]'].fallbackExpire).toBe(2592000)
@@ -1020,8 +1023,11 @@ describe('use-cache', () => {
     })
   }
 
-  if (isNextStart && withPPR) {
-    it('should exclude inner caches and omitted caches from the resume data cache (RDC)', async () => {
+  if (
+    isNextStart &&
+    process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true'
+  ) {
+    it('should exclude inner caches from the resume data cache (RDC)', async () => {
       await next.fetch('/rdc')
 
       const resumeDataCache = extractResumeDataCacheFromPostponedState(
