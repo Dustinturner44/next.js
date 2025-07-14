@@ -3,6 +3,12 @@ import fetch from 'node-fetch'
 // Get target version from command line argument
 const specifiedVersion = process.argv[2]
 
+// GitHub API configuration
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+const fetchOptions = GITHUB_TOKEN
+  ? { headers: { Authorization: `token ${GITHUB_TOKEN}` } }
+  : {}
+
 // Show help if requested
 if (specifiedVersion === '--help' || specifiedVersion === '-h') {
   console.log(`
@@ -19,13 +25,32 @@ Arguments:
             - "15.3.1:15.4.0-canary.130" - generates from 15.3.1-canary.0 to 15.4.0-canary.130
             If not specified, uses the latest canary version.
 
+Environment Variables:
+  GITHUB_TOKEN   Optional. GitHub personal access token for higher rate limits.
+
 Examples:
   node scripts/generate-release-log.mjs                          # Use latest canary version
   node scripts/generate-release-log.mjs 13.4.15                  # Generate for 13.4.15 canaries
   node scripts/generate-release-log.mjs 15.3.1:15.4.0            # Generate from 15.3.1 to 15.4.0
   node scripts/generate-release-log.mjs 15.3.1:15.4.0-canary.130 # Generate up to specific canary
+  
+  # With authentication for higher rate limits:
+  GITHUB_TOKEN=your_token node scripts/generate-release-log.mjs 15.3.1:15.4.0
 `)
   process.exit(0)
+}
+
+// Helper function to normalize release data
+function normalizeReleases(releases) {
+  return releases.map(({ id, tag_name, created_at, body }) => ({
+    id,
+    tag_name,
+    created_at,
+    body: body
+      .replace(/\r\n/g, '\n')
+      .split('\n')
+      .map((e) => e.trim()),
+  }))
 }
 
 async function fetchReleasesUntilCanaryZero(targetVersionPrefix) {
@@ -37,6 +62,9 @@ async function fetchReleasesUntilCanaryZero(targetVersionPrefix) {
   let latestRelease = null
 
   console.log('Fetching releases from GitHub...')
+  if (GITHUB_TOKEN) {
+    console.log('Using GitHub authentication for higher rate limits')
+  }
   if (targetVersion) {
     console.log(`Looking for releases with version: ${targetVersion}`)
   }
@@ -44,7 +72,8 @@ async function fetchReleasesUntilCanaryZero(targetVersionPrefix) {
   while (hasMore && !foundCanaryZero) {
     try {
       const response = await fetch(
-        `https://api.github.com/repos/vercel/next.js/releases?per_page=100&page=${page}`
+        `https://api.github.com/repos/vercel/next.js/releases?per_page=100&page=${page}`,
+        fetchOptions
       )
 
       if (!response.ok) {
@@ -124,6 +153,9 @@ async function fetchReleasesForRange(startVersion, endVersion) {
   let latestRelease = null
 
   console.log('Fetching releases from GitHub...')
+  if (GITHUB_TOKEN) {
+    console.log('Using GitHub authentication for higher rate limits')
+  }
   console.log(
     `Looking for releases from ${startVersion} to ${endVersion || 'latest'}`
   )
@@ -131,7 +163,8 @@ async function fetchReleasesForRange(startVersion, endVersion) {
   while (hasMore && !foundStart) {
     try {
       const response = await fetch(
-        `https://api.github.com/repos/vercel/next.js/releases?per_page=100&page=${page}`
+        `https://api.github.com/repos/vercel/next.js/releases?per_page=100&page=${page}`,
+        fetchOptions
       )
 
       if (!response.ok) {
@@ -264,22 +297,8 @@ async function main() {
       )
       const allReleases = await fetchReleasesForRange(startVersion, endVersion)
 
-      // Filter releases to only include those in our range
-      releases = allReleases
-        .map(({ id, tag_name, created_at, body }) => ({
-          id,
-          tag_name,
-          created_at,
-          body: body
-            .replace(/\r\n/g, '\n')
-            .split('\n')
-            .map((e) => e.trim()),
-        }))
-        .filter((release) => {
-          // Include all releases between start and end
-          return true
-        })
-        .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      // Map the releases to the expected format (already in chronological order)
+      releases = normalizeReleases(allReleases)
     } else {
       // Single version specified - use original logic
       let targetVersionPrefix = specifiedVersion
@@ -291,16 +310,7 @@ async function main() {
       const { allReleases: releasesArray, targetVersion } =
         await fetchReleasesUntilCanaryZero(targetVersionPrefix)
 
-      releases = releasesArray
-        .map(({ id, tag_name, created_at, body }) => ({
-          id,
-          tag_name,
-          created_at,
-          body: body
-            .replace(/\r\n/g, '\n')
-            .split('\n')
-            .map((e) => e.trim()),
-        }))
+      releases = normalizeReleases(releasesArray)
         .filter((v) => v.tag_name.includes(targetVersion))
         .sort((a, b) => a.created_at.localeCompare(b.created_at))
     }
@@ -309,16 +319,7 @@ async function main() {
     const { allReleases: releasesArray, targetVersion } =
       await fetchReleasesUntilCanaryZero(null)
 
-    releases = releasesArray
-      .map(({ id, tag_name, created_at, body }) => ({
-        id,
-        tag_name,
-        created_at,
-        body: body
-          .replace(/\r\n/g, '\n')
-          .split('\n')
-          .map((e) => e.trim()),
-      }))
+    releases = normalizeReleases(releasesArray)
       .filter((v) => v.tag_name.includes(targetVersion))
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
   }
@@ -338,17 +339,20 @@ async function main() {
     '### Credits': [],
   }
 
+  // Pre-compile regex for better performance
+  const githubUsernameRegex = /@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}/gi
+
   Object.keys(lineItems).forEach((header) => {
     releases.forEach((release) => {
       const headerIndex = release.body.indexOf(header)
 
-      if (!~headerIndex) return
+      if (headerIndex === -1) return
 
       let headerLastIndex = release.body
         .slice(headerIndex + 1)
         .findIndex((v) => v.startsWith('###'))
 
-      if (~headerLastIndex) {
+      if (headerLastIndex !== -1) {
         headerLastIndex = headerLastIndex + headerIndex
       } else {
         headerLastIndex = release.body.length - 1
@@ -356,11 +360,12 @@ async function main() {
 
       if (header === '### Credits') {
         release.body.slice(headerIndex, headerLastIndex + 1).forEach((e) => {
-          const re = /@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}/gi
           let m
+          // Reset regex lastIndex for each new string
+          githubUsernameRegex.lastIndex = 0
 
           do {
-            m = re.exec(e)
+            m = githubUsernameRegex.exec(e)
 
             if (m) {
               lineItems[header].push(m.pop())
@@ -413,8 +418,9 @@ async function main() {
       releases.length > 0
         ? `${releases[0].tag_name.replace(/^v/, '')} to ${releases[releases.length - 1].tag_name.replace(/^v/, '')}`
         : 'Unknown',
-    firstVersion: releases[0].tag_name,
-    lastVersion: releases[releases.length - 1].tag_name,
+    firstVersion: releases.length > 0 ? releases[0].tag_name : 'Unknown',
+    lastVersion:
+      releases.length > 0 ? releases[releases.length - 1].tag_name : 'Unknown',
     content: finalMessage.join('\n'),
   }
 }
