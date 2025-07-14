@@ -162,7 +162,7 @@ const MenuPanel = () => {
       label: 'Fork URL',
       value: panels.has('fork-url') ? (
         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>🔗</span>
+          <ChevronRight />
           <span style={{ 
             width: '6px', 
             height: '6px', 
@@ -171,7 +171,7 @@ const MenuPanel = () => {
             boxShadow: '0 0 0 1px var(--color-green-200)'
           }} />
         </span>
-      ) : '🔗',
+      ) : <ChevronRight />,
       onClick: () => togglePanel('fork-url'),
       footer: true,
       attributes: {
@@ -181,7 +181,7 @@ const MenuPanel = () => {
     },
     {
       label: sidebarIsOpen ? 'Close Sidebar' : 'Open Sidebar',
-      value: sidebarIsOpen ? '⏩' : '⏪',
+      value: sidebarIsOpen ? <ChevronRight /> : <ChevronRight />,
       onClick: () => {
         toggleSidebar()
       },
