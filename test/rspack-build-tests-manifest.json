@@ -5049,6 +5049,26 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/router-disable-smooth-scroll/router-disable-smooth-scroll.legacy.test.ts": {
+    "passed": [
+      "router smooth scroll optimization (legacy with data attribute) should not warn when data attribute is present even in legacy mode",
+      "router smooth scroll optimization (legacy) should work with smooth scroll CSS and warn in development"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/router-disable-smooth-scroll/router-disable-smooth-scroll.optimized.test.ts": {
+    "passed": [
+      "router smooth scroll optimization (optimized early exit) should exit early when CSS smooth scroll detected but no data attribute",
+      "router smooth scroll optimization (optimized) should work with smooth scroll CSS and data attribute without warning"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/router-stuck-dynamic-static-segment/router-stuck-dynamic-static-segment.test.ts": {
     "passed": [
       "router-stuck-dynamic-static-segment should allow navigation between dynamic parameter and static parameter of the same value"
