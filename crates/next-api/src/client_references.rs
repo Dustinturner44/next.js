@@ -103,6 +103,9 @@ pub async fn map_client_references(
             .await?
             .into_iter()
             .collect::<FxHashMap<_, _>>();
+        /// Collects the shallowly discoverable set of client references for each server component
+        /// in DFS post order. Uses [memo] to avoid redundantly exploring the same parts of
+        /// the graph when different server components have shared dependencies.
         #[allow(clippy::type_complexity)]
         fn dfs_collect_shallow_client_references(
             is_root: bool,
@@ -115,7 +118,8 @@ pub async fn map_client_references(
                                                                           * current DFS path */
         ) -> Option<Rc<Vec<ResolvedVc<Box<dyn Module>>>>> {
             // Because we are only collecting shallowly discoverable references, short circuit on
-            // each client reference
+            // each client reference, however roots are client references (server components) so
+            // ignore those
             if !is_root && client_references.contains_key(&u) {
                 return Some(Rc::from(vec![u]));
             }
@@ -129,17 +133,16 @@ pub async fn map_client_references(
             // For DFS post-order, we simply don't add 'u' or its descendants from this path
             // until the cycle is naturally broken or handled by memoization from another path.
             // We return an empty list for this path to avoid infinite recursion.
-            if visiting_stack.contains(&u) {
+            if !visiting_stack.insert(u) {
                 return None;
             }
-
-            visiting_stack.insert(u); // Mark 'u' as currently visiting
 
             // 3. Recursively visit neighbors or consume ourselves, we don't consider client
             //    references to be traversable.
             let mut reachable_green_from_u = FxIndexSet::default();
 
             for v in graph.neighbors(u) {
+                // This ignores back edges because we simply already visited them.
                 if let Some(green_nodes_from_v) = dfs_collect_shallow_client_references(
                     false,
                     v,
@@ -157,7 +160,7 @@ pub async fn map_client_references(
             let reachable_green_from_u: Rc<Vec<_>> =
                 Rc::from(reachable_green_from_u.into_iter().collect::<Vec<_>>());
 
-            // 5. Save the result for 'u'
+            // 5. Save the result in memo
             memo.insert(u, reachable_green_from_u.clone());
 
             visiting_stack.remove(&u); // Unmark 'u' as visiting
