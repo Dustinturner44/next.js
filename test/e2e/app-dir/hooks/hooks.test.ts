@@ -200,7 +200,7 @@ describe('app dir - hooks', () => {
       expect($('#segment-page').text()).toContain('/[segment]: test')
     })
 
-    it('should filter NOT filter out user defined routing segments', async () => {
+    it('should NOT filter out user defined routing segments', async () => {
       const $ = await next.render$(
         '/hooks/use-selected-layout-segment-parallel/test/children'
       )
