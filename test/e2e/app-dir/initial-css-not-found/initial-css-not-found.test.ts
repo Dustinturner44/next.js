@@ -13,11 +13,6 @@ describe('initial-css-not-found', () => {
       await browser.eval(
         `window.getComputedStyle(document.querySelector('body')).color`
       )
-    ).toBe(
-      // This only fails in production turbopack builds
-      process.env.IS_TURBOPACK_TEST && !process.env.TURBOPACK_DEV
-        ? 'rgb(0, 0, 0)'
-        : 'rgb(255, 0, 0)'
-    )
+    ).toBe('rgb(255, 0, 0)')
   })
 })
