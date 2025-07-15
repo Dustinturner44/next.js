@@ -100,8 +100,6 @@ import { backgroundLogCompilationEvents } from '../../shared/lib/turbopack/compi
 import { getSupportedBrowsers } from '../../build/utils'
 import { receiveBrowserLogsTurbopack } from './browser-logs/receive-logs'
 
-declare const __turbopack_clear_chunk_cache__: () => void
-
 const wsServer = new ws.Server({ noServer: true })
 const isTestMode = !!(
   process.env.NEXT_TEST_MODE ||
@@ -348,7 +346,11 @@ export async function createHotReloaderTurbopack(
       p.startsWith('server/app')
     )
 
-    __turbopack_clear_chunk_cache__()
+    // Edge uses the browser runtime which already disposes chunks individually.
+    // TODO: process.env.NEXT_RUNTIME is 'nodejs' even though Node.js runtime is not used.
+    if ('__turbopack_clear_chunk_cache__' in globalThis) {
+      ;(globalThis as any).__turbopack_clear_chunk_cache__()
+    }
 
     // TODO: Stop re-evaluating React Client once it relies on Turbopack's chunk cache.
     if (hasAppPaths) {
