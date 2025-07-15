@@ -29,6 +29,8 @@ export const PanelRouterContext = createContext<{
   getPanelZIndex: (panel: string) => number
   activePanel: PanelStateKind | null
   setActivePanel: (panel: PanelStateKind | null) => void
+  setPanelPosition: (panel: string, position: { x: number; y: number }) => void
+  getPanelPosition: (panel: string) => { x: number; y: number }
 }>(null!)
 
 export const usePanelRouterContext = () => useContext(PanelRouterContext)

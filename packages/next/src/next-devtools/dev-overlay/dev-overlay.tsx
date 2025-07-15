@@ -49,6 +49,9 @@ export function DevOverlay({
 
   // Single active panel state
   const [activePanel, setActivePanel] = useState<PanelStateKind | null>(null)
+  
+  // Panel positions for seamless swapping
+  const [panelPositions, setPanelPositions] = useState<Record<string, { x: number; y: number }>>({})
 
   const triggerRef = useRef<HTMLButtonElement>(null)
 
@@ -57,8 +60,7 @@ export function DevOverlay({
     if (panel !== 'panel-selector' && panel !== 'hub') {
       setPanels((prev) => {
         const next = new Set()
-        // Keep panel-selector and hub if they were open
-        if (prev.has('panel-selector')) next.add('panel-selector')
+        // Keep hub if it was open, but close panel-selector to "swap" it
         if (prev.has('hub')) next.add('hub')
         next.add(panel)
         return next
@@ -115,6 +117,21 @@ export function DevOverlay({
     [panelZOrder]
   )
 
+  const setPanelPosition = useCallback((panel: string, position: { x: number; y: number }) => {
+    setPanelPositions((prev) => ({
+      ...prev,
+      [panel]: position,
+    }))
+  }, [])
+
+  const getPanelPosition = useCallback((panel: string) => {
+    // If opening a panel other than panel-selector, use panel-selector's position if available
+    if (panel !== 'panel-selector' && panelPositions['panel-selector']) {
+      return panelPositions['panel-selector']
+    }
+    return panelPositions[panel] || { x: 100, y: 100 }
+  }, [panelPositions])
+
   return (
     <ShadowPortal>
       <CssReset />
@@ -152,6 +169,8 @@ export function DevOverlay({
                             getPanelZIndex,
                             activePanel,
                             setActivePanel,
+                            setPanelPosition,
+                            getPanelPosition,
                           }}
                         >
                           <ErrorOverlay

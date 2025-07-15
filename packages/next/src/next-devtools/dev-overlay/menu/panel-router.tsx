@@ -30,7 +30,8 @@ import { useHideShortcutStorage } from '../components/errors/dev-tools-indicator
 import { useShortcuts } from '../hooks/use-shortcuts'
 import { useUpdateAllPanelPositions } from '../components/devtools-indicator/devtools-indicator'
 import { useDev0Context } from '../context/dev-zero-context'
-import { Dev0ProjectPanel } from '../components/dev-zero-panel/dev-zero-project-panel'
+import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
+import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 import { HubPanel } from '../components/hub-panel/hub-panel'
 import { ForkUrlPanel } from '../components/fork-url/fork-url-panel'
 import { useSidebarContext } from '../context/sidebar-context'
@@ -662,14 +663,53 @@ export const PanelRouter = () => {
 const Dev0ProjectRoutes = () => {
   const { projects } = useDev0Context()
   const { state } = useDevOverlayContext()
+  const [refreshKeys, setRefreshKeys] = React.useState<Record<string, number>>({})
 
   const runningProjects = projects.filter((p) => p.status === 'running')
+
+  const handleRefresh = (projectName: string) => {
+    setRefreshKeys(prev => ({
+      ...prev,
+      [projectName]: (prev[projectName] || 0) + 1
+    }))
+  }
 
   return (
     <>
       {runningProjects.map((project) => (
         <PanelRoute key={project.name} name={`dev0-project-${project.name}`}>
-          <Dev0ProjectPanel project={project} />
+          <DynamicPanel
+            
+            sharePanelSizeGlobally={false}
+            sharePanelPositionGlobally={true}
+            draggable
+            sizeConfig={{
+              kind: 'resizable',
+              maxHeight: '90vh',
+              maxWidth: '90vw',
+              minHeight: 400 / state.scale,
+              minWidth: 600 / state.scale,
+              initialSize: {
+                height: 300 / state.scale,
+                width: 400 / state.scale,
+              },
+            }}
+            header={
+              <Dev0Header
+                projectName={project.name}
+                projectPath={project.absolutePath || project.cwd}
+                deploymentUrl={project.deploymentUrl}
+                port={project.port}
+                onRefresh={() => handleRefresh(project.name)}
+              />
+            }
+          >
+            <Dev0Panel
+              projectName={project.name}
+              port={project.port!}
+              refreshKey={refreshKeys[project.name] || 0}
+            />
+          </DynamicPanel>
         </PanelRoute>
       ))}
     </>
