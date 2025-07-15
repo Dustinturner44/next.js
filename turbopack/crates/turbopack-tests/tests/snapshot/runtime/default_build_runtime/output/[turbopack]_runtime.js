@@ -585,11 +585,8 @@ function loadChunkAsync(source, chunkData) {
     if (entry === undefined) {
         // A new Promise ensures callers that don't handle rejection will still trigger one unhandled rejection.
         // Handling the rejection will not trigger unhandled rejections.
-        entry = new Promise((resolve, reject)=>{
-            loadChunkAsyncUncached(source, chunkPath).then(()=>{
-                loadedChunks.add(chunkPath);
-                resolve();
-            }).catch(reject);
+        entry = loadChunkAsyncUncached(source, chunkPath).then(()=>{
+            loadedChunks.add(chunkPath);
         });
         chunkCache.set(chunkPath, entry);
     }
