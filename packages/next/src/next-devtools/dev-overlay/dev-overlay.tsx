@@ -57,11 +57,16 @@ export function DevOverlay({
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const openPanel = (panel: PanelStateKind) => {
-    // If there's already an active panel, dock it
+    // Don't dock panels when opening hub or panel-selector
+    const isNonModalPanel = panel === 'hub' || panel === 'panel-selector'
+
+    // If there's already an active panel, dock it (unless opening a non-modal panel)
     if (
       activePanel &&
       activePanel !== panel &&
-      activePanel !== 'panel-selector'
+      activePanel !== 'panel-selector' &&
+      activePanel !== 'hub' &&
+      !isNonModalPanel
     ) {
       setDockedPanels((prev) => new Set([...prev, activePanel]))
     }
@@ -113,10 +118,14 @@ export function DevOverlay({
         }
       } else {
         // Open panel with docking logic
+        // Don't dock panels when opening hub or panel-selector
+        const isNonModalPanel = panel === 'hub' || panel === 'panel-selector'
         if (
           activePanel &&
           activePanel !== panel &&
-          activePanel !== 'panel-selector'
+          activePanel !== 'panel-selector' &&
+          activePanel !== 'hub' &&
+          !isNonModalPanel
         ) {
           setDockedPanels((prevDocked) => new Set([...prevDocked, activePanel]))
         }

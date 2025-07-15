@@ -1,3 +1,4 @@
+import React from 'react'
 import type { Corners } from '../../../shared'
 import { useCallback, useLayoutEffect, useRef } from 'react'
 import { useDragContext } from './drag-context'
@@ -19,6 +20,7 @@ export function Draggable({
   position: currentCorner,
   setPosition: setCurrentCorner,
   onDragStart,
+  onDragEnd: onDragEndProp,
   dragHandleSelector,
   disableDrag = false,
   avoidZone,
@@ -29,6 +31,7 @@ export function Draggable({
   padding: number
   setPosition: (position: Corners) => void
   onDragStart?: () => void
+  onDragEnd?: () => void
   dragHandleSelector?: string
   disableDrag?: boolean
   style?: React.CSSProperties
@@ -39,7 +42,7 @@ export function Draggable({
   }
 }) {
   const { isOpen: sidebarIsOpen, width: sidebarWidth } = useSidebarContext()
-  
+
   const { ref, animate, ...drag } = useDrag({
     disabled: disableDrag,
     handles: useDragContext()?.handles,
@@ -58,112 +61,20 @@ export function Draggable({
     )
     if (distance === 0) {
       ref.current?.style.removeProperty('translate')
+      onDragEndProp?.()
       return
     }
 
-    // Calculate velocity magnitude
-    const velocityMagnitude = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y)
-    
-    // Only snap to corners if velocity is above threshold (e.g., 1500 pixels/second)
-    const VELOCITY_THRESHOLD = 1500
-    
-    if (velocityMagnitude > VELOCITY_THRESHOLD) {
-      // High velocity - snap to nearest corner based on projected position
-      const projectedPosition = {
-        x: translation.x + project(velocity.x),
-        y: translation.y + project(velocity.y),
-      }
-      const nearestCorner = getNearestCorner(projectedPosition)
-      animate(nearestCorner)
-    } else {
-      // Low velocity - stay at current position
-      // Just remove the transition and keep the current translate
-      if (ref.current) {
-        ref.current.style.transition = 'none'
-      }
-    }
+    // Just call the drag end callback without any snapping
+    onDragEndProp?.()
   }
 
   function onAnimationEnd({ corner }: Corner) {
     setTimeout(() => {
       ref.current?.style.removeProperty('translate')
       setCurrentCorner(corner)
+      onDragEndProp?.()
     })
-  }
-
-  function getNearestCorner({ x, y }: Point): Corner {
-    const allCorners = getCorners()
-    const distances = Object.entries(allCorners).map(([key, translation]) => {
-      const distance = Math.sqrt(
-        (x - translation.x) ** 2 + (y - translation.y) ** 2
-      )
-      return { key, distance }
-    })
-    const min = Math.min(...distances.map((d) => d.distance))
-    const nearest = distances.find((d) => d.distance === min)
-    if (!nearest) {
-      // this should be guarded by an invariant, shouldn't ever happen
-      return { corner: currentCorner, translation: allCorners[currentCorner] }
-    }
-    return {
-      translation: allCorners[nearest.key as Corners],
-      corner: nearest.key as Corners,
-    }
-  }
-
-  function getCorners(): Record<Corners, Point> {
-    const offset = padding * 2
-    const triggerWidth = ref.current?.offsetWidth || 0
-    const triggerHeight = ref.current?.offsetHeight || 0
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth
-    
-    // Calculate available width considering sidebar
-    const sidebarOffset = sidebarIsOpen ? sidebarWidth : 0
-    const availableWidth = window.innerWidth - scrollbarWidth - sidebarOffset
-
-    function getAbsolutePosition(corner: Corners) {
-      const isRight = corner.includes('right')
-      const isBottom = corner.includes('bottom')
-
-      // Base positions flush against the chosen corner, considering sidebar
-      let x = isRight
-        ? availableWidth - offset - triggerWidth
-        : 0
-      let y = isBottom ? window.innerHeight - offset - triggerHeight : 0
-
-      // Apply avoidZone offset if this corner is occupied. We only move along
-      // the vertical axis to keep the panel within the viewport. For bottom
-      // corners we move the panel up, for top corners we move it down.
-      if (avoidZone && avoidZone.corner === corner) {
-        const delta = avoidZone.square + avoidZone.padding
-        if (isBottom) {
-          // move up
-          y -= delta
-        } else {
-          // move down
-          y += delta
-        }
-      }
-
-      return { x, y }
-    }
-
-    const basePosition = getAbsolutePosition(currentCorner)
-
-    function rel(pos: Point): Point {
-      return {
-        x: pos.x - basePosition.x,
-        y: pos.y - basePosition.y,
-      }
-    }
-
-    return {
-      'top-left': rel(getAbsolutePosition('top-left')),
-      'top-right': rel(getAbsolutePosition('top-right')),
-      'bottom-left': rel(getAbsolutePosition('bottom-left')),
-      'bottom-right': rel(getAbsolutePosition('bottom-right')),
-    }
   }
 
   return (
@@ -338,10 +249,10 @@ export function useDrag(options: UseDragOptions) {
     // Constrain pointer position to available space (excluding sidebar)
     const sidebarOffset = options.sidebarIsOpen ? options.sidebarWidth : 0
     const maxX = window.innerWidth - sidebarOffset
-    
+
     const constrainedX = Math.max(0, Math.min(e.clientX, maxX))
     const constrainedY = Math.max(0, Math.min(e.clientY, window.innerHeight))
-    
+
     const currentPosition = { x: constrainedX, y: constrainedY }
 
     const dx = currentPosition.x - origin.current.x
@@ -375,7 +286,7 @@ export function useDrag(options: UseDragOptions) {
 
     cancel()
 
-    // TODO: This is the onDragEnd when the pointerdown event was fired not the onDragEnd when the pointerup event was fired
+    // Call onDragEnd but it won't snap to corners anymore
     options.onDragEnd?.(translation.current, velocity)
   }
 
@@ -420,9 +331,4 @@ function calculateVelocity(
     x: velocityX * 1000,
     y: velocityY * 1000,
   }
-  
-}
-
-function project(initialVelocity: number, decelerationRate = 0.999) {
-  return ((initialVelocity / 1000) * decelerationRate) / (1 - decelerationRate)
 }

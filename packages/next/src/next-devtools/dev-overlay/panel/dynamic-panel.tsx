@@ -10,7 +10,10 @@ import { useDevOverlayContext } from '../../dev-overlay.browser'
 import { INDICATOR_PADDING } from '../components/devtools-indicator/devtools-indicator'
 import { useSidebarContext } from '../context/sidebar-context'
 import { ResizeHandle } from '../components/devtools-panel/resize/resize-handle'
-import { ResizeProvider } from '../components/devtools-panel/resize/resize-provider'
+import {
+  ResizeProvider,
+  useResize,
+} from '../components/devtools-panel/resize/resize-provider'
 import {
   DragHandle,
   DragProvider,
@@ -131,6 +134,7 @@ export function DynamicPanel({
   sharePanelSizeGlobally = true,
   sharePanelPositionGlobally = true,
   containerProps,
+  initialPosition,
 }: {
   header: React.ReactNode
   children: React.ReactNode
@@ -154,6 +158,7 @@ export function DynamicPanel({
         width: number
       }
   closeOnClickOutside?: boolean
+  initialPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 }) {
   const {
     closePanel,
@@ -176,15 +181,45 @@ export function DynamicPanel({
 
   const { dispatch, state } = useDevOverlayContext()
   const { isOpen: sidebarIsOpen, width: sidebarWidth } = useSidebarContext()
+
+  // Check if this is the first time opening the panel
+  const isFirstOpen = useRef(!state.devToolsPanelPosition[positionStorageKey])
+
   // Default to top-right to avoid menu overlap
   const devtoolsPanelPosition =
-    state.devToolsPanelPosition[positionStorageKey] ?? 'top-right'
+    state.devToolsPanelPosition[positionStorageKey] ??
+    (isFirstOpen.current && initialPosition ? initialPosition : 'top-right')
   const [panelVertical, panelHorizontal] = devtoolsPanelPosition.split('-', 2)
   const resizeContainerRef = useRef<HTMLDivElement>(null)
+
+  // Track dragging and resizing states
+  const [isDragging, setIsDragging] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
+
+  // Track exact position offset from corner
+  const [positionOffset, setPositionOffset] = useState(() => {
+    const stored = localStorage.getItem(`${positionStorageKey}_offset`)
+    if (stored) {
+      try {
+        return JSON.parse(stored)
+      } catch {
+        return { x: 0, y: 0 }
+      }
+    }
+    return { x: 0, y: 0 }
+  })
 
   // Check if this panel is docked
   const isDocked = dockedPanels.has(name)
   const isActive = activePanel === name
+
+  // Check if hub or menu is active (these can show in parallel with other panels)
+  const isNonModalPanelActive =
+    activePanel === 'hub' || activePanel === 'panel-selector'
+
+  // Panel should be visible if it's active, docked, or if a non-modal panel is active
+  const shouldBeVisible =
+    isActive || isDocked || (panels.has(name) && isNonModalPanelActive)
 
   // We'll handle dock rendering differently
 
@@ -283,7 +318,7 @@ export function DynamicPanel({
       // dockPosition.width = 52px (dock slot width)
       // dockPosition.height = 52px (dock slot height)
 
-      const scale = Math.min(48 / actualWidth, 48 / actualHeight) // Scale to 48px (4px padding in 52px slot)
+      const scale = Math.min(44 / actualWidth, 44 / actualHeight) // Scale to 44px (8px padding in 52px slot)
 
       // When scaled, panel dimensions become:
       const scaledWidth = actualWidth * scale
@@ -357,11 +392,13 @@ export function DynamicPanel({
   const positionStyle = {
     ...getActualPosition(),
     transformOrigin: 'center center', // Scale from center to avoid positioning jumps
-    opacity: isActive || isDocked ? 1 : 0,
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    pointerEvents: isActive || isDocked ? ('auto' as const) : ('none' as const),
-    visibility:
-      isActive || isDocked ? ('visible' as const) : ('hidden' as const),
+    opacity: shouldBeVisible ? 1 : 0,
+    transition:
+      isDragging || isResizing
+        ? 'none'
+        : 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    pointerEvents: shouldBeVisible ? ('auto' as const) : ('none' as const),
+    visibility: shouldBeVisible ? ('visible' as const) : ('hidden' as const),
   } as CSSProperties
 
   const isResizable = sizeConfig.kind === 'resizable'
@@ -387,6 +424,18 @@ export function DynamicPanel({
       bringPanelToFront(name)
     }
   }, [isActive, bringPanelToFront, name])
+
+  // Apply initial position if it's the first time opening
+  useEffect(() => {
+    if (isFirstOpen.current && initialPosition && mounted) {
+      dispatch({
+        type: ACTION_DEVTOOLS_PANEL_POSITION,
+        devToolsPanelPosition: initialPosition,
+        key: positionStorageKey,
+      })
+      isFirstOpen.current = false
+    }
+  }, [mounted, initialPosition, dispatch, positionStorageKey])
 
   // Focus panel when it mounts to ensure escape key closes panel first
   // Only auto-focus if the panel was opened from keyboard (e.g., command palette)
@@ -475,167 +524,234 @@ export function DynamicPanel({
         storageKey: resizeStorageKey,
       }}
     >
-      <div
-        tabIndex={-1}
-        ref={resizeContainerRef}
-        onMouseDown={() => {
-          console.warn(`🖱️ PANEL CLICK for ${name}:`, {
-            panelName: name,
-            isActive,
-            isDocked,
-            zIndex: isDocked ? 999999999 : zIndex,
-            action: isActive
-              ? 'bringToFront'
-              : isDocked
-                ? 'swapPanels'
-                : 'none',
-          })
+      <DynamicPanelInner
+        name={name}
+        isActive={isActive}
+        isDocked={isDocked}
+        shouldBeVisible={shouldBeVisible}
+        zIndex={zIndex}
+        positionStyle={positionStyle}
+        isResizable={isResizable}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        maxWidth={maxWidth}
+        maxHeight={maxHeight}
+        bringPanelToFront={bringPanelToFront}
+        swapPanels={swapPanels}
+        setIsResizing={setIsResizing}
+        isDragging={isDragging}
+        setIsDragging={setIsDragging}
+        draggable={draggable}
+        panels={panels}
+        state={state}
+        dispatch={dispatch}
+        sizeConfig={sizeConfig}
+        devtoolsPanelPosition={devtoolsPanelPosition}
+        positionStorageKey={positionStorageKey}
+        header={header}
+        children={children}
+        containerProps={containerProps}
+        resizeContainerRef={resizeContainerRef}
+      />
+    </ResizeProvider>
+  )
+}
 
-          if (isActive) {
-            bringPanelToFront(name)
-          } else if (isDocked) {
-            swapPanels(name)
-          }
-        }}
-        data-panel-name={name}
-        data-panel-docked={isDocked}
-        style={{
-          position: 'fixed',
-          zIndex: isDocked ? 2147483647 : zIndex, // Maximum possible z-index when docked
-          outline: 'none',
-          ...positionStyle,
-          ...(isResizable && !isDocked
-            ? {
-                minWidth,
-                minHeight,
-                maxWidth,
-                maxHeight,
-              }
-            : {}),
-        }}
-      >
-        <DragProvider disabled={!draggable || isDocked}>
-          <Draggable
-            dragHandleSelector=".drag-handle"
-            avoidZone={{
-              corner: panels.has('panel-selector' as PanelStateKind)
-                ? 'bottom-left'
-                : state.devToolsPosition,
-              square: panels.has('panel-selector' as PanelStateKind)
-                ? 360
-                : 25 / state.scale,
-              padding: INDICATOR_PADDING,
-            }}
-            padding={INDICATOR_PADDING}
-            position={devtoolsPanelPosition}
-            setPosition={(p) => {
-              if (sizeConfig.kind === 'resizable') {
-                localStorage.setItem(positionStorageKey, p)
-              }
-              dispatch({
-                type: ACTION_DEVTOOLS_PANEL_POSITION,
-                devToolsPanelPosition: p,
-                key: positionStorageKey,
-              })
-            }}
-            style={{
-              overflow: 'auto',
-              width: '100%',
-              height: '100%',
-            }}
-            disableDrag={!draggable || isDocked}
-          >
-            <>
+function DynamicPanelInner({
+  name,
+  isActive,
+  isDocked,
+  shouldBeVisible,
+  zIndex,
+  positionStyle,
+  isResizable,
+  minWidth,
+  minHeight,
+  maxWidth,
+  maxHeight,
+  bringPanelToFront,
+  swapPanels,
+  setIsResizing,
+  isDragging,
+  setIsDragging,
+  draggable,
+  panels,
+  state,
+  dispatch,
+  sizeConfig,
+  devtoolsPanelPosition,
+  positionStorageKey,
+  header,
+  children,
+  containerProps,
+  resizeContainerRef,
+}: any) {
+  const { draggingDirection } = useResize()
+
+  // Update isResizing based on draggingDirection
+  React.useEffect(() => {
+    setIsResizing(draggingDirection !== null)
+  }, [draggingDirection, setIsResizing])
+
+  return (
+    <div
+      tabIndex={-1}
+      ref={resizeContainerRef}
+      onMouseDown={() => {
+        console.warn(`🖱️ PANEL CLICK for ${name}:`, {
+          panelName: name,
+          isActive,
+          isDocked,
+          zIndex: isDocked ? 999999999 : zIndex,
+          action: isActive ? 'bringToFront' : isDocked ? 'swapPanels' : 'none',
+        })
+
+        if (isActive) {
+          bringPanelToFront(name)
+        } else if (isDocked) {
+          swapPanels(name)
+        }
+      }}
+      data-panel-name={name}
+      data-panel-docked={isDocked}
+      style={{
+        position: 'fixed',
+        zIndex: isDocked ? 2147483647 : zIndex, // Maximum possible z-index when docked
+        outline: 'none',
+        ...positionStyle,
+        ...(isResizable && !isDocked
+          ? {
+              minWidth,
+              minHeight,
+              maxWidth,
+              maxHeight,
+            }
+          : {}),
+      }}
+    >
+      <DragProvider disabled={!draggable || isDocked}>
+        <Draggable
+          dragHandleSelector=".drag-handle"
+          avoidZone={{
+            corner: panels.has('panel-selector' as PanelStateKind)
+              ? 'bottom-left'
+              : state.devToolsPosition,
+            square: panels.has('panel-selector' as PanelStateKind)
+              ? 360
+              : 25 / state.scale,
+            padding: INDICATOR_PADDING,
+          }}
+          padding={20}
+          position={devtoolsPanelPosition}
+          setPosition={(p) => {
+            if (sizeConfig.kind === 'resizable') {
+              localStorage.setItem(positionStorageKey, p)
+            }
+            dispatch({
+              type: ACTION_DEVTOOLS_PANEL_POSITION,
+              devToolsPanelPosition: p,
+              key: positionStorageKey,
+            })
+          }}
+          onDragStart={() => setIsDragging(true)}
+          onDragEnd={() => setIsDragging(false)}
+          style={{
+            overflow: 'auto',
+            width: '100%',
+            height: '100%',
+          }}
+          disableDrag={!draggable || isDocked}
+        >
+          <>
+            <div
+              {...containerProps}
+              className={isDocked ? 'docked-panel' : ''}
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                border: isDocked
+                  ? '1px solid rgba(255, 255, 255, 0.18)'
+                  : '2px solid var(--color-gray-alpha-400)',
+                borderRadius: isDocked ? '10px' : 'var(--rounded-xl)',
+                background: isDocked
+                  ? 'rgba(40, 40, 40, 0.8)'
+                  : 'var(--color-background-100)',
+                boxShadow: isDocked
+                  ? '0 2px 6px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5)'
+                  : '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: isDocked ? 'pointer' : 'default',
+                pointerEvents: isDocked ? 'auto' : 'auto', // Keep pointer events on container
+                ...containerProps?.style,
+              }}
+            >
+              <DragHandle>{header}</DragHandle>
               <div
-                {...containerProps}
-                className={isDocked ? 'docked-panel' : ''}
                 style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '100%',
-                  border: isDocked
-                    ? '1px solid rgba(255, 255, 255, 0.18)'
-                    : '2px solid var(--color-gray-alpha-400)',
-                  borderRadius: isDocked ? '10px' : 'var(--rounded-xl)',
-                  background: isDocked
-                    ? 'rgba(255, 255, 255, 0.9)'
-                    : 'var(--color-background-100)',
-                  boxShadow: isDocked
-                    ? '0 2px 6px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5)'
-                    : '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: isDocked ? 'pointer' : 'default',
-                  pointerEvents: isDocked ? 'auto' : 'auto', // Keep pointer events on container
-                  ...containerProps?.style,
+                  flex: 1,
+                  overflow: 'auto',
+                  pointerEvents: isDocked ? 'none' : 'auto', // Disable pointer events on content when docked
                 }}
               >
-                <DragHandle>{header}</DragHandle>
-                <div
-                  style={{
-                    flex: 1,
-                    overflow: 'auto',
-                    pointerEvents: isDocked ? 'none' : 'auto', // Disable pointer events on content when docked
-                  }}
-                >
-                  {children}
-                </div>
+                {children}
               </div>
-              {isResizable && !isDocked && (
-                <>
-                  {(!sizeConfig.sides ||
-                    sizeConfig.sides.includes('vertical')) && (
-                    <>
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="top"
-                      />
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="bottom"
-                      />
-                    </>
-                  )}
-                  {(!sizeConfig.sides ||
-                    sizeConfig.sides.includes('horizontal')) && (
-                    <>
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="right"
-                      />
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="left"
-                      />
-                    </>
-                  )}
-                  {(!sizeConfig.sides ||
-                    sizeConfig.sides.includes('diagonal')) && (
-                    <>
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="top-left"
-                      />
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="top-right"
-                      />
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="bottom-left"
-                      />
-                      <ResizeHandle
-                        position={devtoolsPanelPosition}
-                        direction="bottom-right"
-                      />
-                    </>
-                  )}
-                </>
-              )}
-            </>
-          </Draggable>
-        </DragProvider>
-      </div>
-    </ResizeProvider>
+            </div>
+            {isResizable && !isDocked && (
+              <>
+                {(!sizeConfig.sides ||
+                  sizeConfig.sides.includes('vertical')) && (
+                  <>
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="top"
+                    />
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="bottom"
+                    />
+                  </>
+                )}
+                {(!sizeConfig.sides ||
+                  sizeConfig.sides.includes('horizontal')) && (
+                  <>
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="right"
+                    />
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="left"
+                    />
+                  </>
+                )}
+                {(!sizeConfig.sides ||
+                  sizeConfig.sides.includes('diagonal')) && (
+                  <>
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="top-left"
+                    />
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="top-right"
+                    />
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="bottom-left"
+                    />
+                    <ResizeHandle
+                      position={devtoolsPanelPosition}
+                      direction="bottom-right"
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </>
+        </Draggable>
+      </DragProvider>
+    </div>
   )
 }

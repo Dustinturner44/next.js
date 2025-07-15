@@ -35,11 +35,14 @@ import { HubPanel } from '../components/hub-panel/hub-panel'
 import { ForkUrlPanel } from '../components/fork-url/fork-url-panel'
 import { useSidebarContext } from '../context/sidebar-context'
 import { css } from '../utils/css'
-import React from 'react'
+import React, { useRef } from 'react'
+import { useClickOutsideAndEscape } from '../components/errors/dev-tools-indicator/utils'
 
 const MenuPanel = () => {
   const {
     togglePanel,
+    openPanel,
+    closePanel,
     closeAllPanels,
     setSelectedIndex,
     panels,
@@ -267,7 +270,10 @@ const MenuPanel = () => {
     {
       label: 'Hub',
       value: <ChevronRight />,
-      onClick: () => togglePanel('hub'),
+      onClick: () => {
+        closePanel('panel-selector')
+        openPanel('hub')
+      },
       attributes: {
         'data-hub': true,
       },
@@ -390,6 +396,138 @@ const MenuPanel = () => {
   )
 }
 
+const HubModal = () => {
+  const { closePanel } = usePanelRouterContext()
+  const { state } = useDevOverlayContext()
+  const modalRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const [isClosing, setIsClosing] = React.useState(false)
+
+  const handleClose = () => {
+    setIsClosing(true)
+    setTimeout(() => {
+      closePanel('hub')
+    }, 200)
+  }
+
+  useClickOutsideAndEscape(modalRef, triggerRef, true, (reason) => {
+    if (reason === 'escape' || reason === 'outside') {
+      handleClose()
+    }
+  })
+
+  return (
+    <>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          zIndex: 2147483647, // Maximum z-index to render above all panels
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          opacity: isClosing ? 0 : 1,
+          transition: 'opacity 200ms ease-out',
+        }}
+        onClick={handleClose}
+      >
+        <div
+          ref={modalRef}
+          style={{
+            width: '90%',
+            maxWidth: '1200px',
+            height: '90%',
+            maxHeight: '800px',
+            backgroundColor: 'var(--color-background-100)',
+            borderRadius: 'var(--rounded-xl)',
+            border: '1px solid var(--color-gray-alpha-400)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            position: 'relative',
+            transform: isClosing ? 'scale(0.95)' : 'scale(1)',
+            opacity: isClosing ? 0 : 1,
+            transition: 'all 200ms ease-out',
+            zIndex: 2147483647, // Also set z-index on the modal content
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid var(--color-gray-alpha-400)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: 'var(--color-background-200)',
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: 600,
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              Dev Tools Hub
+            </h2>
+            <button
+              onClick={handleClose}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '8px',
+                cursor: 'pointer',
+                color: 'var(--color-gray-700)',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  'var(--color-gray-alpha-200)'
+                e.currentTarget.style.color = 'var(--color-text-primary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = 'var(--color-gray-700)'
+              }}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <HubPanel />
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // a little hacky but it does the trick
 const useToggleDevtoolsVisibility = () => {
   const { state, dispatch } = useDevOverlayContext()
@@ -421,7 +559,7 @@ const useToggleDevtoolsVisibility = () => {
 
 export const PanelRouter = () => {
   const { state } = useDevOverlayContext()
-  const { triggerRef, togglePanel } = usePanelRouterContext()
+  const { triggerRef, togglePanel, panels } = usePanelRouterContext()
   const toggleDevtools = useToggleDevtoolsVisibility()
 
   const [hideShortcut] = useHideShortcutStorage()
@@ -568,23 +706,7 @@ export const PanelRouter = () => {
       </PanelRoute>
 
       <PanelRoute name="hub">
-        <DynamicPanel
-          sharePanelSizeGlobally={false}
-          sizeConfig={{
-            kind: 'resizable',
-            maxHeight: '90vh',
-            maxWidth: '90vw',
-            minHeight: 400 / state.scale,
-            minWidth: 600 / state.scale,
-            initialSize: {
-              height: 600 / state.scale,
-              width: 800 / state.scale,
-            },
-          }}
-          header={<DevToolsHeader title="Dev Tools Hub" />}
-        >
-          <HubPanel />
-        </DynamicPanel>
+        <HubModal />
       </PanelRoute>
     </>
   )

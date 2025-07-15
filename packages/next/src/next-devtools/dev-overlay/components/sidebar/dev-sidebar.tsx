@@ -1,25 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebarContext } from '../../context/sidebar-context'
+import { ProjectTerminalManager } from '../terminal/project-terminal'
 
 export const DevSidebar = () => {
   const { isOpen, width, setWidth, closeSidebar } = useSidebarContext()
   const [isResizing, setIsResizing] = useState(false)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null)
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null
+  )
   const resizeRef = useRef<HTMLDivElement>(null)
-  
-  // Generate persistent session ID for this devtools instance
-  const [terminalSessionId] = useState(() => {
-    // Try to get existing session from localStorage or create new one
-    const existing = localStorage.getItem('devtools-terminal-session')
-    if (existing) {
-      return existing
-    }
-    const newSession = `devtools-session-${Date.now()}`
-    localStorage.setItem('devtools-terminal-session', newSession)
-    return newSession
-  })
 
   // Find or create a container near the root of the page for the portal
   useEffect(() => {
@@ -34,7 +24,7 @@ export const DevSidebar = () => {
       container.style.height = '100%'
       container.style.pointerEvents = 'none'
       container.style.zIndex = '9999'
-      
+
       // Insert at the beginning of body to be near the root
       document.body.insertBefore(container, document.body.firstChild)
     }
@@ -48,81 +38,29 @@ export const DevSidebar = () => {
     }
   }, [])
 
-  // Handle resize functionality
-  useEffect(() => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+
+    const startX = e.clientX
+    const startWidth = width
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return
-      
-      const newWidth = window.innerWidth - e.clientX
-      if (newWidth >= 200 && newWidth <= 800) {
-        setWidth(newWidth)
-        
-        // Update the page layout
-        const body = document.body
-        if (body) {
-          body.style.marginRight = isOpen ? `${newWidth}px` : '0'
-        }
-      }
+      const newWidth = startWidth - (e.clientX - startX)
+      // Limit the width between 200 and 800 pixels
+      const clampedWidth = Math.max(200, Math.min(800, newWidth))
+      setWidth(clampedWidth)
     }
 
     const handleMouseUp = () => {
       setIsResizing(false)
-    }
-
-    if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    }
-
-    return () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isResizing, setWidth, isOpen])
 
-  // Update page layout when sidebar opens/closes
-  useEffect(() => {
-    const body = document.body
-    if (body) {
-      body.style.transition = isResizing ? 'none' : 'margin-right 0.3s ease'
-      body.style.marginRight = isOpen ? `${width}px` : '0'
-    }
-
-    return () => {
-      // Cleanup on unmount
-      if (body) {
-        body.style.marginRight = '0'
-        body.style.transition = ''
-      }
-    }
-  }, [isOpen, width, isResizing])
-
-  // Handle forwarded mouse events from iframe
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Handle forwarded mouse events from terminal iframe
-      if (event.data.type === 'iframe-mouse-event') {
-        const { eventType, clientX, clientY, button, buttons } = event.data
-        
-        // Create and dispatch a synthetic mouse event on the parent document
-        const syntheticEvent = new MouseEvent(eventType, {
-          clientX,
-          clientY,
-          button,
-          buttons,
-          bubbles: true,
-          cancelable: true
-        })
-        
-        document.dispatchEvent(syntheticEvent)
-      }
-    }
-
-    window.addEventListener('message', handleMessage)
-    return () => {
-      window.removeEventListener('message', handleMessage)
-    }
-  }, [])
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
 
   if (!portalContainer || !isOpen) return null
 
@@ -156,26 +94,18 @@ export const DevSidebar = () => {
           zIndex: 10,
         }}
       />
-      
+
       {/* Terminal content */}
-      <div style={{ 
-        position: 'relative', 
-        width: '100%', 
-        height: '100%',
-        backgroundColor: '#000',
-      }}>
-        <iframe
-          ref={iframeRef}
-          src={`http://localhost:4262?session=${encodeURIComponent(terminalSessionId)}&cwd=${encodeURIComponent('/Users/robby')}&shell=${encodeURIComponent('/bin/zsh')}`}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            backgroundColor: '#000',
-          }}
-          title="Terminal"
-        />
-        
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#000',
+        }}
+      >
+        <ProjectTerminalManager />
+
         {/* Transparent overlay to block iframe during resize */}
         {isResizing && (
           <div
@@ -196,27 +126,40 @@ export const DevSidebar = () => {
       {/* Resize handle */}
       <div
         ref={resizeRef}
-        onMouseDown={() => setIsResizing(true)}
+        onMouseDown={handleMouseDown}
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
-          width: '6px',
+          width: '10px',
           height: '100%',
           cursor: 'ew-resize',
-          backgroundColor: 'transparent',
           zIndex: 20,
-          transition: 'background-color 0.2s ease',
+          background: 'transparent',
+          transition: 'background 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          if (!isResizing) {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-          }
+          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
         }}
         onMouseLeave={(e) => {
-          if (!isResizing) {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }
+          e.currentTarget.style.background = 'transparent'
+        }}
+      />
+
+      {/* Visual resize indicator */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '3px',
+          transform: 'translateY(-50%)',
+          width: '4px',
+          height: '40px',
+          borderRadius: '2px',
+          background: 'rgba(255, 255, 255, 0.2)',
+          pointerEvents: 'none',
+          opacity: isResizing ? 1 : 0,
+          transition: 'opacity 0.2s ease',
         }}
       />
     </div>,

@@ -11,7 +11,8 @@ interface PanelDockProps {
 export function PanelDock({ dockedPanels }: PanelDockProps) {
   // Filter out panel-selector
   const actualDockedPanels = Array.from(dockedPanels).filter(
-    (p) => p !== 'panel-selector'
+    (p): p is Exclude<PanelStateKind, 'panel-selector'> =>
+      p !== 'panel-selector'
   )
 
   // Calculate total width for centering - made more dense
@@ -26,45 +27,48 @@ export function PanelDock({ dockedPanels }: PanelDockProps) {
   if (actualDockedPanels.length === 0) return null
 
   return (
-    <div className="panel-dock" style={{ width: totalWidth }}>
+    <>
+      <div className="panel-dock" style={{ width: totalWidth }}>
+        {/* Dock content will go here */}
+      </div>
       <style>{css`
         .panel-dock {
           position: fixed;
           bottom: 16px;
           left: 50%;
           transform: translateX(-50%);
-          height: 72px; /* Reduced from 88px */
-          z-index: 2147483646; /* Below docked panels */
-          pointer-events: none;
-          padding: ${dockPadding}px;
-
-          /* macOS-style frosted glass effect */
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 64px;
+          padding: 0 ${dockPadding.toString()}px;
+          gap: ${dockGap.toString()}px;
+          background: rgba(15, 15, 15, 0.7);
+          backdrop-filter: blur(30px) saturate(150%);
+          -webkit-backdrop-filter: blur(30px) saturate(150%);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
           box-shadow:
-            0 8px 32px rgba(0, 0, 0, 0.08),
-            0 2px 8px rgba(0, 0, 0, 0.04),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-            0 0 0 1px rgba(0, 0, 0, 0.05);
+            0 4px 12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(0, 0, 0, 0.6),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+          z-index: 10000;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Dark mode adjustments */
         @media (prefers-color-scheme: dark) {
           .panel-dock {
-            background: rgba(30, 30, 30, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 15, 15, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow:
-              0 8px 32px rgba(0, 0, 0, 0.3),
-              0 2px 8px rgba(0, 0, 0, 0.2),
-              inset 0 0 0 1px rgba(255, 255, 255, 0.05),
-              0 0 0 1px rgba(0, 0, 0, 0.2);
+              0 4px 12px rgba(0, 0, 0, 0.6),
+              0 0 0 1px rgba(0, 0, 0, 0.7),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.03);
           }
         }
       `}</style>
-    </div>
+    </>
   )
 }
 
@@ -72,11 +76,19 @@ export function getDockItemPosition(
   panelName: PanelStateKind,
   dockedPanels: Set<PanelStateKind>
 ) {
+  // panel-selector should never be docked
+  if (panelName === 'panel-selector') {
+    return { x: 0, y: 0, width: 0, height: 0 }
+  }
+
   // Filter out panel-selector from dock
   const dockedPanelArray = Array.from(dockedPanels).filter(
-    (p) => p !== 'panel-selector'
+    (p): p is Exclude<PanelStateKind, 'panel-selector'> =>
+      p !== 'panel-selector'
   )
-  const dockIndex = dockedPanelArray.indexOf(panelName)
+  const dockIndex = dockedPanelArray.indexOf(
+    panelName as Exclude<PanelStateKind, 'panel-selector'>
+  )
 
   if (dockIndex === -1) {
     console.error(`❌ Panel ${panelName} not found in docked panels`, {

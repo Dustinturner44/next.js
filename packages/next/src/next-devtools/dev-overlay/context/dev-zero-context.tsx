@@ -6,12 +6,13 @@ import React, {
   useCallback,
 } from 'react'
 
-interface Dev0Project {
+export interface Dev0Project {
   name: string
   status: 'running' | 'paused' | 'killed' | 'creating'
   port?: number
   pid?: number
   cwd: string
+  absolutePath?: string
   createdAt: number
   isOptimistic?: boolean
   deploymentUrl?: string
