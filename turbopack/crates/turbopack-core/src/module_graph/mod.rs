@@ -5,6 +5,7 @@ use std::{
 
 use anyhow::{Context, Result, bail};
 use auto_hash_map::AutoSet;
+use either::Either;
 use petgraph::{
     graph::{DiGraph, EdgeIndex, NodeIndex},
     visit::{
@@ -422,6 +423,22 @@ impl SingleModuleGraph {
         &self,
     ) -> impl Iterator<Item = (NodeIndex, &'_ SingleModuleGraphNode)> + '_ {
         self.graph.node_references()
+    }
+
+    /// Returns the immediate neighbors of the module.  Useful if you need to create your own
+    /// traversal which doesn't quite fit the existing ones.
+    pub fn neighbors(
+        &self,
+        module: ResolvedVc<Box<dyn Module>>,
+    ) -> impl Iterator<Item = ResolvedVc<Box<dyn Module>>> {
+        match self.modules.get(&module) {
+            Some(node_index) => Either::Left(
+                self.graph
+                    .neighbors_directed(*node_index, petgraph::Direction::Outgoing)
+                    .map(|index| self.graph.node_weight(index).unwrap().module()),
+            ),
+            None => Either::Right(std::iter::empty()),
+        }
     }
 
     /// Traverses all reachable nodes (once)

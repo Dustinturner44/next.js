@@ -9,8 +9,9 @@ use next_core::{
     },
     next_dynamic::NextDynamicEntryModule,
     next_manifests::ActionLayer,
+    next_server_component::server_component_module::NextServerComponentModule,
 };
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use tracing::Instrument;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
@@ -285,81 +286,90 @@ impl ClientReferencesGraph {
                 Either::Right(graph.entry_modules())
             };
 
-            let mut client_references = FxIndexSet::default();
-            // Make sure None (for the various internal next/dist/esm/client/components/*) is
-            // listed first
-            let mut client_references_by_server_component =
-                FxIndexMap::from_iter([(None, Vec::new())]);
+            // Because we care about 'evaluation order' we need to collect client references in the
+            // post_order callbacks which is the same as evaluation order
+            let mut client_reference_modules = FxIndexSet::default();
 
+            // Perform a DFS traversal to collect all shallowly discoverable client references and
+            // server modules
             graph.traverse_edges_from_entries_dfs(
                 entries,
-                // state_map is `module -> Option< the current so parent server component >`
-                &mut FxHashMap::default(),
-                |parent_info, node, state_map| {
+                &mut (),
+                |_, node, _| {
                     let module = node.module();
-                    let module_type = data.get(&module);
-
-                    let current_server_component = if let Some(
-                        ClientReferenceMapType::ServerComponent(module),
-                    ) = module_type
-                    {
-                        Some(*module)
-                    } else if let Some((parent_node, _)) = parent_info {
-                        *state_map.get(&parent_node.module).unwrap()
-                    } else {
-                        // a root node
-                        None
-                    };
-
-                    state_map.insert(module, current_server_component);
-
-                    Ok(match module_type {
-                        Some(
-                            ClientReferenceMapType::EcmascriptClientReference { .. }
-                            | ClientReferenceMapType::CssClientReference { .. },
-                        ) => GraphTraversalAction::Skip,
+                    Ok(match data.client_references.get(&module) {
+                        Some(_) => GraphTraversalAction::Skip,
                         _ => GraphTraversalAction::Continue,
                     })
                 },
-                |parent_info, node, state_map| {
-                    let Some((parent_node, _)) = parent_info else {
+                |_, node, _| {
+                    let module = node.module();
+                    if !data.client_references.contains_key(&module) {
                         return Ok(());
                     };
-                    let parent_module = parent_node.module;
+                    client_reference_modules.insert(module);
 
-                    let parent_server_component = *state_map.get(&parent_module).unwrap();
-
-                    match data.get(&node.module()) {
-                        Some(ClientReferenceMapType::EcmascriptClientReference {
-                            module: module_ref,
-                            ssr_module,
-                        }) => {
-                            let client_reference: ClientReference = ClientReference {
-                                server_component: parent_server_component,
-                                ty: ClientReferenceType::EcmascriptClientReference(*module_ref),
-                            };
-                            client_references.insert(client_reference);
-                            client_references_by_server_component
-                                .entry(parent_server_component)
-                                .or_insert_with(Vec::new)
-                                .push(*ssr_module);
-                        }
-                        Some(ClientReferenceMapType::CssClientReference(module_ref)) => {
-                            let client_reference = ClientReference {
-                                server_component: parent_server_component,
-                                ty: ClientReferenceType::CssClientReference(*module_ref),
-                            };
-                            client_references.insert(client_reference);
-                        }
-                        _ => {}
-                    };
                     Ok(())
                 },
             )?;
 
+            // Recursively collect client references leveraging the precomputed traversals in
+            // ClientReferencesSet.
+            fn collect_client_references(
+                module: ResolvedVc<Box<dyn Module>>,
+                server_component: Option<ResolvedVc<NextServerComponentModule>>,
+                server_components: &mut FxHashSet<ResolvedVc<Box<dyn Module>>>,
+                client_references: &mut FxIndexSet<ClientReference>,
+                data: &ClientReferencesSet,
+            ) {
+                match data.client_references.get(&module).unwrap() {
+                    ClientReferenceMapType::EcmascriptClientReference {
+                        module,
+                        ssr_module: _,
+                    } => {
+                        client_references.insert(ClientReference {
+                            server_component,
+                            ty: ClientReferenceType::EcmascriptClientReference(*module),
+                        });
+                    }
+                    ClientReferenceMapType::CssClientReference(css_chunk) => {
+                        client_references.insert(ClientReference {
+                            server_component,
+                            ty: ClientReferenceType::CssClientReference(*css_chunk),
+                        });
+                    }
+                    ClientReferenceMapType::ServerComponent(sc) => {
+                        if server_components.insert(module)
+                            && let Some(client_referencces) =
+                                data.client_references_per_server_component.get(&module)
+                        {
+                            for client_reference in client_referencces {
+                                collect_client_references(
+                                    *client_reference,
+                                    Some(*sc),
+                                    server_components,
+                                    client_references,
+                                    data,
+                                );
+                            }
+                        }
+                    }
+                };
+            }
+            let mut server_components = FxHashSet::default();
+            let mut client_references = FxIndexSet::default();
+            for module in client_reference_modules {
+                collect_client_references(
+                    module,
+                    None,
+                    &mut server_components,
+                    &mut client_references,
+                    data,
+                );
+            }
+
             Ok(ClientReferenceGraphResult {
                 client_references: client_references.into_iter().collect(),
-                client_references_by_server_component,
                 server_utils: vec![],
                 server_component_entries: vec![],
             }

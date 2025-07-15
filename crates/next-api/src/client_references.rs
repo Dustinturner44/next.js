@@ -4,16 +4,27 @@ use next_core::{
     next_client_reference::{CssClientReferenceModule, EcmascriptClientReferenceModule},
     next_server_component::server_component_module::NextServerComponentModule,
 };
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
+use tracing::Instrument;
 use turbo_tasks::{
-    NonLocalValue, ResolvedVc, TryFlatJoinIterExt, Vc, debug::ValueDebugFormat, trace::TraceRawVcs,
+    FxIndexSet, NonLocalValue, ResolvedVc, TryFlatJoinIterExt, Vc, debug::ValueDebugFormat,
+    trace::TraceRawVcs,
 };
 use turbopack::css::chunk::CssChunkPlaceable;
 use turbopack_core::{module::Module, module_graph::SingleModuleGraph};
 
 #[derive(
-    Copy, Clone, Serialize, Deserialize, Eq, PartialEq, TraceRawVcs, ValueDebugFormat, NonLocalValue,
+    Copy,
+    Clone,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    Hash,
+    TraceRawVcs,
+    ValueDebugFormat,
+    NonLocalValue,
 )]
 pub enum ClientReferenceMapType {
     EcmascriptClientReference {
@@ -24,50 +35,145 @@ pub enum ClientReferenceMapType {
     ServerComponent(ResolvedVc<NextServerComponentModule>),
 }
 
-#[turbo_tasks::value(transparent)]
-pub struct ClientReferencesSet(FxHashMap<ResolvedVc<Box<dyn Module>>, ClientReferenceMapType>);
+#[turbo_tasks::value]
+pub struct ClientReferencesSet {
+    pub client_references: FxHashMap<ResolvedVc<Box<dyn Module>>, ClientReferenceMapType>,
+    pub client_references_per_server_component:
+        FxHashMap<ResolvedVc<Box<dyn Module>>, Vec<ResolvedVc<Box<dyn Module>>>>,
+}
+
+impl ClientReferencesSet {
+    fn new(client_references: ClientReferencesSet) -> Vc<Self> {
+        Self::cell(client_references)
+    }
+}
 
 #[turbo_tasks::function]
 pub async fn map_client_references(
     graph: Vc<SingleModuleGraph>,
 ) -> Result<Vc<ClientReferencesSet>> {
-    let client_references = graph
-        .await?
-        .iter_nodes()
-        .map(|node| async move {
-            let module = node.module;
+    let span = tracing::info_span!("mapping client references");
+    async move {
+        let graph = &*graph.await?;
+        let client_references = graph
+            .iter_nodes()
+            .map(|node| async move {
+                let module = node.module;
 
-            if let Some(client_reference_module) =
-                ResolvedVc::try_downcast_type::<EcmascriptClientReferenceModule>(module)
-            {
-                Ok(Some((
-                    module,
-                    ClientReferenceMapType::EcmascriptClientReference {
-                        module: client_reference_module,
-                        ssr_module: ResolvedVc::upcast(client_reference_module.await?.ssr_module),
-                    },
-                )))
-            } else if let Some(client_reference_module) =
-                ResolvedVc::try_downcast_type::<CssClientReferenceModule>(module)
-            {
-                Ok(Some((
-                    module,
-                    ClientReferenceMapType::CssClientReference(
-                        client_reference_module.await?.client_module,
-                    ),
-                )))
-            } else if let Some(server_component) =
-                ResolvedVc::try_downcast_type::<NextServerComponentModule>(module)
-            {
-                Ok(Some((
-                    module,
-                    ClientReferenceMapType::ServerComponent(server_component),
-                )))
-            } else {
-                Ok(None)
+                if let Some(client_reference_module) =
+                    ResolvedVc::try_downcast_type::<EcmascriptClientReferenceModule>(module)
+                {
+                    Ok(Some((
+                        module,
+                        ClientReferenceMapType::EcmascriptClientReference {
+                            module: client_reference_module,
+                            ssr_module: ResolvedVc::upcast(
+                                client_reference_module.await?.ssr_module,
+                            ),
+                        },
+                    )))
+                } else if let Some(client_reference_module) =
+                    ResolvedVc::try_downcast_type::<CssClientReferenceModule>(module)
+                {
+                    Ok(Some((
+                        module,
+                        ClientReferenceMapType::CssClientReference(
+                            client_reference_module.await?.client_module,
+                        ),
+                    )))
+                } else if let Some(server_component) =
+                    ResolvedVc::try_downcast_type::<NextServerComponentModule>(module)
+                {
+                    Ok(Some((
+                        module,
+                        ClientReferenceMapType::ServerComponent(server_component),
+                    )))
+                } else {
+                    Ok(None)
+                }
+            })
+            .try_flat_join()
+            .await?
+            .into_iter()
+            .collect::<FxHashMap<_, _>>();
+
+        fn dfs_collect_shallow_client_references(
+            u: ResolvedVc<Box<dyn Module>>,
+            graph: &SingleModuleGraph,
+            client_references: &FxHashMap<ResolvedVc<Box<dyn Module>>, ClientReferenceMapType>,
+            memo: &mut FxHashMap<ResolvedVc<Box<dyn Module>>, Vec<ResolvedVc<Box<dyn Module>>>>,
+            visiting_stack: &mut FxHashSet<ResolvedVc<Box<dyn Module>>>, /* For cycle detection
+                                                                          * in
+                                                                          * current DFS path */
+        ) -> Vec<ResolvedVc<Box<dyn Module>>> {
+            if client_references.get(&u).is_some() {
+                return vec![u];
             }
-        })
-        .try_flat_join()
-        .await?;
-    Ok(Vc::cell(client_references.into_iter().collect()))
+
+            // 1. Memoization check: If already computed, return cached result.
+            if let Some(cached_result) = memo.get(&u) {
+                return cached_result.clone();
+            }
+
+            // 2. Cycle detection: If 'u' is currently in recursion stack, it's a cycle.
+            // For DFS post-order, we simply don't add 'u' or its descendants from this path
+            // until the cycle is naturally broken or handled by memoization from another path.
+            // We return an empty list for this path to avoid infinite recursion.
+            if visiting_stack.contains(&u) {
+                return Vec::new();
+            }
+
+            visiting_stack.insert(u); // Mark 'u' as currently visiting
+
+            // 3. Recursively visit neighbors or consume ourselves, we don't consider client
+            //    references to be traversable.
+            let mut reachable_green_from_u = FxIndexSet::default();
+
+            for v in graph.neighbors(u) {
+                let green_nodes_from_v = dfs_collect_shallow_client_references(
+                    v,
+                    graph,
+                    client_references,
+                    memo,
+                    visiting_stack,
+                );
+                // Merge results from sub-paths
+                reachable_green_from_u.extend(green_nodes_from_v);
+            }
+
+            // 4. Flatten to a Vec
+            let reachable_green_from_u: Vec<_> = reachable_green_from_u.into_iter().collect();
+
+            // 5. Save the result for 'u'
+            memo.insert(u, reachable_green_from_u.clone());
+
+            visiting_stack.remove(&u); // Unmark 'u' as visiting
+
+            reachable_green_from_u // Return the computed list
+        }
+
+        let mut memo = FxHashMap::default();
+        let mut client_references_per_server_component = FxHashMap::default();
+        for (module, client_reference_type) in &client_references {
+            let ClientReferenceMapType::ServerComponent(_) = client_reference_type else {
+                continue;
+            };
+
+            let refs = dfs_collect_shallow_client_references(
+                *module,
+                &graph,
+                &client_references,
+                &mut memo,
+                &mut FxHashSet::default(),
+            );
+            client_references_per_server_component.insert(*module, refs);
+        }
+
+        Ok(ClientReferencesSet::new(ClientReferencesSet {
+            client_references,
+            client_references_per_server_component,
+        }))
+    }
+    .instrument(span)
+    .await
 }
