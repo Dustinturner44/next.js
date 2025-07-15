@@ -47,7 +47,6 @@ const MenuPanel = () => {
     setSelectedIndex,
     panels,
     activePanel,
-    dockedPanels,
   } = usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
@@ -96,23 +95,8 @@ const MenuPanel = () => {
               }}
             />
           </span>
-        ) : dockedPanels.has('route-type') ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {state.staticIndicator ? 'Static' : 'Dynamic'}
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-blue-700)',
-                boxShadow: '0 0 0 1px var(--color-blue-200)',
-              }}
-            />
-          </span>
-        ) : state.staticIndicator ? (
-          'Static'
         ) : (
-          'Dynamic'
+          state.staticIndicator ? 'Static' : 'Dynamic'
         ),
       onClick: () => togglePanel('route-type'),
       attributes: {
@@ -148,21 +132,6 @@ const MenuPanel = () => {
                   }}
                 />
               </span>
-            ) : dockedPanels.has('turbo-info') ? (
-              <span
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <ChevronRight />
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--color-blue-700)',
-                    boxShadow: '0 0 0 1px var(--color-blue-200)',
-                  }}
-                />
-              </span>
             ) : (
               <ChevronRight />
             ),
@@ -170,9 +139,6 @@ const MenuPanel = () => {
           attributes: {
             'data-panel-active':
               activePanel === 'turbo-info' ? 'true' : 'false',
-            'data-panel-docked': dockedPanels.has('turbo-info')
-              ? 'true'
-              : 'false',
           },
           deletable: false,
         },
@@ -200,9 +166,6 @@ const MenuPanel = () => {
         'data-segment-explorer': true,
         'data-panel-active':
           activePanel === 'segment-explorer' ? 'true' : 'false',
-        'data-panel-docked': dockedPanels.has('segment-explorer')
-          ? 'true'
-          : 'false',
       },
       deletable: false,
     },
@@ -212,7 +175,6 @@ const MenuPanel = () => {
   const projectItems = visibleProjects.reverse().map((project) => {
     const panelName = `dev0-project-${project.name}` as PanelStateKind
     const isActive = activePanel === panelName
-    const isDocked = dockedPanels.has(panelName)
 
     return {
       label:
@@ -236,19 +198,6 @@ const MenuPanel = () => {
               }}
             />
           </span>
-        ) : isDocked ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ChevronRight />
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-blue-700)',
-                boxShadow: '0 0 0 1px var(--color-blue-200)',
-              }}
-            />
-          </span>
         ) : (
           <ChevronRight />
         ),
@@ -261,7 +210,6 @@ const MenuPanel = () => {
         'data-dev0-project': project.name,
         'data-dev0-status': project.status,
         'data-panel-active': isActive ? 'true' : 'false',
-        'data-panel-docked': isDocked ? 'true' : 'false',
       },
     }
   })
@@ -312,7 +260,6 @@ const MenuPanel = () => {
       attributes: {
         'data-fork-url': true,
         'data-panel-active': activePanel === 'fork-url' ? 'true' : 'false',
-        'data-panel-docked': dockedPanels.has('fork-url') ? 'true' : 'false',
       },
       deletable: false,
     },
@@ -805,12 +752,11 @@ function PanelRoute({
   children: React.ReactNode
   name: PanelStateKind | `dev0-project-${string}`
 }) {
-  const { panels, activePanel, dockedPanels } = usePanelRouterContext()
+  const { panels, activePanel } = usePanelRouterContext()
   const isOpen = panels.has(name as PanelStateKind)
   const isActive = activePanel === name
-  const isDocked = dockedPanels.has(name as PanelStateKind)
 
-  // Always mount panel-selector, mount others if they're open (either active or docked)
+  // Always mount panel-selector, mount others if they're open
   const shouldMount = name === 'panel-selector' ? isOpen : isOpen
   const { mounted, rendered } = useDelayedRender(shouldMount, {
     enterDelay: 0,

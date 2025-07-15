@@ -28,10 +28,7 @@ export const PanelRouterContext = createContext<{
   bringPanelToFront: (panel: string) => void
   getPanelZIndex: (panel: string) => number
   activePanel: PanelStateKind | null
-  dockedPanels: Set<PanelStateKind>
   setActivePanel: (panel: PanelStateKind | null) => void
-  dockPanel: (panel: PanelStateKind) => void
-  swapPanels: (panel: PanelStateKind) => void
 }>(null!)
 
 export const usePanelRouterContext = () => useContext(PanelRouterContext)
