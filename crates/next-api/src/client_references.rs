@@ -208,47 +208,40 @@ pub async fn map_client_references(
 
         let mut memo = FxHashMap::default();
         let mut client_references_per_server_component = FxHashMap::default();
-        for (module, client_reference_type) in &client_references {
+        for (&module, client_reference_type) in &client_references {
             let ClientReferenceMapType::ServerComponent(_) = client_reference_type else {
                 continue;
             };
-            dfs_collect_shallow_client_references(
-                true,
-                *module,
-                graph,
-                &client_references,
-                &mut memo,
-                &mut FxHashSet::default(),
-            )
-            .expect("entry points cannot be in the middle of a cycle");
+            client_references_per_server_component.insert(
+                module,
+                dfs_collect_shallow_client_references(
+                    true,
+                    module,
+                    graph,
+                    &client_references,
+                    &mut memo,
+                    &mut FxHashSet::default(),
+                ),
+            );
         }
-        // Drop everything from the map except server components, this frees memory and decrements
-        // ref counts so we can avoid copies later.
-        memo.retain(|k, _| {
-            matches!(
-                client_references.get(k),
-                Some(ClientReferenceMapType::ServerComponent(_))
-            )
-        });
-        for (module, client_reference_type) in &client_references {
-            let ClientReferenceMapType::ServerComponent(_) = client_reference_type else {
-                continue;
-            };
-            let refs = memo
-                .remove(module)
-                .expect("everything should have been computed above");
-            if let Some(refs) = refs {
-                // In the most common case each server component should be the only thing retaining
-                // the Rc, if not, then at least the next one will get to avoid the
-                // copy.
-                let refs: Box<[_]> = match Rc::try_unwrap(refs) {
-                    Ok(owned) => owned.into_boxed_slice(),
-                    Err(shared) => shared.to_vec().into_boxed_slice(),
-                };
-                client_references_per_server_component.insert(*module, refs);
-            }
-        }
-        debug_assert!(memo.is_empty());
+        // Drop everything from the map except server components, this frees memory and, critically,
+        // decrements ref counts so we can avoid copies below.
+        drop(memo);
+
+        let client_references_per_server_component = client_references_per_server_component
+            .into_iter()
+            .filter_map(|(k, v)| match v {
+                None => None,
+                Some(refs) => {
+                    // Avoid a copy in the common cas
+                    let refs: Box<[_]> = match Rc::try_unwrap(refs) {
+                        Ok(owned) => owned.into_boxed_slice(),
+                        Err(shared) => shared.to_vec().into_boxed_slice(),
+                    };
+                    Some((k, refs))
+                }
+            })
+            .collect();
 
         Ok(ClientReferencesSet::new(ClientReferencesSet {
             client_references,
