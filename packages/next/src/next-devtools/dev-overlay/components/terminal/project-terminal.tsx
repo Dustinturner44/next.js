@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { useDev0Context } from '../../context/dev-zero-context'
-import { usePanelRouterContext } from '../../menu/context'
+import { usePanelRouterContext, type PanelStateKind } from '../../menu/context'
 
 interface Dev0Project {
   name: string
@@ -68,8 +68,11 @@ export const ProjectTerminal: React.FC<ProjectTerminalProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
-        display: isVisible ? 'block' : 'none',
+        visibility: isVisible ? 'visible' : 'hidden',
+        opacity: isVisible ? 1 : 0,
+        pointerEvents: isVisible ? 'auto' : 'none',
         backgroundColor: '#000',
+        zIndex: isVisible ? 1 : 0,
       }}
     >
       <iframe
@@ -92,7 +95,7 @@ export const ProjectTerminal: React.FC<ProjectTerminalProps> = ({
 
 export const ProjectTerminalManager: React.FC = () => {
   const { projects } = useDev0Context()
-  const { activePanel } = usePanelRouterContext()
+  const { activePanel, openPanel } = usePanelRouterContext()
   const runningProjects = projects.filter((p) => p.status === 'running')
 
   const getProjectNameFromPanel = (panel: string | null): string | null => {
@@ -158,7 +161,10 @@ export const ProjectTerminalManager: React.FC = () => {
         {runningProjects.map((project) => (
           <button
             key={project.name}
-            onClick={() => setActiveProjectName(project.name)}
+            onClick={() => {
+              setActiveProjectName(project.name)
+              openPanel(`dev0-project-${project.name}` as PanelStateKind)
+            }}
             style={{
               padding: '4px 12px',
               borderRadius: '4px',

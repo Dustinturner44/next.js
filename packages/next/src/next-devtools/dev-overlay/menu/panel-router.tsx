@@ -172,7 +172,7 @@ const MenuPanel = () => {
     },
   ].filter(Boolean)
 
-  // Add dev-0 projects (reverse to show newest first)
+  // Add dev-0 projects (reverse to show newest first) - styled differently
   const projectItems = visibleProjects.reverse().map((project) => {
     const panelName = `dev0-project-${project.name}` as PanelStateKind
     const isActive = activePanel === panelName
@@ -188,7 +188,18 @@ const MenuPanel = () => {
           />
         ) : isActive ? (
           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ChevronRight />
+            <span style={{ 
+              fontSize: '10px',
+              fontWeight: 'bold',
+              color: 'var(--color-purple-700)',
+              backgroundColor: 'var(--color-purple-alpha-200)',
+              padding: '2px 6px',
+              borderRadius: '8px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              DEV
+            </span>
             <span
               style={{
                 width: '6px',
@@ -200,7 +211,18 @@ const MenuPanel = () => {
             />
           </span>
         ) : (
-          <ChevronRight />
+          <span style={{ 
+            fontSize: '10px',
+            fontWeight: 'bold',
+            color: 'var(--color-purple-700)',
+            backgroundColor: 'var(--color-purple-alpha-200)',
+            padding: '2px 6px',
+            borderRadius: '8px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            DEV
+          </span>
         ),
       onClick:
         project.status === 'creating'
@@ -211,6 +233,7 @@ const MenuPanel = () => {
         'data-dev0-project': project.name,
         'data-dev0-status': project.status,
         'data-panel-active': isActive ? 'true' : 'false',
+        'data-item-type': 'project',
       },
     }
   })
@@ -299,7 +322,7 @@ const MenuPanel = () => {
   return (
     <>
       <CommandPalette
-        items={[...baseItems, ...projectItems, ...additionalItems]}
+        items={[...projectItems, ...baseItems, ...additionalItems]}
         closeOnClickOutside={false}
         onDeleteItem={handleDeleteItem}
       />
@@ -338,6 +361,26 @@ const MenuPanel = () => {
 
         .dev-tools-indicator-item[data-panel-active='true']:hover {
           background-color: var(--color-gray-alpha-200);
+        }
+
+        /* Style project items differently */
+        .dev-tools-indicator-item[data-item-type='project'] {
+          border-left: 3px solid var(--color-purple-700);
+          background-color: var(--color-purple-alpha-050);
+          position: relative;
+        }
+
+        .dev-tools-indicator-item[data-item-type='project']:hover {
+          background-color: var(--color-purple-alpha-100);
+        }
+
+        .dev-tools-indicator-item[data-item-type='project'][data-panel-active='true'] {
+          background-color: var(--color-purple-alpha-100);
+          border-left: 3px solid var(--color-purple-800);
+        }
+
+        .dev-tools-indicator-item[data-item-type='project'][data-panel-active='true']:hover {
+          background-color: var(--color-purple-alpha-200);
         }
       `}</style>
     </>

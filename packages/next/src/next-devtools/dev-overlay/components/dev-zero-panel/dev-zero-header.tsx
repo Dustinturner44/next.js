@@ -202,33 +202,7 @@ export function Dev0Header({
             >
               {projectName}
             </h3>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontSize: '11px',
-                color: 'var(--color-gray-600)',
-                backgroundColor: 'var(--color-gray-alpha-100)',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontFamily: 'monospace',
-              }}
-            >
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M2 12h20"></path>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-              </svg>
-              <span>localhost:{port || '3000'}</span>
-            </div>
+            
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
