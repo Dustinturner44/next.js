@@ -106,16 +106,24 @@ pub async fn map_client_references(
         /// Collects the shallowly discoverable set of client references for each server component
         /// in DFS post order. Uses [memo] to avoid redundantly exploring the same parts of
         /// the graph when different server components have shared dependencies.
+        /// In principle this means we will visit every node reachable from a server component at
+        /// most once however cycles complicate this logic slightly.  The real problem is all the
+        /// Vec<> copies and for that we observe that client references are somewhat rare and thus
+        /// it should be common that many nodes share the same set of transitive deps.
         #[allow(clippy::type_complexity)]
         fn dfs_collect_shallow_client_references(
             is_root: bool,
             u: ResolvedVc<Box<dyn Module>>,
             graph: &SingleModuleGraph,
             client_references: &FxHashMap<ResolvedVc<Box<dyn Module>>, ClientReferenceMapType>,
-            memo: &mut FxHashMap<ResolvedVc<Box<dyn Module>>, Rc<Vec<ResolvedVc<Box<dyn Module>>>>>,
-            visiting_stack: &mut FxHashSet<ResolvedVc<Box<dyn Module>>>, /* For cycle detection
-                                                                          * in
-                                                                          * current DFS path */
+            // We model empty as None instead of an empty vec to avoid allocations
+            // Also store `Rc` since many nodes will have identical transitive deps.
+            memo: &mut FxHashMap<
+                ResolvedVc<Box<dyn Module>>,
+                Option<Rc<Vec<ResolvedVc<Box<dyn Module>>>>>,
+            >,
+            // for cycle detection
+            visiting_stack: &mut FxHashSet<ResolvedVc<Box<dyn Module>>>,
         ) -> Option<Rc<Vec<ResolvedVc<Box<dyn Module>>>>> {
             // Because we are only collecting shallowly discoverable references, short circuit on
             // each client reference, however roots are client references (server components) so
@@ -126,23 +134,23 @@ pub async fn map_client_references(
 
             // 1. Memoization check: If already computed, return cached result.
             if let Some(cached_result) = memo.get(&u) {
-                return Some(cached_result.clone());
+                return cached_result.clone();
             }
 
             // 2. Cycle detection: If 'u' is currently in recursion stack, it's a cycle.
             // For DFS post-order, we simply don't add 'u' or its descendants from this path
             // until the cycle is naturally broken or handled by memoization from another path.
-            // We return an empty list for this path to avoid infinite recursion.
             if !visiting_stack.insert(u) {
                 return None;
             }
 
             // 3. Recursively visit neighbors or consume ourselves, we don't consider client
             //    references to be traversable.
-            let mut reachable_green_from_u = FxIndexSet::default();
+            let mut transitive_client_refs = None;
+            let mut first = None;
 
             for v in graph.neighbors(u) {
-                // This ignores back edges because we simply already visited them.
+                // This ignores back edges because we must have already visited them.
                 if let Some(green_nodes_from_v) = dfs_collect_shallow_client_references(
                     false,
                     v,
@@ -152,20 +160,50 @@ pub async fn map_client_references(
                     visiting_stack,
                 ) {
                     // Merge results from sub-paths
-                    reachable_green_from_u.extend(green_nodes_from_v.iter());
+                    // Save the first one on the relatively likely chance that we don't actually
+                    // accumulate _more_.
+                    match &first {
+                        None => {
+                            first = Some(green_nodes_from_v.clone());
+                        }
+                        Some(first) => match transitive_client_refs.as_mut() {
+                            None => {
+                                transitive_client_refs =
+                                    Some(FxIndexSet::from_iter(first.iter().copied()));
+                            }
+                            Some(refs) => {
+                                refs.extend(green_nodes_from_v.iter());
+                            }
+                        },
+                    }
                 }
             }
-
-            // 4. Flatten to a Vec
-            let reachable_green_from_u: Rc<Vec<_>> =
-                Rc::from(reachable_green_from_u.into_iter().collect::<Vec<_>>());
+            // 4. Flatten to a Vec, but optimize for the case where we acucmulated all transitive
+            //    deps from the first non-empty neighbor and reuse the Rc
+            let result = match (first, transitive_client_refs) {
+                (Some(first), Some(refs)) => {
+                    if refs.len() == refs.len() {
+                        // we got references from multiple neighbors but never accumulated a new
+                        // dependency
+                        Some(first)
+                    } else {
+                        Some(Rc::from(refs.into_iter().collect::<Vec<_>>()))
+                    }
+                }
+                (Some(first), None) => {
+                    // only had one neighbor with deps
+                    Some(first)
+                }
+                // None of our neighbors had deps.
+                (None, _) => None,
+            };
 
             // 5. Save the result in memo
-            memo.insert(u, reachable_green_from_u.clone());
+            memo.insert(u, result.clone());
 
             visiting_stack.remove(&u); // Unmark 'u' as visiting
 
-            Some(reachable_green_from_u) // Return the computed list
+            result // Return the computed list
         }
 
         let mut memo = FxHashMap::default();
@@ -198,14 +236,17 @@ pub async fn map_client_references(
             };
             let refs = memo
                 .remove(module)
-                .expect("everything should have been computed");
-            // In the most common case each server component should be the only thing retaining the
-            // Rc, if not, then at least the next one will get to avoid the copy.
-            let refs: Box<[_]> = match Rc::try_unwrap(refs) {
-                Ok(owned) => owned.into_boxed_slice(),
-                Err(shared) => shared.to_vec().into_boxed_slice(),
-            };
-            client_references_per_server_component.insert(*module, refs);
+                .expect("everything should have been computed above");
+            if let Some(refs) = refs {
+                // In the most common case each server component should be the only thing retaining
+                // the Rc, if not, then at least the next one will get to avoid the
+                // copy.
+                let refs: Box<[_]> = match Rc::try_unwrap(refs) {
+                    Ok(owned) => owned.into_boxed_slice(),
+                    Err(shared) => shared.to_vec().into_boxed_slice(),
+                };
+                client_references_per_server_component.insert(*module, refs);
+            }
         }
         debug_assert!(memo.is_empty());
 

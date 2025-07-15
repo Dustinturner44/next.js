@@ -340,10 +340,10 @@ impl ClientReferencesGraph {
                     }
                     ClientReferenceMapType::ServerComponent(sc) => {
                         if server_components.insert(module)
-                            && let Some(client_referencces) =
+                            && let Some(component_references) =
                                 data.client_references_per_server_component.get(&module)
                         {
-                            for client_reference in client_referencces {
+                            for client_reference in component_references {
                                 collect_client_references(
                                     *client_reference,
                                     Some(*sc),
