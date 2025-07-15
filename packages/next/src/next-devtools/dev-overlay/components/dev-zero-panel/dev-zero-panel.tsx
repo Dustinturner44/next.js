@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { css } from '../../utils/css'
-import { Dev0RPC } from '../../utils/dev0-rpc'
 
 interface Dev0PanelProps {
   projectName: string
@@ -8,7 +7,11 @@ interface Dev0PanelProps {
   refreshKey?: number
 }
 
-export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refreshKey = 0 }) => {
+export const Dev0Panel: React.FC<Dev0PanelProps> = ({
+  projectName,
+  port,
+  refreshKey = 0,
+}) => {
   const iframeUrl = `http://localhost:${port}`
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -16,10 +19,8 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
   const [hasError, setHasError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  const rpcRef = useRef<Dev0RPC | null>(null)
   const retryIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Handle refresh from parent
   useEffect(() => {
     if (refreshKey > 0 && iframeRef.current) {
       setIsLoading(true)
@@ -29,11 +30,10 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
     }
   }, [refreshKey, iframeUrl])
 
-  // Auto-retry logic
   useEffect(() => {
     if (hasError) {
       retryIntervalRef.current = setInterval(() => {
-        setRetryCount(prev => prev + 1)
+        setRetryCount((prev) => prev + 1)
         setHasError(false)
         setIsLoading(true)
         setHasLoaded(false)
@@ -53,32 +53,21 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      // Verify it's from our iframe
       if (event.origin !== `http://localhost:${port}`) return
 
-      // Handle instrumentation ready signal
       if (event.data.type === 'dev0-instrumentation-ready') {
         console.log('Dev0 instrumentation ready for:', projectName)
         setIsInstrumentationReady(true)
         return
       }
 
-      // Handle execute requests from iframe
       if (event.data.type === 'dev0-execute-request') {
         const { id, fn, args } = event.data
-        console.log(`🔧 Execute request from ${projectName}:`, {
-          id,
-          fn: fn.substring(0, 50) + '...',
-          args,
-        })
 
         try {
-          // Reconstruct and execute the function in parent context
-          // eslint-disable-next-line no-new-func
           const func = new Function('return ' + fn)()
           const result = await func(...args)
 
-          // Send result back to iframe
           if (iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.postMessage(
               {
@@ -91,8 +80,6 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
             )
           }
         } catch (error) {
-          console.error('Execute error:', error)
-          // Send error back to iframe
           if (iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.postMessage(
               {
@@ -113,25 +100,22 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
         return
       }
 
-      // Handle forwarded mouse events from iframe
       if (event.data.type === 'iframe-mouse-event') {
         const { eventType, clientX, clientY, button, buttons } = event.data
-        
-        // Create and dispatch a synthetic mouse event on the parent document
+
         const syntheticEvent = new MouseEvent(eventType, {
           clientX,
           clientY,
           button,
           buttons,
           bubbles: true,
-          cancelable: true
+          cancelable: true,
         })
-        
+
         document.dispatchEvent(syntheticEvent)
         return
       }
 
-      // Handle custom messages from the iframe
       if (event.data.type?.startsWith('dev0-')) {
         const messageType = event.data.type.replace('dev0-', '')
         console.log(
@@ -140,14 +124,12 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
           event.data.data
         )
 
-        // Handle specific message types
         if (messageType === 'app-ready') {
           console.log('🎉 App is ready!', event.data.data)
         } else if (messageType === 'color-change') {
           console.log('🌈 Color changed to:', event.data.data.color)
         } else if (messageType === 'request-parent-action') {
           console.log('🎯 Parent action requested:', event.data.data)
-          // Could implement actual parent UI changes here
         }
         return
       }
@@ -157,7 +139,6 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
         event.data.projectName === projectName
       ) {
         try {
-          // Send screenshot to server
           const response = await fetch(
             'http://localhost:40000/save-screenshot',
             {
@@ -182,12 +163,6 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
     window.addEventListener('message', handleMessage)
     return () => {
       window.removeEventListener('message', handleMessage)
-      // Clean up RPC
-      if (rpcRef.current) {
-        rpcRef.current.dispose()
-        rpcRef.current = null
-      }
-      // Clean up retry interval
       if (retryIntervalRef.current) {
         clearInterval(retryIntervalRef.current)
       }
@@ -394,32 +369,13 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({ projectName, port, refresh
             clearInterval(retryIntervalRef.current)
             retryIntervalRef.current = null
           }
-          
+
           // Add a small delay to ensure the iframe content is rendered
           setTimeout(() => {
             setHasLoaded(true)
             setHasError(false)
             setTimeout(() => {
               setIsLoading(false)
-              // Initialize RPC when iframe is loaded
-              if (iframeRef.current) {
-                rpcRef.current = new Dev0RPC(iframeRef.current)
-                // Expose RPC globally for debugging
-                ;(window as any).__DEV0_RPC__ = rpcRef.current
-
-                // Example usage (for development)
-                console.log('🚀 Dev0 instrumentation ready!')
-                console.log(
-                  'The iframe can now execute functions in parent context:'
-                )
-                console.log('// In iframe console: await window.dev.getTitle()')
-                console.log(
-                  '// In iframe console: await window.dev.execute(() => document.body.style.backgroundColor = "red")'
-                )
-                console.log(
-                  '// In iframe console: await window.dev.log("Hello from iframe!")'
-                )
-              }
             }, 300)
           }, 100)
         }}

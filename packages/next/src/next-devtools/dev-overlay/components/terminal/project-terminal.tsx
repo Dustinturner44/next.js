@@ -25,7 +25,7 @@ export const ProjectTerminal: React.FC<ProjectTerminalProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [terminalSessionId] = useState(() => {
-    const sessionId = `terminal-${project.name}-${Date.now()}`
+    const sessionId = `terminal-${project.name}`
     return sessionId
   })
 
