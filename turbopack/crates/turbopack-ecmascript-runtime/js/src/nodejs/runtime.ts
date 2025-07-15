@@ -93,6 +93,8 @@ function loadChunk(chunkData: ChunkData, source?: SourceInfo): void {
 }
 
 const loadedChunks = new Set<ChunkPath>()
+const unsupportedLoadChunk = Promise.resolve(undefined)
+const chunkCache = new Map<ChunkPath, Promise<void>>()
 
 function loadChunkPath(chunkPath: ChunkPath, source?: SourceInfo): void {
   if (!isJs(chunkPath)) {
@@ -136,21 +138,10 @@ function loadChunkPath(chunkPath: ChunkPath, source?: SourceInfo): void {
   }
 }
 
-async function loadChunkAsync(
+async function loadChunkAsyncUncached(
   source: SourceInfo,
-  chunkData: ChunkData
-): Promise<any> {
-  const chunkPath = typeof chunkData === 'string' ? chunkData : chunkData.path
-  if (!isJs(chunkPath)) {
-    // We only support loading JS chunks in Node.js.
-    // This branch can be hit when trying to load a CSS chunk.
-    return
-  }
-
-  if (loadedChunks.has(chunkPath)) {
-    return
-  }
-
+  chunkPath: ChunkPath
+): Promise<void> {
   const resolved = path.resolve(RUNTIME_ROOT, chunkPath)
 
   try {
@@ -187,7 +178,6 @@ async function loadChunkAsync(
         }
       }
     }
-    loadedChunks.add(chunkPath)
   } catch (e) {
     let errorMessage = `Failed to load chunk ${chunkPath}`
 
@@ -198,6 +188,30 @@ async function loadChunkAsync(
     throw new Error(errorMessage, {
       cause: e,
     })
+  }
+}
+
+function loadChunkAsync(
+  source: SourceInfo,
+  chunkData: ChunkData
+): Promise<void> {
+  const chunkPath = typeof chunkData === 'string' ? chunkData : chunkData.path
+  if (!isJs(chunkPath)) {
+    // We only support loading JS chunks in Node.js.
+    // This branch can be hit when trying to load a CSS chunk.
+    return unsupportedLoadChunk
+  }
+
+  const entry = chunkCache.get(chunkPath)
+  if (entry === undefined) {
+    const thenable = loadChunkAsyncUncached(source, chunkPath)
+    thenable.then(() => {
+      loadedChunks.add(chunkPath)
+    })
+    chunkCache.set(chunkPath, thenable)
+    return thenable
+  } else {
+    return entry
   }
 }
 
