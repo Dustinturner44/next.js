@@ -30,8 +30,8 @@ export function Dev0ProjectPanel({ project }: Dev0ProjectPanelProps) {
         minHeight: 400 / state.scale,
         minWidth: 600 / state.scale,
         initialSize: {
-          height: 600 / state.scale,
-          width: 800 / state.scale,
+          height: 300 / state.scale,
+          width: 400 / state.scale,
         },
       }}
       header={
