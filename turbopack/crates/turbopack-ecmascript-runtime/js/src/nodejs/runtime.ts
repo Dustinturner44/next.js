@@ -202,17 +202,21 @@ function loadChunkAsync(
     return unsupportedLoadChunk
   }
 
-  const entry = chunkCache.get(chunkPath)
+  let entry = chunkCache.get(chunkPath)
   if (entry === undefined) {
-    const thenable = loadChunkAsyncUncached(source, chunkPath)
-    thenable.then(() => {
-      loadedChunks.add(chunkPath)
+    // A new Promise ensures callers that don't handle rejection will still trigger one unhandled rejection.
+    // Handling the rejection will not trigger unhandled rejections.
+    entry = new Promise<void>((resolve, reject) => {
+      loadChunkAsyncUncached(source, chunkPath)
+        .then(() => {
+          loadedChunks.add(chunkPath)
+          resolve()
+        })
+        .catch(reject)
     })
-    chunkCache.set(chunkPath, thenable)
-    return thenable
-  } else {
-    return entry
+    chunkCache.set(chunkPath, entry)
   }
+  return entry
 }
 
 async function loadChunkAsyncByUrl(source: SourceInfo, chunkUrl: string) {
