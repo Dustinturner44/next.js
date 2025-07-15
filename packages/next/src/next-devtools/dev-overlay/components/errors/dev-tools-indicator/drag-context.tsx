@@ -78,8 +78,10 @@ export function DragHandle({
     <div
       ref={setRef}
       {...props}
+      className={`drag-handle ${props.className || ''}`}
       style={{
         cursor: ctx?.disabled ? 'default' : 'grab',
+        width: '100%', // Ensure it fills the full width
         ...(props.style || {}),
       }}
     >

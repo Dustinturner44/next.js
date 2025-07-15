@@ -27,39 +27,8 @@ export const ResizeHandle = ({
     left: 0,
   })
 
-  // TODO(rob): if parallel with >2 sides (user resizes panel to be max width/height)
-  // then we need to relax disabled resize heuristic
+  // Always show all resize handles regardless of corner position
   const shouldShowHandle = () => {
-    const getOppositeCorner = (corner: Corners): ResizeDirection => {
-      switch (corner) {
-        case 'top-left':
-          return 'bottom-right'
-        case 'top-right':
-          return 'bottom-left'
-        case 'bottom-left':
-          return 'top-right'
-        case 'bottom-right':
-          return 'top-left'
-        default: {
-          corner satisfies never
-          return null!
-        }
-      }
-    }
-
-    // we block the sides of the corner its in (bottom-left has bottom and left sides blocked from resizing)
-    // because there shouldn't be anywhere to resize, and if the user decides to resize from that point it
-    // would be unhandled/slightly janky (the component would have to re-magnetic-snap after the resize)
-    if (position.split('-').includes(direction)) return false
-
-    // same logic as above, but the only corner resize that makes
-    // sense is the corner fully exposed (the opposing corner)
-    const isCorner = direction.includes('-')
-    if (isCorner) {
-      const opposite = getOppositeCorner(position)
-      return direction === opposite
-    }
-
     return true
   }
 

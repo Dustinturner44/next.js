@@ -187,6 +187,7 @@ export function UserPreferencesBody({
           </Select>
         </div>
 
+
         <div className="preference-section">
           <div className="preference-header">
             <label id="hide-dev-tools">Hide Dev Tools for this session</label>

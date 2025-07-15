@@ -420,6 +420,7 @@ function calculateVelocity(
     x: velocityX * 1000,
     y: velocityY * 1000,
   }
+  
 }
 
 function project(initialVelocity: number, decelerationRate = 0.999) {

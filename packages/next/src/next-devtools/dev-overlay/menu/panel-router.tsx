@@ -38,11 +38,17 @@ import { css } from '../utils/css'
 import React from 'react'
 
 const MenuPanel = () => {
-  const { togglePanel, closeAllPanels, setSelectedIndex,panels } =
-    usePanelRouterContext()
+  const {
+    togglePanel,
+    closeAllPanels,
+    setSelectedIndex,
+    panels,
+    activePanel,
+    dockedPanels,
+  } = usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
-  const { projects, createProject, isLoading } = useDev0Context()
+  const { projects, createProject, isLoading, killProject } = useDev0Context()
   const { toggleSidebar, isOpen: sidebarIsOpen } = useSidebarContext()
 
   const visibleProjects = projects.filter(
@@ -68,116 +74,241 @@ const MenuPanel = () => {
           })
         }
       },
+      deletable: false,
     },
     {
       title: `Current route is ${state.staticIndicator ? 'static' : 'dynamic'}.`,
       label: 'Route',
-      value: state.staticIndicator ? 'Static' : 'Dynamic',
+      value:
+        activePanel === 'route-type' ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {state.staticIndicator ? 'Static' : 'Dynamic'}
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-green-700)',
+                boxShadow: '0 0 0 1px var(--color-green-200)',
+              }}
+            />
+          </span>
+        ) : dockedPanels.has('route-type') ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {state.staticIndicator ? 'Static' : 'Dynamic'}
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-blue-700)',
+                boxShadow: '0 0 0 1px var(--color-blue-200)',
+              }}
+            />
+          </span>
+        ) : state.staticIndicator ? (
+          'Static'
+        ) : (
+          'Dynamic'
+        ),
       onClick: () => togglePanel('route-type'),
       attributes: {
         'data-nextjs-route-type': state.staticIndicator ? 'static' : 'dynamic',
+        'data-panel-active': panels.has('route-type') ? 'true' : 'false',
       },
+      deletable: false,
     },
     !!process.env.TURBOPACK
       ? {
           title: 'Turbopack is enabled.',
           label: 'Turbopack',
           value: 'Enabled',
+          deletable: false,
         }
       : {
           title:
             'Learn about Turbopack and how to enable it in your application.',
           label: 'Try Turbopack',
-          value: panels.has('turbo-info') ? (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          value:
+            activePanel === 'turbo-info' ? (
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <ChevronRight />
+                <span
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--color-green-700)',
+                    boxShadow: '0 0 0 1px var(--color-green-200)',
+                  }}
+                />
+              </span>
+            ) : dockedPanels.has('turbo-info') ? (
+              <span
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <ChevronRight />
+                <span
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--color-blue-700)',
+                    boxShadow: '0 0 0 1px var(--color-blue-200)',
+                  }}
+                />
+              </span>
+            ) : (
               <ChevronRight />
-              <span style={{ 
-                width: '6px', 
-                height: '6px', 
-                borderRadius: '50%', 
-                backgroundColor: 'var(--color-green-700)',
-                boxShadow: '0 0 0 1px var(--color-green-200)'
-              }} />
-            </span>
-          ) : <ChevronRight />,
+            ),
           onClick: () => togglePanel('turbo-info'),
           attributes: {
-            'data-panel-active': panels.has('turbo-info') ? 'true' : 'false',
+            'data-panel-active':
+              activePanel === 'turbo-info' ? 'true' : 'false',
+            'data-panel-docked': dockedPanels.has('turbo-info')
+              ? 'true'
+              : 'false',
           },
+          deletable: false,
         },
     !!process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER && {
       label: 'Route Info',
-      value: <ChevronRight />,
+      value:
+        activePanel === 'segment-explorer' ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ChevronRight />
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-green-700)',
+                boxShadow: '0 0 0 1px var(--color-green-200)',
+              }}
+            />
+          </span>
+        ) : (
+          <ChevronRight />
+        ),
       onClick: () => togglePanel('segment-explorer'),
       attributes: {
         'data-segment-explorer': true,
+        'data-panel-active':
+          activePanel === 'segment-explorer' ? 'true' : 'false',
+        'data-panel-docked': dockedPanels.has('segment-explorer')
+          ? 'true'
+          : 'false',
       },
+      deletable: false,
     },
   ].filter(Boolean)
 
   // Add dev-0 projects (reverse to show newest first)
-  const projectItems = visibleProjects.reverse().map((project) => ({
-    label: project.status === 'creating' ? 'Creating project...' : project.name,
-    value:
-      project.status === 'creating' ? (
-        <span
-          className="loading-spinner"
-          style={{ width: '14px', height: '14px' }}
-        />
-      ) : (
-        <ChevronRight />
-      ),
-    onClick:
-      project.status === 'creating'
-        ? undefined
-        : () => togglePanel(`dev0-project-${project.name}` as PanelStateKind),
-    disabled: project.status === 'creating',
-    attributes: {
-      'data-dev0-project': project.name,
-      'data-dev0-status': project.status,
-    },
-  }))
+  const projectItems = visibleProjects.reverse().map((project) => {
+    const panelName = `dev0-project-${project.name}` as PanelStateKind
+    const isActive = activePanel === panelName
+    const isDocked = dockedPanels.has(panelName)
 
-  const footerItems = [
+    return {
+      label:
+        project.status === 'creating' ? 'Creating project...' : project.name,
+      value:
+        project.status === 'creating' ? (
+          <span
+            className="loading-spinner"
+            style={{ width: '14px', height: '14px' }}
+          />
+        ) : isActive ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ChevronRight />
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-green-700)',
+                boxShadow: '0 0 0 1px var(--color-green-200)',
+              }}
+            />
+          </span>
+        ) : isDocked ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ChevronRight />
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-blue-700)',
+                boxShadow: '0 0 0 1px var(--color-blue-200)',
+              }}
+            />
+          </span>
+        ) : (
+          <ChevronRight />
+        ),
+      onClick:
+        project.status === 'creating'
+          ? undefined
+          : () => togglePanel(panelName),
+      disabled: project.status === 'creating',
+      attributes: {
+        'data-dev0-project': project.name,
+        'data-dev0-status': project.status,
+        'data-panel-active': isActive ? 'true' : 'false',
+        'data-panel-docked': isDocked ? 'true' : 'false',
+      },
+    }
+  })
+
+  const additionalItems = [
     {
       label: 'Hub',
       value: <ChevronRight />,
       onClick: () => togglePanel('hub'),
-      footer: true,
       attributes: {
         'data-hub': true,
       },
+      deletable: false,
     },
     {
       label: 'Create New Project',
       value: isLoading ? 'Creating...' : '+',
       onClick: handleCreateProject,
       disabled: isLoading,
-      footer: true,
       attributes: {
         'data-create-project': true,
       },
+      deletable: false,
     },
     {
       label: 'Fork URL',
-      value: panels.has('fork-url') ? (
-        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      value:
+        activePanel === 'fork-url' ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ChevronRight />
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-green-700)',
+                boxShadow: '0 0 0 1px var(--color-green-200)',
+              }}
+            />
+          </span>
+        ) : (
           <ChevronRight />
-          <span style={{ 
-            width: '6px', 
-            height: '6px', 
-            borderRadius: '50%', 
-            backgroundColor: 'var(--color-green-700)',
-            boxShadow: '0 0 0 1px var(--color-green-200)'
-          }} />
-        </span>
-      ) : <ChevronRight />,
+        ),
       onClick: () => togglePanel('fork-url'),
-      footer: true,
       attributes: {
         'data-fork-url': true,
-        'data-panel-active': panels.has('fork-url') ? 'true' : 'false',
+        'data-panel-active': activePanel === 'fork-url' ? 'true' : 'false',
+        'data-panel-docked': dockedPanels.has('fork-url') ? 'true' : 'false',
       },
+      deletable: false,
     },
     {
       label: sidebarIsOpen ? 'Close Sidebar' : 'Open Sidebar',
@@ -185,27 +316,38 @@ const MenuPanel = () => {
       onClick: () => {
         toggleSidebar()
       },
-      footer: true,
       attributes: {
         'data-sidebar-toggle': true,
       },
+      deletable: false,
     },
     {
       label: 'Preferences',
       value: <GearIcon />,
       onClick: () => togglePanel('preferences'),
-      footer: true,
       attributes: {
         'data-preferences': true,
       },
+      deletable: false,
     },
   ]
 
+  const handleDeleteItem = (label: string) => {
+    // Check if it's a dev-0 project
+    const project = visibleProjects.find(
+      (p) => p.name === label || label === 'Creating project...'
+    )
+    if (project && project.status !== 'creating') {
+      killProject(project.name)
+    }
+  }
+
   return (
     <>
-      <CommandPalette 
-        items={[...baseItems, ...projectItems, ...footerItems]} 
+      <CommandPalette
+        items={[...baseItems, ...projectItems, ...additionalItems]}
         closeOnClickOutside={false}
+        onDeleteItem={handleDeleteItem}
       />
       <style>{css`
         .loading-spinner {
@@ -309,7 +451,7 @@ export const PanelRouter = () => {
           sizeConfig={{
             kind: 'fixed',
             height: 500 / state.scale,
-            width: 480 + 32,
+            width: (480 + 32) / state.scale,
           }}
           closeOnClickOutside
           header={<DevToolsHeader title="Preferences" />}
@@ -541,9 +683,14 @@ function PanelRoute({
   children: React.ReactNode
   name: PanelStateKind | `dev0-project-${string}`
 }) {
-  const { panels } = usePanelRouterContext()
-  const isActive = panels.has(name as PanelStateKind)
-  const { mounted, rendered } = useDelayedRender(isActive, {
+  const { panels, activePanel, dockedPanels } = usePanelRouterContext()
+  const isOpen = panels.has(name as PanelStateKind)
+  const isActive = activePanel === name
+  const isDocked = dockedPanels.has(name as PanelStateKind)
+
+  // Always mount panel-selector, mount others if they're open (either active or docked)
+  const shouldMount = name === 'panel-selector' ? isOpen : isOpen
+  const { mounted, rendered } = useDelayedRender(shouldMount, {
     enterDelay: 0,
     exitDelay: MENU_DURATION_MS,
   })

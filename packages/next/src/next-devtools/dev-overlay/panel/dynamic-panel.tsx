@@ -1,4 +1,11 @@
-import { useMemo, useRef, useState, useEffect, useLayoutEffect, type CSSProperties } from 'react'
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  type CSSProperties,
+} from 'react'
 import { useDevOverlayContext } from '../../dev-overlay.browser'
 import { INDICATOR_PADDING } from '../components/devtools-indicator/devtools-indicator'
 import { useSidebarContext } from '../context/sidebar-context'
@@ -20,6 +27,7 @@ import {
   STORE_KEY_SHARED_PANEL_SIZE,
 } from '../shared'
 import { getIndicatorOffset } from '../utils/indicator-metrics'
+import { getDockItemPosition } from '../components/dock/panel-dock'
 
 function resolveCSSValue(
   value: string | number,
@@ -100,6 +108,10 @@ function getStoredPanelSize(panelName?: string) {
   }
 }
 
+const DOCK_WIDTH = 200 // Fixed width for docked panels
+const DOCK_HEIGHT = 150 // Fixed height for docked panels
+const DOCK_GAP = 12 // Gap between docked panels
+
 export function DynamicPanel({
   header,
   children,
@@ -143,7 +155,16 @@ export function DynamicPanel({
       }
   closeOnClickOutside?: boolean
 }) {
-  const { closePanel, triggerRef, panels, bringPanelToFront, getPanelZIndex } = usePanelRouterContext()
+  const {
+    closePanel,
+    triggerRef,
+    panels,
+    bringPanelToFront,
+    getPanelZIndex,
+    activePanel,
+    dockedPanels,
+    swapPanels,
+  } = usePanelRouterContext()
   const { name, mounted } = usePanelContext()
   const resizeStorageKey = sharePanelSizeGlobally
     ? STORE_KEY_SHARED_PANEL_SIZE
@@ -155,10 +176,17 @@ export function DynamicPanel({
 
   const { dispatch, state } = useDevOverlayContext()
   const { isOpen: sidebarIsOpen, width: sidebarWidth } = useSidebarContext()
+  // Default to top-right to avoid menu overlap
   const devtoolsPanelPosition =
-    state.devToolsPanelPosition[positionStorageKey] ?? state.devToolsPosition
+    state.devToolsPanelPosition[positionStorageKey] ?? 'top-right'
   const [panelVertical, panelHorizontal] = devtoolsPanelPosition.split('-', 2)
   const resizeContainerRef = useRef<HTMLDivElement>(null)
+
+  // Check if this panel is docked
+  const isDocked = dockedPanels.has(name)
+  const isActive = activePanel === name
+
+  // We'll handle dock rendering differently
 
   useClickOutsideAndEscape(
     resizeContainerRef,
@@ -198,29 +226,142 @@ export function DynamicPanel({
 
   // Calculate horizontal offset considering sidebar
   const sidebarOffset = sidebarIsOpen ? sidebarWidth : 0
-  const horizontalOffset = panelHorizontal === 'right' && sidebarIsOpen 
-    ? INDICATOR_PADDING + sidebarOffset 
-    : INDICATOR_PADDING
+  const horizontalOffset =
+    panelHorizontal === 'right' && sidebarIsOpen
+      ? INDICATOR_PADDING + sidebarOffset
+      : INDICATOR_PADDING
 
-  // Check if command palette is open
-  const isCommandPaletteOpen = panels.has('panel-selector' as PanelStateKind)
-  
-  // Adjust position if command palette is open and panel would overlap
-  let adjustedVerticalOffset = verticalOffset
-  let adjustedHorizontalOffset = horizontalOffset
-  
-  if (isCommandPaletteOpen && panelVertical === 'bottom' && panelHorizontal === 'left') {
-    // Move panel to avoid command palette (320px width + 20px padding + 20px spacing)
-    adjustedHorizontalOffset = Math.max(horizontalOffset, 360)
-    // Also ensure panel is above command palette (480px max height + 60px bottom offset)
-    adjustedVerticalOffset = Math.max(verticalOffset, 80)
+  // Get dock position for this panel
+  // Force recalculation when dockedPanels changes
+  const dockPosition = useMemo(
+    () => (isDocked ? getDockItemPosition(name, dockedPanels) : null),
+    [isDocked, name, dockedPanels]
+  )
+
+  // Get stored panel size for resizable panels
+  const panelSize = useMemo(() => getStoredPanelSize(name), [name])
+
+  // Get actual dimensions
+  // For fixed size panels, always use the configured size
+  // For resizable panels, use stored size or fall back to initial/default size
+  const actualWidth =
+    sizeConfig.kind === 'fixed'
+      ? sizeConfig.width
+      : panelSize?.width || sizeConfig.initialSize?.width || 400
+  const actualHeight =
+    sizeConfig.kind === 'fixed'
+      ? sizeConfig.height
+      : panelSize?.height || sizeConfig.initialSize?.height || 300
+
+  // No longer need complex transform calculation since we use direct positioning
+
+  // Calculate the actual visual position for smooth transitions
+  const getActualPosition = () => {
+    if (isDocked && dockPosition) {
+      // Defensive check to ensure we have valid dock position
+      if (
+        dockPosition.x === 0 &&
+        dockPosition.y === 0 &&
+        dockPosition.width === 0 &&
+        dockPosition.height === 0
+      ) {
+        console.error(`❌ Invalid dock position for ${name}`, {
+          dockPosition,
+          dockedPanels: Array.from(dockedPanels),
+        })
+        // Fall back to active panel position
+        return {
+          left: window.innerWidth / 2 - actualWidth / 2,
+          top: window.innerHeight / 2 - actualHeight / 2,
+          transform: 'scale(1)',
+        }
+      }
+
+      // DOCK POSITION MATH:
+      // dockPosition.x = dock slot's left edge
+      // dockPosition.y = dock slot's top edge
+      // dockPosition.width = 52px (dock slot width)
+      // dockPosition.height = 52px (dock slot height)
+
+      const scale = Math.min(48 / actualWidth, 48 / actualHeight) // Scale to 48px (4px padding in 52px slot)
+
+      // When scaled, panel dimensions become:
+      const scaledWidth = actualWidth * scale
+      const scaledHeight = actualHeight * scale
+
+      // CENTER-BASED positioning to avoid transform-origin issues
+      // Calculate where the center of the dock slot is
+      const dockCenterX = dockPosition.x + dockPosition.width / 2
+      const dockCenterY = dockPosition.y + dockPosition.height / 2
+
+      // When we scale from center, the visual center of the scaled panel should align with dock center
+      // Since transform-origin is center, we position the unscaled panel so its center aligns with dock center
+      const panelLeft = dockCenterX - actualWidth / 2
+      const panelTop = dockCenterY - actualHeight / 2
+
+      // Calculate where the visual center will be after scaling
+      const visualCenterX = panelLeft + actualWidth / 2
+      const visualCenterY = panelTop + actualHeight / 2
+
+      console.warn(`🧮 DOCK MATH for ${name}:`, {
+        dockSlot: {
+          x: dockPosition.x,
+          y: dockPosition.y,
+          w: dockPosition.width,
+          h: dockPosition.height,
+        },
+        dockCenter: { x: dockCenterX, y: dockCenterY },
+        scale,
+        originalSize: { width: actualWidth, height: actualHeight },
+        scaledSize: { width: scaledWidth, height: scaledHeight },
+        panelPosition: { left: panelLeft, top: panelTop },
+        panelCenter: { x: visualCenterX, y: visualCenterY },
+        centerMatch: {
+          x: Math.abs(visualCenterX - dockCenterX) < 0.1,
+          y: Math.abs(visualCenterY - dockCenterY) < 0.1,
+        },
+        dockedPanels: Array.from(dockedPanels),
+        totalDocked: dockedPanels.size,
+      })
+
+      return {
+        left: panelLeft,
+        top: panelTop,
+        transform: `scale(${scale})`,
+      }
+    } else {
+      // When active, also use center-based positioning for consistency
+      let cornerX, cornerY
+
+      if (panelHorizontal === 'left') {
+        cornerX = horizontalOffset
+      } else {
+        cornerX = window.innerWidth - actualWidth - horizontalOffset
+      }
+
+      if (panelVertical === 'top') {
+        cornerY = verticalOffset
+      } else {
+        cornerY = window.innerHeight - actualHeight - verticalOffset
+      }
+
+      return {
+        left: cornerX,
+        top: cornerY,
+        transform: 'scale(1)',
+      }
+    }
   }
 
+  // Position styles with smooth transitions
   const positionStyle = {
-    [panelVertical]: `${adjustedVerticalOffset}px`,
-    [panelHorizontal]: `${adjustedHorizontalOffset}px`,
-    [panelVertical === 'top' ? 'bottom' : 'top']: 'auto',
-    [panelHorizontal === 'left' ? 'right' : 'left']: 'auto',
+    ...getActualPosition(),
+    transformOrigin: 'center center', // Scale from center to avoid positioning jumps
+    opacity: isActive || isDocked ? 1 : 0,
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    pointerEvents: isActive || isDocked ? ('auto' as const) : ('none' as const),
+    visibility:
+      isActive || isDocked ? ('visible' as const) : ('hidden' as const),
   } as CSSProperties
 
   const isResizable = sizeConfig.kind === 'resizable'
@@ -237,15 +378,15 @@ export function DynamicPanel({
   const maxWidth = resolvedDimensions.maxWidth
   const maxHeight = resolvedDimensions.maxHeight
 
-  const panelSize = useMemo(() => getStoredPanelSize(name), [name])
-  
   // Calculate z-index outside of style object to ensure it updates
   const zIndex = getPanelZIndex(name)
 
   // Bring panel to front only once when it first mounts
   useEffect(() => {
-    bringPanelToFront(name)
-  }, []) // Only run once on mount
+    if (isActive) {
+      bringPanelToFront(name)
+    }
+  }, [isActive, bringPanelToFront, name])
 
   // Focus panel when it mounts to ensure escape key closes panel first
   // Only auto-focus if the panel was opened from keyboard (e.g., command palette)
@@ -253,8 +394,9 @@ export function DynamicPanel({
     if (mounted && resizeContainerRef.current) {
       // Check if the previously focused element was the command palette or search input
       const previouslyFocused = document.activeElement
-      const wasKeyboardTriggered = previouslyFocused?.closest('#nextjs-command-palette') !== null
-      
+      const wasKeyboardTriggered =
+        previouslyFocused?.closest('#nextjs-command-palette') !== null
+
       if (wasKeyboardTriggered) {
         // Small delay to ensure panel is fully rendered
         setTimeout(() => {
@@ -271,21 +413,29 @@ export function DynamicPanel({
     function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape' && resizeContainerRef.current) {
         // Check if this panel or its children have focus
-        const hasFocus = document.activeElement === resizeContainerRef.current || 
-                        resizeContainerRef.current.contains(document.activeElement)
-        
+        const hasFocus =
+          document.activeElement === resizeContainerRef.current ||
+          resizeContainerRef.current.contains(document.activeElement)
+
         if (hasFocus) {
           e.stopPropagation()
           e.preventDefault()
           closePanel(name as PanelStateKind)
-          
+
           // Check if this was the last panel (besides command palette)
-          const remainingPanels = Array.from(panels).filter(p => p !== name && p !== 'panel-selector')
-          
+          const remainingPanels = Array.from(panels).filter(
+            (p) => p !== name && p !== 'panel-selector'
+          )
+
           // If command palette is open and this was the last other panel, focus it
-          if (panels.has('panel-selector' as PanelStateKind) && remainingPanels.length === 0) {
+          if (
+            panels.has('panel-selector' as PanelStateKind) &&
+            remainingPanels.length === 0
+          ) {
             setTimeout(() => {
-              const commandPalette = document.getElementById('nextjs-command-palette')
+              const commandPalette = document.getElementById(
+                'nextjs-command-palette'
+              )
               if (commandPalette) {
                 commandPalette.focus()
                 // Also focus the search input
@@ -300,11 +450,16 @@ export function DynamicPanel({
 
     // Use capture phase to handle event before it bubbles
     document.addEventListener('keydown', handleEscape, true)
-    
+
     return () => {
       document.removeEventListener('keydown', handleEscape, true)
     }
   }, [mounted, closePanel, name, panels])
+
+  // Don't render if not open at all
+  if (!panels.has(name)) {
+    return null
+  }
 
   return (
     <ResizeProvider
@@ -323,31 +478,52 @@ export function DynamicPanel({
       <div
         tabIndex={-1}
         ref={resizeContainerRef}
-        onMouseDown={() => bringPanelToFront(name)}
+        onMouseDown={() => {
+          console.warn(`🖱️ PANEL CLICK for ${name}:`, {
+            panelName: name,
+            isActive,
+            isDocked,
+            zIndex: isDocked ? 999999999 : zIndex,
+            action: isActive
+              ? 'bringToFront'
+              : isDocked
+                ? 'swapPanels'
+                : 'none',
+          })
+
+          if (isActive) {
+            bringPanelToFront(name)
+          } else if (isDocked) {
+            swapPanels(name)
+          }
+        }}
+        data-panel-name={name}
+        data-panel-docked={isDocked}
         style={{
           position: 'fixed',
-          zIndex: zIndex,
+          zIndex: isDocked ? 2147483647 : zIndex, // Maximum possible z-index when docked
           outline: 'none',
           ...positionStyle,
-          ...(isResizable
+          ...(isResizable && !isDocked
             ? {
                 minWidth,
                 minHeight,
                 maxWidth,
                 maxHeight,
               }
-            : {
-                height: panelSize ? panelSize.height : sizeConfig.height,
-                width: panelSize ? panelSize.width : sizeConfig.width,
-              }),
+            : {}),
         }}
       >
-        <DragProvider disabled={!draggable}>
+        <DragProvider disabled={!draggable || isDocked}>
           <Draggable
-            dragHandleSelector=".resize-container"
+            dragHandleSelector=".drag-handle"
             avoidZone={{
-              corner: panels.has('panel-selector' as PanelStateKind) ? 'bottom-left' : state.devToolsPosition,
-              square: panels.has('panel-selector' as PanelStateKind) ? 360 : 25 / state.scale,
+              corner: panels.has('panel-selector' as PanelStateKind)
+                ? 'bottom-left'
+                : state.devToolsPosition,
+              square: panels.has('panel-selector' as PanelStateKind)
+                ? 360
+                : 25 / state.scale,
               padding: INDICATOR_PADDING,
             }}
             padding={INDICATOR_PADDING}
@@ -367,27 +543,45 @@ export function DynamicPanel({
               width: '100%',
               height: '100%',
             }}
-            disableDrag={!draggable}
+            disableDrag={!draggable || isDocked}
           >
             <>
               <div
                 {...containerProps}
+                className={isDocked ? 'docked-panel' : ''}
                 style={{
                   position: 'relative',
                   width: '100%',
                   height: '100%',
-                  border: '1px solid var(--color-gray-alpha-400)',
-                  borderRadius: 'var(--rounded-xl)',
-                  background: 'var(--color-background-100)',
+                  border: isDocked
+                    ? '1px solid rgba(255, 255, 255, 0.18)'
+                    : '2px solid var(--color-gray-alpha-400)',
+                  borderRadius: isDocked ? '10px' : 'var(--rounded-xl)',
+                  background: isDocked
+                    ? 'rgba(255, 255, 255, 0.9)'
+                    : 'var(--color-background-100)',
+                  boxShadow: isDocked
+                    ? '0 2px 6px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5)'
+                    : '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
                   display: 'flex',
                   flexDirection: 'column',
+                  cursor: isDocked ? 'pointer' : 'default',
+                  pointerEvents: isDocked ? 'auto' : 'auto', // Keep pointer events on container
                   ...containerProps?.style,
                 }}
               >
                 <DragHandle>{header}</DragHandle>
-                <div style={{ flex: 1, overflow: 'auto' }}>{children}</div>
+                <div
+                  style={{
+                    flex: 1,
+                    overflow: 'auto',
+                    pointerEvents: isDocked ? 'none' : 'auto', // Disable pointer events on content when docked
+                  }}
+                >
+                  {children}
+                </div>
               </div>
-              {isResizable && (
+              {isResizable && !isDocked && (
                 <>
                   {(!sizeConfig.sides ||
                     sizeConfig.sides.includes('vertical')) && (

@@ -1,6 +1,7 @@
 import { useDevOverlayContext } from '../../dev-overlay.browser'
-import { useClickOutsideAndEscape } from '../components/errors/dev-tools-indicator/utils'
-import { useLayoutEffect, useRef, useState, useMemo, useEffect } from 'react'
+import { useClickOutsideAndEscape, getShadowRoot } from '../components/errors/dev-tools-indicator/utils'
+import { useLayoutEffect, useRef, useState, useMemo, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import {
   MenuContext,
   MenuItem,
@@ -8,9 +9,170 @@ import {
 import { usePanelRouterContext, type PanelStateKind } from './context'
 import { usePanelContext } from './panel-router'
 
+// Context menu component
+const ContextMenu = ({ 
+  x, 
+  y, 
+  onClose, 
+  onDelete 
+}: { 
+  x: number
+  y: number
+  onClose: () => void
+  onDelete: () => void
+}) => {
+  const menuRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      // Don't close if clicking inside the menu
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) {
+        return
+      }
+      onClose()
+    }
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    
+    // Add listeners to both shadow DOM and document to ensure we catch all clicks
+    // Use a slight delay to avoid closing immediately on the same click that opened it
+    const timer = setTimeout(() => {
+      const shadowRoot = getShadowRoot()
+      if (shadowRoot) {
+        shadowRoot.addEventListener('mousedown', handleClickOutside)
+        shadowRoot.addEventListener('keydown', handleEscape)
+      }
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscape)
+    }, 10)
+    
+    return () => {
+      clearTimeout(timer)
+      const shadowRoot = getShadowRoot()
+      if (shadowRoot) {
+        shadowRoot.removeEventListener('mousedown', handleClickOutside)
+        shadowRoot.removeEventListener('keydown', handleEscape)
+      }
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [onClose])
+  
+  return (
+    <div
+      ref={menuRef}
+      style={{
+        position: 'fixed',
+        left: x,
+        top: y,
+        background: 'rgb(20, 20, 20)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderRadius: '8px',
+        padding: '4px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+        zIndex: 2147483647, // Maximum z-index
+        minWidth: '120px',
+        opacity: 1,
+      }}
+    >
+      <button
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onDelete()
+          // Close menu after a short delay to ensure delete happens
+          setTimeout(() => onClose(), 100)
+        }}
+        onMouseDown={(e) => {
+          // Prevent mousedown from bubbling and closing the menu
+          e.stopPropagation()
+        }}
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          background: 'transparent',
+          border: 'none',
+          borderRadius: '6px',
+          color: 'rgba(239, 68, 68, 1)',
+          fontSize: '14px',
+          fontFamily: 'var(--font-stack-sans)',
+          cursor: 'pointer',
+          textAlign: 'left',
+          transition: 'background 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent'
+        }}
+      >
+        Delete
+      </button>
+    </div>
+  )
+}
+
+// Custom MenuItem wrapper that handles context menu
+const MenuItemWithContextMenu = ({ 
+  item, 
+  index,
+  adjustedIndex,
+  onContextMenu,
+  isContextMenuTarget,
+}: {
+  item: {
+    onClick?: () => void
+    title?: string
+    label: string
+    value: React.ReactNode
+    attributes?: Record<string, string | boolean | undefined>
+    deletable?: boolean
+  }
+  index: number
+  adjustedIndex: number | undefined
+  onContextMenu: (e: React.MouseEvent, label: string) => void
+  isContextMenuTarget: boolean
+}) => {
+  return (
+    <div
+      onContextMenu={(e) => {
+        if (item.deletable !== false) {
+          e.preventDefault()
+          onContextMenu(e, item.label)
+        }
+      }}
+      style={{ 
+        position: 'relative',
+        ...(isContextMenuTarget && {
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '6px',
+          outline: '2px solid rgba(255, 255, 255, 0.2)',
+          outlineOffset: '-1px',
+        })
+      }}
+    >
+      <MenuItem
+        key={item.label}
+        title={item.title}
+        label={item.label}
+        value={item.value}
+        onClick={item.onClick}
+        index={adjustedIndex}
+        {...item.attributes}
+      />
+    </div>
+  )
+}
+
 export const CommandPalette = ({
   closeOnClickOutside = true,
   items,
+  onDeleteItem,
 }: {
   closeOnClickOutside?: boolean
   items: Array<
@@ -23,14 +185,20 @@ export const CommandPalette = ({
         label: string
         value: React.ReactNode
         attributes?: Record<string, string | boolean | undefined>
-        footer?: boolean
+        deletable?: boolean
       }
   >
+  onDeleteItem?: (label: string) => void
 }) => {
   const { closePanel, triggerRef, setSelectedIndex, selectedIndex, panels, bringPanelToFront, getPanelZIndex } =
     usePanelRouterContext()
   const { mounted } = usePanelContext()
   const [searchQuery, setSearchQuery] = useState('')
+  const [contextMenu, setContextMenu] = useState<{
+    x: number
+    y: number
+    itemLabel: string
+  } | null>(null)
 
   const paletteRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -88,26 +256,19 @@ export const CommandPalette = ({
   // Filter items based on search query
   const filteredItems = useMemo(() => {
     const definedItems = items.filter((item) => !!item)
-    const footerItems = definedItems.filter((item) => item.footer)
-    const nonFooterItems = definedItems.filter((item) => !item.footer)
     
     if (!searchQuery.trim()) {
-      return { itemsAboveFooter: nonFooterItems, itemsBelowFooter: footerItems }
+      return definedItems
     }
     
-    // Only filter non-footer items, always show footer items
-    const filteredNonFooter = nonFooterItems.filter((item) =>
+    // Filter all items based on search
+    return definedItems.filter((item) =>
       item.label.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    
-    return { itemsAboveFooter: filteredNonFooter, itemsBelowFooter: footerItems }
   }, [items, searchQuery])
 
-  const { itemsAboveFooter, itemsBelowFooter } = filteredItems
-
   function onPaletteKeydown(e: React.KeyboardEvent<HTMLDivElement | null>) {
-    const allFilteredItems = [...itemsAboveFooter, ...itemsBelowFooter]
-    const clickableItems = allFilteredItems.filter((item) => item.onClick)
+    const clickableItems = filteredItems.filter((item) => item.onClick)
     const totalClickableItems = clickableItems.length
 
     switch (e.key) {
@@ -174,60 +335,86 @@ export const CommandPalette = ({
     }
   }
 
+  const handleContextMenu = useCallback((e: React.MouseEvent, label: string) => {
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      itemLabel: label,
+    })
+  }, [])
+
+  const handleDeleteItem = useCallback(() => {
+    if (contextMenu && onDeleteItem) {
+      onDeleteItem(contextMenu.itemLabel)
+    }
+  }, [contextMenu, onDeleteItem])
+
   return (
-    <div
-      ref={paletteRef}
-      onKeyDown={onPaletteKeydown}
-      onMouseDown={() => bringPanelToFront('panel-selector')}
-      id="nextjs-command-palette"
-      role="dialog"
-      aria-label="Command Palette"
-      tabIndex={-1}
-      style={{
+    <>
+      <div
+        ref={paletteRef}
+        onKeyDown={onPaletteKeydown}
+        onMouseDown={() => bringPanelToFront('panel-selector')}
+        id="nextjs-command-palette"
+        role="dialog"
+        aria-label="Command Palette"
+        tabIndex={-1}
+        style={{
         outline: 0,
         WebkitFontSmoothing: 'antialiased',
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--color-background-100)',
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         backgroundClip: 'padding-box',
-        boxShadow: 'var(--shadow-menu)',
-        borderRadius: 'var(--rounded-xl)',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        borderRadius: '12px',
         position: 'fixed',
         fontFamily: 'var(--font-stack-sans)',
         zIndex: Math.max(getPanelZIndex('panel-selector'), 9999), // Ensure it's always on top
         overflow: 'hidden',
         opacity: 1,
-        width: '320px',
-        maxHeight: '480px',
+        width: '360px',
+        maxHeight: '520px',
         bottom: '60px', // Adjusted to account for the devtools indicator
         left: '20px',
         transition:
           'opacity var(--animate-out-duration-ms) var(--animate-out-timing-function)',
-        border: '1px solid var(--color-gray-alpha-400)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
       {/* Search Input */}
-      <div style={{ padding: '12px', borderBottom: '1px solid var(--color-gray-alpha-200)' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <input
           ref={searchInputRef}
           type="text"
-          placeholder="Search commands..."
+          placeholder="Type a command or search..."
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value)
             // Reset selection when search changes
             setSelectedIndex(-1)
           }}
+          onFocus={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.08)'
+            e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
+          }}
+          onBlur={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.05)'
+            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
+          }}
           style={{
             width: '100%',
-            padding: '8px 12px',
-            border: '1px solid var(--color-gray-alpha-400)',
-            borderRadius: '6px',
+            padding: '10px 14px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '8px',
             fontSize: '14px',
             fontFamily: 'var(--font-stack-sans)',
-            background: 'var(--color-background-100)',
-            color: 'var(--color-gray-900)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            color: 'rgba(255, 255, 255, 0.9)',
             outline: 'none',
+            transition: 'all 0.2s ease',
           }}
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -267,61 +454,49 @@ export const CommandPalette = ({
             minHeight: 0
           }}
         >
-          {itemsAboveFooter.length > 0 && (
+          {filteredItems.length > 0 && (
             <div style={{ padding: '6px', width: '100%' }}>
-              {itemsAboveFooter.map((item, index) => (
-                <MenuItem
+              {filteredItems.map((item, index) => (
+                <MenuItemWithContextMenu
                   key={item.label}
-                  title={item.title}
-                  label={item.label}
-                  value={item.value}
-                  onClick={item.onClick}
-                  index={
+                  item={item}
+                  index={index}
+                  adjustedIndex={
                     item.onClick
-                      ? getAdjustedIndex(itemsAboveFooter, index)
+                      ? getAdjustedIndex(filteredItems, index)
                       : undefined
                   }
-                  {...item.attributes}
+                  onContextMenu={handleContextMenu}
+                  isContextMenuTarget={contextMenu?.itemLabel === item.label}
                 />
               ))}
             </div>
           )}
           
-          {itemsAboveFooter.length === 0 && searchQuery.trim() && (
+          {filteredItems.length === 0 && searchQuery.trim() && (
             <div style={{ 
-              padding: '20px', 
+              padding: '40px 20px', 
               textAlign: 'center', 
-              color: 'var(--color-gray-600)',
+              color: 'rgba(255, 255, 255, 0.4)',
               fontSize: '14px'
             }}>
-              No commands found for "{searchQuery}"
+              No results for "{searchQuery}"
             </div>
           )}
         </div>
-        
-        {/* Fixed footer section */}
-        {itemsBelowFooter.length > 0 && (
-          <div className="dev-tools-indicator-footer" style={{ flexShrink: 0 }}>
-            {itemsBelowFooter.map((item, index) => (
-              <MenuItem
-                key={item.label}
-                title={item.title}
-                label={item.label}
-                value={item.value}
-                onClick={item.onClick}
-                {...item.attributes}
-                index={
-                  item.onClick
-                    ? getAdjustedIndex(itemsBelowFooter, index) +
-                      getClickableItemsCount(itemsAboveFooter)
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-        )}
       </MenuContext>
     </div>
+    
+    {contextMenu && getShadowRoot() && createPortal(
+      <ContextMenu
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={() => setContextMenu(null)}
+        onDelete={handleDeleteItem}
+      />,
+      getShadowRoot() as any
+    )}
+    </>
   )
 }
 
