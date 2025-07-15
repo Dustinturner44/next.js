@@ -27,8 +27,39 @@ export const ResizeHandle = ({
     left: 0,
   })
 
-  // Always show all resize handles regardless of corner position
+  // TODO(rob): if parallel with >2 sides (user resizes panel to be max width/height)
+  // then we need to relax disabled resize heuristic
   const shouldShowHandle = () => {
+    const getOppositeCorner = (corner: Corners): ResizeDirection => {
+      switch (corner) {
+        case 'top-left':
+          return 'bottom-right'
+        case 'top-right':
+          return 'bottom-left'
+        case 'bottom-left':
+          return 'top-right'
+        case 'bottom-right':
+          return 'top-left'
+        default: {
+          corner satisfies never
+          return null!
+        }
+      }
+    }
+
+    // we block the sides of the corner its in (bottom-left has bottom and left sides blocked from resizing)
+    // because there shouldn't be anywhere to resize, and if the user decides to resize from that point it
+    // would be unhandled/slightly janky (the component would have to re-magnetic-snap after the resize)
+    if (position.split('-').includes(direction)) return false
+
+    // same logic as above, but the only corner resize that makes
+    // sense is the corner fully exposed (the opposing corner)
+    const isCorner = direction.includes('-')
+    if (isCorner) {
+      const opposite = getOppositeCorner(position)
+      return direction === opposite
+    }
+
     return true
   }
 
@@ -62,14 +93,12 @@ export const ResizeHandle = ({
     const initialRect = element.getBoundingClientRect()
     const startX = mouseDownEvent.clientX
     const startY = mouseDownEvent.clientY
-    const initialLeft = element.offsetLeft
-    const initialTop = element.offsetTop
 
     const handleMouseMove = (mouseMoveEvent: MouseEvent) => {
       const deltaX = mouseMoveEvent.clientX - startX
       const deltaY = mouseMoveEvent.clientY - startY
 
-      const { newWidth, newHeight, newLeft, newTop } = getNewDimensions(
+      const { newWidth, newHeight } = getNewDimensions(
         direction,
         deltaX,
         deltaY,
@@ -77,9 +106,7 @@ export const ResizeHandle = ({
         minWidth,
         minHeight,
         maxWidth,
-        maxHeight,
-        initialLeft,
-        initialTop
+        maxHeight
       )
 
       if (newWidth !== undefined) {
@@ -87,12 +114,6 @@ export const ResizeHandle = ({
       }
       if (newHeight !== undefined) {
         element.style.height = `${newHeight}px`
-      }
-      if (newLeft !== undefined) {
-        element.style.left = `${newLeft}px`
-      }
-      if (newTop !== undefined) {
-        element.style.top = `${newTop}px`
       }
     }
 
@@ -160,9 +181,7 @@ const getNewDimensions = (
   minWidth: number,
   minHeight: number,
   maxWidth?: number,
-  maxHeight?: number,
-  initialLeft: number,
-  initialTop: number
+  maxHeight?: number
 ) => {
   const effectiveMaxWidth = maxWidth ?? window.innerWidth * 0.95
   const effectiveMaxHeight = maxHeight ?? window.innerHeight * 0.95
@@ -178,15 +197,12 @@ const getNewDimensions = (
       }
 
     case 'left': {
-      const newWidth = Math.min(
-        effectiveMaxWidth,
-        Math.max(minWidth, initialRect.width - deltaX)
-      )
-      const widthDiff = initialRect.width - newWidth
       return {
-        newWidth,
+        newWidth: Math.min(
+          effectiveMaxWidth,
+          Math.max(minWidth, initialRect.width - deltaX)
+        ),
         newHeight: initialRect.height,
-        newLeft: initialLeft + widthDiff,
       }
     }
 
@@ -200,66 +216,51 @@ const getNewDimensions = (
       }
 
     case 'top': {
-      const newHeight = Math.min(
-        effectiveMaxHeight,
-        Math.max(minHeight, initialRect.height - deltaY)
-      )
-      const heightDiff = initialRect.height - newHeight
       return {
         newWidth: initialRect.width,
-        newHeight,
-        newTop: initialTop + heightDiff,
+        newHeight: Math.min(
+          effectiveMaxHeight,
+          Math.max(minHeight, initialRect.height - deltaY)
+        ),
       }
     }
 
     case 'top-left': {
-      const newWidth = Math.min(
-        effectiveMaxWidth,
-        Math.max(minWidth, initialRect.width - deltaX)
-      )
-      const newHeight = Math.min(
-        effectiveMaxHeight,
-        Math.max(minHeight, initialRect.height - deltaY)
-      )
-      const widthDiff = initialRect.width - newWidth
-      const heightDiff = initialRect.height - newHeight
       return {
-        newWidth,
-        newHeight,
-        newLeft: initialLeft + widthDiff,
-        newTop: initialTop + heightDiff,
+        newWidth: Math.min(
+          effectiveMaxWidth,
+          Math.max(minWidth, initialRect.width - deltaX)
+        ),
+        newHeight: Math.min(
+          effectiveMaxHeight,
+          Math.max(minHeight, initialRect.height - deltaY)
+        ),
       }
     }
 
     case 'top-right': {
-      const newHeight = Math.min(
-        effectiveMaxHeight,
-        Math.max(minHeight, initialRect.height - deltaY)
-      )
-      const heightDiff = initialRect.height - newHeight
       return {
         newWidth: Math.min(
           effectiveMaxWidth,
           Math.max(minWidth, initialRect.width + deltaX)
         ),
-        newHeight,
-        newTop: initialTop + heightDiff,
+        newHeight: Math.min(
+          effectiveMaxHeight,
+          Math.max(minHeight, initialRect.height - deltaY)
+        ),
       }
     }
 
     case 'bottom-left': {
-      const newWidth = Math.min(
-        effectiveMaxWidth,
-        Math.max(minWidth, initialRect.width - deltaX)
-      )
-      const widthDiff = initialRect.width - newWidth
       return {
-        newWidth,
+        newWidth: Math.min(
+          effectiveMaxWidth,
+          Math.max(minWidth, initialRect.width - deltaX)
+        ),
         newHeight: Math.min(
           effectiveMaxHeight,
           Math.max(minHeight, initialRect.height + deltaY)
         ),
-        newLeft: initialLeft + widthDiff,
       }
     }
 
