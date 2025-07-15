@@ -964,6 +964,25 @@ export default class NextNodeServer extends BaseServer<
     ) as NextFontManifest
   }
 
+  private async loadImageMiddleware() {
+    try {
+      return interopDefault(
+        await import(
+          formatDynamicImportPath(this.dir, 'image-middleware.js')
+        )
+      )
+    } catch (err: any) {
+      if (
+        err.code !== 'ENOENT' &&
+        err.code !== 'MODULE_NOT_FOUND' &&
+        err.code !== 'ERR_MODULE_NOT_FOUND'
+      ) {
+        throw err
+      }
+      return null
+    }
+  }
+
   protected handleNextImageRequest: NodeRouteHandler = async (
     req,
     res,
@@ -1027,15 +1046,22 @@ export default class NextNodeServer extends BaseServer<
         const { getExtension } =
           require('./serve-static') as typeof import('./serve-static')
         const cacheEntry = await this.imageResponseCache.get(
-          cacheKey,
+          // cacheKey,
+          null,
           async ({ previousCacheEntry }) => {
-            const { buffer, contentType, maxAge, upstreamEtag, etag } =
+            const imageMiddleware = await this.loadImageMiddleware()
+
+            let { buffer, contentType, maxAge, upstreamEtag, etag } =
               await this.imageOptimizer(
                 req,
                 res,
                 paramsResult,
                 previousCacheEntry
               )
+
+            if (imageMiddleware) {
+              buffer = await imageMiddleware(Buffer.from(buffer))
+            }
 
             return {
               value: {
