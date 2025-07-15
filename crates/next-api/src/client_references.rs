@@ -1,4 +1,4 @@
-use std::{rc::Rc, sync::Arc};
+use std::rc::Rc;
 
 use anyhow::Result;
 use next_core::{
@@ -191,11 +191,10 @@ pub async fn map_client_references(
                 continue;
             };
             let refs = memo
-                .remove(&module)
+                .remove(module)
                 .expect("everything was already computed");
             // In the most common case each server component should be the only thing retaining the
-            // Rc
-
+            // Rc, if not, then at least the next one will get to avoid the copy.
             let refs: Box<[_]> = match Rc::try_unwrap(refs) {
                 Ok(owned) => owned.into_boxed_slice(),
                 Err(shared) => shared.to_vec().into_boxed_slice(),
