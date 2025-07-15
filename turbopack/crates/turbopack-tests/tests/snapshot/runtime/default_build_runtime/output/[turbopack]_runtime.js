@@ -497,6 +497,7 @@ function loadChunk(chunkData, source) {
 }
 const loadedChunks = new Set();
 const unsupportedLoadChunk = Promise.resolve(undefined);
+const loadedChunk = Promise.resolve(undefined);
 const chunkCache = new Map();
 function clearChunkCache() {
     chunkCache.clear();
@@ -586,16 +587,16 @@ function loadChunkAsync(source, chunkData) {
     }
     let entry = chunkCache.get(chunkPath);
     if (entry === undefined) {
+        const resolve = chunkCache.set.bind(chunkCache, chunkPath, null);
         // A new Promise ensures callers that don't handle rejection will still trigger one unhandled rejection.
         // Handling the rejection will not trigger unhandled rejections.
-        entry = loadChunkAsyncUncached(source, chunkPath).then(()=>{
-            loadedChunks.add(chunkPath);
-        });
+        entry = loadChunkAsyncUncached(source, chunkPath).then(resolve);
         chunkCache.set(chunkPath, entry);
     }
-    return entry;
+    // TODO: Return an instrumented Promise that React can use instead of relying on referential equality.
+    return entry === null ? loadedChunk : entry;
 }
-async function loadChunkAsyncByUrl(source, chunkUrl) {
+function loadChunkAsyncByUrl(source, chunkUrl) {
     const path1 = url.fileURLToPath(new URL(chunkUrl, RUNTIME_ROOT));
     return loadChunkAsync(source, path1);
 }
