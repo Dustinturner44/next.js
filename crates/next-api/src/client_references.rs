@@ -105,6 +105,7 @@ pub async fn map_client_references(
             .collect::<FxHashMap<_, _>>();
         #[allow(clippy::type_complexity)]
         fn dfs_collect_shallow_client_references(
+            is_root: bool,
             u: ResolvedVc<Box<dyn Module>>,
             graph: &SingleModuleGraph,
             client_references: &FxHashMap<ResolvedVc<Box<dyn Module>>, ClientReferenceMapType>,
@@ -115,7 +116,7 @@ pub async fn map_client_references(
         ) -> Option<Rc<Vec<ResolvedVc<Box<dyn Module>>>>> {
             // Because we are only collecting shallowly discoverable references, short circuit on
             // each client reference
-            if client_references.contains_key(&u) {
+            if !is_root && client_references.contains_key(&u) {
                 return Some(Rc::from(vec![u]));
             }
 
@@ -140,6 +141,7 @@ pub async fn map_client_references(
 
             for v in graph.neighbors(u) {
                 if let Some(green_nodes_from_v) = dfs_collect_shallow_client_references(
+                    false,
                     v,
                     graph,
                     client_references,
@@ -170,6 +172,7 @@ pub async fn map_client_references(
                 continue;
             };
             dfs_collect_shallow_client_references(
+                true,
                 *module,
                 graph,
                 &client_references,
@@ -192,7 +195,7 @@ pub async fn map_client_references(
             };
             let refs = memo
                 .remove(module)
-                .expect("everything was already computed");
+                .expect("everything should have been computed");
             // In the most common case each server component should be the only thing retaining the
             // Rc, if not, then at least the next one will get to avoid the copy.
             let refs: Box<[_]> = match Rc::try_unwrap(refs) {
