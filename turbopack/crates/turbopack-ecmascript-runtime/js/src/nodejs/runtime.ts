@@ -96,6 +96,10 @@ const loadedChunks = new Set<ChunkPath>()
 const unsupportedLoadChunk = Promise.resolve(undefined)
 const chunkCache = new Map<ChunkPath, Promise<void>>()
 
+function clearChunkCache() {
+  chunkCache.clear()
+}
+
 function loadChunkPath(chunkPath: ChunkPath, source?: SourceInfo): void {
   if (!isJs(chunkPath)) {
     // We only support loading JS chunks in Node.js.
@@ -297,6 +301,7 @@ function instantiateModule(id: ModuleId, source: SourceInfo): Module {
         type: SourceType.Parent,
         parentId: id,
       }),
+      C: clearChunkCache,
       w: loadWebAssembly,
       u: loadWebAssemblyModule,
       P: resolveAbsolutePath,
