@@ -771,46 +771,60 @@ describe('use-cache', () => {
   })
 
   describe('should not read nor write cached data when draft mode is enabled', () => {
-    if (isNextDeploy) {
-      // Wait for the background revalidation after the deployment to settle.
-      beforeAll(async () => {
-        const browser = await next.browser('/draft-mode')
-        try {
-          const initialTopLevelValue = await browser
-            .elementById('top-level')
-            .text()
-          await retry(async () => {
-            await browser.refresh()
-
-            expect(await browser.elementById('top-level').text()).not.toBe(
-              initialTopLevelValue
-            )
-          })
-        } finally {
-          // we're not in a test, so the browser won't get cleaned up automatically.
-          await browser.close()
-        }
-      })
-    }
-
     it.each([
-      { description: 'js enabled', disableJavaScript: false },
-      { description: 'js disabled', disableJavaScript: true },
-    ])('$description', async ({ disableJavaScript }) => {
-      const browser = await next.browser('/draft-mode', {
+      {
+        description: 'js enabled, with cookies',
+        disableJavaScript: false,
+        mode: 'with-cookies',
+      },
+      {
+        description: 'js disabled, with cookies',
+        disableJavaScript: true,
+        mode: 'with-cookies',
+      },
+      {
+        description: 'js enabled, without cookies',
+        disableJavaScript: false,
+        mode: 'without-cookies',
+      },
+      {
+        description: 'js disabled, without cookies',
+        disableJavaScript: true,
+        mode: 'without-cookies',
+      },
+    ])('$description', async ({ disableJavaScript, mode }) => {
+      const pathname = `/draft-mode/${mode}`
+
+      const browser = await next.browser(pathname, {
         // This test relies on a server action to set draft mode.
         // To ensure that it works for both fetch actions and MPA actions,
         // we test it with javascript disabled too.
         // (this is because of a bug where draft mode status was not correctly propagated to the workStore for MPA actions)
         disableJavaScript,
+        pushErrorAsConsoleLog: true,
       })
+
+      if (isNextDeploy) {
+        // Wait for the background revalidation after the deployment to settle.
+        const initialTopLevelValue = await browser
+          .elementById('top-level')
+          .text()
+
+        await retry(async () => {
+          await browser.refresh()
+
+          expect(await browser.elementById('top-level').text()).not.toBe(
+            initialTopLevelValue
+          )
+        })
+      }
 
       const refreshAfterServerAction = async () => {
         if (disableJavaScript) {
           // browser.refresh() seems to automatically resubmit POST requests,
           // so if we submitted an MPA action, it'll trigger the action again,
           // which in this case will toggle draftMode again.
-          await browser.get(new URL('/draft-mode', next.url).href)
+          await browser.get(new URL(pathname, next.url).href)
         } else {
           await browser.refresh()
         }
@@ -835,7 +849,29 @@ describe('use-cache', () => {
         initialClosureValue
       )
 
+      // Enable draft mode.
       await browser.elementByCss('button#toggle').click()
+
+      // When reading cookies, we expect an error.
+      // TODO: Ideally this would be a compile-time error.
+      if (mode === 'with-cookies') {
+        return retry(async () => {
+          const logs = await browser.log()
+
+          const expectedErrorMessage = disableJavaScript
+            ? 'Failed to load resource: the server responded with a status of 500 (Internal Server Error)'
+            : isNextDev
+              ? 'Route /draft-mode/[mode] used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache'
+              : 'Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.'
+
+          expect(logs).toMatchObject(
+            expect.arrayContaining([
+              { source: 'error', message: expectedErrorMessage },
+            ])
+          )
+        })
+      }
+
       await browser.waitForElementByCss('button#toggle:enabled')
 
       expect(await browser.elementByCss('button#toggle').text()).toBe(
@@ -861,13 +897,6 @@ describe('use-cache', () => {
       expect(await browser.elementById('closure').text()).not.toBe(
         newClosureValue
       )
-
-      // Accessing request-scoped data should still not be allowed.
-      expect(
-        await browser
-          .elementById('is-accessing-request-scoped-data-allowed-in-use-cache')
-          .text()
-      ).toBe('false')
 
       await browser.elementByCss('button#toggle').click()
       await browser.waitForElementByCss('button#toggle:enabled')
