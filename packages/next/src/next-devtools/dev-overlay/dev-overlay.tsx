@@ -4,6 +4,7 @@ import React, {
   useRef,
   useState,
   useCallback,
+  useEffect,
 } from 'react'
 import { ShadowPortal } from './components/shadow-portal'
 import { Base } from './styles/base'
@@ -24,6 +25,7 @@ import type { OverlayState, OverlayDispatch } from './shared'
 import { Dev0Provider } from './context/dev-zero-context'
 import { SidebarProvider } from './context/sidebar-context'
 import { DevSidebar } from './components/sidebar/dev-sidebar'
+import { MCPHiddenContainer } from './components/mcp-container/mcp-hidden-container'
 
 export const RenderErrorContext = createContext<{
   runtimeErrors: ReadyRuntimeError[]
@@ -42,24 +44,55 @@ export function DevOverlay({
   getSquashedHydrationErrorDetails: (error: Error) => HydrationErrorState | null
 }) {
   const [scale, setScale] = useDevToolsScale()
-  const [panels, setPanels] = useState<Set<PanelStateKind>>(new Set())
+  const [panels, setPanels] = useState<Set<PanelStateKind>>(() => {
+    try {
+      const stored = sessionStorage.getItem('dev-overlay-panels')
+      if (stored) {
+        const panelArray = JSON.parse(stored) as PanelStateKind[]
+        return new Set(panelArray)
+      }
+    } catch (error) {}
+    return new Set()
+  })
+
+  // Auto-sync panels to session storage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        'dev-overlay-panels',
+        JSON.stringify(Array.from(panels))
+      )
+    } catch (error) {}
+  }, [panels])
   const isBuildError = state.buildError !== null
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [panelZOrder, setPanelZOrder] = useState<string[]>([])
 
   // Single active panel state
   const [activePanel, setActivePanel] = useState<PanelStateKind | null>(null)
-  
+
   // Panel positions for seamless swapping
-  const [panelPositions, setPanelPositions] = useState<Record<string, { x: number; y: number }>>({})
+  const [panelPositions, setPanelPositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({})
 
   const triggerRef = useRef<HTMLButtonElement>(null)
+
+  // Initialize panels on mount
+  useEffect(() => {
+    if (panels.size > 0) {
+      const panelArray = Array.from(panels)
+      const lastPanel = panelArray[panelArray.length - 1]
+      setActivePanel(lastPanel)
+      bringPanelToFront(lastPanel)
+    }
+  }, [])
 
   const openPanel = (panel: PanelStateKind) => {
     // Close other panels except panel-selector and hub
     if (panel !== 'panel-selector' && panel !== 'hub') {
       setPanels((prev) => {
-        const next = new Set()
+        const next = new Set<PanelStateKind>()
         // Keep hub if it was open, but close panel-selector to "swap" it
         if (prev.has('hub')) next.add('hub')
         next.add(panel)
@@ -68,7 +101,7 @@ export function DevOverlay({
     } else {
       setPanels((prev) => new Set([...prev, panel]))
     }
-    
+
     setActivePanel(panel)
     bringPanelToFront(panel)
   }
@@ -117,20 +150,26 @@ export function DevOverlay({
     [panelZOrder]
   )
 
-  const setPanelPosition = useCallback((panel: string, position: { x: number; y: number }) => {
-    setPanelPositions((prev) => ({
-      ...prev,
-      [panel]: position,
-    }))
-  }, [])
+  const setPanelPosition = useCallback(
+    (panel: string, position: { x: number; y: number }) => {
+      setPanelPositions((prev) => ({
+        ...prev,
+        [panel]: position,
+      }))
+    },
+    []
+  )
 
-  const getPanelPosition = useCallback((panel: string) => {
-    // If opening a panel other than panel-selector, use panel-selector's position if available
-    if (panel !== 'panel-selector' && panelPositions['panel-selector']) {
-      return panelPositions['panel-selector']
-    }
-    return panelPositions[panel] || { x: 100, y: 100 }
-  }, [panelPositions])
+  const getPanelPosition = useCallback(
+    (panel: string) => {
+      // If opening a panel other than panel-selector, use panel-selector's position if available
+      if (panel !== 'panel-selector' && panelPositions['panel-selector']) {
+        return panelPositions['panel-selector']
+      }
+      return panelPositions[panel] || { x: 100, y: 100 }
+    },
+    [panelPositions]
+  )
 
   return (
     <ShadowPortal>
@@ -185,6 +224,7 @@ export function DevOverlay({
                           <PanelRouter />
                           <DevToolsIndicatorNew />
                           <DevSidebar />
+                          <MCPHiddenContainer />
                         </PanelRouterContext>
                       </SidebarProvider>
                     </Dev0Provider>

@@ -53,6 +53,16 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
+      // Log all messages for debugging
+      if (event.data.type?.startsWith('dev0-')) {
+        console.log('Message received in parent:', {
+          type: event.data.type,
+          origin: event.origin,
+          expectedOrigin: `http://localhost:${port}`,
+          match: event.origin === `http://localhost:${port}`
+        })
+      }
+      
       if (event.origin !== `http://localhost:${port}`) return
 
       if (event.data.type === 'dev0-instrumentation-ready') {
@@ -62,11 +72,96 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
       }
 
       if (event.data.type === 'dev0-execute-request') {
+        console.log('Received execute request:', event.data)
         const { id, fn, args } = event.data
 
         try {
+          console.log('Raw args before processing:', args)
+          // Process arguments to replace function placeholders with actual async functions
+          const processedArgs = args.map((arg: any, index: number) => {
+            console.log(`Processing arg[${index}]:`, arg, 'Type:', typeof arg)
+            if (arg && typeof arg === 'object' && arg.__isFunction && arg.__functionId) {
+              console.log(`Found function placeholder at arg[${index}]:`, arg)
+              // Create a proxy function that will call back to iframe
+              const proxyFn = async (...callbackArgs: any[]) => {
+                console.log(`Proxy function called for ${arg.__functionName} with args:`, callbackArgs)
+                
+                // Process callback arguments to handle functions
+                const processedCallbackArgs = callbackArgs.map((cbArg, cbIndex) => {
+                  if (typeof cbArg === 'function') {
+                    // For React setState-like patterns, we need to serialize the function
+                    // and let the iframe execute it with the current state
+                    console.log(`Callback arg[${cbIndex}] is a function, serializing for iframe execution`)
+                    return { 
+                      __isInlineFunction: true, 
+                      __functionString: cbArg.toString()
+                    }
+                  }
+                  return cbArg
+                })
+                
+                return new Promise((resolve, reject) => {
+                  const timeoutId = setTimeout(() => {
+                    reject(new Error('Function callback timeout'))
+                  }, 5000)
+                  
+                  // Create unique handler for this specific call
+                  const responseHandler = (responseEvent: MessageEvent) => {
+                    if (
+                      responseEvent.data.type === 'dev0-function-callback-response' &&
+                      responseEvent.data.functionId === arg.__functionId
+                    ) {
+                      clearTimeout(timeoutId)
+                      window.removeEventListener('message', responseHandler)
+                      
+                      if (responseEvent.data.success) {
+                        resolve(responseEvent.data.result)
+                      } else {
+                        const error = new Error(responseEvent.data.error?.message || 'Callback failed')
+                        error.name = responseEvent.data.error?.name || 'CallbackError'
+                        if (responseEvent.data.error?.stack) {
+                          error.stack = responseEvent.data.error.stack
+                        }
+                        reject(error)
+                      }
+                    }
+                  }
+                  
+                  window.addEventListener('message', responseHandler)
+                  
+                  // Send callback request to iframe
+                  if (iframeRef.current?.contentWindow) {
+                    iframeRef.current.contentWindow.postMessage(
+                      {
+                        type: 'dev0-function-callback',
+                        functionId: arg.__functionId,
+                        args: processedCallbackArgs,
+                      },
+                      '*'
+                    )
+                  }
+                })
+              }
+              
+              // Log for debugging
+              console.log(`Created proxy function for ${arg.__functionName} (${arg.__functionId})`)
+              return proxyFn
+            }
+            return arg
+          })
+
+          console.log('Processed args:', processedArgs)
+          console.log('Processed args types:', processedArgs.map(arg => typeof arg))
+          
+          // Verify function replacements worked
+          processedArgs.forEach((arg, i) => {
+            if (args[i]?.__isFunction && typeof arg !== 'function') {
+              console.error(`ERROR: Failed to create proxy for function at arg[${i}]`)
+            }
+          })
+          
           const func = new Function('return ' + fn)()
-          const result = await func(...args)
+          const result = await func(...processedArgs)
 
           if (iframeRef.current?.contentWindow) {
             iframeRef.current.contentWindow.postMessage(

@@ -13,6 +13,7 @@ export type PanelStateKind =
   | 'turbo-info'
   | 'hub'
   | 'fork-url'
+  | 'mcp-tools'
   | `dev0-project-${string}`
 
 export const PanelRouterContext = createContext<{

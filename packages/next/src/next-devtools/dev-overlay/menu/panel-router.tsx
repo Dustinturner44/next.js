@@ -34,6 +34,7 @@ import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 import { HubPanel } from '../components/hub-panel/hub-panel'
 import { ForkUrlPanel } from '../components/fork-url/fork-url-panel'
+import { MCPPanel } from '../components/mcp-panel/mcp-panel'
 import { useSidebarContext } from '../context/sidebar-context'
 import { css } from '../utils/css'
 import React, { useRef } from 'react'
@@ -239,6 +240,32 @@ const MenuPanel = () => {
   })
 
   const additionalItems = [
+    {
+      label: 'MCP Tools',
+      value:
+        activePanel === 'mcp-tools' ? (
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ChevronRight />
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-green-700)',
+                boxShadow: '0 0 0 1px var(--color-green-200)',
+              }}
+            />
+          </span>
+        ) : (
+          <ChevronRight />
+        ),
+      onClick: () => togglePanel('mcp-tools'),
+      attributes: {
+        'data-mcp-tools': true,
+        'data-panel-active': activePanel === 'mcp-tools' ? 'true' : 'false',
+      },
+      deletable: false,
+    },
     {
       label: 'Hub',
       value: <ChevronRight />,
@@ -698,6 +725,30 @@ export const PanelRouter = () => {
 
       <PanelRoute name="hub">
         <HubModal />
+      </PanelRoute>
+
+      <PanelRoute name="mcp-tools">
+        <DynamicPanel
+          sharePanelSizeGlobally={false}
+          sharePanelPositionGlobally={true}
+          draggable
+          sizeConfig={{
+            kind: 'resizable',
+            maxHeight: '90vh',
+            maxWidth: '90vw',
+            minHeight: 400 / state.scale,
+            minWidth: 700 / state.scale,
+            initialSize: {
+              height: 600 / state.scale,
+              width: 900 / state.scale,
+            },
+          }}
+          header={<DevToolsHeader title="MCP Tools" />}
+        >
+          <div id="mcp-panel" style={{ height: '100%' }}>
+            <MCPPanel />
+          </div>
+        </DynamicPanel>
       </PanelRoute>
     </>
   )
