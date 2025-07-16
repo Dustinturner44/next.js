@@ -97,7 +97,7 @@ export function createRouterAct(
           '`act` scope.'
         throw error
       }
-      if (config.block !== 'reject') {
+      if (config.block === 'reject') {
         expectedResponses = [config]
       } else {
         expectedResponses = []
@@ -111,7 +111,7 @@ export function createRouterAct(
             '`act` scope.'
           throw error
         }
-        if (item.block !== 'reject') {
+        if (item.block === 'reject') {
           expectedResponses.push(item)
         }
       }
