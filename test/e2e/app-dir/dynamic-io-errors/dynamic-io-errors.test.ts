@@ -2094,11 +2094,11 @@ describe('Dynamic IO Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at CookiesReadingComponent (turbopack:///[project]/app/use-cache-cookies/page.tsx:22:16)
+                     at CookiesReadingComponent (turbopack:///[project]/app/use-cache-cookies/page.tsx:22:18)
                    20 |   // in userland.
                    21 |   try {
                  > 22 |     await cookies()
-                      |                ^
+                      |                  ^
                    23 |   } catch {}
                    24 |
                    25 |   return null
@@ -2111,11 +2111,11 @@ describe('Dynamic IO Errors', () => {
               } else {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at <unknown> (turbopack:///[project]/app/use-cache-cookies/page.tsx:22:10)
+                     at <unknown> (turbopack:///[project]/app/use-cache-cookies/page.tsx:22:11)
                    20 |   // in userland.
                    21 |   try {
                  > 22 |     await cookies()
-                      |          ^
+                      |           ^
                    23 |   } catch {}
                    24 |
                    25 |   return null
@@ -2130,12 +2130,12 @@ describe('Dynamic IO Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at CookiesReadingComponent (webpack:///app/use-cache-cookies/page.tsx:22:17)
+                     at CookiesReadingComponent (webpack:///app/use-cache-cookies/page.tsx:22:18)
                      at <unknown> (webpack://<next-src>)
                    20 |   // in userland.
                    21 |   try {
                  > 22 |     await cookies()
-                      |                 ^
+                      |                  ^
                    23 |   } catch {}
                    24 |
                    25 |   return null
@@ -2217,11 +2217,11 @@ describe('Dynamic IO Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at DraftModeEnablingComponent (turbopack:///[project]/app/use-cache-draft-mode/page.tsx:20:25)
+                     at DraftModeEnablingComponent (turbopack:///[project]/app/use-cache-draft-mode/page.tsx:20:26)
                    18 |   // here to ensure that this error is shown even when it's caught in userland.
                    19 |   try {
                  > 20 |     ;(await draftMode()).enable()
-                      |                         ^
+                      |                          ^
                    21 |   } catch {}
                    22 |
                    23 |   return null
@@ -2234,11 +2234,11 @@ describe('Dynamic IO Errors', () => {
               } else {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at <unknown> (turbopack:///[project]/app/use-cache-draft-mode/page.tsx:20:25)
+                     at <unknown> (turbopack:///[project]/app/use-cache-draft-mode/page.tsx:20:26)
                    18 |   // here to ensure that this error is shown even when it's caught in userland.
                    19 |   try {
                  > 20 |     ;(await draftMode()).enable()
-                      |                         ^
+                      |                          ^
                    21 |   } catch {}
                    22 |
                    23 |   return null
@@ -2253,11 +2253,11 @@ describe('Dynamic IO Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at DraftModeEnablingComponent (webpack:///app/use-cache-draft-mode/page.tsx:20:25)
+                     at DraftModeEnablingComponent (webpack:///app/use-cache-draft-mode/page.tsx:20:26)
                    18 |   // here to ensure that this error is shown even when it's caught in userland.
                    19 |   try {
                  > 20 |     ;(await draftMode()).enable()
-                      |                         ^
+                      |                          ^
                    21 |   } catch {}
                    22 |
                    23 |   return null
@@ -2337,11 +2337,11 @@ describe('Dynamic IO Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at HeadersReadingComponent (turbopack:///[project]/app/use-cache-headers/page.tsx:21:16)
+                     at HeadersReadingComponent (turbopack:///[project]/app/use-cache-headers/page.tsx:21:18)
                    19 |   // to ensure that this error is shown even when it's caught in userland.
                    20 |   try {
                  > 21 |     await headers()
-                      |                ^
+                      |                  ^
                    22 |   } catch {}
                    23 |
                    24 |   return null
@@ -2354,11 +2354,11 @@ describe('Dynamic IO Errors', () => {
               } else {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at <unknown> (turbopack:///[project]/app/use-cache-headers/page.tsx:21:10)
+                     at <unknown> (turbopack:///[project]/app/use-cache-headers/page.tsx:21:11)
                    19 |   // to ensure that this error is shown even when it's caught in userland.
                    20 |   try {
                  > 21 |     await headers()
-                      |          ^
+                      |           ^
                    22 |   } catch {}
                    23 |
                    24 |   return null
@@ -2373,12 +2373,12 @@ describe('Dynamic IO Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
-                     at HeadersReadingComponent (webpack:///app/use-cache-headers/page.tsx:21:17)
+                     at HeadersReadingComponent (webpack:///app/use-cache-headers/page.tsx:21:18)
                      at <unknown> (webpack://<next-src>)
                    19 |   // to ensure that this error is shown even when it's caught in userland.
                    20 |   try {
                  > 21 |     await headers()
-                      |                 ^
+                      |                  ^
                    22 |   } catch {}
                    23 |
                    24 |   return null
