@@ -1,6 +1,7 @@
 import React from 'react'
 import { useDev0Context } from '../../context/dev-zero-context'
 import { usePanelRouterContext } from '../../menu/context'
+import { Dev0Panel } from '../dev-zero-panel/dev-zero-panel'
 
 export const MCPHiddenContainer = () => {
   const { projects } = useDev0Context()
@@ -16,32 +17,38 @@ export const MCPHiddenContainer = () => {
         position: 'fixed',
         top: '-9999px',
         left: '-9999px',
-        width: '1px',
-        height: '1px',
+        width: '400px',
+        height: '300px',
         overflow: 'hidden',
         opacity: 0,
         pointerEvents: 'none',
+        zIndex: -1,
       }}
     >
       {runningProjects.map((project) => {
         const panelName = `dev0-project-${project.name}`
-        // Skip if panel is open (to avoid duplicate iframes)
+        // Skip if panel is open (to avoid duplicate panels)
         // @ts-expect-error
         if (panels.has(panelName)) {
           return null
         }
 
         return (
-          <iframe
+          <div
             key={project.name}
-            src={`http://localhost:${project.port}`}
-            title={`Dev-0 Project: ${project.name}`}
             style={{
-              width: '1px',
-              height: '1px',
-              border: 'none',
+              width: '400px',
+              height: '300px',
+              position: 'absolute',
+              top: 0,
+              left: 0,
             }}
-          />
+          >
+            <Dev0Panel
+              projectName={project.name}
+              port={project.port!}
+            />
+          </div>
         )
       })}
     </div>
