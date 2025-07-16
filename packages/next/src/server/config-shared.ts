@@ -1500,6 +1500,7 @@ export const defaultConfig = {
     devtoolSegmentExplorer: process.env.__NEXT_DEVTOOL_NEW_PANEL_UI === 'true',
     browserDebugInfoInTerminal: false,
     optimizeRouterScrolling: false,
+    strictNextHead: true,
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,
