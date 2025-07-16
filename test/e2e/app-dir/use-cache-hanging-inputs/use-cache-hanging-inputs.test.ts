@@ -1,4 +1,5 @@
 import { nextTestSetup } from 'e2e-utils'
+import escapeStringRegexp from 'escape-string-regexp'
 import {
   getRedboxDescription,
   getRedboxSource,
@@ -323,11 +324,16 @@ describe('use-cache-hanging-inputs', () => {
       })
     })
   } else {
+    // TODO: Be more precise about the expected error messages and stacks.
     it('should fail the build with errors after a timeout', async () => {
       const { cliOutput } = await next.build()
 
-      expect(cliOutput).toInclude(
-        createExpectedBuildErrorMessage('/error', 'kaputt!')
+      expect(cliOutput).toInclude(createExpectedBuildErrorMessage('/error'))
+      expect(cliOutput).toInclude('Error: kaputt!')
+
+      expect(cliOutput).toIncludeRepeated(
+        escapeStringRegexp(expectedTimeoutErrorMessage),
+        6
       )
 
       expect(cliOutput).toInclude(
@@ -357,10 +363,6 @@ describe('use-cache-hanging-inputs', () => {
   }
 })
 
-function createExpectedBuildErrorMessage(
-  pathname: string,
-  errorMessage: string = expectedTimeoutErrorMessage
-) {
-  return `Error occurred prerendering page "${pathname}". Read more: https://nextjs.org/docs/messages/prerender-error
-Error: ${errorMessage}`
+function createExpectedBuildErrorMessage(pathname: string) {
+  return `Error occurred prerendering page "${pathname}". Read more: https://nextjs.org/docs/messages/prerender-error`
 }

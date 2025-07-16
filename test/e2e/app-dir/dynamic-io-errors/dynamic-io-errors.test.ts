@@ -2093,8 +2093,7 @@ describe('Dynamic IO Errors', () => {
             if (isTurbopack) {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at CookiesReadingComponent (turbopack:///[project]/app/use-cache-cookies/page.tsx:22:16)
                    20 |   // in userland.
                    21 |   try {
@@ -2103,14 +2102,15 @@ describe('Dynamic IO Errors', () => {
                    23 |   } catch {}
                    24 |
                    25 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "/use-cache-cookies" in your browser to investigate the error.
+                 Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
 
                  > Export encountered errors on following paths:
                  	/use-cache-cookies/page: /use-cache-cookies"
                 `)
               } else {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at <unknown> (turbopack:///[project]/app/use-cache-cookies/page.tsx:22:10)
                    20 |   // in userland.
                    21 |   try {
@@ -2119,14 +2119,17 @@ describe('Dynamic IO Errors', () => {
                    23 |   } catch {}
                    24 |
                    25 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, try one of the following:
+                   - Start the app in development mode by running \`next dev\`, then open "/use-cache-cookies" in your browser to investigate the error.
+                   - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.
+                 Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
                  Export encountered an error on /use-cache-cookies/page: /use-cache-cookies, exiting the build."
                 `)
               }
             } else {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at CookiesReadingComponent (webpack:///app/use-cache-cookies/page.tsx:22:17)
                      at <unknown> (webpack://<next-src>)
                    20 |   // in userland.
@@ -2136,17 +2139,22 @@ describe('Dynamic IO Errors', () => {
                    23 |   } catch {}
                    24 |
                    25 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "/use-cache-cookies" in your browser to investigate the error.
+                 Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
 
                  > Export encountered errors on following paths:
                  	/use-cache-cookies/page: /use-cache-cookies"
                 `)
               } else {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-cookies used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at a (<next-dist-dir>)
                      at b (<next-dist-dir>)
                      at c (<next-dist-dir>)
+                 To get a more detailed stack trace and pinpoint the issue, try one of the following:
+                   - Start the app in development mode by running \`next dev\`, then open "/use-cache-cookies" in your browser to investigate the error.
+                   - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.
+                 Error occurred prerendering page "/use-cache-cookies". Read more: https://nextjs.org/docs/messages/prerender-error
                  Export encountered an error on /use-cache-cookies/page: /use-cache-cookies, exiting the build."
                 `)
               }
@@ -2208,8 +2216,7 @@ describe('Dynamic IO Errors', () => {
             if (isTurbopack) {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at DraftModeEnablingComponent (turbopack:///[project]/app/use-cache-draft-mode/page.tsx:20:25)
                    18 |   // here to ensure that this error is shown even when it's caught in userland.
                    19 |   try {
@@ -2218,14 +2225,15 @@ describe('Dynamic IO Errors', () => {
                    21 |   } catch {}
                    22 |
                    23 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "/use-cache-draft-mode" in your browser to investigate the error.
+                 Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
 
                  > Export encountered errors on following paths:
                  	/use-cache-draft-mode/page: /use-cache-draft-mode"
                 `)
               } else {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at <unknown> (turbopack:///[project]/app/use-cache-draft-mode/page.tsx:20:25)
                    18 |   // here to ensure that this error is shown even when it's caught in userland.
                    19 |   try {
@@ -2234,14 +2242,17 @@ describe('Dynamic IO Errors', () => {
                    21 |   } catch {}
                    22 |
                    23 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, try one of the following:
+                   - Start the app in development mode by running \`next dev\`, then open "/use-cache-draft-mode" in your browser to investigate the error.
+                   - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.
+                 Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
                  Export encountered an error on /use-cache-draft-mode/page: /use-cache-draft-mode, exiting the build."
                 `)
               }
             } else {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at DraftModeEnablingComponent (webpack:///app/use-cache-draft-mode/page.tsx:20:25)
                    18 |   // here to ensure that this error is shown even when it's caught in userland.
                    19 |   try {
@@ -2250,15 +2261,20 @@ describe('Dynamic IO Errors', () => {
                    21 |   } catch {}
                    22 |
                    23 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "/use-cache-draft-mode" in your browser to investigate the error.
+                 Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
 
                  > Export encountered errors on following paths:
                  	/use-cache-draft-mode/page: /use-cache-draft-mode"
                 `)
               } else {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-draft-mode used "draftMode().enable()" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at a (<next-dist-dir>)
+                 To get a more detailed stack trace and pinpoint the issue, try one of the following:
+                   - Start the app in development mode by running \`next dev\`, then open "/use-cache-draft-mode" in your browser to investigate the error.
+                   - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.
+                 Error occurred prerendering page "/use-cache-draft-mode". Read more: https://nextjs.org/docs/messages/prerender-error
                  Export encountered an error on /use-cache-draft-mode/page: /use-cache-draft-mode, exiting the build."
                 `)
               }
@@ -2320,8 +2336,7 @@ describe('Dynamic IO Errors', () => {
             if (isTurbopack) {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at HeadersReadingComponent (turbopack:///[project]/app/use-cache-headers/page.tsx:21:16)
                    19 |   // to ensure that this error is shown even when it's caught in userland.
                    20 |   try {
@@ -2330,14 +2345,15 @@ describe('Dynamic IO Errors', () => {
                    22 |   } catch {}
                    23 |
                    24 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "/use-cache-headers" in your browser to investigate the error.
+                 Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
 
                  > Export encountered errors on following paths:
                  	/use-cache-headers/page: /use-cache-headers"
                 `)
               } else {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at <unknown> (turbopack:///[project]/app/use-cache-headers/page.tsx:21:10)
                    19 |   // to ensure that this error is shown even when it's caught in userland.
                    20 |   try {
@@ -2346,14 +2362,17 @@ describe('Dynamic IO Errors', () => {
                    22 |   } catch {}
                    23 |
                    24 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, try one of the following:
+                   - Start the app in development mode by running \`next dev\`, then open "/use-cache-headers" in your browser to investigate the error.
+                   - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.
+                 Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
                  Export encountered an error on /use-cache-headers/page: /use-cache-headers, exiting the build."
                 `)
               }
             } else {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at HeadersReadingComponent (webpack:///app/use-cache-headers/page.tsx:21:17)
                      at <unknown> (webpack://<next-src>)
                    19 |   // to ensure that this error is shown even when it's caught in userland.
@@ -2363,17 +2382,22 @@ describe('Dynamic IO Errors', () => {
                    22 |   } catch {}
                    23 |
                    24 |   return null
+                 To get a more detailed stack trace and pinpoint the issue, start the app in development mode by running \`next dev\`, then open "/use-cache-headers" in your browser to investigate the error.
+                 Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
 
                  > Export encountered errors on following paths:
                  	/use-cache-headers/page: /use-cache-headers"
                 `)
               } else {
                 expect(output).toMatchInlineSnapshot(`
-                 "Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
-                 Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
+                 "Error: Route /use-cache-headers used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache
                      at a (<next-dist-dir>)
                      at b (<next-dist-dir>)
                      at c (<next-dist-dir>)
+                 To get a more detailed stack trace and pinpoint the issue, try one of the following:
+                   - Start the app in development mode by running \`next dev\`, then open "/use-cache-headers" in your browser to investigate the error.
+                   - Rerun the production build with \`next build --debug-prerender\` to generate better stack traces.
+                 Error occurred prerendering page "/use-cache-headers". Read more: https://nextjs.org/docs/messages/prerender-error
                  Export encountered an error on /use-cache-headers/page: /use-cache-headers, exiting the build."
                 `)
               }
