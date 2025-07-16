@@ -134,37 +134,6 @@ describe('use-cache', () => {
     )
   })
 
-  it('should error when cookies/headers/draftMode is used inside "use cache"', async () => {
-    const browser = await next.browser('/errors')
-
-    await retry(async () => {
-      expect(await browser.elementById('cookies').text()).toContain(
-        isNextDev
-          ? 'Route /errors used "cookies" inside "use cache".'
-          : GENERIC_RSC_ERROR
-      )
-      expect(await browser.elementById('headers').text()).toContain(
-        isNextDev
-          ? 'Route /errors used "headers" inside "use cache".'
-          : GENERIC_RSC_ERROR
-      )
-    })
-
-    expect(await browser.elementById('draft-mode').text()).toContain(
-      'Editing: false'
-    )
-
-    // CLI assertions are skipped in deploy mode because `next.cliOutput` will only contain build-time logs.
-    if (!isNextDeploy) {
-      expect(next.cliOutput).toContain(
-        'Route /errors used "cookies" inside "use cache". '
-      )
-      expect(next.cliOutput).toContain(
-        'Route /errors used "headers" inside "use cache". '
-      )
-    }
-  })
-
   it('should cache results in route handlers', async () => {
     const response = await next.fetch('/api')
     const { rand1, rand2 } = await response.json()
@@ -515,7 +484,8 @@ describe('use-cache', () => {
           '/cache-tag',
           '/directive-in-node-modules/with-handler',
           '/directive-in-node-modules/without-handler',
-          '/draft-mode',
+          '/draft-mode/with-cookies',
+          '/draft-mode/without-cookies',
           '/form',
           '/imported-from-client',
           '/logs',
@@ -862,7 +832,7 @@ describe('use-cache', () => {
             ? 'Failed to load resource: the server responded with a status of 500 (Internal Server Error)'
             : isNextDev
               ? 'Route /draft-mode/[mode] used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache'
-              : 'Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.'
+              : GENERIC_RSC_ERROR
 
           expect(logs).toMatchObject(
             expect.arrayContaining([
