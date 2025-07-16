@@ -16,7 +16,7 @@ import {
   MENU_DURATION_MS,
 } from '../components/errors/dev-tools-indicator/utils'
 import { useDevOverlayContext } from '../../dev-overlay.browser'
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { useRenderErrorContext } from '../dev-overlay'
 import {
   ACTION_DEV_INDICATOR_SET,
@@ -743,7 +743,11 @@ export const PanelRouter = () => {
               width: 900 / state.scale,
             },
           }}
-          header={<DevToolsHeader title="MCP Tools" />}
+          header={
+            <DevToolsHeader title="MCP Tools">
+              <MCPHeaderContent />
+            </DevToolsHeader>
+          }
         >
           <div id="mcp-panel" style={{ height: '100%' }}>
             <MCPPanel />
@@ -916,5 +920,62 @@ function PanelRoute({
         {children}
       </div>
     </PanelContext>
+  )
+}
+
+function MCPHeaderContent() {
+  const [copyFeedback, setCopyFeedback] = useState<'idle' | 'copied' | 'failed'>('idle')
+  
+  const handleCopy = async () => {
+    try {
+      const command = 'claude mcp add devtools -- node /Users/robby/dev-0/packages/mcp-server/dist/index.js --stdio'
+      await navigator.clipboard.writeText(command)
+      setCopyFeedback('copied')
+      setTimeout(() => setCopyFeedback('idle'), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      setCopyFeedback('failed')
+      setTimeout(() => setCopyFeedback('idle'), 2000)
+    }
+  }
+  
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <code
+        style={{
+          backgroundColor: 'var(--color-gray-alpha-200)',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          fontFamily: 'monospace',
+          color: 'var(--color-text-primary)',
+          border: '1px solid var(--color-gray-alpha-400)',
+        }}
+      >
+        claude mcp add devtools -- node .../index.js --stdio
+      </code>
+      <button
+        onClick={handleCopy}
+        style={{
+          background: 'transparent',
+          border: '1px solid var(--color-gray-alpha-400)',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          cursor: 'pointer',
+          color: copyFeedback === 'copied' ? 'var(--color-green-700)' : 
+                copyFeedback === 'failed' ? 'var(--color-red-700)' : 
+                'var(--color-text-secondary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}
+        title="Copy command to add MCP server to Claude Code"
+      >
+        {copyFeedback === 'copied' ? '✓ Copied' : 
+         copyFeedback === 'failed' ? '✗ Failed' : 
+         'Copy'}
+      </button>
+    </div>
   )
 }

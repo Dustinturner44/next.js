@@ -86,8 +86,10 @@ export const MCPPanel = () => {
   }
 
   useEffect(() => {
-    // Initial fetch
-    fetchTools()
+    // Initial fetch with small delay to let hidden panels establish connections
+    const initialTimeout = setTimeout(() => {
+      fetchTools()
+    }, 500)
     
     // Check connection and fetch tools every 1 second
     const interval = setInterval(() => {
@@ -96,6 +98,7 @@ export const MCPPanel = () => {
     }, 1000)
     
     return () => {
+      clearTimeout(initialTimeout)
       clearInterval(interval)
     }
   }, [])

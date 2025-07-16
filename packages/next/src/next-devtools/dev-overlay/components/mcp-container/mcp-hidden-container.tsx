@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDev0Context } from '../../context/dev-zero-context'
 import { usePanelRouterContext } from '../../menu/context'
 import { Dev0Panel } from '../dev-zero-panel/dev-zero-panel'
@@ -10,6 +10,19 @@ export const MCPHiddenContainer = () => {
   // Get running projects
   const runningProjects = projects.filter((p) => p.status === 'running')
   console.log('we have these projects running', runningProjects)
+  
+  // Debug panel state
+  console.log('Current panels:', Array.from(panels))
+  
+  // Check which projects need hidden panels
+  const projectsNeedingHiddenPanels = runningProjects
+  
+  console.log('Projects needing hidden panels:', projectsNeedingHiddenPanels.map(p => p.name))
+  
+  // Log when panels change
+  useEffect(() => {
+    console.log('MCPHiddenContainer: panels changed to:', Array.from(panels))
+  }, [panels])
 
   return (
     <div
@@ -29,10 +42,16 @@ export const MCPHiddenContainer = () => {
         const panelName = `dev0-project-${project.name}`
         // Skip if panel is open (to avoid duplicate panels)
         // @ts-expect-error
-        if (panels.has(panelName)) {
+        const hasOpenPanel = panels.has(panelName)
+        
+        console.log(`Rendering check for ${project.name}: hasOpenPanel=${hasOpenPanel}`)
+        
+        if (hasOpenPanel) {
+          console.log(`Skipping hidden panel for ${project.name} - panel is open`)
           return null
         }
 
+        console.log(`Rendering hidden panel for ${project.name}`)
         return (
           <div
             key={project.name}
@@ -47,6 +66,7 @@ export const MCPHiddenContainer = () => {
             <Dev0Panel
               projectName={project.name}
               port={project.port!}
+              key={`hidden-${project.name}`} // Force re-render when switching to hidden
             />
           </div>
         )

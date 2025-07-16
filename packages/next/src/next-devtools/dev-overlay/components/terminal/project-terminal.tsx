@@ -93,6 +93,71 @@ export const ProjectTerminal: React.FC<ProjectTerminalProps> = ({
   )
 }
 
+interface HomeTerminalProps {
+  isVisible: boolean
+}
+
+export const HomeTerminal: React.FC<HomeTerminalProps> = ({ isVisible }) => {
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [terminalSessionId] = useState('terminal-home')
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'iframe-mouse-event') {
+        const { eventType, clientX, clientY, button, buttons } = event.data
+
+        const syntheticEvent = new MouseEvent(eventType, {
+          clientX,
+          clientY,
+          button,
+          buttons,
+          bubbles: true,
+          cancelable: true,
+        })
+
+        document.dispatchEvent(syntheticEvent)
+      }
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => {
+      window.removeEventListener('message', handleMessage)
+    }
+  }, [])
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        visibility: isVisible ? 'visible' : 'hidden',
+        opacity: isVisible ? 1 : 0,
+        pointerEvents: isVisible ? 'auto' : 'none',
+        backgroundColor: '#000',
+        zIndex: isVisible ? 1 : 0,
+      }}
+    >
+      <iframe
+        ref={iframeRef}
+        src={`http://localhost:4262?session=${encodeURIComponent(terminalSessionId)}&cwd=${encodeURIComponent('/Users/robby/dev-0')}&shell=${encodeURIComponent('/bin/zsh')}`}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          backgroundColor: '#000',
+        }}
+        title="Terminal - Home"
+      />
+    </div>
+  )
+}
+
 export const ProjectTerminalManager: React.FC = () => {
   const { projects } = useDev0Context()
   const { activePanel, openPanel } = usePanelRouterContext()
@@ -105,7 +170,7 @@ export const ProjectTerminalManager: React.FC = () => {
 
   const activePanelProjectName = getProjectNameFromPanel(activePanel)
 
-  const [activeProjectName, setActiveProjectName] = useState<string | null>(
+  const [activeTerminal, setActiveTerminal] = useState<string>(
     () => {
       if (
         activePanelProjectName &&
@@ -113,31 +178,35 @@ export const ProjectTerminalManager: React.FC = () => {
       ) {
         return activePanelProjectName
       }
-      return runningProjects[0]?.name || null
+      return 'home' // Default to home terminal
     }
   )
 
+  const [manualTerminalSwitch, setManualTerminalSwitch] = useState(false)
+
   useEffect(() => {
+    // Only auto-switch terminal if user hasn't manually switched
     if (
+      !manualTerminalSwitch &&
       activePanelProjectName &&
       runningProjects.some((p) => p.name === activePanelProjectName)
     ) {
-      setActiveProjectName(activePanelProjectName)
+      setActiveTerminal(activePanelProjectName)
     }
-  }, [activePanelProjectName, runningProjects])
+  }, [activePanelProjectName, runningProjects, manualTerminalSwitch])
 
   useEffect(() => {
     if (
-      activeProjectName &&
-      !runningProjects.find((p) => p.name === activeProjectName)
+      activeTerminal !== 'home' &&
+      !runningProjects.find((p) => p.name === activeTerminal)
     ) {
-      setActiveProjectName(runningProjects[0]?.name || null)
+      setActiveTerminal('home')
     }
-  }, [runningProjects, activeProjectName])
+  }, [runningProjects, activeTerminal])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Project switcher header */}
+      {/* Terminal switcher header */}
       <div
         style={{
           position: 'absolute',
@@ -158,23 +227,70 @@ export const ProjectTerminalManager: React.FC = () => {
           WebkitScrollbar: { display: 'none' },
         }}
       >
+        {/* Home terminal tab - always first */}
+        <button
+          onClick={() => {
+            setActiveTerminal('home')
+            setManualTerminalSwitch(true)
+          }}
+          style={{
+            padding: '4px 12px',
+            borderRadius: '4px',
+            border: 'none',
+            backgroundColor:
+              activeTerminal === 'home'
+                ? 'rgba(255, 255, 255, 0.1)'
+                : 'transparent',
+            color:
+              activeTerminal === 'home'
+                ? 'rgba(255, 255, 255, 0.9)'
+                : 'rgba(255, 255, 255, 0.5)',
+            fontFamily: 'var(--font-stack-sans)',
+            fontSize: '11px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          onMouseEnter={(e) => {
+            if (activeTerminal !== 'home') {
+              e.currentTarget.style.backgroundColor =
+                'rgba(255, 255, 255, 0.05)'
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (activeTerminal !== 'home') {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'
+            }
+          }}
+        >
+          <span>home</span>
+        </button>
+        
+        {/* Project terminal tabs */}
         {runningProjects.map((project) => (
           <button
             key={project.name}
             onClick={() => {
-              setActiveProjectName(project.name)
-              openPanel(`dev0-project-${project.name}` as PanelStateKind)
+              setActiveTerminal(project.name)
+              setManualTerminalSwitch(false) // Reset manual switch when clicking project tab
+              // Switch to the project's panel
+              openPanel(`dev0-project-${project.name}`)
             }}
             style={{
               padding: '4px 12px',
               borderRadius: '4px',
               border: 'none',
               backgroundColor:
-                activeProjectName === project.name
+                activeTerminal === project.name
                   ? 'rgba(255, 255, 255, 0.1)'
                   : 'transparent',
               color:
-                activeProjectName === project.name
+                activeTerminal === project.name
                   ? 'rgba(255, 255, 255, 0.9)'
                   : 'rgba(255, 255, 255, 0.5)',
               fontFamily: 'var(--font-stack-sans)',
@@ -187,14 +303,14 @@ export const ProjectTerminalManager: React.FC = () => {
               gap: '6px',
             }}
             onMouseEnter={(e) => {
-              if (activeProjectName !== project.name) {
+              if (activeTerminal !== project.name) {
                 e.currentTarget.style.backgroundColor =
                   'rgba(255, 255, 255, 0.05)'
                 e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
               }
             }}
             onMouseLeave={(e) => {
-              if (activeProjectName !== project.name) {
+              if (activeTerminal !== project.name) {
                 e.currentTarget.style.backgroundColor = 'transparent'
                 e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'
               }
@@ -220,16 +336,21 @@ export const ProjectTerminalManager: React.FC = () => {
           bottom: 0,
         }}
       >
+        {/* Home terminal */}
+        <HomeTerminal isVisible={activeTerminal === 'home'} />
+        
+        {/* Project terminals */}
         {runningProjects.map((project) => (
           <ProjectTerminal
             key={project.name}
             project={project}
-            isVisible={activeProjectName === project.name}
+            isVisible={activeTerminal === project.name}
           />
         ))}
       </div>
 
-      {runningProjects.length === 0 && (
+      {/* Show message only if home terminal is active and no projects are running */}
+      {runningProjects.length === 0 && activeTerminal !== 'home' && (
         <div
           style={{
             display: 'flex',
