@@ -132,25 +132,25 @@ pub async fn map_client_references(
                 return Some(Rc::from(vec![u]));
             }
 
-            // 1. Memoization check: If already computed, return cached result.
+            // Memoization check: If already computed, return cached result.
+            // From any given node in a directed graph the DFS result is the same
             if let Some(cached_result) = memo.get(&u) {
                 return cached_result.clone();
             }
 
-            // 2. Cycle detection: If 'u' is currently in recursion stack, it's a cycle.
-            // For DFS post-order, we simply don't add 'u' or its descendants from this path
-            // until the cycle is naturally broken or handled by memoization from another path.
+            // Check for cycles, treat as empty since we are already visiting it, but we don't store
+            // in the memo
             if !visiting_stack.insert(u) {
                 return None;
             }
 
-            // 3. Recursively visit neighbors or consume ourselves, we don't consider client
-            //    references to be traversable.
+            // Recursively visit neighbors
             let mut transitive_client_refs = None;
             let mut first = None;
 
             for v in graph.neighbors(u) {
-                // This ignores back edges because we must have already visited them.
+                // This ignores back edges because we must have already visited them and of course
+                // empty subgraphs as well.
                 if let Some(green_nodes_from_v) = dfs_collect_shallow_client_references(
                     false,
                     v,
@@ -162,6 +162,8 @@ pub async fn map_client_references(
                     // Merge results from sub-paths
                     // Save the first one on the relatively likely chance that we don't actually
                     // accumulate _more_.
+                    // This is the most expensive part of the traversal, accumulating the ordered
+                    // sets.
                     match &first {
                         None => {
                             first = Some(green_nodes_from_v.clone());
