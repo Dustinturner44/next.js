@@ -113,6 +113,18 @@ Action types:
 - "add": Insert newCode at the specified line (pushes existing lines down)
 - "delete": Remove lines (not yet implemented)
 
+CRITICAL CODE FORMATTING RULES:
+- Always include proper quotes around JavaScript/TypeScript strings and directives
+- Use single quotes for React directives: 'use client', 'use server'
+- Include proper semicolons where required
+- Maintain correct indentation and whitespace
+- For import statements, include proper quotes: import { useState } from 'react'
+
+Examples of proper formatting:
+- Directive: 'use client'
+- Import: import React from 'react'
+- String: const message = 'Hello World'
+
 Only include fileChanges if you can identify specific files and exact code changes from the error context. If no specific files can be identified, leave fileChanges as an empty array.
 
 Be concise but thorough. Focus on actionable solutions.
