@@ -244,7 +244,7 @@ export function UserPreferencesBody({
               }
               disabled={isPending}
             >
-              <span>{isPending ? 'Restarting...' : 'Restart'}</span>
+              <span>Restart</span>
             </button>
           </div>
         </div>
@@ -260,7 +260,7 @@ export function UserPreferencesBody({
               </p>
             </div>
             <div className="preference-control">
-              <button
+                              <button
                 aria-describedby="reset-bundler-cache"
                 title="Clears the bundler cache and restarts the dev server. Helpful if you are seeing stale errors or changes are not appearing."
                 name="reset-bundler-cache"
@@ -271,7 +271,7 @@ export function UserPreferencesBody({
                 }
                 disabled={isPending}
               >
-                <span>{isPending ? 'Resetting...' : 'Reset Cache'}</span>
+                <span>Reset Cache</span>
               </button>
             </div>
           </div>
