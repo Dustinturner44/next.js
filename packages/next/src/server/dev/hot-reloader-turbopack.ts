@@ -82,6 +82,7 @@ import { getNodeDebugType } from '../lib/utils'
 import { isMetadataRouteFile } from '../../lib/metadata/is-metadata-route'
 import { setBundlerFindSourceMapImplementation } from '../patch-error-inspect'
 import { getNextErrorFeedbackMiddleware } from '../../next-devtools/server/get-next-error-feedback-middleware'
+import { getAutoFixMiddleware } from '../../next-devtools/server/get-auto-fix-middleware'
 import {
   formatIssue,
   getTurbopackJsConfig,
@@ -650,6 +651,7 @@ export async function createHotReloaderTurbopack(
     }),
     getSourceMapMiddleware(project),
     getNextErrorFeedbackMiddleware(opts.telemetry),
+    getAutoFixMiddleware(),
     getDevOverlayFontMiddleware(),
     getDisableDevIndicatorMiddleware(),
     getRestartDevServerMiddleware({

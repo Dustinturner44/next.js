@@ -132,6 +132,7 @@
     "sharp": "^0.34.3"
   },
   "devDependencies": {
+    "@ai-sdk/anthropic": "1.2.12",
     "@ampproject/toolbox-optimizer": "2.8.3",
     "@babel/code-frame": "7.26.2",
     "@babel/core": "7.26.10",
@@ -222,6 +223,7 @@
     "@vercel/nft": "0.27.1",
     "@vercel/turbopack-ecmascript-runtime": "*",
     "acorn": "8.14.0",
+    "ai": "4.3.19",
     "amphtml-validator": "1.0.38",
     "anser": "1.4.9",
     "arg": "4.1.0",
