@@ -1,5 +1,4 @@
-'use client';
-// 'use client';
+import './page.css'
 
 import Link from 'next/link'
 
@@ -39,12 +38,6 @@ const errorSamples = [
     title: 'API Route Error',
     description: 'Wrong HTTP methods or missing exports',
     severity: 'Medium'
-  },
-  {
-    id: 'dynamic-import',
-    title: 'Dynamic Import Error',
-    description: 'Incorrect dynamic import usage',
-    severity: 'Low'
   },
   {
     id: 'image-error',
@@ -90,124 +83,6 @@ export default function ErrorSamplesPage() {
           </Link>
         ))}
       </div>
-
-      <style jsx>{`
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 2rem;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          line-height: 1.6;
-          color: #333;
-        }
-
-        .header {
-          text-align: center;
-          margin-bottom: 3rem;
-        }
-
-        .header h1 {
-          font-size: 2.5rem;
-          font-weight: 600;
-          margin: 0 0 0.5rem 0;
-          color: #1a1a1a;
-        }
-
-        .header p {
-          font-size: 1.1rem;
-          color: #666;
-          margin: 0;
-        }
-
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-          gap: 1.5rem;
-        }
-
-        .card {
-          border: 1px solid #e1e5e9;
-          border-radius: 8px;
-          padding: 1.5rem;
-          text-decoration: none;
-          color: inherit;
-          transition: all 0.2s ease;
-          background: #fff;
-        }
-
-        .card:hover {
-          border-color: #0070f3;
-          transform: translateY(-2px);
-        }
-
-        .card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.75rem;
-        }
-
-        .card-header h3 {
-          margin: 0;
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #1a1a1a;
-        }
-
-        .severity {
-          padding: 0.25rem 0.75rem;
-          border-radius: 4px;
-          font-size: 0.75rem;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .severity.high {
-          background: #fee2e2;
-          color: #dc2626;
-        }
-
-        .severity.medium {
-          background: #fef3c7;
-          color: #d97706;
-        }
-
-        .severity.low {
-          background: #d1fae5;
-          color: #059669;
-        }
-
-        .card p {
-          margin: 0 0 1rem 0;
-          color: #666;
-        }
-
-        .card-footer {
-          display: flex;
-          justify-content: flex-end;
-        }
-
-        .card-footer span {
-          font-size: 0.9rem;
-          color: #0070f3;
-          font-weight: 500;
-        }
-
-        @media (max-width: 768px) {
-          .container {
-            padding: 1rem;
-          }
-
-          .header h1 {
-            font-size: 2rem;
-          }
-
-          .grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   )
 } 
