@@ -1,10 +1,48 @@
+/**
+ * Next.js Auto-Fix Middleware
+ * 
+ * Supports dual AI providers:
+ * - Anthropic Claude (default): Set ANTHROPIC_API_KEY
+ * - Vercel AI (v0 mode): Set v0=1 and VERCEL_API_TOKEN
+ * 
+ * Provider selection is based on process.env.v0:
+ * - If v0 is set (any truthy value), uses Vercel AI with llama-3.1-70b-instruct
+ * - Otherwise, uses Anthropic Claude with claude-3-5-sonnet-20241022
+ */
 import type { ServerResponse, IncomingMessage } from 'http'
 import { middlewareResponse } from './middleware-response'
 import { promises as fs } from 'fs'
 import path from 'path'
 
 import { generateText } from 'ai'
-import { anthropic } from '@ai-sdk/anthropic'
+import { createVercel } from '@ai-sdk/vercel'
+import { createAnthropic } from '@ai-sdk/anthropic'
+
+const provider = process.env.v0 ? createVercel({
+  apiKey: process.env.VERCEL_API_TOKEN,
+}) : createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+})
+
+function getAIProvider() {
+  if (process.env.v0) {
+    console.log('🤖 Using Vercel AI (v0 mode enabled)')
+    return {
+      provider,
+      model: 'llama-3.1-70b-instruct',
+      apiKey: process.env.VERCEL_API_TOKEN,
+      apiKeyName: 'VERCEL_API_TOKEN'
+    }
+  } else {
+    console.log('🤖 Using Anthropic Claude')
+    return {
+      provider,
+      model: 'claude-3-5-sonnet-20241022',
+      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKeyName: 'ANTHROPIC_API_KEY'
+    }
+  }
+}
 
 interface AutoFixRequest {
   prompt: string
@@ -83,111 +121,204 @@ async function generateClaudeFix(
   projectDir: string
 ): Promise<AutoFixResponse> {
   try {
-    // Enhanced prompt for Claude to provide actionable fixes
+    const aiConfig = getAIProvider()
+    
+    console.log('🔨 Auto Fix Request Received:')
+    console.log('📝 Error/Prompt:', prompt.slice(0, 200) + (prompt.length > 200 ? '...' : ''))
+    console.log('📁 Project Directory:', projectDir)
+    console.log(`🤖 AI Provider: ${process.env.v0 ? 'Vercel' : 'Anthropic'} (${aiConfig.model})`)
+    console.log(`🔑 API Key Status: ${aiConfig.apiKey ? '✅ Available' : '❌ Missing'}`)
+    
+    // Enhanced prompt using v0's Next.js expertise
     const enhancedPrompt = `
-You are a Next.js expert helping to fix development errors. The user has encountered the following error:
+You are v0, an advanced Next.js expert AI assistant with deep knowledge of React, TypeScript, and modern web development patterns. Fix the following development error:
 
 ${prompt}
 
-CRITICAL: Fix the ROOT CAUSE of the error, do NOT just wrap code in try-catch blocks or add error handling. Provide the actual correct code that eliminates the error.
+CRITICAL INSTRUCTIONS:
+- Fix the ROOT CAUSE of the error, never just add try-catch blocks
+- Apply v0's best practices for Next.js development
+- Provide production-ready, optimized code solutions
+- Use modern React patterns and TypeScript when applicable
 
-Analyze the error and provide specific code changes that can be automatically applied.
+DIRECTIVE PLACEMENT RULES (CRITICAL):
+- React directives ("use client", "use server", "use strict") MUST be at the very top of the file
+- NEVER insert imports, comments, or any code before directives
+- When adding imports to files with directives:
+  * Keep directives at line 1
+  * Insert imports starting at line 2 (after directives)
+  * Maintain blank line between directives and imports if it exists
+- If no directives exist, imports go at line 1 as normal
 
-Format your response as JSON with the following structure:
+RESPONSE FORMAT (JSON only - MUST include fileChanges):
 {
-  "explanation": "Brief explanation of what's causing the error",
-  "fix": "General description of the fix",
+  "explanation": "Concise explanation of the root cause",
+  "fix": "Summary of the solution applied", 
   "fileChanges": [
     {
-      "file": "relative/path/to/file.js",
-      "action": "replace|add|delete",
+      "file": "relative/path/to/file.tsx",
+      "action": "replace",
       "lineNumber": 10,
-      "oldCode": "exact code to replace (only for 'replace' action)",
-      "newCode": "exact code to insert or replace with"
+      "oldCode": "exact problematic code to replace",
+      "newCode": "fixed code with v0 best practices"
+    },
+    {
+      "file": "relative/path/to/file.tsx", 
+      "action": "add",
+      "lineNumber": 2,
+      "newCode": "import statement (use line 2 if 'use client' at line 1, otherwise line 1)"
     }
   ]
 }
 
-NEXT.JS SPECIFIC FIXES:
+CRITICAL LINE NUMBER RULES:
+- If file starts with 'use client' or other directive: add imports at line 2
+- If no directive: add imports at line 1
+- Always check first line for directives before determining insertion point
 
-Import Fixes:
-- Image is DEFAULT export: import Image from 'next/image' (NOT named export)
-- Link is DEFAULT export: import Link from 'next/link'  
-- useRouter: import { useRouter } from 'next/router' (Pages Router) OR import { useRouter } from 'next/navigation' (App Router)
-- React hooks: import { useState, useEffect } from 'react'
-- React itself: import React from 'react' (when needed)
+CRITICAL: Always provide specific fileChanges array with actionable fixes. Do not leave fileChanges empty unless no code changes are needed.
 
-Hydration Fixes:
-- typeof window !== 'undefined' checks before browser APIs
-- Move client-only code to useEffect hooks
-- Use dynamic imports with ssr: false for client-only components
+V0'S NEXT.JS EXPERTISE:
 
-Hook Fixes:
-- Move all hooks to top level of component, before any conditions
-- Remove hooks from loops, conditions, or nested functions
-- Use state setters in event handlers, not hook calls
+🔧 Import Patterns:
+- Next.js Image: import Image from 'next/image' (default export)
+- Next.js Link: import Link from 'next/link' (default export)
+- App Router: import { useRouter } from 'next/navigation'
+- Pages Router: import { useRouter } from 'next/router'
+- React hooks: import { useState, useEffect, useCallback } from 'react'
 
-Image Component Fixes:
-- Add required width and height props OR use fill prop
-- Add meaningful alt text for accessibility
-- Configure remotePatterns in next.config.js for external images
+🎯 Hydration Solutions:
+- Client-only code: useEffect(() => { /* browser APIs */ }, [])
+- Dynamic imports: const Component = dynamic(() => import('./Component'), { ssr: false })
+- Safe checks: typeof window !== 'undefined' && window.api()
+- Consistent SSR/client rendering patterns
 
-Runtime Error Fixes:
-- Use optional chaining: obj?.prop instead of obj.prop
-- Add null checks before accessing properties
-- Use proper type validation before operations
+⚛️ React Best Practices:
+- All hooks at component top level (before any conditions/loops)
+- Use useCallback for event handlers with dependencies
+- Proper dependency arrays in useEffect
+- State updates via setters, never hooks in event handlers
 
-FORMATTING RULES:
-- Use single quotes for strings and imports
-- Include proper semicolons
-- Add 'use client' directive for client components
-- Maintain correct indentation
+🖼️ Image Optimization:
+- Always include width/height OR use fill={true}
+- Meaningful alt text for accessibility
+- priority={true} for above-the-fold images
+- sizes prop for responsive images
+- Configure domains in next.config.js for external images
 
-EXAMPLES OF PROPER FIXES:
+🔒 Type Safety:
+- Optional chaining: data?.field?.value
+- Nullish coalescing: value ?? defaultValue
+- Proper TypeScript interfaces for props
+- Runtime type guards when needed
 
-❌ Wrong: import { Image } from 'next/image'
-✅ Fix: import Image from 'next/image'
+🎨 Modern Patterns:
+- Server components by default (no 'use client' unless needed)
+- 'use client' only for interactivity/hooks/browser APIs
+- Proper error boundaries for production apps
+- Suspense boundaries for loading states
 
-❌ Wrong: const data = obj.prop.value
-✅ Fix: const data = obj?.prop?.value ?? 'default'
+EXAMPLES FROM V0:
 
-❌ Wrong: if (condition) { const [state] = useState(0) }
-✅ Fix: const [state, setState] = useState(0); if (condition) { setState(0) }
+❌ Bad: import { Image } from 'next/image'
+✅ v0: import Image from 'next/image'
 
-❌ Wrong: const content = Math.random() > 0.5 ? 'A' : 'B'
-✅ Fix: const [content, setContent] = useState(''); useEffect(() => { setContent(Math.random() > 0.5 ? 'A' : 'B') }, [])
+❌ Bad: data.user.profile.name
+✅ v0: data?.user?.profile?.name ?? 'Unknown'
 
-Only include fileChanges if you can identify specific files and exact code changes from the error context. Focus on the actual fix, not error handling.
+❌ Bad: if (show) { const [count] = useState(0) }
+✅ v0: const [count, setCount] = useState(0); const [show, setShow] = useState(false)
+
+❌ Bad: <div>{Math.random()}</div>
+✅ v0: const [random, setRandom] = useState(0); useEffect(() => setRandom(Math.random()), [])
+
+❌ Bad: <Image src="/pic.jpg" />
+✅ v0: <Image src="/pic.jpg" alt="Description" width={500} height={300} priority />
+
+🚨 DIRECTIVE PLACEMENT EXAMPLES:
+
+❌ WRONG: Adding import before directive
+import React from 'react'
+'use client'
+
+✅ CORRECT: Keep directive at top, add imports after
+'use client'
+import React from 'react'
+
+❌ WRONG: Moving directive down
+'use client'
+import React from 'react'
+import { useState } from 'react'  // Don't insert here
+
+✅ CORRECT: Add all imports after directive
+'use client'
+import React from 'react'
+import { useState } from 'react'
+
+Apply v0's expertise to provide the most elegant, performant, and maintainable solution.
 `.trim()
 
     // Use AI SDK to process the prompt
-    const claudeResponse = await callClaudeWithAISDK(enhancedPrompt)
+    const aiResponse = await callAIWithSDK(enhancedPrompt)
+    
+    console.log('🤖 AI Response Received:')
+    console.log('💡 Explanation:', aiResponse.explanation)
+    console.log('🔧 File Changes:', aiResponse.fileChanges)
+    // console.log('📄 File Changes Suggested:', aiResponse.fileChanges?.length || 0)
+    
+    if (aiResponse.fileChanges && aiResponse.fileChanges.length > 0) {
+      console.log('📋 Suggested Changes:')
+      aiResponse.fileChanges.forEach((change, index) => {
+        console.log(`  ${index + 1}. ${change.action.toUpperCase()} in ${change.file}:${change.lineNumber}`)
+        if (change.oldCode) {
+          console.log(`     Old: ${change.oldCode.slice(0, 50)}${change.oldCode.length > 50 ? '...' : ''}`)
+        }
+        if (change.newCode) {
+          console.log(`     New: ${change.newCode.slice(0, 50)}${change.newCode.length > 50 ? '...' : ''}`)
+        }
+      })
+    }
 
     // Apply file changes if any were suggested
     let appliedChanges: AppliedChange[] = []
-    if (claudeResponse.fileChanges && claudeResponse.fileChanges.length > 0) {
+    if (aiResponse.fileChanges && aiResponse.fileChanges.length > 0) {
+      console.log('🚀 Applying file changes...')
       appliedChanges = await applyFileChanges(
-        claudeResponse.fileChanges,
+        aiResponse.fileChanges,
         projectDir
       )
     }
 
     const result = {
       success: true,
-      fix: claudeResponse.fix,
-      explanation: claudeResponse.explanation,
+      fix: aiResponse.fix,
+      explanation: aiResponse.explanation,
       appliedChanges,
     }
 
-    console.log(
-      `🎉 Auto fix completed successfully! Applied ${appliedChanges.length} changes`
-    )
+    console.log('✅ Auto Fix Completed Successfully!')
+    console.log(`📊 Summary: Applied ${appliedChanges.length} changes`)
+    
+    if (appliedChanges.length > 0) {
+      console.log('📝 Files Modified:')
+      appliedChanges.forEach((change, index) => {
+        console.log(`  ${index + 1}. ${change.file}`)
+        console.log(`     Changes: ${change.changes}`)
+        if (change.line) {
+          console.log(`     Line: ${change.line}`)
+        }
+      })
+    } else {
+      console.log('ℹ️ No file changes were applied')
+    }
 
     return result
   } catch (error) {
-    console.error('❌ Auto fix failed:', error)
+    console.error('❌ Auto Fix Failed:')
+    console.error('   Error:', error instanceof Error ? error.message : 'Unknown error')
+    console.error('   Stack:', error instanceof Error ? error.stack : 'No stack trace')
     throw new Error(
-      `Claude AI error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      `AI Auto Fix error: ${error instanceof Error ? error.message : 'Unknown error'}`
     )
   }
 }
@@ -200,42 +331,92 @@ interface FileChange {
   newCode?: string // Required for both 'replace' and 'add'
 }
 
-async function callClaudeWithAISDK(
+async function callAIWithSDK(
   prompt: string
 ): Promise<{ fix: string; explanation: string; fileChanges?: FileChange[] }> {
   try {
+    // Get the appropriate AI provider based on environment
+    const aiConfig = getAIProvider()
+    
     // Check for API key
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      console.warn('ANTHROPIC_API_KEY not found. Using fallback response.')
+    if (!aiConfig.apiKey) {
+      console.warn(`${aiConfig.apiKeyName} not found. Using fallback response.`)
       return getFallbackResponse()
     }
 
     const result = await generateText({
-      model: anthropic('claude-3-haiku-20240307'),
+      model: aiConfig.provider(aiConfig.model),
       prompt,
       maxTokens: 1024,
     })
 
     const content = result.text
     if (!content) {
-      throw new Error('No response from Claude')
+      throw new Error('No response from AI')
     }
 
+    console.log('🔍 Raw AI Response:')
+    console.log(content.slice(0, 500) + (content.length > 500 ? '...' : ''))
+    
     // Try to parse as JSON first, fallback to plain text
     try {
       const parsedResponse = JSON.parse(content)
-      return {
+      
+      console.log('✅ Successfully parsed JSON response')
+      console.log('📊 Response structure:', {
+        hasExplanation: !!parsedResponse.explanation,
+        hasFix: !!parsedResponse.fix,
+        hasFileChanges: !!parsedResponse.fileChanges,
+        fileChangesCount: parsedResponse.fileChanges?.length || 0
+      })
+      
+      // Validate that we have fileChanges if fix is provided
+      if (parsedResponse.fix && (!parsedResponse.fileChanges || parsedResponse.fileChanges.length === 0)) {
+        console.log('⚠️ AI provided fix but no fileChanges - attempting to extract from fix text')
+        const extractedChanges = extractFileChangesFromText(parsedResponse.fix, content)
+        parsedResponse.fileChanges = extractedChanges
+        
+        if (extractedChanges.length === 0) {
+          console.log('❌ Could not extract any actionable file changes from AI response')
+          console.log('   This may indicate the AI needs better prompting or the error is not code-related')
+        }
+      }
+      
+      // Fix invalid file paths in AI response
+      if (parsedResponse.fileChanges) {
+                 const correctedFileChanges = parsedResponse.fileChanges.map((change: FileChange) => {
+          if (change.file === 'Next.js' || change.file === 'React.js' || !isValidFilePath(change.file)) {
+            console.log(`🔧 Correcting invalid file path: "${change.file}"`)
+            const actualFilePath = extractFilePathFromPrompt(prompt)
+            if (actualFilePath) {
+              console.log(`   Using file path from error context: ${actualFilePath}`)
+              return { ...change, file: actualFilePath }
+            } else {
+              console.warn(`   Could not determine actual file path, using fallback`)
+              return { ...change, file: 'src/page.tsx' } // Reasonable fallback
+            }
+          }
+          return change
+        })
+        parsedResponse.fileChanges = correctedFileChanges
+      }
+      
+      const result = {
         fix: parsedResponse.fix || content,
-        explanation: parsedResponse.explanation || 'Generated by Claude',
+        explanation: parsedResponse.explanation || 'Generated by AI',
         fileChanges: parsedResponse.fileChanges || [],
       }
-    } catch {
+      
+      console.log(`📋 Final result: ${result.fileChanges.length} file changes to apply`)
+      return result
+    } catch (parseError) {
+      console.log('⚠️ Failed to parse JSON, processing as text response')
+      console.log('Parse error:', parseError instanceof Error ? parseError.message : 'Unknown')
       // If not JSON, treat as plain text and extract useful parts
-      return parseClaudeTextResponse(content)
+      return parseTextResponse(content)
     }
   } catch (error) {
-    console.error('Claude AI SDK call failed:', error)
+    console.error('AI SDK call failed:', error)
     return getFallbackResponse()
   }
 }
@@ -267,6 +448,18 @@ async function applyFileChanges(
   for (const [filePath, changes] of changesByFile) {
     try {
       console.log(`📁 Processing ${changes.length} change(s) for: ${filePath}`)
+      console.log(`   Full path: ${path.resolve(projectRoot, filePath)}`)
+      
+      changes.forEach((change, index) => {
+        console.log(`   Change ${index + 1}: ${change.action} at line ${change.lineNumber}`)
+        if (change.oldCode) {
+          console.log(`     Replacing: "${change.oldCode.replace(/\n/g, '\\n')}"`)
+        }
+        if (change.newCode) {
+          console.log(`     With: "${change.newCode.replace(/\n/g, '\\n')}"`)
+        }
+      })
+      
       const fullFilePath = path.resolve(projectRoot, filePath)
 
       // Security check: ensure we're not modifying files outside the project
@@ -339,7 +532,11 @@ async function applyFileChanges(
       if (fileWasModified) {
         const newContent = modifiedLines.join('\n')
         await fs.writeFile(fullFilePath, newContent, 'utf8')
-        console.log(`💾 Saved changes to ${filePath}`)
+        console.log(`💾 Successfully saved ${sortedChanges.length} change(s) to: ${filePath}`)
+        console.log(`   File size: ${originalContent.length} → ${newContent.length} characters`)
+        console.log(`   Lines: ${lines.length} → ${modifiedLines.length}`)
+      } else {
+        console.log(`⚠️ No changes applied to ${filePath} (no modifications made)`)
       }
     } catch (error) {
       console.error(`❌ Failed to apply changes to ${filePath}:`, error)
@@ -485,6 +682,126 @@ async function applyContentBasedChange(
   }
 }
 
+function extractFileChangesFromText(fixText: string, fullContent: string): FileChange[] {
+  const fileChanges: FileChange[] = []
+  
+  // Look for common patterns in fix text that might indicate file changes
+  const patterns = [
+    // Look for file paths
+    /(?:in|file|update|change|modify)\s+([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
+    // Look for import statements
+    /import\s+.*?from\s+['"][^'"]+['"]/gi,
+    // Look for line references
+    /line\s+(\d+)/gi,
+  ]
+  
+  // Try to extract file paths from the content
+  // More robust regex that looks for actual file paths, not just any text ending with file extensions
+  const filePathMatches = fullContent.match(/(?:(?:\.?\/)?[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts)(?!\w)/g) || []
+  // Filter out common false positives like "Next.js"
+  const filteredMatches = filePathMatches.filter(match => 
+    !match.toLowerCase().includes('next.js') && 
+    !match.toLowerCase().includes('react.js') &&
+    match.includes('/') || match.length > 8  // Either has path separators or is long enough to be a real filename
+  )
+  const uniqueFiles = [...new Set(filteredMatches)]
+  
+  // If we found potential files and the fix contains actionable text, create basic file changes
+  if (uniqueFiles.length > 0 && fixText.length > 50) {
+    const firstFile = uniqueFiles[0]
+    
+    // Look for import-related fixes
+    if (fixText.toLowerCase().includes('import') && fixText.includes('from')) {
+      const importMatch = fixText.match(/import\s+.*?from\s+['"][^'"]+['"]/i)
+      if (importMatch) {
+        // Smart line number detection for directives
+        // Default to line 2 to be safe (assumes 'use client' might be present)
+        // The actual file processing will adjust if needed
+        fileChanges.push({
+          file: firstFile,
+          action: 'add',
+          lineNumber: 2,
+          newCode: importMatch[0]
+        })
+      }
+    }
+    
+    // Look for code replacement patterns
+    const codeMatches = fixText.match(/```[\s\S]*?```/g)
+    if (codeMatches && codeMatches.length >= 2) {
+      // Assume first block is old code, second is new code
+      const oldCode = codeMatches[0].replace(/```\w*\n?/g, '').trim()
+      const newCode = codeMatches[1].replace(/```\w*\n?/g, '').trim()
+      
+      if (oldCode && newCode && oldCode !== newCode) {
+        fileChanges.push({
+          file: firstFile,
+          action: 'replace',
+          lineNumber: 10, // Default line number
+          oldCode: oldCode.split('\n')[0], // First line only for safety
+          newCode: newCode.split('\n')[0]
+        })
+      }
+    }
+  }
+  
+  console.log(`🔍 File path extraction results:`)
+  console.log(`   Raw matches found: ${filePathMatches.length}`)
+  console.log(`   Filtered matches: ${filteredMatches.length}`)
+  console.log(`   Unique files: ${uniqueFiles.length}`)
+  if (uniqueFiles.length > 0) {
+    console.log(`   Files: [${uniqueFiles.join(', ')}]`)
+  }
+  console.log(`🔍 Extracted ${fileChanges.length} file changes from text response`)
+  
+  // If no valid files were found, log a warning
+  if (uniqueFiles.length === 0 && fixText.toLowerCase().includes('import')) {
+    console.warn('⚠️ No valid file paths detected, but fix mentions imports. Consider extracting file path from error context.')
+  }
+  
+  return fileChanges
+}
+
+function parseTextResponse(content: string): {
+  fix: string
+  explanation: string
+  fileChanges: FileChange[]
+} {
+  // Enhanced text parsing that also extracts file changes
+  const lines = content.split('\n').filter((line) => line.trim())
+
+  let explanation = ''
+  let fix = ''
+  let currentSection = 'explanation'
+
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase()
+    if (
+      lowerLine.includes('fix') ||
+      lowerLine.includes('solution') ||
+      lowerLine.includes('steps')
+    ) {
+      currentSection = 'fix'
+      continue
+    }
+
+    if (currentSection === 'explanation' && !explanation) {
+      explanation = line.trim()
+    } else if (currentSection === 'fix') {
+      fix += (fix ? '\n' : '') + line.trim()
+    }
+  }
+
+  // Try to extract file changes from the parsed content
+  const fileChanges = extractFileChangesFromText(fix || content, content)
+
+  return {
+    explanation: explanation || 'AI analysis provided',
+    fix: fix || content,
+    fileChanges
+  }
+}
+
 function parseClaudeTextResponse(content: string): {
   fix: string
   explanation: string
@@ -520,10 +837,86 @@ function parseClaudeTextResponse(content: string): {
   }
 }
 
-function getFallbackResponse(): { fix: string; explanation: string } {
+function getFallbackResponse(): { fix: string; explanation: string; fileChanges: FileChange[] } {
+  const isV0Mode = !!process.env.v0
+  const requiredKey = isV0Mode ? 'VERCEL_API_TOKEN' : 'ANTHROPIC_API_KEY'
+  const requiredPackage = isV0Mode ? '@ai-sdk/vercel' : '@ai-sdk/anthropic'
+  
   return {
     explanation:
-      'Auto-fix service requires ANTHROPIC_API_KEY environment variable to be set. Install AI SDK dependencies: npm install ai @ai-sdk/anthropic',
-    fix: '1. Check the error message and stack trace carefully\n2. Verify your code syntax and imports\n3. Check Next.js documentation for similar issues\n4. Restart your development server\n5. Clear Next.js cache with `rm -rf .next`\n\nTo enable AI-powered auto-fix:\n1. Set ANTHROPIC_API_KEY environment variable\n2. Install dependencies: npm install ai @ai-sdk/anthropic',
+      `Auto-fix service requires ${requiredKey} environment variable to be set. Install AI SDK dependencies: npm install ai ${requiredPackage}`,
+    fix: `1. Check the error message and stack trace carefully\n2. Verify your code syntax and imports\n3. Check Next.js documentation for similar issues\n4. Restart your development server\n5. Clear Next.js cache with \`rm -rf .next\`\n\nTo enable AI-powered auto-fix:\n1. Set ${requiredKey} environment variable\n2. Install dependencies: npm install ai ${requiredPackage}\n\nProvider selection:\n- Set v0=1 environment variable to use Vercel AI (requires VERCEL_API_TOKEN)\n- Default: Anthropic Claude (requires ANTHROPIC_API_KEY)`,
+    fileChanges: []
   }
+}
+
+function isValidFilePath(filePath: string): boolean {
+  // Check if the file path looks like a valid file path
+  if (!filePath || typeof filePath !== 'string') {
+    return false
+  }
+  
+  // Exclude common false positives
+  const invalidPatterns = [
+    'Next.js',
+    'React.js', 
+    'next.js',
+    'react.js',
+    'JavaScript',
+    'TypeScript'
+  ]
+  
+  if (invalidPatterns.some(pattern => filePath.toLowerCase().includes(pattern.toLowerCase()))) {
+    return false
+  }
+  
+  // Must have a valid file extension
+  if (!/\.(?:tsx?|jsx?|js|ts)$/.test(filePath)) {
+    return false
+  }
+  
+  // Should either contain path separators or be a reasonable filename
+  return filePath.includes('/') || filePath.length > 6
+}
+
+function extractFilePathFromPrompt(prompt: string): string | null {
+  // Try to extract file path from error stack traces or error messages
+  const patterns = [
+    // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)"
+    /at\s+[^(]*\(([^:)]+\.(?:tsx?|jsx?|js|ts))/g,
+    // Error message patterns like "Error in file.tsx"
+    /(?:in|at|file|from)\s+([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
+    // Module paths like "./components/Component.tsx"
+    /(\.?\/[\w/-]+\.(?:tsx?|jsx?|js|ts))/g,
+    // Absolute paths
+    /([a-zA-Z]:)?\/[\w/-]+\.(?:tsx?|jsx?|js|ts)/g
+  ]
+  
+  for (const pattern of patterns) {
+    const matches = prompt.match(pattern)
+    if (matches) {
+      for (const match of matches) {
+        // Extract just the file path part
+        const pathMatch = match.match(/([^\s()]+\.(?:tsx?|jsx?|js|ts))/i)
+        if (pathMatch && isValidFilePath(pathMatch[1])) {
+          // Convert absolute paths to relative if they're within common project dirs
+          let filePath = pathMatch[1]
+          if (filePath.includes('/app/') || filePath.includes('/src/') || filePath.includes('/pages/')) {
+            const parts = filePath.split('/')
+            const relevantIndex = Math.max(
+              parts.lastIndexOf('app'),
+              parts.lastIndexOf('src'), 
+              parts.lastIndexOf('pages')
+            )
+            if (relevantIndex >= 0) {
+              filePath = parts.slice(relevantIndex).join('/')
+            }
+          }
+          return filePath
+        }
+      }
+    }
+  }
+  
+  return null
 }

@@ -90,7 +90,6 @@ export function ErrorOverlayToolbar({
     <span className="error-overlay-toolbar">
       {/* TODO: Move the button inside and remove the feedback on the footer of the error overlay.  */}
       {feedbackButton}
-      <CopyErrorButton error={error} generateErrorInfo={generateErrorInfo} />
       <button 
         className={`auto-fix-button ${isFixing ? 'fixing' : ''}`}
         onClick={handleAutoFix}
@@ -108,6 +107,7 @@ export function ErrorOverlayToolbar({
         </span>
       )}
 
+      <CopyErrorButton error={error} generateErrorInfo={generateErrorInfo} />
       <DocsLinkButton errorMessage={error.message} />
       <NodejsInspectorButton
         devtoolsFrontendUrl={debugInfo?.devtoolsFrontendUrl}
