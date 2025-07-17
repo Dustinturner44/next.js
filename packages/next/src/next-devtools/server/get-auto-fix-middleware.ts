@@ -89,9 +89,9 @@ You are a Next.js expert helping to fix development errors. The user has encount
 
 ${prompt}
 
-Please analyze the error and provide specific code changes that can be automatically applied. 
+CRITICAL: Fix the ROOT CAUSE of the error, do NOT just wrap code in try-catch blocks or add error handling. Provide the actual correct code that eliminates the error.
 
-IMPORTANT: If the error includes file paths and line numbers, provide exact file modifications. Only suggest changes for files that clearly exist in the error context.
+Analyze the error and provide specific code changes that can be automatically applied.
 
 Format your response as JSON with the following structure:
 {
@@ -108,26 +108,56 @@ Format your response as JSON with the following structure:
   ]
 }
 
-Action types:
-- "replace": Replace oldCode with newCode at the specified line
-- "add": Insert newCode at the specified line (pushes existing lines down)
-- "delete": Remove lines (not yet implemented)
+NEXT.JS SPECIFIC FIXES:
 
-CRITICAL CODE FORMATTING RULES:
-- Always include proper quotes around JavaScript/TypeScript strings and directives
-- Use single quotes for React directives: 'use client', 'use server'
-- Include proper semicolons where required
-- Maintain correct indentation and whitespace
-- For import statements, include proper quotes: import { useState } from 'react'
+Import Fixes:
+- Image is DEFAULT export: import Image from 'next/image' (NOT named export)
+- Link is DEFAULT export: import Link from 'next/link'  
+- useRouter: import { useRouter } from 'next/router' (Pages Router) OR import { useRouter } from 'next/navigation' (App Router)
+- React hooks: import { useState, useEffect } from 'react'
+- React itself: import React from 'react' (when needed)
 
-Examples of proper formatting:
-- Directive: 'use client'
-- Import: import React from 'react'
-- String: const message = 'Hello World'
+Hydration Fixes:
+- typeof window !== 'undefined' checks before browser APIs
+- Move client-only code to useEffect hooks
+- Use dynamic imports with ssr: false for client-only components
 
-Only include fileChanges if you can identify specific files and exact code changes from the error context. If no specific files can be identified, leave fileChanges as an empty array.
+Hook Fixes:
+- Move all hooks to top level of component, before any conditions
+- Remove hooks from loops, conditions, or nested functions
+- Use state setters in event handlers, not hook calls
 
-Be concise but thorough. Focus on actionable solutions.
+Image Component Fixes:
+- Add required width and height props OR use fill prop
+- Add meaningful alt text for accessibility
+- Configure remotePatterns in next.config.js for external images
+
+Runtime Error Fixes:
+- Use optional chaining: obj?.prop instead of obj.prop
+- Add null checks before accessing properties
+- Use proper type validation before operations
+
+FORMATTING RULES:
+- Use single quotes for strings and imports
+- Include proper semicolons
+- Add 'use client' directive for client components
+- Maintain correct indentation
+
+EXAMPLES OF PROPER FIXES:
+
+❌ Wrong: import { Image } from 'next/image'
+✅ Fix: import Image from 'next/image'
+
+❌ Wrong: const data = obj.prop.value
+✅ Fix: const data = obj?.prop?.value ?? 'default'
+
+❌ Wrong: if (condition) { const [state] = useState(0) }
+✅ Fix: const [state, setState] = useState(0); if (condition) { setState(0) }
+
+❌ Wrong: const content = Math.random() > 0.5 ? 'A' : 'B'
+✅ Fix: const [content, setContent] = useState(''); useEffect(() => { setContent(Math.random() > 0.5 ? 'A' : 'B') }, [])
+
+Only include fileChanges if you can identify specific files and exact code changes from the error context. Focus on the actual fix, not error handling.
 `.trim()
 
     // Use AI SDK to process the prompt

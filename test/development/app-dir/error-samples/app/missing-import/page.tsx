@@ -37,13 +37,8 @@ export default function MissingImportPage() {
   const triggerMissingComponentImport = () => {
     setErrorType('Missing Component Import')
     setTriggerError(true)
-    try {
-      // This will fail - Image component not imported
-      // @ts-ignore
-      return Image({ src: '/test.jpg', alt: 'test', width: 100, height: 100 })
-    } catch (error) {
-      throw error
-    }
+    // @ts-ignore
+    return <Image src='/test.jpg' alt='test' width={100} height={100} />;
   }
 
   const triggerMissingUtilImport = () => {

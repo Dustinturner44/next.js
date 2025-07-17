@@ -1,68 +1,41 @@
-'use client';
-// 'use client';
-
 import Link from 'next/link'
 
 const errorSamples = [
   {
     id: 'hydration-mismatch',
     title: 'Hydration Mismatch',
-    description: 'Server and client render different content',
+    description: 'Server and client render different content immediately',
     severity: 'High'
-  },
-  {
-    id: 'missing-import',
-    title: 'Missing Import',
-    description: 'Component or function not properly imported',
-    severity: 'Medium'
   },
   {
     id: 'client-side-only',
     title: 'Client-Side Only Code',
-    description: 'Using window/document on server side',
-    severity: 'High'
-  },
-  {
-    id: 'invalid-hooks',
-    title: 'Invalid Hook Usage',
-    description: 'Hooks used conditionally or outside components',
-    severity: 'High'
-  },
-  {
-    id: 'async-component',
-    title: 'Async Component Error',
-    description: 'Trying to make components async incorrectly',
-    severity: 'Medium'
-  },
-  {
-    id: 'api-route-error',
-    title: 'API Route Error',
-    description: 'Wrong HTTP methods or missing exports',
-    severity: 'Medium'
-  },
-  {
-    id: 'dynamic-import',
-    title: 'Dynamic Import Error',
-    description: 'Incorrect dynamic import usage',
-    severity: 'Low'
-  },
-  {
-    id: 'image-error',
-    title: 'Next.js Image Error',
-    description: 'Incorrect Image component usage',
-    severity: 'Medium'
-  },
-  {
-    id: 'router-error',
-    title: 'Router Context Error',
-    description: 'useRouter used outside Next.js context',
+    description: 'Using window/document during SSR immediately',
     severity: 'High'
   },
   {
     id: 'runtime-error',
     title: 'Runtime Error',
-    description: 'Uncaught JavaScript runtime errors',
+    description: 'Uncaught JavaScript runtime errors immediately',
     severity: 'High'
+  },
+  {
+    id: 'missing-import',
+    title: 'Missing Import',
+    description: 'Component or function not imported immediately',
+    severity: 'Medium'
+  },
+  {
+    id: 'invalid-hooks',
+    title: 'Invalid Hook Usage',
+    description: 'Hooks violating Rules of Hooks immediately',
+    severity: 'High'
+  },
+  {
+    id: 'image-error',
+    title: 'Next.js Image Error',
+    description: 'Broken Image components immediately',
+    severity: 'Medium'
   }
 ]
 
@@ -71,12 +44,12 @@ export default function ErrorSamplesPage() {
     <div className="container">
       <header className="header">
         <h1>Next.js Error Samples</h1>
-        <p>Interactive examples of common Next.js errors for testing the auto-fix feature</p>
+        <p>Real error pages that immediately trigger problems for testing the auto-fix feature</p>
       </header>
 
       <div className="grid">
         {errorSamples.map((sample) => (
-          <Link key={sample.id} href={`/${sample.id}`} className="card">
+          <Link key={sample.id} href={`/error-samples/${sample.id}`} className="card">
             <div className="card-header">
               <h3>{sample.title}</h3>
               <span className={`severity ${sample.severity.toLowerCase()}`}>
@@ -89,6 +62,11 @@ export default function ErrorSamplesPage() {
             </div>
           </Link>
         ))}
+      </div>
+
+      <div className="warning">
+        <h3>⚠️ Warning</h3>
+        <p>These pages contain <strong>real errors</strong> that will immediately trigger when loaded. They are designed for testing the auto-fix feature.</p>
       </div>
 
       <style jsx>{`
@@ -123,6 +101,7 @@ export default function ErrorSamplesPage() {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
           gap: 1.5rem;
+          margin-bottom: 3rem;
         }
 
         .card {
@@ -136,8 +115,9 @@ export default function ErrorSamplesPage() {
         }
 
         .card:hover {
-          border-color: #0070f3;
+          border-color: #dc2626;
           transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
         }
 
         .card-header {
@@ -190,8 +170,26 @@ export default function ErrorSamplesPage() {
 
         .card-footer span {
           font-size: 0.9rem;
-          color: #0070f3;
+          color: #dc2626;
           font-weight: 500;
+        }
+
+        .warning {
+          background: #fef3c7;
+          border: 1px solid #f59e0b;
+          border-radius: 8px;
+          padding: 1.5rem;
+          text-align: center;
+        }
+
+        .warning h3 {
+          margin: 0 0 0.5rem 0;
+          color: #92400e;
+        }
+
+        .warning p {
+          margin: 0;
+          color: #92400e;
         }
 
         @media (max-width: 768px) {

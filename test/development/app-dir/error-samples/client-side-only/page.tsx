@@ -1,135 +1,100 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 
 export default function ClientSideOnlyPage() {
-  const [triggerError, setTriggerError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-
-  // This will cause an error when called during SSR
-  const accessWindowObject = () => {
-    try {
-      if (triggerError) {
-        // This will throw "ReferenceError: window is not defined" on server
-        const userAgent = window.navigator.userAgent
-        const windowWidth = window.innerWidth
-        return `User Agent: ${userAgent}, Width: ${windowWidth}`
-      }
-      return 'Safe - not accessing window'
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setErrorMessage(message)
-      throw error
-    }
-  }
-
-  const handleTriggerError = () => {
-    setErrorMessage('')
-    setTriggerError(!triggerError)
-    
-    if (!triggerError) {
-      try {
-        accessWindowObject()
-      } catch (error) {
-        console.error('Client-side error:', error)
-      }
-    }
-  }
-
+  // These will immediately cause errors during SSR
+  const userAgent = window.navigator.userAgent
+  const windowWidth = window.innerWidth
+  const localStorage = window.localStorage.getItem('test')
+  const documentTitle = document.title
+  
   return (
     <div className="container">
       <header className="header">
-        <Link href="/" className="back-link">← Back to Error Samples</Link>
+        <Link href="/error-samples" className="back-link">← Back to Error Samples</Link>
         <h1>Client-Side Only Code Error</h1>
-        <p>This page demonstrates errors from accessing browser APIs during server-side rendering</p>
+        <p>This page immediately accesses browser APIs during SSR</p>
       </header>
 
       <div className="content">
         <div className="explanation">
-          <h2>What causes client-side only errors?</h2>
+          <h2>🔴 Active Browser API Errors</h2>
           <ul>
-            <li>Accessing `window`, `document`, or other browser APIs during SSR</li>
-            <li>Using localStorage, sessionStorage on the server</li>
-            <li>Browser-specific APIs called before component mounts</li>
-            <li>Third-party libraries that assume browser environment</li>
+            <li>window.navigator.userAgent accessed during SSR</li>
+            <li>window.innerWidth accessed during SSR</li>
+            <li>window.localStorage accessed during SSR</li>
+            <li>document.title accessed during SSR</li>
           </ul>
         </div>
 
-        <div className="demo">
-          <h3>Interactive Demo</h3>
-          <div className="demo-content">
-            <p>Current status: {triggerError ? 'Error mode' : 'Safe mode'}</p>
-            
-            <div className="error-zone">
-              <h4>Browser API Access:</h4>
-              <div className="content-box">
-                {triggerError ? (
-                  <span style={{ color: '#dc2626' }}>
-                    Trying to access window.navigator.userAgent...
-                  </span>
-                ) : (
-                  'Not accessing browser APIs'
-                )}
-              </div>
-              {errorMessage && (
-                <div className="error-display">
-                  Error: {errorMessage}
-                </div>
-              )}
+        <div className="error-showcase">
+          <h3>Browser API Values (Causing Errors)</h3>
+          
+          <div className="error-item">
+            <h4>User Agent:</h4>
+            <div className="error-content">
+              {userAgent}
             </div>
+          </div>
 
-            <div className="controls">
-              <button 
-                onClick={handleTriggerError}
-                className={`trigger-btn ${triggerError ? 'error' : 'safe'}`}
-              >
-                {triggerError ? 'Stop Error' : 'Access Window Object'}
-              </button>
+          <div className="error-item">
+            <h4>Window Width:</h4>
+            <div className="error-content">
+              {windowWidth}px
             </div>
+          </div>
 
-            {triggerError && (
-              <div className="warning">
-                <strong>⚠️ Client-Side API Access Active</strong>
-                <p>The code is trying to access `window.navigator.userAgent` which doesn't exist on the server.</p>
-              </div>
-            )}
+          <div className="error-item">
+            <h4>Local Storage:</h4>
+            <div className="error-content">
+              {localStorage || 'null'}
+            </div>
+          </div>
+
+          <div className="error-item">
+            <h4>Document Title:</h4>
+            <div className="error-content">
+              {documentTitle}
+            </div>
           </div>
         </div>
 
         <div className="code-example">
-          <h3>Problem Code:</h3>
-          <pre>{`// ❌ This fails during SSR
-function BadComponent() {
-  const userAgent = window.navigator.userAgent
-  return <div>User Agent: {userAgent}</div>
-}
+          <h3>Problem Code (Currently Active):</h3>
+          <pre>{`// ❌ These lines cause immediate SSR errors:
 
-// ❌ Also problematic
-function AlsoBad() {
+// ReferenceError: window is not defined
+const userAgent = window.navigator.userAgent
+
+// ReferenceError: window is not defined  
+const windowWidth = window.innerWidth
+
+// ReferenceError: window is not defined
+const localStorage = window.localStorage.getItem('test')
+
+// ReferenceError: document is not defined
+const documentTitle = document.title
+
+// ✅ Correct approaches:
+
+// Check if window exists
+const userAgent = typeof window !== 'undefined' 
+  ? window.navigator.userAgent 
+  : 'Server'
+
+// Use useEffect for client-only code
+useEffect(() => {
   const width = window.innerWidth
-  return <div>Width: {width}</div>
-}
+  const storage = localStorage.getItem('test')
+  const title = document.title
+  // Use these values here
+}, [])
 
-// ✅ Correct approaches
-function GoodComponent() {
-  const [userAgent, setUserAgent] = useState('')
-  
-  useEffect(() => {
-    setUserAgent(window.navigator.userAgent)
-  }, [])
-  
-  return <div>User Agent: {userAgent}</div>
-}
-
-// ✅ Or check if window exists
-function AlsoGood() {
-  const width = typeof window !== 'undefined' 
-    ? window.innerWidth 
-    : 0
-  
-  return <div>Width: {width}</div>
-}`}</pre>
+// Use dynamic imports for client-only libraries
+const ClientOnlyComponent = dynamic(() => import('./ClientComponent'), {
+  ssr: false
+})`}</pre>
         </div>
       </div>
 
@@ -177,15 +142,15 @@ function AlsoGood() {
         }
 
         .explanation {
-          background: #f8f9fa;
+          background: #fee2e2;
           border-radius: 8px;
           padding: 1.5rem;
-          border-left: 4px solid #0070f3;
+          border-left: 4px solid #dc2626;
         }
 
         .explanation h2 {
           margin: 0 0 1rem 0;
-          color: #1a1a1a;
+          color: #dc2626;
         }
 
         .explanation ul {
@@ -195,99 +160,48 @@ function AlsoGood() {
 
         .explanation li {
           margin-bottom: 0.5rem;
+          color: #7f1d1d;
         }
 
-        .demo {
-          border: 1px solid #e1e5e9;
+        .error-showcase {
+          border: 2px solid #dc2626;
           border-radius: 8px;
           padding: 1.5rem;
+          background: #fef2f2;
         }
 
-        .demo h3 {
-          margin: 0 0 1rem 0;
-          color: #1a1a1a;
+        .error-showcase h3 {
+          margin: 0 0 1.5rem 0;
+          color: #dc2626;
         }
 
-        .error-zone {
-          margin: 1rem 0;
+        .error-item {
+          margin-bottom: 1.5rem;
           padding: 1rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: #fafafa;
+          background: white;
+          border: 1px solid #fecaca;
+          border-radius: 6px;
         }
 
-        .error-zone h4 {
+        .error-item:last-child {
+          margin-bottom: 0;
+        }
+
+        .error-item h4 {
           margin: 0 0 0.5rem 0;
+          color: #991b1b;
           font-size: 1rem;
         }
 
-        .content-box {
-          padding: 1rem;
-          background: white;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          font-weight: 600;
-          text-align: center;
-          margin-bottom: 0.5rem;
-        }
-
-        .error-display {
+        .error-content {
           padding: 0.75rem;
-          background: #fee2e2;
-          border: 1px solid #fecaca;
+          background: #f9fafb;
+          border: 1px solid #d1d5db;
           border-radius: 4px;
-          color: #dc2626;
-          font-family: monospace;
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
           font-size: 0.9rem;
-        }
-
-        .controls {
-          margin: 1.5rem 0;
-          text-align: center;
-        }
-
-        .trigger-btn {
-          padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .trigger-btn.safe {
-          background: #dc2626;
-          color: white;
-        }
-
-        .trigger-btn.safe:hover {
-          background: #b91c1c;
-        }
-
-        .trigger-btn.error {
-          background: #059669;
-          color: white;
-        }
-
-        .trigger-btn.error:hover {
-          background: #047857;
-        }
-
-        .warning {
-          background: #fef3c7;
-          border: 1px solid #f59e0b;
-          border-radius: 6px;
-          padding: 1rem;
-          margin-top: 1rem;
-        }
-
-        .warning strong {
-          color: #92400e;
-        }
-
-        .warning p {
-          margin: 0.5rem 0 0 0;
-          color: #92400e;
+          color: #374151;
+          word-break: break-all;
         }
 
         .code-example {

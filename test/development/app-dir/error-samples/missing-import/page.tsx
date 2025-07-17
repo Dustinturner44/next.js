@@ -1,174 +1,112 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
-// Intentionally missing imports to demonstrate errors
+// Intentionally missing imports to cause errors
 
 export default function MissingImportPage() {
-  const [triggerError, setTriggerError] = useState(false)
-  const [errorType, setErrorType] = useState<string | null>(null)
-
-  const triggerMissingReactImport = () => {
-    setErrorType('Missing React Import')
-    setTriggerError(true)
-    try {
-      // This would fail without React import in older versions
-      // @ts-ignore
-      return React.createElement('div', null, 'Hello')
-    } catch (error) {
-      throw error
-    }
-  }
-
-  const triggerMissingHookImport = () => {
-    setErrorType('Missing Hook Import')
-    setTriggerError(true)
-    try {
-      // This will fail without proper useEffect import
-      // @ts-ignore
-      useEffect(() => {
-        console.log('Effect running')
-      }, [])
-    } catch (error) {
-      throw error
-    }
-  }
-
-  const triggerMissingComponentImport = () => {
-    setErrorType('Missing Component Import')
-    setTriggerError(true)
-    try {
-      // This will fail - Image component not imported
-      // @ts-ignore
-      return Image({ src: '/test.jpg', alt: 'test', width: 100, height: 100 })
-    } catch (error) {
-      throw error
-    }
-  }
-
-  const triggerMissingUtilImport = () => {
-    setErrorType('Missing Utility Import')
-    setTriggerError(true)
-    try {
-      // This will fail - clsx utility not imported
-      // @ts-ignore
-      const classes = clsx('btn', 'btn-primary')
-      return classes
-    } catch (error) {
-      throw error
-    }
-  }
-
-  const clearError = () => {
-    setTriggerError(false)
-    setErrorType(null)
-  }
+  // These will cause immediate errors due to missing imports
+  // @ts-ignore - intentional missing import
+  const [count, setCount] = useState(0)
+  
+  // @ts-ignore - intentional missing import  
+  useEffect(() => {
+    console.log('Component mounted')
+  }, [])
+  
+  // @ts-ignore - intentional missing import
+  const router = useRouter()
+  
+  // @ts-ignore - intentional missing import
+  const classes = clsx('container', 'error-page')
 
   return (
-    <div className="container">
+    <div className={classes}>
       <header className="header">
-        <Link href="/" className="back-link">← Back to Error Samples</Link>
+        <Link href="/error-samples" className="back-link">← Back to Error Samples</Link>
         <h1>Missing Import Errors</h1>
-        <p>This page demonstrates errors caused by missing or incorrect imports</p>
+        <p>This page immediately uses undefined imports and variables</p>
       </header>
 
       <div className="content">
         <div className="explanation">
-          <h2>Common Import Errors</h2>
+          <h2>🔴 Active Import Errors</h2>
           <ul>
-            <li><strong>Missing React imports:</strong> Forgetting to import React or hooks</li>
-            <li><strong>Missing component imports:</strong> Using components without importing them</li>
-            <li><strong>Missing utility imports:</strong> Using libraries without proper imports</li>
-            <li><strong>Incorrect import paths:</strong> Wrong relative or absolute paths</li>
-            <li><strong>Named vs default imports:</strong> Mixing up import syntax</li>
+            <li>useState hook used without import from 'react'</li>
+            <li>useEffect hook used without import from 'react'</li>
+            <li>useRouter hook used without import from 'next/router'</li>
+            <li>clsx utility used without import from 'clsx'</li>
           </ul>
         </div>
 
-        <div className="demo">
-          <h3>Interactive Demo</h3>
-          <div className="demo-content">
-            <p>Current status: {triggerError ? `${errorType} triggered` : 'No error active'}</p>
-            
-            <div className="controls">
-              <div className="button-grid">
-                <button onClick={triggerMissingReactImport} className="error-btn react">
-                  Missing React
-                </button>
-                <button onClick={triggerMissingHookImport} className="error-btn hook">
-                  Missing Hook
-                </button>
-                <button onClick={triggerMissingComponentImport} className="error-btn component">
-                  Missing Component
-                </button>
-                <button onClick={triggerMissingUtilImport} className="error-btn util">
-                  Missing Utility
-                </button>
-                <button onClick={clearError} className="clear-btn">
-                  Clear
-                </button>
-              </div>
+        <div className="error-showcase">
+          <h3>Missing Import Examples</h3>
+          
+          <div className="error-item">
+            <h4>React Hook Usage:</h4>
+            <div className="error-content">
+              Count: {count}
+              <button onClick={() => setCount(count + 1)}>
+                Increment
+              </button>
             </div>
+          </div>
 
-            {triggerError && (
-              <div className="warning">
-                <strong>⚠️ {errorType} Active</strong>
-                <p>Check the console for import errors. The auto-fix feature should suggest the correct imports.</p>
-              </div>
-            )}
+          <div className="error-item">
+            <h4>Next.js Router Usage:</h4>
+            <div className="error-content">
+              Current path: {typeof router !== 'undefined' ? router.pathname : 'undefined'}
+            </div>
+          </div>
+
+          <div className="error-item">
+            <h4>Utility Library Usage:</h4>
+            <div className="error-content">
+              Classes: {classes}
+            </div>
+          </div>
+
+          <div className="error-item">
+            <h4>Component Usage:</h4>
+            <div className="error-content">
+              {/* @ts-ignore - intentional missing import */}
+              <Image src="/test.jpg" alt="Test" width={100} height={100} />
+            </div>
           </div>
         </div>
 
         <div className="code-example">
-          <h3>Common Import Problems & Solutions:</h3>
-          <pre>{`// ❌ Missing React import (older versions)
-function Component() {
-  return <div>Hello</div> // Error: React is not defined
-}
+          <h3>Problem Code (Currently Active):</h3>
+          <pre>{`// ❌ Missing imports causing immediate errors:
 
-// ✅ Correct React import
-import React from 'react'
-function Component() {
-  return <div>Hello</div>
-}
+// ReferenceError: useState is not defined
+const [count, setCount] = useState(0)
 
-// ❌ Missing hook import
-function Component() {
-  useEffect(() => {}, []) // Error: useEffect is not defined
-  return <div>Hello</div>
-}
+// ReferenceError: useEffect is not defined
+useEffect(() => {
+  console.log('Component mounted')
+}, [])
 
-// ✅ Correct hook import
-import { useEffect } from 'react'
-function Component() {
-  useEffect(() => {}, [])
-  return <div>Hello</div>
-}
+// ReferenceError: useRouter is not defined
+const router = useRouter()
 
-// ❌ Missing Next.js component import
-function Page() {
-  return <Image src="/pic.jpg" alt="pic" /> // Error: Image is not defined
-}
+// ReferenceError: clsx is not defined
+const classes = clsx('container', 'error-page')
 
-// ✅ Correct Next.js import
+// ReferenceError: Image is not defined
+<Image src="/test.jpg" alt="Test" width={100} height={100} />
+
+// ✅ Correct imports:
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Image from 'next/image'
-function Page() {
-  return <Image src="/pic.jpg" alt="pic" width={100} height={100} />
-}
-
-// ❌ Wrong import syntax
-import clsx from 'clsx' // Might be wrong if clsx exports named exports
-const classes = clsx('a', 'b')
-
-// ✅ Correct import syntax (depends on library)
-import { clsx } from 'clsx' // or
 import clsx from 'clsx'
 
-// ❌ Wrong path
-import { utils } from './utilities' // File might be in different location
-
-// ✅ Correct path
-import { utils } from '../lib/utilities'
-import { utils } from '@/utils/utilities' // With path mapping`}</pre>
+// Then use them normally:
+const [count, setCount] = useState(0)
+useEffect(() => { ... }, [])
+const router = useRouter()
+const classes = clsx('container', 'error-page')`}</pre>
         </div>
       </div>
 
@@ -216,15 +154,15 @@ import { utils } from '@/utils/utilities' // With path mapping`}</pre>
         }
 
         .explanation {
-          background: #f8f9fa;
+          background: #fee2e2;
           border-radius: 8px;
           padding: 1.5rem;
-          border-left: 4px solid #0070f3;
+          border-left: 4px solid #dc2626;
         }
 
         .explanation h2 {
           margin: 0 0 1rem 0;
-          color: #1a1a1a;
+          color: #dc2626;
         }
 
         .explanation ul {
@@ -234,102 +172,58 @@ import { utils } from '@/utils/utilities' // With path mapping`}</pre>
 
         .explanation li {
           margin-bottom: 0.5rem;
+          color: #7f1d1d;
         }
 
-        .demo {
-          border: 1px solid #e1e5e9;
+        .error-showcase {
+          border: 2px solid #dc2626;
           border-radius: 8px;
           padding: 1.5rem;
+          background: #fef2f2;
         }
 
-        .demo h3 {
-          margin: 0 0 1rem 0;
-          color: #1a1a1a;
+        .error-showcase h3 {
+          margin: 0 0 1.5rem 0;
+          color: #dc2626;
         }
 
-        .controls {
-          margin: 1.5rem 0;
-        }
-
-        .button-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 0.75rem;
-        }
-
-        .error-btn {
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          color: white;
-        }
-
-        .error-btn.react {
-          background: #1e40af;
-        }
-
-        .error-btn.react:hover {
-          background: #1d4ed8;
-        }
-
-        .error-btn.hook {
-          background: #059669;
-        }
-
-        .error-btn.hook:hover {
-          background: #047857;
-        }
-
-        .error-btn.component {
-          background: #7c2d12;
-        }
-
-        .error-btn.component:hover {
-          background: #5b1a0b;
-        }
-
-        .error-btn.util {
-          background: #7c3aed;
-        }
-
-        .error-btn.util:hover {
-          background: #6d28d9;
-        }
-
-        .clear-btn {
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          background: white;
-          color: #374151;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .clear-btn:hover {
-          background: #f9fafb;
-          border-color: #9ca3af;
-        }
-
-        .warning {
-          background: #fef3c7;
-          border: 1px solid #f59e0b;
-          border-radius: 6px;
+        .error-item {
+          margin-bottom: 1.5rem;
           padding: 1rem;
-          margin-top: 1rem;
+          background: white;
+          border: 1px solid #fecaca;
+          border-radius: 6px;
         }
 
-        .warning strong {
-          color: #92400e;
+        .error-item:last-child {
+          margin-bottom: 0;
         }
 
-        .warning p {
-          margin: 0.5rem 0 0 0;
-          color: #92400e;
+        .error-item h4 {
+          margin: 0 0 0.5rem 0;
+          color: #991b1b;
+          font-size: 1rem;
+        }
+
+        .error-content {
+          padding: 0.75rem;
+          background: #f9fafb;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+          font-size: 0.9rem;
+          color: #374151;
+          word-break: break-all;
+        }
+
+        .error-content button {
+          margin-left: 0.5rem;
+          padding: 0.25rem 0.5rem;
+          background: #dc2626;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
         }
 
         .code-example {
@@ -359,10 +253,6 @@ import { utils } from '@/utils/utilities' // With path mapping`}</pre>
 
           .header h1 {
             font-size: 1.5rem;
-          }
-
-          .button-grid {
-            grid-template-columns: repeat(2, 1fr);
           }
         }
       `}</style>

@@ -4,205 +4,136 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export default function InvalidHooksPage() {
-  const [errorType, setErrorType] = useState<string | null>(null)
-  const [showConditional, setShowConditional] = useState(false)
-
-  // This function demonstrates invalid hook usage
-  const triggerConditionalHook = () => {
-    setErrorType('Conditional Hook')
-    try {
-      // ❌ This violates rules of hooks - hooks cannot be called conditionally
-      if (showConditional) {
-        // @ts-ignore
-        const [localState] = useState('conditional state')
-      }
-    } catch (error) {
-      throw error
-    }
+  // This violates Rules of Hooks - hook after conditional logic
+  if (Math.random() > 0.5) {
+    // Some logic that might execute
   }
-
-  // This function demonstrates hook in loop
-  const triggerLoopHook = () => {
-    setErrorType('Hook in Loop')
-    try {
-      // ❌ This violates rules of hooks - hooks cannot be called in loops
-      for (let i = 0; i < 3; i++) {
-        // @ts-ignore
-        const [loopState] = useState(`state-${i}`)
-      }
-    } catch (error) {
-      throw error
-    }
+  
+  // ❌ This hook call after conditional logic violates Rules of Hooks
+  const [count, setCount] = useState(0)
+  
+  // ❌ Another violation - hook in a loop
+  for (let i = 0; i < 1; i++) {
+    // @ts-ignore - intentional hook violation
+    const [loopState] = useState(`loop-${i}`)
   }
-
-  // This function demonstrates hook in nested function
-  const triggerNestedHook = () => {
-    setErrorType('Hook in Nested Function')
-    try {
-      // ❌ This violates rules of hooks - hooks cannot be called in nested functions
-      const nestedFunction = () => {
-        // @ts-ignore
-        const [nestedState] = useState('nested state')
-      }
-      nestedFunction()
-    } catch (error) {
-      throw error
-    }
-  }
-
-  // This demonstrates hook after early return
-  const triggerHookAfterReturn = () => {
-    setErrorType('Hook After Early Return')
-    
-    if (true) {
-      // Some condition that causes early return
-      return
-    }
-    
-    // ❌ This hook would never be reached consistently
-    // @ts-ignore
-    const [unreachableState] = useState('unreachable')
-  }
-
-  const clearError = () => {
-    setErrorType(null)
-    setShowConditional(false)
+  
+  // Function that violates hook rules
+  const handleClick = () => {
+    // ❌ Hook inside event handler - violates Rules of Hooks
+    // @ts-ignore - intentional hook violation
+    const [clickState] = useState('clicked')
+    return clickState
   }
 
   return (
     <div className="container">
       <header className="header">
-        <Link href="/" className="back-link">← Back to Error Samples</Link>
+        <Link href="/error-samples" className="back-link">← Back to Error Samples</Link>
         <h1>Invalid Hook Usage Errors</h1>
-        <p>This page demonstrates violations of React's Rules of Hooks</p>
+        <p>This page immediately violates React's Rules of Hooks</p>
       </header>
 
       <div className="content">
         <div className="explanation">
-          <h2>Rules of Hooks</h2>
+          <h2>🔴 Active Hook Rule Violations</h2>
           <ul>
-            <li><strong>Only call hooks at the top level:</strong> Don't call hooks inside loops, conditions, or nested functions</li>
-            <li><strong>Only call hooks from React functions:</strong> Call hooks from React function components or custom hooks</li>
-            <li><strong>Hooks must be called in the same order every time:</strong> This ensures React can correctly preserve hook state</li>
-            <li><strong>Don't call hooks after early returns:</strong> Hooks must be called before any possible return statement</li>
+            <li>Hook called after conditional logic</li>
+            <li>Hook called inside a loop</li>
+            <li>Hook called inside event handler function</li>
+            <li>Inconsistent hook call order</li>
           </ul>
         </div>
 
-        <div className="demo">
-          <h3>Interactive Demo</h3>
-          <div className="demo-content">
-            <p>Current status: {errorType ? `${errorType} error triggered` : 'No error active'}</p>
-            
-            <div className="controls">
-              <div className="button-grid">
-                <button onClick={triggerConditionalHook} className="error-btn conditional">
-                  Conditional Hook
-                </button>
-                <button onClick={triggerLoopHook} className="error-btn loop">
-                  Hook in Loop
-                </button>
-                <button onClick={triggerNestedHook} className="error-btn nested">
-                  Nested Hook
-                </button>
-                <button onClick={triggerHookAfterReturn} className="error-btn return">
-                  Hook After Return
-                </button>
-                <button onClick={clearError} className="clear-btn">
-                  Clear
-                </button>
-              </div>
+        <div className="error-showcase">
+          <h3>Hook Violations Active on This Page</h3>
+          
+          <div className="error-item">
+            <h4>Hook After Conditional:</h4>
+            <div className="error-content">
+              Count state: {count}
             </div>
+          </div>
 
-            {errorType && (
-              <div className="warning">
-                <strong>⚠️ {errorType} Error Active</strong>
-                <p>This violates React's Rules of Hooks. Check the console for the specific error message.</p>
-              </div>
-            )}
+          <div className="error-item">
+            <h4>Hook in Loop:</h4>
+            <div className="error-content">
+              Loop state initialized in for loop
+            </div>
+          </div>
+
+          <div className="error-item">
+            <h4>Hook in Event Handler:</h4>
+            <div className="error-content">
+              <button onClick={handleClick}>
+                Click (has hook inside handler)
+              </button>
+            </div>
+          </div>
+
+          <div className="error-item">
+            <h4>Conditional Hook Call:</h4>
+            <div className="error-content">
+              {/* This demonstrates conditional hook usage */}
+              {Math.random() > 0.3 && (() => {
+                // @ts-ignore - intentional hook violation
+                const [conditionalState] = useState('conditional')
+                return `Conditional: ${conditionalState}`
+              })()}
+            </div>
           </div>
         </div>
 
         <div className="code-example">
-          <h3>Hook Rules Violations & Fixes:</h3>
-          <pre>{`// ❌ Don't call hooks conditionally
-function BadComponent({ condition }) {
-  if (condition) {
-    const [state, setState] = useState(0) // Error!
-  }
-  return <div>Hello</div>
+          <h3>Problem Code (Currently Active):</h3>
+          <pre>{`// ❌ These hook violations are active on this page:
+
+// Hook after conditional logic
+if (Math.random() > 0.5) {
+  // Some logic
+}
+const [count, setCount] = useState(0) // Violation!
+
+// Hook in loop
+for (let i = 0; i < 1; i++) {
+  const [loopState] = useState(\`loop-\${i}\`) // Violation!
 }
 
-// ✅ Always call hooks at top level
-function GoodComponent({ condition }) {
-  const [state, setState] = useState(0)
-  
-  if (condition) {
-    // Use the hook result conditionally instead
-    setState(prev => prev + 1)
-  }
-  
-  return <div>Hello</div>
+// Hook in event handler
+const handleClick = () => {
+  const [clickState] = useState('clicked') // Violation!
+  return clickState
 }
 
-// ❌ Don't call hooks in loops
-function BadList({ items }) {
-  return items.map((item, index) => {
-    const [selected, setSelected] = useState(false) // Error!
-    return <div key={index}>{item}</div>
-  })
-}
+// Conditional hook call
+{Math.random() > 0.3 && (() => {
+  const [conditionalState] = useState('conditional') // Violation!
+  return conditionalState
+})()}
 
-// ✅ Create separate components for each item
-function ListItem({ item }) {
-  const [selected, setSelected] = useState(false)
-  return <div>{item}</div>
-}
+// ✅ Correct hook usage:
 
-function GoodList({ items }) {
-  return items.map((item, index) => (
-    <ListItem key={index} item={item} />
-  ))
-}
-
-// ❌ Don't call hooks in nested functions
-function BadComponent() {
-  const handleClick = () => {
-    const [count, setCount] = useState(0) // Error!
-  }
-  
-  return <button onClick={handleClick}>Click</button>
-}
-
-// ✅ Call hooks at component level
 function GoodComponent() {
+  // All hooks at top level, before any conditionals
   const [count, setCount] = useState(0)
+  const [name, setName] = useState('')
   
+  // Effects at top level
+  useEffect(() => {
+    // Side effects here
+  }, [])
+  
+  // Conditional logic AFTER hooks
+  if (someCondition) {
+    return <div>Early return is OK</div>
+  }
+  
+  // Event handlers without hooks
   const handleClick = () => {
-    setCount(prev => prev + 1)
+    setCount(prev => prev + 1) // Use state setters, not hooks
   }
   
-  return <button onClick={handleClick}>Count: {count}</button>
-}
-
-// ❌ Don't call hooks after early returns
-function BadComponent({ shouldReturn }) {
-  if (shouldReturn) {
-    return <div>Early return</div>
-  }
-  
-  const [state, setState] = useState(0) // Error! Not always called
-  return <div>Normal render</div>
-}
-
-// ✅ Call all hooks before any returns
-function GoodComponent({ shouldReturn }) {
-  const [state, setState] = useState(0)
-  
-  if (shouldReturn) {
-    return <div>Early return</div>
-  }
-  
-  return <div>Normal render: {state}</div>
+  return <div onClick={handleClick}>Count: {count}</div>
 }`}</pre>
         </div>
       </div>
@@ -251,15 +182,15 @@ function GoodComponent({ shouldReturn }) {
         }
 
         .explanation {
-          background: #f8f9fa;
+          background: #fee2e2;
           border-radius: 8px;
           padding: 1.5rem;
-          border-left: 4px solid #0070f3;
+          border-left: 4px solid #dc2626;
         }
 
         .explanation h2 {
           margin: 0 0 1rem 0;
-          color: #1a1a1a;
+          color: #dc2626;
         }
 
         .explanation ul {
@@ -269,103 +200,59 @@ function GoodComponent({ shouldReturn }) {
 
         .explanation li {
           margin-bottom: 0.5rem;
+          color: #7f1d1d;
         }
 
-        .demo {
-          border: 1px solid #e1e5e9;
+        .error-showcase {
+          border: 2px solid #dc2626;
           border-radius: 8px;
           padding: 1.5rem;
+          background: #fef2f2;
         }
 
-        .demo h3 {
-          margin: 0 0 1rem 0;
-          color: #1a1a1a;
+        .error-showcase h3 {
+          margin: 0 0 1.5rem 0;
+          color: #dc2626;
         }
 
-        .controls {
-          margin: 1.5rem 0;
-        }
-
-        .button-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 0.75rem;
-        }
-
-        .error-btn {
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          color: white;
-          font-size: 0.9rem;
-        }
-
-        .error-btn.conditional {
-          background: #dc2626;
-        }
-
-        .error-btn.conditional:hover {
-          background: #b91c1c;
-        }
-
-        .error-btn.loop {
-          background: #ea580c;
-        }
-
-        .error-btn.loop:hover {
-          background: #c2410c;
-        }
-
-        .error-btn.nested {
-          background: #059669;
-        }
-
-        .error-btn.nested:hover {
-          background: #047857;
-        }
-
-        .error-btn.return {
-          background: #7c3aed;
-        }
-
-        .error-btn.return:hover {
-          background: #6d28d9;
-        }
-
-        .clear-btn {
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          background: white;
-          color: #374151;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .clear-btn:hover {
-          background: #f9fafb;
-          border-color: #9ca3af;
-        }
-
-        .warning {
-          background: #fef3c7;
-          border: 1px solid #f59e0b;
-          border-radius: 6px;
+        .error-item {
+          margin-bottom: 1.5rem;
           padding: 1rem;
-          margin-top: 1rem;
+          background: white;
+          border: 1px solid #fecaca;
+          border-radius: 6px;
         }
 
-        .warning strong {
-          color: #92400e;
+        .error-item:last-child {
+          margin-bottom: 0;
         }
 
-        .warning p {
-          margin: 0.5rem 0 0 0;
-          color: #92400e;
+        .error-item h4 {
+          margin: 0 0 0.5rem 0;
+          color: #991b1b;
+          font-size: 1rem;
+        }
+
+        .error-content {
+          padding: 0.75rem;
+          background: #f9fafb;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+          font-size: 0.9rem;
+          color: #374151;
+          word-break: break-all;
+        }
+
+        .error-content button {
+          margin-left: 0.5rem;
+          padding: 0.25rem 0.5rem;
+          background: #dc2626;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-family: inherit;
         }
 
         .code-example {
@@ -395,10 +282,6 @@ function GoodComponent({ shouldReturn }) {
 
           .header h1 {
             font-size: 1.5rem;
-          }
-
-          .button-grid {
-            grid-template-columns: repeat(2, 1fr);
           }
         }
       `}</style>
