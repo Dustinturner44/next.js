@@ -65,11 +65,11 @@ export function ErrorOverlayToolbar({
           console.log(`✅ Successfully applied ${result.appliedChanges.length} change(s) to: ${changedFiles}`)
           
           // Also show an alert for immediate feedback
-          alert(`Auto Fix Applied!\n\n${result.explanation}\n\nFiles Modified: ${changedFiles}\n\nThe error should now be resolved. Check your files and refresh the page.`)
+          console.log(`Auto Fix Applied!\n\n${result.explanation}\n\nFiles Modified: ${changedFiles}\n\nThe error should now be resolved. Check your files and refresh the page.`)
         } else {
           // No automatic changes applied, show manual instructions
           console.log('No automatic changes applied - manual intervention required')
-          alert(`Auto Fix Analysis:\n\n${result.explanation}\n\nSuggested Fix:\n${result.fix}\n\nPlease apply these changes manually.`)
+          console.log(`Auto Fix Analysis:\n\n${result.explanation}\n\nSuggested Fix:\n${result.fix}\n\nPlease apply these changes manually.`)
         }
         
         console.groupEnd()

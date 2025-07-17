@@ -1600,7 +1600,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
         edgeServerStats: () => this.edgeServerStats,
       }),
       getNextErrorFeedbackMiddleware(this.telemetry),
-      getAutoFixMiddleware(),
+      getAutoFixMiddleware(this.dir),
       getDevOverlayFontMiddleware(),
       getDisableDevIndicatorMiddleware(),
       getRestartDevServerMiddleware({

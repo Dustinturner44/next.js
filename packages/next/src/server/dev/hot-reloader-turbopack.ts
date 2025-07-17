@@ -651,7 +651,7 @@ export async function createHotReloaderTurbopack(
     }),
     getSourceMapMiddleware(project),
     getNextErrorFeedbackMiddleware(opts.telemetry),
-    getAutoFixMiddleware(),
+    getAutoFixMiddleware(projectPath),
     getDevOverlayFontMiddleware(),
     getDisableDevIndicatorMiddleware(),
     getRestartDevServerMiddleware({

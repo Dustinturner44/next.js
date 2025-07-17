@@ -24,7 +24,7 @@ interface AppliedChange {
   line?: number
 }
 
-export function getAutoFixMiddleware() {
+export function getAutoFixMiddleware(projectDir: string) {
   return async function (
     req: IncomingMessage,
     res: ServerResponse,
@@ -50,7 +50,7 @@ export function getAutoFixMiddleware() {
       }
 
       // Call Claude via AI SDK to generate fix
-      const result = await generateClaudeFix(prompt, req)
+      const result = await generateClaudeFix(prompt, req, projectDir)
       
       return middlewareResponse.json(res, result)
     } catch (error) {
@@ -77,7 +77,7 @@ async function parseRequestBody(req: IncomingMessage): Promise<string> {
   })
 }
 
-async function generateClaudeFix(prompt: string, req: IncomingMessage): Promise<AutoFixResponse> {
+async function generateClaudeFix(prompt: string, req: IncomingMessage, projectDir: string): Promise<AutoFixResponse> {
   try {
     // Enhanced prompt for Claude to provide actionable fixes
     const enhancedPrompt = `
@@ -115,7 +115,7 @@ Be concise but thorough. Focus on actionable solutions.
     // Apply file changes if any were suggested
     let appliedChanges: AppliedChange[] = []
     if (claudeResponse.fileChanges && claudeResponse.fileChanges.length > 0) {
-      appliedChanges = await applyFileChanges(claudeResponse.fileChanges, req)
+      appliedChanges = await applyFileChanges(claudeResponse.fileChanges, projectDir)
     }
     
     return {
@@ -175,11 +175,11 @@ async function callClaudeWithAISDK(prompt: string): Promise<{ fix: string; expla
   }
 }
 
-async function applyFileChanges(fileChanges: FileChange[], req: IncomingMessage): Promise<AppliedChange[]> {
+async function applyFileChanges(fileChanges: FileChange[], projectDir: string): Promise<AppliedChange[]> {
   const appliedChanges: AppliedChange[] = []
   
-  // Get the project root from the request (assumes dev server is running from project root)
-  const projectRoot = process.cwd()
+  // Use the passed project directory
+  const projectRoot = projectDir
   
   for (const change of fileChanges) {
     try {
