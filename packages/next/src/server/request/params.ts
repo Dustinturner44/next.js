@@ -246,9 +246,14 @@ const fallbackParamsProxyHandler: ProxyHandler<Promise<Params>> = {
           const store = dynamicAccessAsyncStorage.getStore()
 
           if (store) {
-            store.abortController.abort(
-              new Error(`Accessed fallback \`params\` during prerendering.`)
+            const error = new Error(
+              `Accessed fallback \`params\` during prerendering.`
             )
+
+            console.log('ERROR', error.stack)
+
+            // Error.captureStackTrace(error, get)
+            store.abortController.abort(error)
           }
 
           return new Proxy(
@@ -273,6 +278,8 @@ function makeHangingParams(
   }
 
   const promise = new Proxy(
+    // TODO: Pass dynamicAccessAsyncStorage abort signal to reject the hanging
+    // promise:
     makeHangingPromise<Params>(prerenderStore.renderSignal, '`params`'),
     fallbackParamsProxyHandler
   )

@@ -516,19 +516,42 @@ async function generateCacheEntryImpl(
           },
         })
       } else if (dynamicAccessAbortSignal?.aborted) {
-        // If the prerender is aborted because of dynamic access (e.g. reading
-        // fallback params), we return a hanging promise. This essentially makes
-        // the "use cache" function dynamic.
-        const hangingPromise = makeHangingPromise<never>(
-          outerWorkUnitStore.renderSignal,
-          abortSignal.reason
-        )
+        // The prerender is aborted because of dynamic access (e.g. reading
+        // fallback params).
 
-        if (outerWorkUnitStore.cacheSignal) {
-          outerWorkUnitStore.cacheSignal.endRead()
+        // If the shell is allowed to be empty, we have ensured that there's no
+        // invalid dynamic access after reading params, by prerendering a more
+        // specific route. In this case, we can return a hanging promise here.
+        // This essentially makes the "use cache" function dynamic.
+        if (outerWorkUnitStore.allowEmptyStaticShell) {
+          const hangingPromise = makeHangingPromise<never>(
+            outerWorkUnitStore.renderSignal,
+            abortSignal.reason
+          )
+
+          if (outerWorkUnitStore.cacheSignal) {
+            outerWorkUnitStore.cacheSignal.endRead()
+          }
+
+          return { type: 'prerender-dynamic', hangingPromise }
         }
 
-        return { type: 'prerender-dynamic', hangingPromise }
+        // Otherwise we must return an erroring stream, because we can't
+        // guarantee that there's maybe invalid dynamic access, like reading
+        // request data, after awaiting the params, which would lead to an error
+        // at runtime when resuming the shell. Ideally, we'd have build-time
+        // errors instead for this, then this wouldn't be necessary.
+        stream = new ReadableStream({
+          start(controller) {
+            controller.error(dynamicAccessAbortSignal.reason)
+          },
+        })
+
+        console.log('STACK', dynamicAccessAbortSignal.reason.stack)
+
+        // The same error is also stored in the work store, so that we can fail
+        // the build or the dev prerender validation.
+        workStore.invalidDynamicUsageError = dynamicAccessAbortSignal.reason
       } else {
         stream = prelude
       }

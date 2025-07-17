@@ -2405,6 +2405,49 @@ describe('Dynamic IO Errors', () => {
           })
         }
       })
+
+      describe.only('params (in page)', () => {
+        if (isNextDev) {
+          it('should show a redbox error', async () => {
+            const browser = await next.browser(
+              '/use-cache-params/params-in-page/test'
+            )
+
+            if (isTurbopack) {
+              await expect(browser).toDisplayRedbox(``)
+            } else {
+              await expect(browser).toDisplayRedbox(``)
+            }
+          })
+        } else {
+          it('should error the build', async () => {
+            try {
+              await prerender('/use-cache-params/params-in-page/[slug]')
+            } catch {
+              // we expect the build to fail
+            }
+
+            const output = getPrerenderOutput(
+              next.cliOutput.slice(cliOutputLength),
+              { isMinified: !isDebugPrerender }
+            )
+
+            if (isTurbopack) {
+              if (isDebugPrerender) {
+                expect(output).toMatchInlineSnapshot(``)
+              } else {
+                expect(output).toMatchInlineSnapshot(``)
+              }
+            } else {
+              if (isDebugPrerender) {
+                expect(output).toMatchInlineSnapshot(``)
+              } else {
+                expect(output).toMatchInlineSnapshot(``)
+              }
+            }
+          })
+        }
+      })
     })
   })
 })
