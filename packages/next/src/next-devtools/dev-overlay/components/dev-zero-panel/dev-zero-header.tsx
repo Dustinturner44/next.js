@@ -21,7 +21,7 @@ export function Dev0Header({
 }: Dev0HeaderProps) {
   const { closePanel } = usePanelRouterContext()
   const { name } = usePanelContext()
-  const { fetchProjects } = useDev0Context()
+  const { fetchProjects, getDisplayName, updateDisplayName } = useDev0Context()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const [isDeploying, setIsDeploying] = useState(false)
@@ -35,6 +35,8 @@ export function Dev0Header({
   const [githubUrl, setGithubUrl] = useState<string | null>(null)
   const [isCreatingRepo, setIsCreatingRepo] = useState(false)
   const [githubInput, setGithubInput] = useState('')
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editNameValue, setEditNameValue] = useState('')
 
   const handleCopyPath = () => {
     navigator.clipboard.writeText(projectPath)
@@ -96,6 +98,11 @@ export function Dev0Header({
       setIsDeleting(false)
     }
   }
+
+  // Update edit value when display name changes
+  useEffect(() => {
+    setEditNameValue(getDisplayName(projectName))
+  }, [getDisplayName, projectName])
 
   useEffect(() => {
     // Fetch GitHub URL from server if it exists
@@ -192,16 +199,118 @@ export function Dev0Header({
               marginRight: '16px',
             }}
           >
-            <h3
-              style={{
-                margin: 0,
-                fontSize: '14px',
-                color: 'var(--color-text-primary)',
-                fontWeight: 'normal',
-              }}
-            >
-              {projectName}
-            </h3>
+            {isEditingName ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <input
+                  type="text"
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (editNameValue.trim() && editNameValue !== getDisplayName(projectName)) {
+                        updateDisplayName(projectName, editNameValue.trim())
+                      }
+                      setIsEditingName(false)
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault()
+                      setIsEditingName(false)
+                      setEditNameValue(getDisplayName(projectName))
+                    }
+                  }}
+                  onBlur={() => {
+                    setIsEditingName(false)
+                    setEditNameValue(getDisplayName(projectName))
+                  }}
+                  autoFocus
+                  style={{
+                    margin: 0,
+                    padding: '2px 6px',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-stack-sans)',
+                    color: 'var(--color-text-primary)',
+                    backgroundColor: 'var(--color-gray-alpha-200)',
+                    border: '1px solid var(--color-gray-alpha-400)',
+                    borderRadius: '4px',
+                    outline: 'none',
+                    width: '200px',
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    if (editNameValue.trim() && editNameValue !== getDisplayName(projectName)) {
+                      updateDisplayName(projectName, editNameValue.trim())
+                    }
+                    setIsEditingName(false)
+                  }}
+                  style={{
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-stack-sans)',
+                    backgroundColor: 'var(--color-green-700)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <div 
+                className="project-name-container"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px',
+                  position: 'relative',
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: '14px',
+                    color: 'var(--color-text-primary)',
+                    fontWeight: 'normal',
+                  }}
+                >
+                  {getDisplayName(projectName)}
+                </h3>
+                <button
+                  className="edit-name-button"
+                  onClick={() => {
+                    setIsEditingName(true)
+                    setEditNameValue(getDisplayName(projectName))
+                  }}
+                  style={{
+                    padding: '2px',
+                    background: 'transparent',
+                    border: '1px solid var(--color-gray-alpha-400)',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.2s',
+                  }}
+                  title="Rename project"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </button>
+              </div>
+            )}
             
           </div>
 
@@ -718,6 +827,15 @@ export function Dev0Header({
       </div>
 
       <style>{css`
+        .project-name-container:hover .edit-name-button {
+          opacity: 1 !important;
+        }
+
+        .edit-name-button:hover {
+          background-color: var(--color-gray-alpha-200) !important;
+          border-color: var(--color-gray-alpha-600) !important;
+        }
+
         .dev-tools-info-close-button:focus-visible {
           outline: var(--focus-ring);
         }

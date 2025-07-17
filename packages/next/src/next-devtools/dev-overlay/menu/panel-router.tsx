@@ -52,8 +52,9 @@ const MenuPanel = () => {
   } = usePanelRouterContext()
   const { state, dispatch } = useDevOverlayContext()
   const { totalErrorCount } = useRenderErrorContext()
-  const { projects, createProject, isLoading, killProject } = useDev0Context()
+  const { projects, createProject, isLoading, killProject, getDisplayName, updateDisplayName } = useDev0Context()
   const { toggleSidebar, isOpen: sidebarIsOpen } = useSidebarContext()
+  const [renamingProject, setRenamingProject] = useState<string | null>(null)
 
   const visibleProjects = projects.filter(
     (p) => p.status === 'running' || p.status === 'creating'
@@ -85,18 +86,7 @@ const MenuPanel = () => {
       label: 'Route',
       value:
         activePanel === 'route-type' ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {state.staticIndicator ? 'Static' : 'Dynamic'}
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-green-700)',
-                boxShadow: '0 0 0 1px var(--color-green-200)',
-              }}
-            />
-          </span>
+          <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
         ) : (
           state.staticIndicator ? 'Static' : 'Dynamic'
         ),
@@ -120,20 +110,7 @@ const MenuPanel = () => {
           label: 'Try Turbopack',
           value:
             activePanel === 'turbo-info' ? (
-              <span
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <ChevronRight />
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--color-green-700)',
-                    boxShadow: '0 0 0 1px var(--color-green-200)',
-                  }}
-                />
-              </span>
+              <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
             ) : (
               <ChevronRight />
             ),
@@ -148,18 +125,7 @@ const MenuPanel = () => {
       label: 'Route Info',
       value:
         activePanel === 'segment-explorer' ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ChevronRight />
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-green-700)',
-                boxShadow: '0 0 0 1px var(--color-green-200)',
-              }}
-            />
-          </span>
+          <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
         ) : (
           <ChevronRight />
         ),
@@ -173,14 +139,16 @@ const MenuPanel = () => {
     },
   ].filter(Boolean)
 
-  // Add dev-0 projects (reverse to show newest first) - styled differently
-  const projectItems = visibleProjects.reverse().map((project) => {
+  // Add dev-0 projects - sort by createdAt to show newest first
+  const projectItems = visibleProjects
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+    .map((project) => {
     const panelName = `dev0-project-${project.name}` as PanelStateKind
     const isActive = activePanel === panelName
 
     return {
       label:
-        project.status === 'creating' ? 'Creating project...' : project.name,
+        project.status === 'creating' ? 'Creating project...' : getDisplayName(project.name),
       value:
         project.status === 'creating' ? (
           <span
@@ -188,43 +156,13 @@ const MenuPanel = () => {
             style={{ width: '14px', height: '14px' }}
           />
         ) : isActive ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ 
-              fontSize: '10px',
-              fontWeight: 'bold',
-              color: 'var(--color-purple-700)',
-              backgroundColor: 'var(--color-purple-alpha-200)',
-              padding: '2px 6px',
-              borderRadius: '8px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              DEV
-            </span>
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-green-700)',
-                boxShadow: '0 0 0 1px var(--color-green-200)',
-              }}
-            />
-          </span>
-        ) : (
           <span style={{ 
-            fontSize: '10px',
-            fontWeight: 'bold',
-            color: 'var(--color-purple-700)',
-            backgroundColor: 'var(--color-purple-alpha-200)',
-            padding: '2px 6px',
-            borderRadius: '8px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
+            color: 'var(--color-blue-700)',
+            fontSize: '13px'
           }}>
-            DEV
+            open
           </span>
-        ),
+        ) : null,
       onClick:
         project.status === 'creating'
           ? undefined
@@ -236,6 +174,34 @@ const MenuPanel = () => {
         'data-panel-active': isActive ? 'true' : 'false',
         'data-item-type': 'project',
       },
+      deletable: project.status !== 'creating',
+      renameable: project.status !== 'creating',
+      onRename: () => {
+        setRenamingProject(project.name)
+      },
+      isRenaming: renamingProject === project.name,
+      renameValue: getDisplayName(project.name),
+      onRenameSubmit: async (newName: string) => {
+        console.log('onRenameSubmit called with:', newName)
+        console.log('Current display name:', getDisplayName(project.name))
+        console.log('Project name:', project.name)
+        
+        if (newName && newName.trim() && newName !== getDisplayName(project.name)) {
+          console.log('Calling updateDisplayName...')
+          try {
+            await updateDisplayName(project.name, newName.trim())
+            console.log('updateDisplayName completed')
+          } catch (error) {
+            console.error('Failed to update display name:', error)
+          }
+        } else {
+          console.log('Skipping update - same name or empty')
+        }
+        setRenamingProject(null)
+      },
+      onRenameCancel: () => {
+        setRenamingProject(null)
+      },
     }
   })
 
@@ -244,18 +210,7 @@ const MenuPanel = () => {
       label: 'MCP Tools',
       value:
         activePanel === 'mcp-tools' ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ChevronRight />
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-green-700)',
-                boxShadow: '0 0 0 1px var(--color-green-200)',
-              }}
-            />
-          </span>
+          <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
         ) : (
           <ChevronRight />
         ),
@@ -292,18 +247,7 @@ const MenuPanel = () => {
       label: 'Fork URL',
       value:
         activePanel === 'fork-url' ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <ChevronRight />
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--color-green-700)',
-                boxShadow: '0 0 0 1px var(--color-green-200)',
-              }}
-            />
-          </span>
+          <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
         ) : (
           <ChevronRight />
         ),
@@ -368,46 +312,13 @@ const MenuPanel = () => {
           }
         }
 
-        /* Style active menu items */
+        /* Keep minimal styles for active items */
         .dev-tools-indicator-item[data-panel-active='true'] {
           background-color: var(--color-gray-alpha-100);
-          position: relative;
-        }
-
-        .dev-tools-indicator-item[data-panel-active='true']::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 3px;
-          height: 60%;
-          background-color: var(--color-green-700);
-          border-radius: 0 2px 2px 0;
         }
 
         .dev-tools-indicator-item[data-panel-active='true']:hover {
           background-color: var(--color-gray-alpha-200);
-        }
-
-        /* Style project items differently */
-        .dev-tools-indicator-item[data-item-type='project'] {
-          border-left: 3px solid var(--color-purple-700);
-          background-color: var(--color-purple-alpha-050);
-          position: relative;
-        }
-
-        .dev-tools-indicator-item[data-item-type='project']:hover {
-          background-color: var(--color-purple-alpha-100);
-        }
-
-        .dev-tools-indicator-item[data-item-type='project'][data-panel-active='true'] {
-          background-color: var(--color-purple-alpha-100);
-          border-left: 3px solid var(--color-purple-800);
-        }
-
-        .dev-tools-indicator-item[data-item-type='project'][data-panel-active='true']:hover {
-          background-color: var(--color-purple-alpha-200);
         }
       `}</style>
     </>
@@ -785,8 +696,8 @@ const Dev0ProjectRoutes = () => {
               kind: 'resizable',
               maxHeight: '90vh',
               maxWidth: '90vw',
-              minHeight: 400 / state.scale,
-              minWidth: 600 / state.scale,
+              minHeight: 0,
+              minWidth: 0,
               initialSize: {
                 height: 300 / state.scale,
                 width: 400 / state.scale,

@@ -14,12 +14,16 @@ const ContextMenu = ({
   x, 
   y, 
   onClose, 
-  onDelete 
+  onDelete,
+  onRename,
+  isRenameable = false
 }: { 
   x: number
   y: number
   onClose: () => void
   onDelete: () => void
+  onRename?: () => void
+  isRenameable?: boolean
 }) => {
   const menuRef = useRef<HTMLDivElement>(null)
   
@@ -79,6 +83,42 @@ const ContextMenu = ({
         opacity: 1,
       }}
     >
+      {isRenameable && onRename && (
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onRename()
+            // Close menu after a short delay to ensure rename happens
+            setTimeout(() => onClose(), 100)
+          }}
+          onMouseDown={(e) => {
+            // Prevent mousedown from bubbling and closing the menu
+            e.stopPropagation()
+          }}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: '6px',
+            color: 'rgba(255, 255, 255, 0.8)',
+            fontSize: '14px',
+            fontFamily: 'var(--font-stack-sans)',
+            cursor: 'pointer',
+            textAlign: 'left',
+            transition: 'background 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+          }}
+        >
+          Rename
+        </button>
+      )}
       <button
         onClick={(e) => {
           e.preventDefault()
@@ -132,12 +172,132 @@ const MenuItemWithContextMenu = ({
     value: React.ReactNode
     attributes?: Record<string, string | boolean | undefined>
     deletable?: boolean
+    renameable?: boolean
+    onRename?: () => void
+    isRenaming?: boolean
+    renameValue?: string
+    onRenameSubmit?: (value: string) => void
+    onRenameCancel?: () => void
   }
   index: number
   adjustedIndex: number | undefined
   onContextMenu: (e: React.MouseEvent, label: string) => void
   isContextMenuTarget: boolean
 }) => {
+  const [editValue, setEditValue] = useState(item.renameValue || item.label)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Update edit value when renameValue changes, but only if we're in rename mode
+  useEffect(() => {
+    if (item.isRenaming) {
+      setEditValue(item.renameValue || item.label)
+    }
+  }, [item.renameValue, item.label, item.isRenaming])
+
+  useEffect(() => {
+    if (item.isRenaming && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [item.isRenaming])
+
+  const handleSubmit = () => {
+    if (item.onRenameSubmit) {
+      item.onRenameSubmit(editValue)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation()
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSubmit()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      if (item.onRenameCancel) {
+        item.onRenameCancel()
+      }
+      setEditValue(item.renameValue || item.label)
+    }
+  }
+
+  if (item.isRenaming) {
+    return (
+      <div
+        style={{
+          padding: '0 12px',
+          height: '36px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={() => {
+            if (item.onRenameCancel) {
+              item.onRenameCancel()
+            }
+          }}
+          style={{
+            flex: 1,
+            padding: '4px 8px',
+            fontSize: '13px',
+            fontFamily: 'var(--font-stack-sans)',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '4px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            outline: 'none',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            handleSubmit()
+          }}
+          style={{
+            padding: '4px 8px',
+            fontSize: '11px',
+            fontFamily: 'var(--font-stack-sans)',
+            backgroundColor: 'var(--color-green-700)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Save
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            if (item.onRenameCancel) {
+              item.onRenameCancel()
+            }
+            setEditValue(item.renameValue || item.label)
+          }}
+          style={{
+            padding: '4px 8px',
+            fontSize: '11px',
+            fontFamily: 'var(--font-stack-sans)',
+            backgroundColor: 'transparent',
+            color: 'rgba(255, 255, 255, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    )
+  }
   return (
     <div
       onContextMenu={(e) => {
@@ -186,6 +346,12 @@ export const CommandPalette = ({
         value: React.ReactNode
         attributes?: Record<string, string | boolean | undefined>
         deletable?: boolean
+        renameable?: boolean
+        onRename?: () => void
+        isRenaming?: boolean
+        renameValue?: string
+        onRenameSubmit?: (value: string) => void
+        onRenameCancel?: () => void
       }
   >
   onDeleteItem?: (label: string) => void
@@ -349,6 +515,16 @@ export const CommandPalette = ({
     }
   }, [contextMenu, onDeleteItem])
 
+  const handleRenameItem = useCallback(() => {
+    if (contextMenu) {
+      // Find the item that was right-clicked
+      const item = items.find(item => item.label === contextMenu.itemLabel)
+      if (item && item.onRename) {
+        item.onRename()
+      }
+    }
+  }, [contextMenu, items])
+
   return (
     <>
       <div
@@ -493,6 +669,11 @@ export const CommandPalette = ({
         y={contextMenu.y}
         onClose={() => setContextMenu(null)}
         onDelete={handleDeleteItem}
+        onRename={handleRenameItem}
+        isRenameable={(() => {
+          const item = items.find(item => item.label === contextMenu.itemLabel)
+          return item?.renameable || false
+        })()}
       />,
       getShadowRoot() as any
     )}

@@ -12,7 +12,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
   port,
   refreshKey = 0,
 }) => {
-  const iframeUrl = `http://localhost:${port}`
+  const iframeUrl = `http://localhost:${port}?projectName=${encodeURIComponent(projectName)}`
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [isInstrumentationReady, setIsInstrumentationReady] = useState(false)
@@ -26,7 +26,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
       setIsLoading(true)
       setHasLoaded(false)
       setHasError(false)
-      iframeRef.current.src = `${iframeUrl}?refresh=${refreshKey}`
+      iframeRef.current.src = `${iframeUrl}&refresh=${refreshKey}`
     }
   }, [refreshKey, iframeUrl])
 
@@ -39,7 +39,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
         setHasLoaded(false)
         // Force iframe reload
         if (iframeRef.current) {
-          iframeRef.current.src = `${iframeUrl}?retry=${Date.now()}`
+          iframeRef.current.src = `${iframeUrl}&retry=${Date.now()}`
         }
       }, 2000)
 
@@ -53,45 +53,27 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      // Log all messages for debugging
-      if (event.data.type?.startsWith('dev0-')) {
-        console.log('Message received in parent:', {
-          type: event.data.type,
-          origin: event.origin,
-          expectedOrigin: `http://localhost:${port}`,
-          match: event.origin === `http://localhost:${port}`
-        })
-      }
-      
       if (event.origin !== `http://localhost:${port}`) return
 
       if (event.data.type === 'dev0-instrumentation-ready') {
-        console.log('Dev0 instrumentation ready for:', projectName)
         setIsInstrumentationReady(true)
         return
       }
 
       if (event.data.type === 'dev0-execute-request') {
-        console.log('Received execute request:', event.data)
         const { id, fn, args } = event.data
 
         try {
-          console.log('Raw args before processing:', args)
           // Process arguments to replace function placeholders with actual async functions
           const processedArgs = args.map((arg: any, index: number) => {
-            console.log(`Processing arg[${index}]:`, arg, 'Type:', typeof arg)
             if (arg && typeof arg === 'object' && arg.__isFunction && arg.__functionId) {
-              console.log(`Found function placeholder at arg[${index}]:`, arg)
               // Create a proxy function that will call back to iframe
               const proxyFn = async (...callbackArgs: any[]) => {
-                console.log(`Proxy function called for ${arg.__functionName} with args:`, callbackArgs)
-                
                 // Process callback arguments to handle functions
                 const processedCallbackArgs = callbackArgs.map((cbArg, cbIndex) => {
                   if (typeof cbArg === 'function') {
                     // For React setState-like patterns, we need to serialize the function
                     // and let the iframe execute it with the current state
-                    console.log(`Callback arg[${cbIndex}] is a function, serializing for iframe execution`)
                     return { 
                       __isInlineFunction: true, 
                       __functionString: cbArg.toString()
@@ -143,21 +125,9 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
                 })
               }
               
-              // Log for debugging
-              console.log(`Created proxy function for ${arg.__functionName} (${arg.__functionId})`)
               return proxyFn
             }
             return arg
-          })
-
-          console.log('Processed args:', processedArgs)
-          console.log('Processed args types:', processedArgs.map(arg => typeof arg))
-          
-          // Verify function replacements worked
-          processedArgs.forEach((arg, i) => {
-            if (args[i]?.__isFunction && typeof arg !== 'function') {
-              console.error(`ERROR: Failed to create proxy for function at arg[${i}]`)
-            }
           })
           
           const func = new Function('return ' + fn)()
@@ -208,24 +178,6 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
         })
 
         document.dispatchEvent(syntheticEvent)
-        return
-      }
-
-      if (event.data.type?.startsWith('dev0-')) {
-        const messageType = event.data.type.replace('dev0-', '')
-        console.log(
-          `📨 Message from ${projectName}:`,
-          messageType,
-          event.data.data
-        )
-
-        if (messageType === 'app-ready') {
-          console.log('🎉 App is ready!', event.data.data)
-        } else if (messageType === 'color-change') {
-          console.log('🌈 Color changed to:', event.data.data.color)
-        } else if (messageType === 'request-parent-action') {
-          console.log('🎯 Parent action requested:', event.data.data)
-        }
         return
       }
 
@@ -454,18 +406,28 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
           {isInstrumentationReady ? '⚡' : '⏳'}
         </div>
       )}
-
       <iframe
         ref={iframeRef}
         src={iframeUrl}
+        allow="accelerometer; autoplay; camera; clipboard-read; clipboard-write; encrypted-media; fullscreen; geolocation; gyroscope; magnetometer; microphone; midi; payment; picture-in-picture; usb; web-share"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-orientation-lock allow-pointer-lock allow-presentation allow-storage-access-by-user-activation allow-top-navigation-by-user-activation allow-downloads"
         onLoad={() => {
-          // Clear any existing retry interval
           if (retryIntervalRef.current) {
             clearInterval(retryIntervalRef.current)
             retryIntervalRef.current = null
           }
 
-          // Add a small delay to ensure the iframe content is rendered
+          // Set the iframe's document title to the project name
+          // This is used by useTool to determine the project ID
+          try {
+            if (iframeRef.current?.contentWindow?.document) {
+              iframeRef.current.contentWindow.document.title = projectName
+              console.log(`[Dev0Panel] Set iframe title to: ${projectName}`)
+            }
+          } catch (e) {
+            console.error('[Dev0Panel] Failed to set iframe title:', e)
+          }
+
           setTimeout(() => {
             setHasLoaded(true)
             setHasError(false)

@@ -82,9 +82,13 @@ export function DevOverlay({
   useEffect(() => {
     if (panels.size > 0) {
       const panelArray = Array.from(panels)
-      const lastPanel = panelArray[panelArray.length - 1]
-      setActivePanel(lastPanel)
-      bringPanelToFront(lastPanel)
+      // Find the last non-panel-selector panel to set as active
+      const contentPanels = panelArray.filter(p => p !== 'panel-selector')
+      if (contentPanels.length > 0) {
+        const lastContentPanel = contentPanels[contentPanels.length - 1]
+        setActivePanel(lastContentPanel)
+        bringPanelToFront(lastContentPanel)
+      }
     }
   }, [])
 
@@ -102,7 +106,10 @@ export function DevOverlay({
       setPanels((prev) => new Set([...prev, panel]))
     }
 
-    setActivePanel(panel)
+    // Always set active panel, but panel-selector shouldn't override content panels
+    if (panel !== 'panel-selector') {
+      setActivePanel(panel)
+    }
     bringPanelToFront(panel)
   }
 

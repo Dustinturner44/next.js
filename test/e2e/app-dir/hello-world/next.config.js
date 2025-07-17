@@ -5,7 +5,9 @@ const nextConfig = {
   experimental: {
     devtoolNewPanelUI: true,
     devtoolSegmentExplorer: true,
+    browserDebugInfoInTerminal: true
   },
+  
 }
 
 module.exports = nextConfig

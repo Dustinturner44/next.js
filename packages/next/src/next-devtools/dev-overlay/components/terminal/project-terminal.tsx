@@ -159,7 +159,7 @@ export const HomeTerminal: React.FC<HomeTerminalProps> = ({ isVisible }) => {
 }
 
 export const ProjectTerminalManager: React.FC = () => {
-  const { projects } = useDev0Context()
+  const { projects, getDisplayName } = useDev0Context()
   const { activePanel, openPanel } = usePanelRouterContext()
   const runningProjects = projects.filter((p) => p.status === 'running')
 
@@ -316,7 +316,7 @@ export const ProjectTerminalManager: React.FC = () => {
               }
             }}
           >
-            <span>{project.name}</span>
+            <span>{getDisplayName(project.name)}</span>
             {project.port && (
               <span style={{ fontSize: '10px', opacity: 0.7 }}>
                 :{project.port}

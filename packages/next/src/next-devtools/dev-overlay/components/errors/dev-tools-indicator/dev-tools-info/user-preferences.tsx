@@ -1,4 +1,4 @@
-import { useState, type HTMLProps } from 'react'
+import { useState, useEffect, type HTMLProps } from 'react'
 import { css } from '../../../../utils/css'
 import EyeIcon from '../../../../icons/eye-icon'
 import {
@@ -70,6 +70,52 @@ export function UserPreferencesBody({
   setScale: (value: DevToolsScale) => void
 }) {
   const [theme, setTheme] = useState(getInitialTheme())
+  const [cwd, setCwd] = useState(() => {
+    return localStorage.getItem('dev-tools-cwd') || ''
+  })
+
+  // Initialize window value on mount
+  useEffect(() => {
+    console.log('Initializing window CWD with:', cwd)
+    ;(window as any).DEV_TOOLS_CWD = cwd
+    console.log('Window CWD initialized to:', (window as any).DEV_TOOLS_CWD)
+    
+    // Send initial CWD to all iframes via postMessage
+    if (cwd) {
+      const iframes = document.querySelectorAll('iframe')
+      iframes.forEach(iframe => {
+        try {
+          iframe.contentWindow?.postMessage({
+            type: 'DEV_TOOLS_CWD_UPDATE',
+            cwd: cwd
+          }, '*')
+        } catch (e) {
+          console.log('Could not send initial CWD to iframe:', e)
+        }
+      })
+    }
+    
+    // Listen for CWD requests from iframes
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'DEV_TOOLS_CWD_REQUEST') {
+        console.log('Iframe requested CWD, sending:', cwd)
+        const iframes = document.querySelectorAll('iframe')
+        iframes.forEach(iframe => {
+          try {
+            iframe.contentWindow?.postMessage({
+              type: 'DEV_TOOLS_CWD_UPDATE',
+              cwd: cwd
+            }, '*')
+          } catch (e) {
+            console.log('Could not send CWD to requesting iframe:', e)
+          }
+        })
+      }
+    }
+    
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [cwd])
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const portal = document.querySelector('nextjs-portal')
@@ -103,6 +149,29 @@ export function UserPreferencesBody({
   function handleSizeChange({ target }: React.ChangeEvent<HTMLSelectElement>) {
     const value = Number(target.value) as DevToolsScale
     setScale(value)
+  }
+
+  function handleCwdChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    console.log('Setting CWD to:', value)
+    setCwd(value)
+    localStorage.setItem('dev-tools-cwd', value)
+    // Set on window object for template access
+    ;(window as any).DEV_TOOLS_CWD = value
+    console.log('Window CWD set to:', (window as any).DEV_TOOLS_CWD)
+    
+    // Send CWD to all iframes via postMessage
+    const iframes = document.querySelectorAll('iframe')
+    iframes.forEach(iframe => {
+      try {
+        iframe.contentWindow?.postMessage({
+          type: 'DEV_TOOLS_CWD_UPDATE',
+          cwd: value
+        }, '*')
+      } catch (e) {
+        console.log('Could not send CWD to iframe:', e)
+      }
+    })
   }
 
   function handleRestartDevServer(invalidatePersistentCache: boolean) {
@@ -187,6 +256,33 @@ export function UserPreferencesBody({
           </Select>
         </div>
 
+        <div className="preference-section">
+          <div className="preference-header">
+            <label htmlFor="cwd">Current Working Directory</label>
+            <p className="preference-description">
+              Set the path to your Next.js app for debugging and instrumentation.
+            </p>
+          </div>
+          <div className="preference-control">
+            <input
+              id="cwd"
+              type="text"
+              value={cwd}
+              onChange={handleCwdChange}
+              placeholder="/path/to/your/nextjs/app"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid var(--color-gray-alpha-400)',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontFamily: 'var(--font-stack-monospace)',
+                backgroundColor: 'var(--color-background-100)',
+                color: 'var(--color-text-primary)',
+              }}
+            />
+          </div>
+        </div>
 
         <div className="preference-section">
           <div className="preference-header">

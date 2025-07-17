@@ -7,6 +7,7 @@ interface Tool {
   inputSchema?: any
   projectId?: string
   online?: boolean
+  isDisabled?: boolean
 }
 
 interface ToolStatus {
@@ -14,6 +15,7 @@ interface ToolStatus {
   projectId: string
   online: boolean
   lastSeen: string
+  isDisabled?: boolean
 }
 
 interface ExecutionResult {
@@ -70,6 +72,7 @@ export const MCPPanel = () => {
           ...tool,
           online: tool.online || false,
           projectId: tool.projectId || tool.name.split('_')[0],
+          isDisabled: tool.isDisabled || false,
         }))
         
         setTools(toolsWithStatus)
@@ -102,6 +105,30 @@ export const MCPPanel = () => {
       clearInterval(interval)
     }
   }, [])
+
+  const toggleToolEnabled = async (toolName: string, isDisabled: boolean) => {
+    try {
+      const response = await fetch('http://localhost:8001/toggle-tool', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          toolName,
+          isDisabled,
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to toggle tool')
+      }
+      
+      // Refresh tools to get updated state
+      await fetchTools()
+    } catch (error) {
+      console.error('Failed to toggle tool:', error)
+    }
+  }
 
   const executeTool = async (tool: Tool) => {
     try {
@@ -300,9 +327,11 @@ export const MCPPanel = () => {
                     <button
                       key={tool.name}
                       onClick={() => {
-                        setSelectedTool(tool)
-                        setExecutionArgs('{}')
-                        setExecutionResult(null)
+                        if (!tool.isDisabled) {
+                          setSelectedTool(tool)
+                          setExecutionArgs('{}')
+                          setExecutionResult(null)
+                        }
                       }}
                       style={{
                         width: '100%',
@@ -314,9 +343,10 @@ export const MCPPanel = () => {
                           selectedTool?.name === tool.name
                             ? 'var(--color-gray-alpha-200)'
                             : 'var(--color-background-100)',
-                        cursor: 'pointer',
+                        cursor: tool.isDisabled ? 'default' : 'pointer',
                         textAlign: 'left',
                         transition: 'all 0.2s',
+                        opacity: tool.isDisabled ? 0.6 : 1,
                       }}
                       onMouseEnter={(e) => {
                         if (selectedTool?.name !== tool.name) {
@@ -329,26 +359,95 @@ export const MCPPanel = () => {
                         }
                       }}
                     >
-                      <div
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          color: 'var(--color-gray-1000)',
-                          marginBottom: '4px',
-                        }}
-                      >
-                        {tool.name.split('_').slice(1).join('_')}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '11px',
-                          color: 'var(--color-gray-700)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {tool.description}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              color: tool.isDisabled ? 'var(--color-gray-600)' : 'var(--color-gray-1000)',
+                              marginBottom: '4px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {tool.name.split('_').slice(1).join('_')}
+                            {tool.isDisabled && (
+                              <span style={{
+                                fontSize: '10px',
+                                marginLeft: '6px',
+                                color: 'var(--color-gray-600)',
+                              }}>
+                                (disabled)
+                              </span>
+                            )}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              color: tool.isDisabled ? 'var(--color-gray-500)' : 'var(--color-gray-700)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {tool.description}
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleToolEnabled(tool.name, !tool.isDisabled)
+                          }}
+                          style={{
+                            padding: '4px',
+                            background: tool.isDisabled ? 'var(--color-gray-alpha-100)' : 'transparent',
+                            border: '1px solid var(--color-gray-alpha-400)',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            flexShrink: 0,
+                          }}
+                          title={tool.isDisabled ? 'Enable tool' : 'Disable tool'}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--color-gray-alpha-200)'
+                            e.currentTarget.style.borderColor = 'var(--color-gray-alpha-600)'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = tool.isDisabled ? 'var(--color-gray-alpha-100)' : 'transparent'
+                            e.currentTarget.style.borderColor = 'var(--color-gray-alpha-400)'
+                          }}
+                        >
+                          {tool.isDisabled ? (
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--color-gray-700)"
+                              strokeWidth="2"
+                            >
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                              <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                          ) : (
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--color-gray-700)"
+                              strokeWidth="2"
+                            >
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                          )}
+                        </button>
                       </div>
                     </button>
                   ))}

@@ -8,6 +8,7 @@ import React, {
 
 export interface Dev0Project {
   name: string
+  displayName?: string
   status: 'running' | 'paused' | 'killed' | 'creating'
   port?: number
   pid?: number
@@ -27,6 +28,8 @@ interface Dev0ContextType {
   createProject: () => Promise<Dev0Project | null>
   killProject: (name: string) => Promise<void>
   startProject: (name: string) => Promise<void>
+  updateDisplayName: (projectName: string, displayName: string) => Promise<void>
+  getDisplayName: (projectName: string) => string
 }
 
 const Dev0Context = createContext<Dev0ContextType | null>(null)
@@ -52,6 +55,7 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [creatingProjectIds] = useState(new Set<string>())
+  const [displayNames, setDisplayNames] = useState<Record<string, string>>({})
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -68,6 +72,10 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
       // Filter out optimistic projects and replace with real ones
       setProjects((prevProjects) => {
         const realProjects = data.projects || []
+        console.log('Fetched projects with display names:', realProjects.map((p: Dev0Project) => ({ 
+          name: p.name, 
+          displayName: p.displayName 
+        })))
         const optimisticProjects = prevProjects.filter((p) => p.isOptimistic)
 
         // Remove optimistic projects that now exist as real projects
@@ -178,19 +186,90 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
     [fetchProjects]
   )
 
+  const updateDisplayName = useCallback(async (projectName: string, displayName: string) => {
+    console.log('updateDisplayName called:', projectName, '->', displayName)
+    
+    // Optimistically update the project's displayName
+    setProjects(prev => prev.map(p => 
+      p.name === projectName ? { ...p, displayName } : p
+    ))
+    
+    // Also update the displayNames map for consistency
+    setDisplayNames(prev => ({ ...prev, [projectName]: displayName }))
+    
+    try {
+      setError(null)
+      const url = `${DEV0_API_URL}/set-display-name`
+      console.log('Making request to:', url)
+      console.log('Request body:', { projectName, displayName })
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectName, displayName }),
+      })
+      
+      console.log('Response status:', response.status)
+      const data = await response.json()
+      console.log('Response data:', data)
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      console.log('Display name saved successfully')
+      // Don't refetch immediately to avoid timing issues with the UI
+      // The optimistic update should be sufficient
+    } catch (err) {
+      // On error, revert the optimistic update by fetching fresh data
+      setError(err instanceof Error ? err.message : 'Failed to update display name')
+      console.error('Failed to update display name:', err)
+      await fetchProjects()
+      await fetchDisplayNames()
+    }
+  }, [fetchProjects, fetchDisplayNames])
+
+  const getDisplayName = useCallback((projectName: string) => {
+    // First check if the project has a displayName property
+    const project = projects.find(p => p.name === projectName)
+    if (project?.displayName) {
+      return project.displayName
+    }
+    // Fall back to displayNames map
+    return displayNames[projectName] || projectName
+  }, [projects, displayNames])
+
+  // Fetch display names on mount
+  const fetchDisplayNames = useCallback(async () => {
+    try {
+      const response = await fetch(`${DEV0_API_URL}/get-display-names`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const data = await response.json()
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      setDisplayNames(data.displayNames || {})
+    } catch (err) {
+      console.error('Failed to fetch display names:', err)
+    }
+  }, [])
+
   useEffect(() => {
     fetchProjects()
+    fetchDisplayNames()
 
     // Listen for refresh events
     const handleRefresh = () => {
       fetchProjects()
+      fetchDisplayNames()
     }
 
     window.addEventListener('dev0-refresh-projects', handleRefresh)
     return () => {
       window.removeEventListener('dev0-refresh-projects', handleRefresh)
     }
-  }, [fetchProjects])
+  }, [fetchProjects, fetchDisplayNames])
 
   return (
     <Dev0Context.Provider
@@ -203,6 +282,8 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
         createProject,
         killProject,
         startProject,
+        updateDisplayName,
+        getDisplayName,
       }}
     >
       {children}

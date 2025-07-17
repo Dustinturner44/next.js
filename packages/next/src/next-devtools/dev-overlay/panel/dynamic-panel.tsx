@@ -142,7 +142,7 @@ export function DynamicPanel({
       }
   closeOnClickOutside?: boolean
 }) {
-  const { setPanel } = usePanelRouterContext()
+  const { setPanels } = usePanelRouterContext()
   const { name, mounted } = usePanelContext()
   const resizeStorageKey = sharePanelSizeGlobally
     ? STORE_KEY_SHARED_PANEL_SIZE
@@ -166,12 +166,12 @@ export function DynamicPanel({
     (reason) => {
       switch (reason) {
         case 'escape': {
-          setPanel('panel-selector')
+          setPanels(new Set(['panel-selector']))
           return
         }
         case 'outside': {
           if (closeOnClickOutside) {
-            setPanel('panel-selector')
+            setPanels(new Set(['panel-selector']))
           }
           return
         }
