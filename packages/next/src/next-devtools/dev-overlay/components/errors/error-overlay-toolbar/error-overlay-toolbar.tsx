@@ -2,6 +2,7 @@ import type { DebugInfo } from '../../../../shared/types'
 import { NodejsInspectorButton } from './nodejs-inspector-button'
 import { CopyErrorButton } from './copy-error-button'
 import { DocsLinkButton } from './docs-link-button'
+import { HammerIcon } from '../../../icons/hammer-icon'
 import { useState, useCallback } from 'react'
 
 type ErrorOverlayToolbarProps = {
@@ -17,13 +18,9 @@ export function ErrorOverlayToolbar({
   feedbackButton,
   generateErrorInfo,
 }: ErrorOverlayToolbarProps) {
-  const [isAutoFixing, setIsAutoFixing] = useState(false)
   const [autoFixError, setAutoFixError] = useState<string | null>(null)
 
   const handleAutoFix = useCallback(async () => {
-    if (isAutoFixing) return
-
-    setIsAutoFixing(true)
     setAutoFixError(null)
 
     try {
@@ -80,10 +77,8 @@ export function ErrorOverlayToolbar({
     } catch (error) {
       console.error('Auto fix error:', error)
       setAutoFixError(error instanceof Error ? error.message : 'Auto fix failed')
-    } finally {
-      setIsAutoFixing(false)
     }
-  }, [generateErrorInfo, isAutoFixing])
+  }, [generateErrorInfo])
 
   return (
     <span className="error-overlay-toolbar">
@@ -93,10 +88,9 @@ export function ErrorOverlayToolbar({
       <button 
         className="auto-fix-button"
         onClick={handleAutoFix}
-        disabled={isAutoFixing}
-        title={autoFixError || (isAutoFixing ? 'Generating fix...' : 'Auto Fix with AI')}
+        title={autoFixError || 'Auto Fix with AI'}
       >
-        {isAutoFixing ? 'Fixing...' : 'Auto Fix'}
+        <HammerIcon style={{ color: 'var(--color-gray-900)', transform: 'rotate(-45deg)' }} />
       </button>
       {autoFixError && (
         <span className="auto-fix-error" title={autoFixError}>
@@ -123,19 +117,19 @@ export const styles = `
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 4px 12px;
-    min-width: 80px;
+
+    width: var(--size-28);
     height: var(--size-28);
     background: var(--color-background-100);
     background-clip: padding-box;
     border: 1px solid var(--color-gray-alpha-400);
     box-shadow: var(--shadow-small);
     border-radius: var(--rounded-full);
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-gray-900);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+
+    svg {
+      width: var(--size-14);
+      height: var(--size-14);
+    }
 
     &:focus {
       outline: var(--focus-ring);
@@ -152,7 +146,6 @@ export const styles = `
     &:disabled {
       background-color: var(--color-gray-100);
       cursor: not-allowed;
-      opacity: 0.6;
     }
   }
 
