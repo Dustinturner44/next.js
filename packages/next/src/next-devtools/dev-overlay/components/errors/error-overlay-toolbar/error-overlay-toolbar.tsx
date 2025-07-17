@@ -19,9 +19,13 @@ export function ErrorOverlayToolbar({
   generateErrorInfo,
 }: ErrorOverlayToolbarProps) {
   const [autoFixError, setAutoFixError] = useState<string | null>(null)
+  const [isFixing, setIsFixing] = useState(false)
 
   const handleAutoFix = useCallback(async () => {
+    if (isFixing) return
+    
     setAutoFixError(null)
+    setIsFixing(true)
 
     try {
       const prompt = generateErrorInfo()
@@ -77,8 +81,10 @@ export function ErrorOverlayToolbar({
     } catch (error) {
       console.error('Auto fix error:', error)
       setAutoFixError(error instanceof Error ? error.message : 'Auto fix failed')
+    } finally {
+      setIsFixing(false)
     }
-  }, [generateErrorInfo])
+  }, [generateErrorInfo, isFixing])
 
   return (
     <span className="error-overlay-toolbar">
@@ -86,11 +92,15 @@ export function ErrorOverlayToolbar({
       {feedbackButton}
       <CopyErrorButton error={error} generateErrorInfo={generateErrorInfo} />
       <button 
-        className="auto-fix-button"
+        className={`auto-fix-button ${isFixing ? 'fixing' : ''}`}
         onClick={handleAutoFix}
-        title={autoFixError || 'Auto Fix with AI'}
+        disabled={isFixing}
+        title={autoFixError || (isFixing ? 'Fixing...' : 'Auto Fix with AI')}
       >
-        <HammerIcon style={{ color: 'var(--color-gray-900)', transform: 'rotate(-45deg)' }} />
+        <HammerIcon 
+          className={isFixing ? 'hammer-hitting' : ''}
+          style={{ color: 'var(--color-gray-900)', transform: 'rotate(-45deg)' }} 
+        />
       </button>
       {autoFixError && (
         <span className="auto-fix-error" title={autoFixError}>
@@ -117,6 +127,7 @@ export const styles = `
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 
     width: var(--size-28);
     height: var(--size-28);
@@ -125,10 +136,12 @@ export const styles = `
     border: 1px solid var(--color-gray-alpha-400);
     box-shadow: var(--shadow-small);
     border-radius: var(--rounded-full);
+    transition: all 0.2s ease;
 
     svg {
       width: var(--size-14);
       height: var(--size-14);
+      transition: transform 0.1s ease;
     }
 
     &:focus {
@@ -146,6 +159,68 @@ export const styles = `
     &:disabled {
       background-color: var(--color-gray-100);
       cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    &.fixing {
+      border-color: #3b82f6;
+      animation: loading-pulse 2s infinite;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: var(--rounded-full);
+        background: conic-gradient(from 0deg, #3b82f6, #60a5fa, #3b82f6);
+        animation: loading-spin 1.5s linear infinite;
+        z-index: -1;
+      }
+      
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--rounded-full);
+        background: var(--color-background-100);
+        z-index: -1;
+      }
+    }
+  }
+
+  .hammer-hitting {
+    animation: hammer-hit 0.6s ease-out infinite;
+  }
+
+  @keyframes hammer-hit {
+    0% { 
+      transform: rotate(-45deg); 
+    }
+    30% { 
+      transform: rotate(-75deg); 
+    }
+    60% { 
+      transform: rotate(-45deg); 
+    }
+    100% { 
+      transform: rotate(-45deg); 
+    }
+  }
+
+  @keyframes loading-spin {
+    0% { 
+      transform: rotate(0deg); 
+    }
+    100% { 
+      transform: rotate(360deg); 
+    }
+  }
+
+  @keyframes loading-pulse {
+    0%, 100% { 
+      box-shadow: var(--shadow-small), 0 0 0 0 rgba(59, 130, 246, 0.4); 
+    }
+    50% { 
+      box-shadow: var(--shadow-small), 0 0 0 4px rgba(59, 130, 246, 0.1); 
     }
   }
 
