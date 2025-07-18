@@ -1,6 +1,7 @@
 import { workAsyncStorage } from '../app-render/work-async-storage.external'
 import {
   workUnitAsyncStorage,
+  WorkUnitType,
   type PrerenderStoreModern,
 } from '../app-render/work-unit-async-storage.external'
 import {
@@ -20,7 +21,7 @@ export function io(expression: string, type: ApiType) {
   }
 
   switch (workUnitStore.type) {
-    case 'prerender': {
+    case WorkUnitType.Prerender: {
       const prerenderSignal = workUnitStore.controller.signal
 
       if (prerenderSignal.aborted === false) {
@@ -52,7 +53,7 @@ export function io(expression: string, type: ApiType) {
       }
       break
     }
-    case 'prerender-client': {
+    case WorkUnitType.PrerenderClient: {
       const prerenderSignal = workUnitStore.controller.signal
 
       if (prerenderSignal.aborted === false) {
@@ -84,15 +85,15 @@ export function io(expression: string, type: ApiType) {
       }
       break
     }
-    case 'request':
+    case WorkUnitType.Request:
       if (workUnitStore.prerenderPhase === true) {
         trackSynchronousPlatformIOAccessInDev(workUnitStore)
       }
       break
-    case 'prerender-ppr':
-    case 'prerender-legacy':
-    case 'cache':
-    case 'unstable-cache':
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
       break
     default:
       workUnitStore satisfies never

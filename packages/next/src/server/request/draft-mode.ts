@@ -1,6 +1,8 @@
 import {
   getDraftModeProviderForCacheScope,
   throwForMissingRequestStore,
+  WorkUnitPhase,
+  WorkUnitType,
 } from '../app-render/work-unit-async-storage.external'
 
 import type { DraftModeProvider } from '../async-storage/draft-mode-provider'
@@ -55,11 +57,11 @@ export function draftMode(): Promise<DraftMode> {
   }
 
   switch (workUnitStore.type) {
-    case 'request':
+    case WorkUnitType.Request:
       return createOrGetCachedDraftMode(workUnitStore.draftMode, workStore)
 
-    case 'cache':
-    case 'unstable-cache':
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
       // Inside of `"use cache"` or `unstable_cache`, draft mode is available if
       // the outmost work unit store is a request store, and if draft mode is
       // enabled.
@@ -74,10 +76,10 @@ export function draftMode(): Promise<DraftMode> {
 
     // Otherwise, we fall through to providing an empty draft mode.
     // eslint-disable-next-line no-fallthrough
-    case 'prerender':
-    case 'prerender-client':
-    case 'prerender-ppr':
-    case 'prerender-legacy':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
       // Return empty draft mode
       return createOrGetCachedDraftMode(null, workStore)
 
@@ -247,19 +249,19 @@ function syncIODev(route: string | undefined, expression: string) {
 
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'request':
+      case WorkUnitType.Request:
         if (workUnitStore.prerenderPhase === true) {
           // When we're rendering dynamically in dev, we need to advance out of
           // the Prerender environment when we read Request data synchronously.
           trackSynchronousRequestDataAccessInDev(workUnitStore)
         }
         break
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -293,7 +295,7 @@ function trackDynamicDraftMode(expression: string, constructorOpt: Function) {
   if (workStore) {
     // We have a store we want to track dynamic data access to ensure we
     // don't statically generate routes that manipulate draft mode.
-    if (workUnitStore?.phase === 'after') {
+    if (workUnitStore?.phase === WorkUnitPhase.After) {
       throw new Error(
         `Route ${workStore.route} used "${expression}" inside \`after\`. The enabled status of draftMode can be read inside \`after\` but you cannot enable or disable draftMode. See more info here: https://nextjs.org/docs/app/api-reference/functions/after`
       )
@@ -307,7 +309,7 @@ function trackDynamicDraftMode(expression: string, constructorOpt: Function) {
 
     if (workUnitStore) {
       switch (workUnitStore.type) {
-        case 'cache': {
+        case WorkUnitType.Cache: {
           const error = new Error(
             `Route ${workStore.route} used "${expression}" inside "use cache". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`
           )
@@ -315,11 +317,11 @@ function trackDynamicDraftMode(expression: string, constructorOpt: Function) {
           workStore.invalidDynamicUsageError ??= error
           throw error
         }
-        case 'unstable-cache':
+        case WorkUnitType.UnstableCache:
           throw new Error(
             `Route ${workStore.route} used "${expression}" inside a function cached with "unstable_cache(...)". The enabled status of draftMode can be read in caches but you must not enable or disable draftMode inside a cache. See more info here: https://nextjs.org/docs/app/api-reference/functions/unstable_cache`
           )
-        case 'prerender': {
+        case WorkUnitType.Prerender: {
           const error = new Error(
             `Route ${workStore.route} used ${expression} without first calling \`await connection()\`. See more info here: https://nextjs.org/docs/messages/next-prerender-sync-headers`
           )
@@ -330,18 +332,18 @@ function trackDynamicDraftMode(expression: string, constructorOpt: Function) {
             workUnitStore
           )
         }
-        case 'prerender-client':
+        case WorkUnitType.PrerenderClient:
           const exportName = '`draftMode`'
           throw new InvariantError(
             `${exportName} must not be used within a client component. Next.js should be preventing ${exportName} from being included in client components statically, but did not in this case.`
           )
-        case 'prerender-ppr':
+        case WorkUnitType.PrerenderPPR:
           return postponeWithTracking(
             workStore.route,
             expression,
             workUnitStore.dynamicTracking
           )
-        case 'prerender-legacy':
+        case WorkUnitType.PrerenderLegacy:
           workUnitStore.revalidate = 0
 
           const err = new DynamicServerError(
@@ -351,7 +353,7 @@ function trackDynamicDraftMode(expression: string, constructorOpt: Function) {
           workStore.dynamicUsageStack = err.stack
 
           throw err
-        case 'request':
+        case WorkUnitType.Request:
           trackDynamicDataInDynamicRender(workUnitStore)
           break
         default:

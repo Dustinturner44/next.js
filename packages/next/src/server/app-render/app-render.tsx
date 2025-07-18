@@ -167,6 +167,8 @@ import { scheduleInSequentialTasks } from './app-render-render-utils'
 import { waitAtLeastOneReactRenderTask } from '../../lib/scheduler'
 import {
   workUnitAsyncStorage,
+  WorkUnitPhase,
+  WorkUnitType,
   type PrerenderStore,
 } from './work-unit-async-storage.external'
 import { CacheSignal } from './cache-signal'
@@ -715,8 +717,8 @@ async function warmupDevRender(
   const cacheSignal = new CacheSignal()
 
   const prerenderStore: PrerenderStore = {
-    type: 'prerender',
-    phase: 'render',
+    type: WorkUnitType.Prerender,
+    phase: WorkUnitPhase.Render,
     rootParams,
     implicitTags,
     renderSignal: renderController.signal,
@@ -1239,14 +1241,14 @@ async function renderToHTMLOrFlightImpl(
       }
 
       switch (workUnitStore.type) {
-        case 'prerender':
-        case 'prerender-client':
-        case 'cache':
+        case WorkUnitType.Prerender:
+        case WorkUnitType.PrerenderClient:
+        case WorkUnitType.Cache:
           return true
-        case 'prerender-ppr':
-        case 'prerender-legacy':
-        case 'request':
-        case 'unstable-cache':
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.PrerenderLegacy:
+        case WorkUnitType.Request:
+        case WorkUnitType.UnstableCache:
           return false
         default:
           workUnitStore satisfies never
@@ -2351,8 +2353,8 @@ async function spawnDynamicValidationInDev(
   // resume data cache instead.
   const prerenderResumeDataCache = createPrerenderResumeDataCache()
   const initialServerPrerenderStore: PrerenderStore = {
-    type: 'prerender',
-    phase: 'render',
+    type: WorkUnitType.Prerender,
+    phase: WorkUnitPhase.Render,
     rootParams,
     implicitTags,
     renderSignal: initialServerRenderController.signal,
@@ -2481,8 +2483,8 @@ async function spawnDynamicValidationInDev(
     const initialClientRenderController = new AbortController()
 
     const initialClientPrerenderStore: PrerenderStore = {
-      type: 'prerender-client',
-      phase: 'render',
+      type: WorkUnitType.PrerenderClient,
+      phase: WorkUnitPhase.Render,
       rootParams,
       implicitTags,
       renderSignal: initialClientRenderController.signal,
@@ -2589,8 +2591,8 @@ async function spawnDynamicValidationInDev(
   )
 
   const finalServerPrerenderStore: PrerenderStore = {
-    type: 'prerender',
-    phase: 'render',
+    type: WorkUnitType.Prerender,
+    phase: WorkUnitPhase.Render,
     rootParams,
     implicitTags,
     renderSignal: finalServerRenderController.signal,
@@ -2676,8 +2678,8 @@ async function spawnDynamicValidationInDev(
   const finalClientRenderController = new AbortController()
 
   const finalClientPrerenderStore: PrerenderStore = {
-    type: 'prerender-client',
-    phase: 'render',
+    type: WorkUnitType.PrerenderClient,
+    phase: WorkUnitPhase.Render,
     rootParams,
     implicitTags,
     renderSignal: finalClientRenderController.signal,
@@ -3044,8 +3046,8 @@ async function prerenderToStream(
       }
 
       const initialServerPrerenderStore: PrerenderStore = (prerenderStore = {
-        type: 'prerender',
-        phase: 'render',
+        type: WorkUnitType.Prerender,
+        phase: WorkUnitPhase.Render,
         rootParams,
         implicitTags,
         renderSignal: initialServerRenderController.signal,
@@ -3168,8 +3170,8 @@ async function prerenderToStream(
         const initialClientRenderController = new AbortController()
 
         const initialClientPrerenderStore: PrerenderStore = {
-          type: 'prerender-client',
-          phase: 'render',
+          type: WorkUnitType.PrerenderClient,
+          phase: WorkUnitPhase.Render,
           rootParams,
           implicitTags,
           renderSignal: initialClientRenderController.signal,
@@ -3276,8 +3278,8 @@ async function prerenderToStream(
       )
 
       const finalServerPrerenderStore: PrerenderStore = (prerenderStore = {
-        type: 'prerender',
-        phase: 'render',
+        type: WorkUnitType.Prerender,
+        phase: WorkUnitPhase.Render,
         rootParams,
         implicitTags,
         renderSignal: finalServerRenderController.signal,
@@ -3368,8 +3370,8 @@ async function prerenderToStream(
       const finalClientRenderController = new AbortController()
 
       const finalClientPrerenderStore: PrerenderStore = {
-        type: 'prerender-client',
-        phase: 'render',
+        type: WorkUnitType.PrerenderClient,
+        phase: WorkUnitPhase.Render,
         rootParams,
         implicitTags,
         renderSignal: finalClientRenderController.signal,
@@ -3604,8 +3606,8 @@ async function prerenderToStream(
 
       const prerenderResumeDataCache = createPrerenderResumeDataCache()
       const reactServerPrerenderStore: PrerenderStore = (prerenderStore = {
-        type: 'prerender-ppr',
-        phase: 'render',
+        type: WorkUnitType.PrerenderPPR,
+        phase: WorkUnitPhase.Render,
         rootParams,
         implicitTags,
         dynamicTracking,
@@ -3638,8 +3640,8 @@ async function prerenderToStream(
         ))
 
       const ssrPrerenderStore: PrerenderStore = {
-        type: 'prerender-ppr',
-        phase: 'render',
+        type: WorkUnitType.PrerenderPPR,
+        phase: WorkUnitPhase.Render,
         rootParams,
         implicitTags,
         dynamicTracking,
@@ -3833,8 +3835,8 @@ async function prerenderToStream(
       }
     } else {
       const prerenderLegacyStore: PrerenderStore = (prerenderStore = {
-        type: 'prerender-legacy',
-        phase: 'render',
+        type: WorkUnitType.PrerenderLegacy,
+        phase: WorkUnitPhase.Render,
         rootParams,
         implicitTags,
         revalidate: INFINITE_CACHE,
@@ -3998,8 +4000,8 @@ async function prerenderToStream(
     )
 
     const prerenderLegacyStore: PrerenderStore = (prerenderStore = {
-      type: 'prerender-legacy',
-      phase: 'render',
+      type: WorkUnitType.PrerenderLegacy,
+      phase: WorkUnitPhase.Render,
       rootParams,
       implicitTags: implicitTags,
       revalidate:

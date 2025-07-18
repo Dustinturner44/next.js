@@ -1,5 +1,8 @@
 import { workAsyncStorage } from '../app-render/work-async-storage.external'
-import { workUnitAsyncStorage } from '../app-render/work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitType,
+} from '../app-render/work-unit-async-storage.external'
 
 export type CacheLife = {
   // How long the client can cache a value without checking with the server.
@@ -94,17 +97,17 @@ export function cacheLife(profile: CacheLifeProfiles | CacheLife): void {
   const workUnitStore = workUnitAsyncStorage.getStore()
 
   switch (workUnitStore?.type) {
-    case 'prerender':
-    case 'prerender-client':
-    case 'prerender-ppr':
-    case 'prerender-legacy':
-    case 'request':
-    case 'unstable-cache':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.Request:
+    case WorkUnitType.UnstableCache:
     case undefined:
       throw new Error(
         'cacheLife() can only be called inside a "use cache" function.'
       )
-    case 'cache':
+    case WorkUnitType.Cache:
       break
     default:
       workUnitStore satisfies never

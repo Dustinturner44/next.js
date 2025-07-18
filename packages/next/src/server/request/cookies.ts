@@ -9,6 +9,8 @@ import { workAsyncStorage } from '../app-render/work-async-storage.external'
 import {
   throwForMissingRequestStore,
   workUnitAsyncStorage,
+  WorkUnitPhase,
+  WorkUnitType,
   type PrerenderStoreModern,
 } from '../app-render/work-unit-async-storage.external'
 import {
@@ -56,7 +58,7 @@ export function cookies(): Promise<ReadonlyRequestCookies> {
   if (workStore) {
     if (
       workUnitStore &&
-      workUnitStore.phase === 'after' &&
+      workUnitStore.phase === WorkUnitPhase.After &&
       !isRequestAPICallableInsideAfter()
     ) {
       throw new Error(
@@ -80,25 +82,25 @@ export function cookies(): Promise<ReadonlyRequestCookies> {
 
     if (workUnitStore) {
       switch (workUnitStore.type) {
-        case 'cache':
+        case WorkUnitType.Cache:
           const error = new Error(
             `Route ${workStore.route} used "cookies" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`
           )
           Error.captureStackTrace(error, cookies)
           workStore.invalidDynamicUsageError ??= error
           throw error
-        case 'unstable-cache':
+        case WorkUnitType.UnstableCache:
           throw new Error(
             `Route ${workStore.route} used "cookies" inside a function cached with "unstable_cache(...)". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "cookies" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/app/api-reference/functions/unstable_cache`
           )
-        case 'prerender':
+        case WorkUnitType.Prerender:
           return makeHangingCookies(workUnitStore)
-        case 'prerender-client':
+        case WorkUnitType.PrerenderClient:
           const exportName = '`cookies`'
           throw new InvariantError(
             `${exportName} must not be used within a client component. Next.js should be preventing ${exportName} from being included in client components statically, but did not in this case.`
           )
-        case 'prerender-ppr':
+        case WorkUnitType.PrerenderPPR:
           // We need track dynamic access here eagerly to keep continuity with
           // how cookies has worked in PPR without cacheComponents.
           return postponeWithTracking(
@@ -106,7 +108,7 @@ export function cookies(): Promise<ReadonlyRequestCookies> {
             callingExpression,
             workUnitStore.dynamicTracking
           )
-        case 'prerender-legacy':
+        case WorkUnitType.PrerenderLegacy:
           // We track dynamic access here so we don't need to wrap the cookies
           // in individual property access tracking.
           return throwToInterruptStaticGeneration(
@@ -114,7 +116,7 @@ export function cookies(): Promise<ReadonlyRequestCookies> {
             workStore,
             workUnitStore
           )
-        case 'request':
+        case WorkUnitType.Request:
           trackDynamicDataInDynamicRender(workUnitStore)
 
           let underlyingCookies: ReadonlyRequestCookies
@@ -460,19 +462,19 @@ function syncIODev(route: string | undefined, expression: string) {
 
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'request':
+      case WorkUnitType.Request:
         if (workUnitStore.prerenderPhase === true) {
           // When we're rendering dynamically in dev, we need to advance out of
           // the Prerender environment when we read Request data synchronously.
           trackSynchronousRequestDataAccessInDev(workUnitStore)
         }
         break
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

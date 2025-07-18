@@ -3,7 +3,11 @@ import {
   type ReadonlyHeaders,
 } from '../web/spec-extension/adapters/headers'
 import { workAsyncStorage } from '../app-render/work-async-storage.external'
-import { throwForMissingRequestStore } from '../app-render/work-unit-async-storage.external'
+import {
+  throwForMissingRequestStore,
+  WorkUnitPhase,
+  WorkUnitType,
+} from '../app-render/work-unit-async-storage.external'
 import {
   workUnitAsyncStorage,
   type PrerenderStoreModern,
@@ -62,7 +66,7 @@ export function headers(): Promise<ReadonlyHeaders> {
   if (workStore) {
     if (
       workUnitStore &&
-      workUnitStore.phase === 'after' &&
+      workUnitStore.phase === WorkUnitPhase.After &&
       !isRequestAPICallableInsideAfter()
     ) {
       throw new Error(
@@ -79,22 +83,22 @@ export function headers(): Promise<ReadonlyHeaders> {
 
     if (workUnitStore) {
       switch (workUnitStore.type) {
-        case 'cache':
+        case WorkUnitType.Cache:
           const error = new Error(
             `Route ${workStore.route} used "headers" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`
           )
           Error.captureStackTrace(error, headers)
           workStore.invalidDynamicUsageError ??= error
           throw error
-        case 'unstable-cache':
+        case WorkUnitType.UnstableCache:
           throw new Error(
             `Route ${workStore.route} used "headers" inside a function cached with "unstable_cache(...)". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "headers" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/app/api-reference/functions/unstable_cache`
           )
-        case 'prerender':
-        case 'prerender-client':
-        case 'prerender-ppr':
-        case 'prerender-legacy':
-        case 'request':
+        case WorkUnitType.Prerender:
+        case WorkUnitType.PrerenderClient:
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.PrerenderLegacy:
+        case WorkUnitType.Request:
           break
         default:
           workUnitStore satisfies never
@@ -109,14 +113,14 @@ export function headers(): Promise<ReadonlyHeaders> {
 
     if (workUnitStore) {
       switch (workUnitStore.type) {
-        case 'prerender':
+        case WorkUnitType.Prerender:
           return makeHangingHeaders(workUnitStore)
-        case 'prerender-client':
+        case WorkUnitType.PrerenderClient:
           const exportName = '`headers`'
           throw new InvariantError(
             `${exportName} must not be used within a client component. Next.js should be preventing ${exportName} from being included in client components statically, but did not in this case.`
           )
-        case 'prerender-ppr':
+        case WorkUnitType.PrerenderPPR:
           // PPR Prerender (no cacheComponents)
           // We are prerendering with PPR. We need track dynamic access here eagerly
           // to keep continuity with how headers has worked in PPR without cacheComponents.
@@ -126,7 +130,7 @@ export function headers(): Promise<ReadonlyHeaders> {
             callingExpression,
             workUnitStore.dynamicTracking
           )
-        case 'prerender-legacy':
+        case WorkUnitType.PrerenderLegacy:
           // Legacy Prerender
           // We are in a legacy static generation mode while prerendering
           // We track dynamic access here so we don't need to wrap the headers in
@@ -136,7 +140,7 @@ export function headers(): Promise<ReadonlyHeaders> {
             workStore,
             workUnitStore
           )
-        case 'request':
+        case WorkUnitType.Request:
           trackDynamicDataInDynamicRender(workUnitStore)
 
           if (
@@ -415,19 +419,19 @@ function syncIODev(route: string | undefined, expression: string) {
 
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'request':
+      case WorkUnitType.Request:
         if (workUnitStore.prerenderPhase === true) {
           // When we're rendering dynamically in dev, we need to advance out of
           // the Prerender environment when we read Request data synchronously.
           trackSynchronousRequestDataAccessInDev(workUnitStore)
         }
         break
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

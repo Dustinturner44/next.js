@@ -45,6 +45,8 @@ import {
   workUnitAsyncStorage,
   type RequestStore,
   type PrerenderStore,
+  WorkUnitType,
+  WorkUnitPhase,
 } from '../../app-render/work-unit-async-storage.external'
 import {
   actionAsyncStorage,
@@ -382,8 +384,8 @@ export class AppRouteRouteModule extends RouteModule<
 
           const prospectiveRoutePrerenderStore: PrerenderStore =
             (prerenderStore = {
-              type: 'prerender',
-              phase: 'action',
+              type: WorkUnitType.Prerender,
+              phase: WorkUnitPhase.Action,
               // This replicates prior behavior where rootParams is empty in routes
               // TODO we need to make this have the proper rootParams for this route
               rootParams: {},
@@ -478,8 +480,8 @@ export class AppRouteRouteModule extends RouteModule<
           dynamicTracking = createDynamicTrackingState(undefined)
 
           const finalRoutePrerenderStore: PrerenderStore = (prerenderStore = {
-            type: 'prerender',
-            phase: 'action',
+            type: WorkUnitType.Prerender,
+            phase: WorkUnitPhase.Action,
             rootParams: {},
             implicitTags,
             renderSignal: finalController.signal,
@@ -563,8 +565,8 @@ export class AppRouteRouteModule extends RouteModule<
           }
         } else {
           prerenderStore = {
-            type: 'prerender-legacy',
-            phase: 'action',
+            type: WorkUnitType.PrerenderLegacy,
+            phase: WorkUnitPhase.Action,
             rootParams: {},
             implicitTags,
             revalidate: defaultRevalidate,
@@ -1164,15 +1166,15 @@ function trackDynamic(
 
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'cache':
+      case WorkUnitType.Cache:
         throw new Error(
           `Route ${store.route} used "${expression}" inside "use cache". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "${expression}" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`
         )
-      case 'unstable-cache':
+      case WorkUnitType.UnstableCache:
         throw new Error(
           `Route ${store.route} used "${expression}" inside a function cached with "unstable_cache(...)". Accessing Dynamic data sources inside a cache scope is not supported. If you need this data inside a cached function use "${expression}" outside of the cached function and pass the required dynamic data in as an argument. See more info here: https://nextjs.org/docs/app/api-reference/functions/unstable_cache`
         )
-      case 'prerender':
+      case WorkUnitType.Prerender:
         const error = new Error(
           `Route ${store.route} used ${expression} without first calling \`await connection()\`. See more info here: https://nextjs.org/docs/messages/next-prerender-sync-request`
         )
@@ -1182,17 +1184,17 @@ function trackDynamic(
           error,
           workUnitStore
         )
-      case 'prerender-client':
+      case WorkUnitType.PrerenderClient:
         throw new InvariantError(
           'A client prerender store should not be used for a route handler.'
         )
-      case 'prerender-ppr':
+      case WorkUnitType.PrerenderPPR:
         return postponeWithTracking(
           store.route,
           expression,
           workUnitStore.dynamicTracking
         )
-      case 'prerender-legacy':
+      case WorkUnitType.PrerenderLegacy:
         workUnitStore.revalidate = 0
 
         const err = new DynamicServerError(
@@ -1202,7 +1204,7 @@ function trackDynamic(
         store.dynamicUsageStack = err.stack
 
         throw err
-      case 'request':
+      case WorkUnitType.Request:
         if (process.env.NODE_ENV !== 'production') {
           // TODO: This is currently not really needed for route handlers, as it
           // only controls the ISR status that's shown for pages.

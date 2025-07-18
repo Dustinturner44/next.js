@@ -1,5 +1,9 @@
 import { workAsyncStorage } from '../app-render/work-async-storage.external'
-import { workUnitAsyncStorage } from '../app-render/work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitPhase,
+  WorkUnitType,
+} from '../app-render/work-unit-async-storage.external'
 import {
   postponeWithTracking,
   throwToInterruptStaticGeneration,
@@ -21,7 +25,7 @@ export function connection(): Promise<void> {
   if (workStore) {
     if (
       workUnitStore &&
-      workUnitStore.phase === 'after' &&
+      workUnitStore.phase === WorkUnitPhase.After &&
       !isRequestAPICallableInsideAfter()
     ) {
       throw new Error(
@@ -43,23 +47,23 @@ export function connection(): Promise<void> {
 
     if (workUnitStore) {
       switch (workUnitStore.type) {
-        case 'cache':
+        case WorkUnitType.Cache:
           throw new Error(
             `Route ${workStore.route} used "connection" inside "use cache". The \`connection()\` function is used to indicate the subsequent code must only run when there is an actual Request, but caches must be able to be produced before a Request so this function is not allowed in this scope. See more info here: https://nextjs.org/docs/messages/next-request-in-use-cache`
           )
-        case 'unstable-cache':
+        case WorkUnitType.UnstableCache:
           throw new Error(
             `Route ${workStore.route} used "connection" inside a function cached with "unstable_cache(...)". The \`connection()\` function is used to indicate the subsequent code must only run when there is an actual Request, but caches must be able to be produced before a Request so this function is not allowed in this scope. See more info here: https://nextjs.org/docs/app/api-reference/functions/unstable_cache`
           )
-        case 'prerender':
-        case 'prerender-client':
+        case WorkUnitType.Prerender:
+        case WorkUnitType.PrerenderClient:
           // We return a promise that never resolves to allow the prerender to
           // stall at this point.
           return makeHangingPromise(
             workUnitStore.renderSignal,
             '`connection()`'
           )
-        case 'prerender-ppr':
+        case WorkUnitType.PrerenderPPR:
           // We use React's postpone API to interrupt rendering here to create a
           // dynamic hole
           return postponeWithTracking(
@@ -67,7 +71,7 @@ export function connection(): Promise<void> {
             'connection',
             workUnitStore.dynamicTracking
           )
-        case 'prerender-legacy':
+        case WorkUnitType.PrerenderLegacy:
           // We throw an error here to interrupt prerendering to mark the route
           // as dynamic
           return throwToInterruptStaticGeneration(
@@ -75,7 +79,7 @@ export function connection(): Promise<void> {
             workStore,
             workUnitStore
           )
-        case 'request':
+        case WorkUnitType.Request:
           trackDynamicDataInDynamicRender(workUnitStore)
           break
         default:

@@ -28,6 +28,8 @@ import {
   workUnitAsyncStorage,
   getDraftModeProviderForCacheScope,
   getCacheSignal,
+  WorkUnitType,
+  WorkUnitPhase,
 } from '../app-render/work-unit-async-storage.external'
 
 import { makeHangingPromise } from '../dynamic-rendering-utils'
@@ -168,15 +170,15 @@ function generateCacheEntryWithCacheContext(
 
   if (outerWorkUnitStore) {
     switch (outerWorkUnitStore?.type) {
-      case 'cache':
-      case 'request':
+      case WorkUnitType.Cache:
+      case WorkUnitType.Request:
         useCacheOrRequestStore = outerWorkUnitStore
         break
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.UnstableCache:
         break
       default:
         outerWorkUnitStore satisfies never
@@ -185,8 +187,8 @@ function generateCacheEntryWithCacheContext(
 
   // Initialize the Store for this Cache entry.
   const cacheStore: UseCacheStore = {
-    type: 'cache',
-    phase: 'render',
+    type: WorkUnitType.Cache,
+    phase: WorkUnitPhase.Render,
     implicitTags: outerWorkUnitStore?.implicitTags,
     revalidate: defaultCacheLife.revalidate,
     expire: defaultCacheLife.expire,
@@ -226,10 +228,10 @@ function propagateCacheLifeAndTags(
 ): void {
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'cache':
-      case 'prerender':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Cache:
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         // Propagate tags and revalidate upwards
         const outerTags = workUnitStore.tags ?? (workUnitStore.tags = [])
         const entryTags = entry.tags
@@ -249,9 +251,9 @@ function propagateCacheLifeAndTags(
           workUnitStore.expire = entry.expire
         }
         break
-      case 'prerender-client':
-      case 'request':
-      case 'unstable-cache':
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.Request:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -385,7 +387,7 @@ async function generateCacheEntryImpl(
 
               if (outerWorkUnitStore) {
                 switch (outerWorkUnitStore.type) {
-                  case 'prerender':
+                  case WorkUnitType.Prerender:
                     // The encoded arguments might contain hanging promises. In
                     // this case we don't want to reject with "Error: Connection
                     // closed.", so we intentionally keep the iterable alive.
@@ -403,12 +405,12 @@ async function generateCacheEntryImpl(
                       }
                     })
                     break
-                  case 'prerender-client':
-                  case 'prerender-ppr':
-                  case 'prerender-legacy':
-                  case 'request':
-                  case 'cache':
-                  case 'unstable-cache':
+                  case WorkUnitType.PrerenderClient:
+                  case WorkUnitType.PrerenderPPR:
+                  case WorkUnitType.PrerenderLegacy:
+                  case WorkUnitType.Request:
+                  case WorkUnitType.Cache:
+                  case WorkUnitType.UnstableCache:
                     break
                   default:
                     outerWorkUnitStore satisfies never
@@ -461,7 +463,7 @@ async function generateCacheEntryImpl(
   let stream: ReadableStream<Uint8Array>
 
   switch (outerWorkUnitStore?.type) {
-    case 'prerender':
+    case WorkUnitType.Prerender:
       const timeoutAbortController = new AbortController()
 
       // If we're prerendering, we give you 50 seconds to fill a cache entry.
@@ -533,12 +535,12 @@ async function generateCacheEntryImpl(
         stream = prelude
       }
       break
-    case 'prerender-client':
-    case 'prerender-ppr':
-    case 'prerender-legacy':
-    case 'request':
-    case 'cache':
-    case 'unstable-cache':
+    case WorkUnitType.PrerenderClient:
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.Request:
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
     case undefined:
       stream = renderToReadableStream(
         resultPromise,
@@ -804,7 +806,7 @@ export function cache(
       let encodedCacheKeyParts: FormData | string
 
       switch (workUnitStore?.type) {
-        case 'prerender':
+        case WorkUnitType.Prerender:
           if (!isPageOrLayout) {
             // If the "use cache" function is not a page or a layout, we need to
             // track dynamic access already when encoding the arguments. If
@@ -829,12 +831,12 @@ export function cache(
             break
           }
         // fallthrough
-        case 'prerender-client':
-        case 'prerender-ppr':
-        case 'prerender-legacy':
-        case 'request':
-        case 'cache':
-        case 'unstable-cache':
+        case WorkUnitType.PrerenderClient:
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.PrerenderLegacy:
+        case WorkUnitType.Request:
+        case WorkUnitType.Cache:
+        case WorkUnitType.UnstableCache:
         case undefined:
           encodedCacheKeyParts = await encodeCacheKeyParts()
           break
@@ -876,7 +878,7 @@ export function cache(
               existingEntry.expire < DYNAMIC_EXPIRE)
           ) {
             switch (workUnitStore.type) {
-              case 'prerender':
+              case WorkUnitType.Prerender:
                 // In a Dynamic I/O prerender, if the cache entry has
                 // revalidate: 0 or if the expire time is under 5 minutes, then
                 // we consider this cache entry dynamic as it's not worth
@@ -890,12 +892,12 @@ export function cache(
                   workUnitStore.renderSignal,
                   'dynamic "use cache"'
                 )
-              case 'prerender-client':
-              case 'prerender-ppr':
-              case 'prerender-legacy':
-              case 'request':
-              case 'cache':
-              case 'unstable-cache':
+              case WorkUnitType.PrerenderClient:
+              case WorkUnitType.PrerenderPPR:
+              case WorkUnitType.PrerenderLegacy:
+              case WorkUnitType.Request:
+              case WorkUnitType.Cache:
+              case WorkUnitType.UnstableCache:
                 break
               default:
                 workUnitStore satisfies never
@@ -918,7 +920,7 @@ export function cache(
 
           if (workUnitStore) {
             switch (workUnitStore.type) {
-              case 'prerender':
+              case WorkUnitType.Prerender:
                 // If `allowEmptyStaticShell` is true, and thus a prefilled
                 // resume data cache was provided, then a cache miss means that
                 // params were part of the cache key. In this case, we can make
@@ -941,12 +943,12 @@ export function cache(
                   )
                 }
                 break
-              case 'prerender-client':
-              case 'prerender-ppr':
-              case 'prerender-legacy':
-              case 'request':
-              case 'cache':
-              case 'unstable-cache':
+              case WorkUnitType.PrerenderClient:
+              case WorkUnitType.PrerenderPPR:
+              case WorkUnitType.PrerenderLegacy:
+              case WorkUnitType.Request:
+              case WorkUnitType.Cache:
+              case WorkUnitType.UnstableCache:
                 break
               default:
                 workUnitStore satisfies never
@@ -1021,7 +1023,7 @@ export function cache(
           (entry.revalidate === 0 || entry.expire < DYNAMIC_EXPIRE)
         ) {
           switch (workUnitStore.type) {
-            case 'prerender':
+            case WorkUnitType.Prerender:
               // In a Dynamic I/O prerender, if the cache entry has revalidate:
               // 0 or if the expire time is under 5 minutes, then we consider
               // this cache entry dynamic as it's not worth generating static
@@ -1034,12 +1036,12 @@ export function cache(
                 workUnitStore.renderSignal,
                 'dynamic "use cache"'
               )
-            case 'prerender-client':
-            case 'prerender-ppr':
-            case 'prerender-legacy':
-            case 'request':
-            case 'cache':
-            case 'unstable-cache':
+            case WorkUnitType.PrerenderClient:
+            case WorkUnitType.PrerenderPPR:
+            case WorkUnitType.PrerenderLegacy:
+            case WorkUnitType.Request:
+            case WorkUnitType.Cache:
+            case WorkUnitType.UnstableCache:
               break
             default:
               workUnitStore satisfies never
@@ -1264,15 +1266,15 @@ function shouldForceRevalidate(
 
   if (workStore.dev && workUnitStore) {
     switch (workUnitStore.type) {
-      case 'request':
+      case WorkUnitType.Request:
         return workUnitStore.headers.get('cache-control') === 'no-cache'
-      case 'cache':
+      case WorkUnitType.Cache:
         return workUnitStore.forceRevalidate
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -1309,14 +1311,14 @@ function shouldDiscardCacheEntry(
   // be any pending revalidated tags.
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
+      case WorkUnitType.Prerender:
         return false
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

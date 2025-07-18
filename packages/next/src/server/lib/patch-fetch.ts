@@ -17,6 +17,7 @@ import type { FetchMetric } from '../base-http'
 import { createDedupeFetch } from './dedupe-fetch'
 import {
   getCacheSignal,
+  WorkUnitType,
   type WorkUnitAsyncStorage,
   type WorkUnitStore,
 } from '../app-render/work-unit-async-storage.external'
@@ -369,16 +370,16 @@ export function createPatchedFetcher(
 
         if (workUnitStore) {
           switch (workUnitStore.type) {
-            case 'prerender':
+            case WorkUnitType.Prerender:
             // TODO: Stop accumulating tags in client prerender. (fallthrough)
-            case 'prerender-client':
-            case 'prerender-ppr':
-            case 'prerender-legacy':
-            case 'cache':
+            case WorkUnitType.PrerenderClient:
+            case WorkUnitType.PrerenderPPR:
+            case WorkUnitType.PrerenderLegacy:
+            case WorkUnitType.Cache:
               revalidateStore = workUnitStore
               break
-            case 'request':
-            case 'unstable-cache':
+            case WorkUnitType.Request:
+            case WorkUnitType.UnstableCache:
               break
             default:
               workUnitStore satisfies never
@@ -404,17 +405,17 @@ export function createPatchedFetcher(
 
         if (workUnitStore) {
           switch (workUnitStore.type) {
-            case 'unstable-cache':
+            case WorkUnitType.UnstableCache:
               // Inside unstable-cache we treat it the same as force-no-store on
               // the page.
               pageFetchCacheMode = 'force-no-store'
               break
-            case 'prerender':
-            case 'prerender-client':
-            case 'prerender-ppr':
-            case 'prerender-legacy':
-            case 'request':
-            case 'cache':
+            case WorkUnitType.Prerender:
+            case WorkUnitType.PrerenderClient:
+            case WorkUnitType.PrerenderPPR:
+            case WorkUnitType.PrerenderLegacy:
+            case WorkUnitType.Request:
+            case WorkUnitType.Cache:
               break
             default:
               workUnitStore satisfies never
@@ -549,11 +550,11 @@ export function createPatchedFetcher(
         // it'll be a dynamic call. We don't have to issue that dynamic call.
         if (hasNoExplicitCacheConfig && workUnitStore !== undefined) {
           switch (workUnitStore.type) {
-            case 'prerender':
+            case WorkUnitType.Prerender:
             // While we don't want to do caching in the client scope we know the
             // fetch will be dynamic for cacheComponents so we may as well avoid the
             // call here. (fallthrough)
-            case 'prerender-client':
+            case WorkUnitType.PrerenderClient:
               if (cacheSignal) {
                 cacheSignal.endRead()
                 cacheSignal = null
@@ -563,11 +564,11 @@ export function createPatchedFetcher(
                 workUnitStore.renderSignal,
                 'fetch()'
               )
-            case 'prerender-ppr':
-            case 'prerender-legacy':
-            case 'request':
-            case 'cache':
-            case 'unstable-cache':
+            case WorkUnitType.PrerenderPPR:
+            case WorkUnitType.PrerenderLegacy:
+            case WorkUnitType.Request:
+            case WorkUnitType.Cache:
+            case WorkUnitType.UnstableCache:
               break
             default:
               workUnitStore satisfies never
@@ -663,8 +664,8 @@ export function createPatchedFetcher(
           if (finalRevalidate === 0) {
             if (workUnitStore) {
               switch (workUnitStore.type) {
-                case 'prerender':
-                case 'prerender-client':
+                case WorkUnitType.Prerender:
+                case WorkUnitType.PrerenderClient:
                   if (cacheSignal) {
                     cacheSignal.endRead()
                     cacheSignal = null
@@ -673,11 +674,11 @@ export function createPatchedFetcher(
                     workUnitStore.renderSignal,
                     'fetch()'
                   )
-                case 'prerender-ppr':
-                case 'prerender-legacy':
-                case 'request':
-                case 'cache':
-                case 'unstable-cache':
+                case WorkUnitType.PrerenderPPR:
+                case WorkUnitType.PrerenderLegacy:
+                case WorkUnitType.Request:
+                case WorkUnitType.Cache:
+                case WorkUnitType.UnstableCache:
                   break
                 default:
                   workUnitStore satisfies never
@@ -709,16 +710,16 @@ export function createPatchedFetcher(
 
         if (workUnitStore) {
           switch (workUnitStore.type) {
-            case 'request':
-            case 'cache':
+            case WorkUnitType.Request:
+            case WorkUnitType.Cache:
               isHmrRefresh = workUnitStore.isHmrRefresh ?? false
               serverComponentsHmrCache = workUnitStore.serverComponentsHmrCache
               break
-            case 'prerender':
-            case 'prerender-client':
-            case 'prerender-ppr':
-            case 'prerender-legacy':
-            case 'unstable-cache':
+            case WorkUnitType.Prerender:
+            case WorkUnitType.PrerenderClient:
+            case WorkUnitType.PrerenderPPR:
+            case WorkUnitType.PrerenderLegacy:
+            case WorkUnitType.UnstableCache:
               break
             default:
               workUnitStore satisfies never
@@ -833,8 +834,8 @@ export function createPatchedFetcher(
                   : undefined
 
                 switch (workUnitStore?.type) {
-                  case 'prerender':
-                  case 'prerender-client':
+                  case WorkUnitType.Prerender:
+                  case WorkUnitType.PrerenderClient:
                     return createCachedPrerenderResponse(
                       res,
                       cacheKey,
@@ -843,11 +844,11 @@ export function createPatchedFetcher(
                       normalizedRevalidate,
                       handleUnlock
                     )
-                  case 'prerender-ppr':
-                  case 'prerender-legacy':
-                  case 'request':
-                  case 'cache':
-                  case 'unstable-cache':
+                  case WorkUnitType.PrerenderPPR:
+                  case WorkUnitType.PrerenderLegacy:
+                  case WorkUnitType.Request:
+                  case WorkUnitType.Cache:
+                  case WorkUnitType.UnstableCache:
                   case undefined:
                     return createCachedDynamicResponse(
                       workStore,
@@ -904,8 +905,8 @@ export function createPatchedFetcher(
 
             if (hasNoExplicitCacheConfig && workUnitStore) {
               switch (workUnitStore.type) {
-                case 'prerender':
-                case 'prerender-client':
+                case WorkUnitType.Prerender:
+                case WorkUnitType.PrerenderClient:
                   // We sometimes use the cache to dedupe fetches that do not
                   // specify a cache configuration. In these cases we want to
                   // make sure we still exclude them from prerenders if
@@ -913,11 +914,11 @@ export function createPatchedFetcher(
                   // here.
                   await waitAtLeastOneReactRenderTask()
                   break
-                case 'prerender-ppr':
-                case 'prerender-legacy':
-                case 'request':
-                case 'cache':
-                case 'unstable-cache':
+                case WorkUnitType.PrerenderPPR:
+                case WorkUnitType.PrerenderLegacy:
+                case WorkUnitType.Request:
+                case WorkUnitType.Cache:
+                case WorkUnitType.UnstableCache:
                   break
                 default:
                   workUnitStore satisfies never
@@ -1004,8 +1005,8 @@ export function createPatchedFetcher(
             // If enabled, we should bail out of static generation.
             if (workUnitStore) {
               switch (workUnitStore.type) {
-                case 'prerender':
-                case 'prerender-client':
+                case WorkUnitType.Prerender:
+                case WorkUnitType.PrerenderClient:
                   if (cacheSignal) {
                     cacheSignal.endRead()
                     cacheSignal = null
@@ -1014,11 +1015,11 @@ export function createPatchedFetcher(
                     workUnitStore.renderSignal,
                     'fetch()'
                   )
-                case 'prerender-ppr':
-                case 'prerender-legacy':
-                case 'request':
-                case 'cache':
-                case 'unstable-cache':
+                case WorkUnitType.PrerenderPPR:
+                case WorkUnitType.PrerenderLegacy:
+                case WorkUnitType.Request:
+                case WorkUnitType.Cache:
+                case WorkUnitType.UnstableCache:
                   break
                 default:
                   workUnitStore satisfies never
@@ -1042,17 +1043,17 @@ export function createPatchedFetcher(
               // If enabled, we should bail out of static generation.
               if (workUnitStore) {
                 switch (workUnitStore.type) {
-                  case 'prerender':
-                  case 'prerender-client':
+                  case WorkUnitType.Prerender:
+                  case WorkUnitType.PrerenderClient:
                     return makeHangingPromise<Response>(
                       workUnitStore.renderSignal,
                       'fetch()'
                     )
-                  case 'request':
-                  case 'cache':
-                  case 'unstable-cache':
-                  case 'prerender-legacy':
-                  case 'prerender-ppr':
+                  case WorkUnitType.Request:
+                  case WorkUnitType.Cache:
+                  case WorkUnitType.UnstableCache:
+                  case WorkUnitType.PrerenderLegacy:
+                  case WorkUnitType.PrerenderPPR:
                     break
                   default:
                     workUnitStore satisfies never

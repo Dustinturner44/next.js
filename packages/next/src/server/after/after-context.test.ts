@@ -2,7 +2,10 @@ import { DetachedPromise } from '../../lib/detached-promise'
 import { AsyncLocalStorage } from 'async_hooks'
 
 import type { WorkStore } from '../app-render/work-async-storage.external'
-import type { WorkUnitStore } from '../app-render/work-unit-async-storage.external'
+import {
+  WorkUnitPhase,
+  type WorkUnitStore,
+} from '../app-render/work-unit-async-storage.external'
 import type { AfterContext } from './after-context'
 
 describe('AfterContext', () => {
@@ -561,5 +564,5 @@ const createMockWorkStore = (afterContext: AfterContext): WorkStore => {
 }
 
 const createMockWorkUnitStore = () => {
-  return { phase: 'render' } as WorkUnitStore
+  return { phase: WorkUnitPhase.Render } as WorkUnitStore
 }

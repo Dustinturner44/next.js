@@ -10,6 +10,8 @@ import {
   getCacheSignal,
   getDraftModeProviderForCacheScope,
   workUnitAsyncStorage,
+  WorkUnitPhase,
+  WorkUnitType,
 } from '../../app-render/work-unit-async-storage.external'
 import {
   CachedRouteKind,
@@ -140,8 +142,8 @@ export function unstable_cache<T extends Callback>(
       const implicitTags = workUnitStore?.implicitTags
 
       const innerCacheStore: UnstableCacheStore = {
-        type: 'unstable-cache',
-        phase: 'render',
+        type: WorkUnitType.UnstableCache,
+        phase: WorkUnitPhase.Render,
         implicitTags,
         draftMode:
           workUnitStore &&
@@ -160,10 +162,10 @@ export function unstable_cache<T extends Callback>(
 
         if (workUnitStore) {
           switch (workUnitStore.type) {
-            case 'cache':
-            case 'prerender':
-            case 'prerender-ppr':
-            case 'prerender-legacy':
+            case WorkUnitType.Cache:
+            case WorkUnitType.Prerender:
+            case WorkUnitType.PrerenderPPR:
+            case WorkUnitType.PrerenderLegacy:
               // We update the store's revalidate property if the option.revalidate is a higher precedence
               // options.revalidate === undefined doesn't affect timing.
               // options.revalidate === false doesn't shrink timing. it stays at the maximum.
@@ -188,11 +190,11 @@ export function unstable_cache<T extends Callback>(
                 }
               }
               break
-            case 'unstable-cache':
+            case WorkUnitType.UnstableCache:
               isNestedUnstableCache = true
               break
-            case 'prerender-client':
-            case 'request':
+            case WorkUnitType.PrerenderClient:
+            case WorkUnitType.Request:
               break
             default:
               workUnitStore satisfies never
@@ -371,7 +373,7 @@ function getFetchUrlPrefix(
   workUnitStore: WorkUnitStore
 ): string {
   switch (workUnitStore.type) {
-    case 'request':
+    case WorkUnitType.Request:
       const pathname = workUnitStore.url.pathname
       const searchParams = new URLSearchParams(workUnitStore.url.search)
 
@@ -381,12 +383,12 @@ function getFetchUrlPrefix(
         .join('&')
 
       return `${pathname}${sortedSearch.length ? '?' : ''}${sortedSearch}`
-    case 'prerender':
-    case 'prerender-client':
-    case 'prerender-ppr':
-    case 'prerender-legacy':
-    case 'cache':
-    case 'unstable-cache':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
       return workStore.route
     default:
       return workUnitStore satisfies never

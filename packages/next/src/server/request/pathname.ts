@@ -7,6 +7,7 @@ import {
 
 import {
   workUnitAsyncStorage,
+  WorkUnitType,
   type PrerenderStore,
 } from '../app-render/work-unit-async-storage.external'
 import { makeHangingPromise } from '../dynamic-rendering-utils'
@@ -19,19 +20,19 @@ export function createServerPathnameForMetadata(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy': {
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy: {
         return createPrerenderPathname(
           underlyingPathname,
           workStore,
           workUnitStore
         )
       }
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -48,18 +49,18 @@ function createPrerenderPathname(
   const fallbackParams = workStore.fallbackRouteParams
   if (fallbackParams && fallbackParams.size > 0) {
     switch (prerenderStore.type) {
-      case 'prerender':
+      case WorkUnitType.Prerender:
         return makeHangingPromise<string>(
           prerenderStore.renderSignal,
           '`pathname`'
         )
-      case 'prerender-client':
+      case WorkUnitType.PrerenderClient:
         throw new InvariantError(
           'createPrerenderPathname was called inside a client component scope.'
         )
-      case 'prerender-ppr':
+      case WorkUnitType.PrerenderPPR:
         return makeErroringPathname(workStore, prerenderStore.dynamicTracking)
-      case 'prerender-legacy':
+      case WorkUnitType.PrerenderLegacy:
         return makeErroringPathname(workStore, null)
       default:
         prerenderStore satisfies never

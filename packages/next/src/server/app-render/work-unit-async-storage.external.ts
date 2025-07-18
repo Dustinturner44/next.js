@@ -18,7 +18,21 @@ import type { ImplicitTags } from '../lib/implicit-tags'
 import type { WorkStore } from './work-async-storage.external'
 import { NEXT_HMR_REFRESH_HASH_COOKIE } from '../../client/components/app-router-headers'
 
-export type WorkUnitPhase = 'action' | 'render' | 'after'
+export enum WorkUnitPhase {
+  Action,
+  Render,
+  After,
+}
+
+export enum WorkUnitType {
+  Request,
+  Prerender,
+  PrerenderClient,
+  PrerenderPPR,
+  PrerenderLegacy,
+  Cache,
+  UnstableCache,
+}
 
 export interface CommonWorkUnitStore {
   /** NOTE: Will be mutated as phases change */
@@ -27,7 +41,7 @@ export interface CommonWorkUnitStore {
 }
 
 export interface RequestStore extends CommonWorkUnitStore {
-  type: 'request'
+  readonly type: WorkUnitType.Request
 
   /**
    * The URL of the request. This only specifies the pathname and the search
@@ -83,11 +97,11 @@ export type PrerenderStoreModern =
   | PrerenderStoreModernServer
 
 interface PrerenderStoreModernClient extends PrerenderStoreModernCommon {
-  type: 'prerender-client'
+  readonly type: WorkUnitType.PrerenderClient
 }
 
 interface PrerenderStoreModernServer extends PrerenderStoreModernCommon {
-  type: 'prerender'
+  readonly type: WorkUnitType.Prerender
 }
 
 interface PrerenderStoreModernCommon extends CommonWorkUnitStore {
@@ -169,7 +183,7 @@ interface PrerenderStoreModernCommon extends CommonWorkUnitStore {
 }
 
 export interface PrerenderStorePPR extends CommonWorkUnitStore {
-  type: 'prerender-ppr'
+  readonly type: WorkUnitType.PrerenderPPR
   readonly rootParams: Params
   readonly dynamicTracking: null | DynamicTrackingState
   // Collected revalidate times and tags for this document during the prerender.
@@ -185,7 +199,7 @@ export interface PrerenderStorePPR extends CommonWorkUnitStore {
 }
 
 export interface PrerenderStoreLegacy extends CommonWorkUnitStore {
-  type: 'prerender-legacy'
+  readonly type: WorkUnitType.PrerenderLegacy
   readonly rootParams: Params
   // Collected revalidate times and tags for this document during the prerender.
   revalidate: number // in seconds. 0 means dynamic. INFINITE_CACHE and higher means never revalidate.
@@ -214,7 +228,7 @@ export interface CommonCacheStore
 }
 
 export interface UseCacheStore extends CommonCacheStore {
-  type: 'cache'
+  readonly type: WorkUnitType.Cache
   // Collected revalidate times and tags for this cache entry during the cache render.
   revalidate: number // implicit revalidate time from inner caches / fetches
   expire: number // server expiration time
@@ -230,7 +244,7 @@ export interface UseCacheStore extends CommonCacheStore {
 }
 
 export interface UnstableCacheStore extends CommonCacheStore {
-  type: 'unstable-cache'
+  readonly type: WorkUnitType.UnstableCache
 }
 
 /**
@@ -260,17 +274,17 @@ export function getPrerenderResumeDataCache(
   workUnitStore: WorkUnitStore
 ): PrerenderResumeDataCache | null {
   switch (workUnitStore.type) {
-    case 'prerender':
-    case 'prerender-ppr':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderPPR:
       return workUnitStore.prerenderResumeDataCache
-    case 'prerender-client':
+    case WorkUnitType.PrerenderClient:
       // TODO eliminate fetch caching in client scope and stop exposing this data
       // cache during SSR.
       return workUnitStore.prerenderResumeDataCache
-    case 'prerender-legacy':
-    case 'request':
-    case 'cache':
-    case 'unstable-cache':
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.Request:
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
       return null
     default:
       return workUnitStore satisfies never
@@ -281,23 +295,23 @@ export function getRenderResumeDataCache(
   workUnitStore: WorkUnitStore
 ): RenderResumeDataCache | null {
   switch (workUnitStore.type) {
-    case 'request':
+    case WorkUnitType.Request:
       return workUnitStore.renderResumeDataCache
-    case 'prerender':
-    case 'prerender-client':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
       if (workUnitStore.renderResumeDataCache) {
         // If we are in a prerender, we might have a render resume data cache
         // that is used to read from prefilled caches.
         return workUnitStore.renderResumeDataCache
       }
     // fallthrough
-    case 'prerender-ppr':
+    case WorkUnitType.PrerenderPPR:
       // Otherwise we return the mutable resume data cache here as an immutable
       // version of the cache as it can also be used for reading.
       return workUnitStore.prerenderResumeDataCache
-    case 'cache':
-    case 'unstable-cache':
-    case 'prerender-legacy':
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
+    case WorkUnitType.PrerenderLegacy:
       return null
     default:
       return workUnitStore satisfies never
@@ -310,15 +324,15 @@ export function getHmrRefreshHash(
 ): string | undefined {
   if (workStore.dev) {
     switch (workUnitStore.type) {
-      case 'cache':
-      case 'prerender':
+      case WorkUnitType.Cache:
+      case WorkUnitType.Prerender:
         return workUnitStore.hmrRefreshHash
-      case 'request':
+      case WorkUnitType.Request:
         return workUnitStore.cookies.get(NEXT_HMR_REFRESH_HASH_COOKIE)?.value
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'unstable-cache':
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -337,14 +351,14 @@ export function getDraftModeProviderForCacheScope(
 ): DraftModeProvider | undefined {
   if (workStore.isDraftMode) {
     switch (workUnitStore.type) {
-      case 'cache':
-      case 'unstable-cache':
-      case 'request':
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
+      case WorkUnitType.Request:
         return workUnitStore.draftMode
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         break
       default:
         workUnitStore satisfies never
@@ -358,14 +372,14 @@ export function getCacheSignal(
   workUnitStore: WorkUnitStore
 ): CacheSignal | null {
   switch (workUnitStore.type) {
-    case 'prerender':
-    case 'prerender-client':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
       return workUnitStore.cacheSignal
-    case 'prerender-ppr':
-    case 'prerender-legacy':
-    case 'request':
-    case 'cache':
-    case 'unstable-cache':
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.Request:
+    case WorkUnitType.Cache:
+    case WorkUnitType.UnstableCache:
       return null
     default:
       return workUnitStore satisfies never

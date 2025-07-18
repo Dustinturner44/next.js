@@ -1,6 +1,9 @@
 import { BailoutToCSRError } from '../../shared/lib/lazy-dynamic/bailout-to-csr'
 import { workAsyncStorage } from '../../server/app-render/work-async-storage.external'
-import { workUnitAsyncStorage } from '../../server/app-render/work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitType,
+} from '../../server/app-render/work-unit-async-storage.external'
 
 export function bailoutToClientRendering(reason: string): void | never {
   const workStore = workAsyncStorage.getStore()
@@ -11,14 +14,14 @@ export function bailoutToClientRendering(reason: string): void | never {
 
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         throw new BailoutToCSRError(reason)
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

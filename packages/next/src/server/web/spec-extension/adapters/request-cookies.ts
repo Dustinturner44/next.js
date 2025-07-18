@@ -3,7 +3,10 @@ import { RequestCookies } from '../cookies'
 import { ResponseCookies } from '../cookies'
 import { ReflectAdapter } from './reflect'
 import { workAsyncStorage } from '../../../app-render/work-async-storage.external'
-import type { RequestStore } from '../../../app-render/work-unit-async-storage.external'
+import {
+  WorkUnitPhase,
+  type RequestStore,
+} from '../../../app-render/work-unit-async-storage.external'
 
 /**
  * @internal
@@ -205,7 +208,7 @@ export function createCookiesWithMutableAccessCheck(
 }
 
 export function areCookiesMutableInCurrentPhase(requestStore: RequestStore) {
-  return requestStore.phase === 'action'
+  return requestStore.phase === WorkUnitPhase.Action
 }
 
 /** Ensure that cookies() starts throwing on mutation

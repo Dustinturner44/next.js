@@ -3,7 +3,10 @@ import type { BinaryStreamOf } from './app-render'
 
 import { htmlEscapeJsonString } from '../htmlescape'
 import type { DeepReadonly } from '../../shared/lib/deep-readonly'
-import { workUnitAsyncStorage } from './work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitType,
+} from './work-unit-async-storage.external'
 import { InvariantError } from '../../shared/lib/invariant-error'
 
 const isEdgeRuntime = process.env.NEXT_RUNTIME === 'edge'
@@ -57,18 +60,18 @@ export function useFlightStream<T>(
     }
 
     switch (workUnitStore.type) {
-      case 'prerender-client':
+      case WorkUnitType.PrerenderClient:
         const responseOnNextTick = new Promise<T>((resolve) => {
           process.nextTick(() => resolve(newResponse))
         })
         flightResponses.set(flightStream, responseOnNextTick)
         return responseOnNextTick
-      case 'prerender':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

@@ -1,5 +1,8 @@
 import { dim } from '../../lib/picocolors'
-import { workUnitAsyncStorage } from '../app-render/work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitType,
+} from '../app-render/work-unit-async-storage.external'
 
 type InterceptableConsoleMethod =
   | 'error'
@@ -139,15 +142,15 @@ function patchConsoleMethodDEV(methodName: InterceptableConsoleMethod): void {
       const workUnitStore = workUnitAsyncStorage.getStore()
 
       switch (workUnitStore?.type) {
-        case 'prerender':
-        case 'prerender-client':
+        case WorkUnitType.Prerender:
+        case WorkUnitType.PrerenderClient:
           originalMethod.apply(this, dimConsoleCall(methodName, args))
           break
-        case 'prerender-ppr':
-        case 'prerender-legacy':
-        case 'request':
-        case 'cache':
-        case 'unstable-cache':
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.PrerenderLegacy:
+        case WorkUnitType.Request:
+        case WorkUnitType.Cache:
+        case WorkUnitType.UnstableCache:
         case undefined:
           originalMethod.apply(this, args)
           break

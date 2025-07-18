@@ -8,7 +8,11 @@ import {
   NEXT_CACHE_SOFT_TAG_MAX_LENGTH,
 } from '../../../lib/constants'
 import { workAsyncStorage } from '../../app-render/work-async-storage.external'
-import { workUnitAsyncStorage } from '../../app-render/work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitPhase,
+  WorkUnitType,
+} from '../../app-render/work-unit-async-storage.external'
 import { DynamicServerError } from '../../../client/components/hooks-server-context'
 import { InvariantError } from '../../../shared/lib/invariant-error'
 
@@ -93,22 +97,22 @@ function revalidate(tags: string[], expression: string) {
 
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
-    if (workUnitStore.phase === 'render') {
+    if (workUnitStore.phase === WorkUnitPhase.Render) {
       throw new Error(
         `Route ${store.route} used "${expression}" during render which is unsupported. To ensure revalidation is performed consistently it must always happen outside of renders and cached functions. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`
       )
     }
 
     switch (workUnitStore.type) {
-      case 'cache':
+      case WorkUnitType.Cache:
         throw new Error(
           `Route ${store.route} used "${expression}" inside a "use cache" which is unsupported. To ensure revalidation is performed consistently it must always happen outside of renders and cached functions. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`
         )
-      case 'unstable-cache':
+      case WorkUnitType.UnstableCache:
         throw new Error(
           `Route ${store.route} used "${expression}" inside a function cached with "unstable_cache(...)" which is unsupported. To ensure revalidation is performed consistently it must always happen outside of renders and cached functions. See more info here: https://nextjs.org/docs/app/building-your-application/rendering/static-and-dynamic#dynamic-rendering`
         )
-      case 'prerender':
+      case WorkUnitType.Prerender:
         // cacheComponents Prerender
         const error = new Error(
           `Route ${store.route} used ${expression} without first calling \`await connection()\`.`
@@ -119,17 +123,17 @@ function revalidate(tags: string[], expression: string) {
           error,
           workUnitStore
         )
-      case 'prerender-client':
+      case WorkUnitType.PrerenderClient:
         throw new InvariantError(
           `${expression} must not be used within a client component. Next.js should be preventing ${expression} from being included in client components statically, but did not in this case.`
         )
-      case 'prerender-ppr':
+      case WorkUnitType.PrerenderPPR:
         return postponeWithTracking(
           store.route,
           expression,
           workUnitStore.dynamicTracking
         )
-      case 'prerender-legacy':
+      case WorkUnitType.PrerenderLegacy:
         workUnitStore.revalidate = 0
 
         const err = new DynamicServerError(
@@ -139,7 +143,7 @@ function revalidate(tags: string[], expression: string) {
         store.dynamicUsageStack = err.stack
 
         throw err
-      case 'request':
+      case WorkUnitType.Request:
         if (process.env.NODE_ENV !== 'production') {
           // TODO: This is most likely incorrect. It would lead to the ISR
           // status being flipped when revalidating a static page with a server

@@ -15,6 +15,7 @@ import {
   type PrerenderStoreLegacy,
   type PrerenderStorePPR,
   type PrerenderStoreModern,
+  WorkUnitType,
 } from '../app-render/work-unit-async-storage.external'
 import { InvariantError } from '../../shared/lib/invariant-error'
 import { makeHangingPromise } from '../dynamic-rendering-utils'
@@ -67,14 +68,14 @@ export function createSearchParamsFromClient(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         return createPrerenderSearchParams(workStore, workUnitStore)
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -94,14 +95,14 @@ export function createServerSearchParamsForServerPage(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         return createPrerenderSearchParams(workStore, workUnitStore)
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -122,16 +123,16 @@ export function createPrerenderSearchParamsForClientPage(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
         // We're prerendering in a mode that aborts (cacheComponents) and should stall
         // the promise to ensure the RSC side is considered dynamic
         return makeHangingPromise(workUnitStore.renderSignal, '`searchParams`')
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -154,12 +155,12 @@ function createPrerenderSearchParams(
   }
 
   switch (prerenderStore.type) {
-    case 'prerender':
-    case 'prerender-client':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
       // We are in a cacheComponents (PPR or otherwise) prerender
       return makeHangingSearchParams(prerenderStore)
-    case 'prerender-ppr':
-    case 'prerender-legacy':
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
       // We are in a legacy static generation and need to interrupt the
       // prerender when search params are accessed.
       return makeErroringExoticSearchParams(workStore, prerenderStore)
@@ -290,7 +291,7 @@ function makeErroringExoticSearchParams(
               workStore.route,
               expression
             )
-          } else if (prerenderStore.type === 'prerender-ppr') {
+          } else if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
             // PPR Prerender (no cacheComponents)
             postponeWithTracking(
               workStore.route,
@@ -315,7 +316,7 @@ function makeErroringExoticSearchParams(
               workStore.route,
               expression
             )
-          } else if (prerenderStore.type === 'prerender-ppr') {
+          } else if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
             // PPR Prerender (no cacheComponents)
             postponeWithTracking(
               workStore.route,
@@ -343,7 +344,7 @@ function makeErroringExoticSearchParams(
                 workStore.route,
                 expression
               )
-            } else if (prerenderStore.type === 'prerender-ppr') {
+            } else if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
               // PPR Prerender (no cacheComponents)
               postponeWithTracking(
                 workStore.route,
@@ -378,7 +379,7 @@ function makeErroringExoticSearchParams(
             workStore.route,
             expression
           )
-        } else if (prerenderStore.type === 'prerender-ppr') {
+        } else if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
           // PPR Prerender (no cacheComponents)
           postponeWithTracking(
             workStore.route,
@@ -405,7 +406,7 @@ function makeErroringExoticSearchParams(
           workStore.route,
           expression
         )
-      } else if (prerenderStore.type === 'prerender-ppr') {
+      } else if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
         // PPR Prerender (no cacheComponents)
         postponeWithTracking(
           workStore.route,
@@ -782,19 +783,19 @@ function syncIODev(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'request':
+      case WorkUnitType.Request:
         if (workUnitStore.prerenderPhase === true) {
           // When we're rendering dynamically in dev, we need to advance out of
           // the Prerender environment when we read Request data synchronously.
           trackSynchronousRequestDataAccessInDev(workUnitStore)
         }
         break
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

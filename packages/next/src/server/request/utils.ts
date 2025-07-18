@@ -1,6 +1,7 @@
 import { StaticGenBailoutError } from '../../client/components/static-generation-bailout'
 import { afterTaskAsyncStorage } from '../app-render/after-task-async-storage.external'
 import type { WorkStore } from '../app-render/work-async-storage.external'
+import { WorkUnitPhase } from '../app-render/work-unit-async-storage.external'
 
 export function throwWithStaticGenerationBailoutError(
   route: string,
@@ -36,5 +37,5 @@ export function throwForSearchParamsAccessInUseCache(
 
 export function isRequestAPICallableInsideAfter() {
   const afterTaskStore = afterTaskAsyncStorage.getStore()
-  return afterTaskStore?.rootTaskSpawnPhase === 'action'
+  return afterTaskStore?.rootTaskSpawnPhase === WorkUnitPhase.After
 }

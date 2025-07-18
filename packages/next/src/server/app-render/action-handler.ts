@@ -53,7 +53,10 @@ import { isNodeNextRequest, isWebNextRequest } from '../base-http/helpers'
 import { RedirectStatusCode } from '../../client/components/redirect-status-code'
 import { synchronizeMutableCookies } from '../async-storage/request-store'
 import type { TemporaryReferenceSet } from 'react-server-dom-webpack/server'
-import { workUnitAsyncStorage } from '../app-render/work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitPhase,
+} from '../app-render/work-unit-async-storage.external'
 import { InvariantError } from '../../shared/lib/invariant-error'
 import { executeRevalidates } from '../revalidation-utils'
 import { getRequestMeta } from '../request-meta'
@@ -1137,13 +1140,13 @@ async function executeActionAndPrepareForRender<
   workStore: WorkStore,
   requestStore: RequestStore
 ): Promise<Awaited<ReturnType<TFn>>> {
-  requestStore.phase = 'action'
+  requestStore.phase = WorkUnitPhase.Action
   try {
     return await workUnitAsyncStorage.run(requestStore, () =>
       action.apply(null, args)
     )
   } finally {
-    requestStore.phase = 'render'
+    requestStore.phase = WorkUnitPhase.Render
 
     // When we switch to the render phase, cookies() will return
     // `workUnitStore.cookies` instead of `workUnitStore.userspaceMutableCookies`.

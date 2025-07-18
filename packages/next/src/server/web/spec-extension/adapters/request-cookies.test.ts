@@ -1,5 +1,7 @@
 import {
   workUnitAsyncStorage,
+  WorkUnitPhase,
+  WorkUnitType,
   type RequestStore,
 } from '../../../app-render/work-unit-async-storage.external'
 import { RequestCookies, ResponseCookies } from '../cookies'
@@ -112,19 +114,19 @@ describe('wrapWithMutableAccessCheck', () => {
     const underlyingCookies = new ResponseCookies(headers)
 
     return {
-      type: 'request',
+      type: WorkUnitType.Request,
       phase,
       mutableCookies: underlyingCookies,
     } as RequestStore
   }
 
   it('prevents setting cookies in the render phase', () => {
-    const requestStore = createMockRequestStore('action')
+    const requestStore = createMockRequestStore(WorkUnitPhase.Action)
     workUnitAsyncStorage.run(requestStore, () => {
       const cookies = createCookiesWithMutableAccessCheck(requestStore)
 
       // simulate changing phases
-      requestStore.phase = 'render'
+      requestStore.phase = WorkUnitPhase.Render
 
       const EXPECTED_ERROR =
         /Cookies can only be modified in a Server Action or Route Handler\./
@@ -138,13 +140,13 @@ describe('wrapWithMutableAccessCheck', () => {
   })
 
   it('prevents deleting cookies in the render phase', () => {
-    const requestStore = createMockRequestStore('action')
+    const requestStore = createMockRequestStore(WorkUnitPhase.Action)
     workUnitAsyncStorage.run(requestStore, () => {
       const cookies = createCookiesWithMutableAccessCheck(requestStore)
       cookies.set('foo', '1')
 
       // simulate changing phases
-      requestStore.phase = 'render'
+      requestStore.phase = WorkUnitPhase.Render
 
       const EXPECTED_ERROR =
         /Cookies can only be modified in a Server Action or Route Handler\./

@@ -8,6 +8,7 @@ import { withExecuteRevalidates } from '../revalidation-utils'
 import { bindSnapshot } from '../app-render/async-local-storage'
 import {
   workUnitAsyncStorage,
+  WorkUnitPhase,
   type WorkUnitStore,
 } from '../app-render/work-unit-async-storage.external'
 import { afterTaskAsyncStorage } from '../app-render/after-task-async-storage.external'
@@ -106,7 +107,7 @@ export class AfterContext {
     if (this.callbackQueue.size === 0) return
 
     for (const workUnitStore of this.workUnitStores) {
-      workUnitStore.phase = 'after'
+      workUnitStore.phase = WorkUnitPhase.After
     }
 
     const workStore = workAsyncStorage.getStore()

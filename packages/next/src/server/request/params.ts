@@ -14,6 +14,7 @@ import {
   type PrerenderStorePPR,
   type PrerenderStoreLegacy,
   type PrerenderStoreModern,
+  WorkUnitType,
 } from '../app-render/work-unit-async-storage.external'
 import { InvariantError } from '../../shared/lib/invariant-error'
 import {
@@ -63,14 +64,14 @@ export function createParamsFromClient(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         return createPrerenderParams(underlyingParams, workStore, workUnitStore)
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -91,14 +92,14 @@ export function createServerParamsForRoute(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         return createPrerenderParams(underlyingParams, workStore, workUnitStore)
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -114,14 +115,14 @@ export function createServerParamsForServerSegment(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
         return createPrerenderParams(underlyingParams, workStore, workUnitStore)
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -137,8 +138,8 @@ export function createPrerenderParamsForClientSegment(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'prerender':
-      case 'prerender-client':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
         const fallbackParams = workStore.fallbackRouteParams
         if (fallbackParams) {
           for (let key in underlyingParams) {
@@ -152,11 +153,11 @@ export function createPrerenderParamsForClientSegment(
           }
         }
         break
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'request':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Request:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never
@@ -186,12 +187,12 @@ function createPrerenderParams(
     if (hasSomeFallbackParams) {
       // params need to be treated as dynamic because we have at least one fallback param
       switch (prerenderStore.type) {
-        case 'prerender':
-        case 'prerender-client':
+        case WorkUnitType.Prerender:
+        case WorkUnitType.PrerenderClient:
           // We are in a cacheComponents prerender
           return makeHangingParams(underlyingParams, prerenderStore)
-        case 'prerender-ppr':
-        case 'prerender-legacy':
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.PrerenderLegacy:
           return makeErroringExoticParams(
             underlyingParams,
             fallbackParams,
@@ -316,7 +317,7 @@ function makeErroringExoticParams(
             // fallback shells
             // TODO remove this comment when cacheComponents is the default since there
             // will be no `dynamic = "error"`
-            if (prerenderStore.type === 'prerender-ppr') {
+            if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
               // PPR Prerender (no cacheComponents)
               postponeWithTracking(
                 workStore.route,
@@ -343,7 +344,7 @@ function makeErroringExoticParams(
             // fallback shells
             // TODO remove this comment when cacheComponents is the default since there
             // will be no `dynamic = "error"`
-            if (prerenderStore.type === 'prerender-ppr') {
+            if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
               // PPR Prerender (no cacheComponents)
               postponeWithTracking(
                 workStore.route,
@@ -543,19 +544,19 @@ function syncIODev(
   const workUnitStore = workUnitAsyncStorage.getStore()
   if (workUnitStore) {
     switch (workUnitStore.type) {
-      case 'request':
+      case WorkUnitType.Request:
         if (workUnitStore.prerenderPhase === true) {
           // When we're rendering dynamically in dev, we need to advance out of
           // the Prerender environment when we read Request data synchronously.
           trackSynchronousRequestDataAccessInDev(workUnitStore)
         }
         break
-      case 'prerender':
-      case 'prerender-client':
-      case 'prerender-ppr':
-      case 'prerender-legacy':
-      case 'cache':
-      case 'unstable-cache':
+      case WorkUnitType.Prerender:
+      case WorkUnitType.PrerenderClient:
+      case WorkUnitType.PrerenderPPR:
+      case WorkUnitType.PrerenderLegacy:
+      case WorkUnitType.Cache:
+      case WorkUnitType.UnstableCache:
         break
       default:
         workUnitStore satisfies never

@@ -9,6 +9,7 @@ import {
 } from '../app-render/work-async-storage.external'
 import {
   workUnitAsyncStorage,
+  WorkUnitType,
   type PrerenderStore,
   type PrerenderStoreLegacy,
   type PrerenderStorePPR,
@@ -39,22 +40,22 @@ export async function unstable_rootParams(): Promise<Params> {
   }
 
   switch (workUnitStore.type) {
-    case 'unstable-cache':
-    case 'cache': {
+    case WorkUnitType.UnstableCache:
+    case WorkUnitType.Cache: {
       throw new Error(
         `Route ${workStore.route} used \`unstable_rootParams()\` inside \`"use cache"\` or \`unstable_cache\`. Support for this API inside cache scopes is planned for a future version of Next.js.`
       )
     }
-    case 'prerender':
-    case 'prerender-client':
-    case 'prerender-ppr':
-    case 'prerender-legacy':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderClient:
+    case WorkUnitType.PrerenderPPR:
+    case WorkUnitType.PrerenderLegacy:
       return createPrerenderRootParams(
         workUnitStore.rootParams,
         workStore,
         workUnitStore
       )
-    case 'request':
+    case WorkUnitType.Request:
       return Promise.resolve(workUnitStore.rootParams)
     default:
       return workUnitStore satisfies never
@@ -67,15 +68,15 @@ function createPrerenderRootParams(
   prerenderStore: PrerenderStore
 ): Promise<Params> {
   switch (prerenderStore.type) {
-    case 'prerender-client': {
+    case WorkUnitType.PrerenderClient: {
       const exportName = '`unstable_rootParams`'
       throw new InvariantError(
         `${exportName} must not be used within a client component. Next.js should be preventing ${exportName} from being included in client components statically, but did not in this case.`
       )
     }
-    case 'prerender':
-    case 'prerender-legacy':
-    case 'prerender-ppr':
+    case WorkUnitType.Prerender:
+    case WorkUnitType.PrerenderLegacy:
+    case WorkUnitType.PrerenderPPR:
     default:
   }
 
@@ -92,7 +93,7 @@ function createPrerenderRootParams(
     if (hasSomeFallbackParams) {
       // params need to be treated as dynamic because we have at least one fallback param
       switch (prerenderStore.type) {
-        case 'prerender':
+        case WorkUnitType.Prerender:
           // We are in a cacheComponents prerender
           const cachedParams = CachedParams.get(underlyingParams)
           if (cachedParams) {
@@ -106,8 +107,8 @@ function createPrerenderRootParams(
           CachedParams.set(underlyingParams, promise)
 
           return promise
-        case 'prerender-ppr':
-        case 'prerender-legacy':
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.PrerenderLegacy:
           // We aren't in a cacheComponents prerender but we do have fallback params at this
           // level so we need to make an erroring params object which will postpone
           // if you access the fallback params
@@ -164,7 +165,7 @@ function makeErroringRootParams(
             // fallback shells
             // TODO remove this comment when cacheComponents is the default since there
             // will be no `dynamic = "error"`
-            if (prerenderStore.type === 'prerender-ppr') {
+            if (prerenderStore.type === WorkUnitType.PrerenderPPR) {
               // PPR Prerender (no cacheComponents)
               postponeWithTracking(
                 workStore.route,

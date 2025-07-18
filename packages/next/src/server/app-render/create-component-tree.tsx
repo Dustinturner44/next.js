@@ -19,7 +19,10 @@ import { NextNodeServerSpan } from '../lib/trace/constants'
 import { StaticGenBailoutError } from '../../client/components/static-generation-bailout'
 import type { LoadingModuleData } from '../../shared/lib/app-router-context.shared-runtime'
 import type { Params } from '../request/params'
-import { workUnitAsyncStorage } from './work-unit-async-storage.external'
+import {
+  workUnitAsyncStorage,
+  WorkUnitType,
+} from './work-unit-async-storage.external'
 import { OUTLET_BOUNDARY_NAME } from '../../lib/metadata/metadata-constants'
 import type {
   UseCacheLayoutComponentProps,
@@ -294,17 +297,17 @@ async function createComponentTreeInternal({
 
     if (workUnitStore) {
       switch (workUnitStore.type) {
-        case 'prerender':
-        case 'prerender-legacy':
-        case 'prerender-ppr':
-        case 'cache':
+        case WorkUnitType.Prerender:
+        case WorkUnitType.PrerenderLegacy:
+        case WorkUnitType.PrerenderPPR:
+        case WorkUnitType.Cache:
           if (workUnitStore.revalidate > defaultRevalidate) {
             workUnitStore.revalidate = defaultRevalidate
           }
           break
-        case 'prerender-client':
-        case 'request':
-        case 'unstable-cache':
+        case WorkUnitType.PrerenderClient:
+        case WorkUnitType.Request:
+        case WorkUnitType.UnstableCache:
           break
         default:
           workUnitStore satisfies never

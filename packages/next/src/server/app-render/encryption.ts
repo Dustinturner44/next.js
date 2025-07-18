@@ -21,6 +21,7 @@ import {
   getPrerenderResumeDataCache,
   getRenderResumeDataCache,
   workUnitAsyncStorage,
+  WorkUnitType,
 } from './work-unit-async-storage.external'
 import { createHangingInputAbortSignal } from './dynamic-rendering'
 import React from 'react'
@@ -254,7 +255,7 @@ export async function decryptActionBoundArgs(
         controller.enqueue(textEncoder.encode(decrypted))
 
         switch (workUnitStore?.type) {
-          case 'prerender':
+          case WorkUnitType.Prerender:
             // Explicitly don't close the stream here (until prerendering is
             // complete) so that hanging promises are not rejected.
             if (workUnitStore.renderSignal.aborted) {
@@ -267,12 +268,12 @@ export async function decryptActionBoundArgs(
               )
             }
             break
-          case 'prerender-client':
-          case 'prerender-ppr':
-          case 'prerender-legacy':
-          case 'request':
-          case 'cache':
-          case 'unstable-cache':
+          case WorkUnitType.PrerenderClient:
+          case WorkUnitType.PrerenderPPR:
+          case WorkUnitType.PrerenderLegacy:
+          case WorkUnitType.Request:
+          case WorkUnitType.Cache:
+          case WorkUnitType.UnstableCache:
           case undefined:
             return controller.close()
           default:

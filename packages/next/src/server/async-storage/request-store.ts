@@ -1,6 +1,10 @@
 import type { BaseNextRequest, BaseNextResponse } from '../base-http'
 import type { IncomingHttpHeaders } from 'http'
-import type { RequestStore } from '../app-render/work-unit-async-storage.external'
+import {
+  WorkUnitPhase,
+  WorkUnitType,
+  type RequestStore,
+} from '../app-render/work-unit-async-storage.external'
 import type { RenderOpts } from '../app-render/types'
 import type { NextRequest } from '../web/spec-extension/request'
 import type { __ApiPreviewProps } from '../api-utils'
@@ -118,7 +122,7 @@ export function createRequestStoreForRender(
 ): RequestStore {
   return createRequestStoreImpl(
     // Pages start in render phase by default
-    'render',
+    WorkUnitPhase.Render,
     req,
     res,
     url,
@@ -141,7 +145,7 @@ export function createRequestStoreForAPI(
 ): RequestStore {
   return createRequestStoreImpl(
     // API routes start in action phase by default
-    'action',
+    WorkUnitPhase.Action,
     req,
     undefined,
     url,
@@ -183,7 +187,7 @@ function createRequestStoreImpl(
   } = {}
 
   return {
-    type: 'request',
+    type: WorkUnitType.Request,
     phase,
     implicitTags,
     // Rather than just using the whole `url` here, we pull the parts we want
