@@ -326,8 +326,11 @@ async function getSource(
     }
   }
 
-  if (path.isAbsolute(sourceURL)) {
-    sourceURL = pathToFileURL(sourceURL).href
+  if (path.isAbsolute(sourceURL) || sourceURL.startsWith('file://')) {
+    // Either a CommonJS script or ES module.
+    // We're likely in a module evaluation stack that's not fully sourcemapped in Webpack
+    // Webpack should've emitted a sourceMappingURL for the VM to pick up.
+    return undefined
   }
 
   // webpack-internal:///./src/hello.tsx => ./src/hello.tsx
