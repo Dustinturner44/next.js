@@ -381,33 +381,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
       )}
 
       {/* Instrumentation status indicator */}
-      {hasLoaded && !hasError && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            padding: '4px 8px',
-            borderRadius: '12px',
-            backgroundColor: isInstrumentationReady
-              ? 'var(--color-green-alpha-200)'
-              : 'var(--color-yellow-alpha-200)',
-            color: isInstrumentationReady
-              ? 'var(--color-green-800)'
-              : 'var(--color-yellow-800)',
-            fontSize: '10px',
-            fontWeight: 500,
-            zIndex: 20,
-            opacity: 0.8,
-            transition: 'all 0.3s ease-out',
-          }}
-          title={
-            isInstrumentationReady ? 'Dev tools ready' : 'Loading dev tools...'
-          }
-        >
-          {isInstrumentationReady ? '⚡' : '⏳'}
-        </div>
-      )}
+      
       <iframe
         ref={iframeRef}
         src={iframeUrl}

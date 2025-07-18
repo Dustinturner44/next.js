@@ -1128,5 +1128,138 @@ export function register() {
       crypto.getRandomValues(bytes);
       return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
     }
+
+    // Component Click Inspector
+    console.log("React Component Click Inspector loading...");
+
+    // Helper function to extract React component info from DOM element
+    function getReactComponentInfo(element: HTMLElement): any {
+      // Try to find React fiber node
+      for (const key in element) {
+        if (key.startsWith('__reactInternalInstance$') || key.startsWith('__reactFiber')) {
+          const fiberNode = (element as any)[key];
+          
+          if (fiberNode) {
+            // Traverse up the fiber tree to find the nearest component
+            let current = fiberNode;
+            while (current) {
+              // Check if this is a component (not a DOM element)
+              if (current.elementType && typeof current.elementType !== 'string') {
+                const componentType = current.elementType;
+                return {
+                  name: componentType.displayName || componentType.name || 'Unknown',
+                  props: current.memoizedProps,
+                  state: current.memoizedState,
+                  key: current.key,
+                  type: typeof componentType === 'function' ? 
+                    (componentType.prototype?.isReactComponent ? 'Class' : 'Function') : 
+                    'Other'
+                };
+              }
+              current = current.return;
+            }
+          }
+        }
+      }
+      
+      return null;
+    }
+
+    // Helper to get element path
+    function getComponentElementPath(element: HTMLElement): string {
+      const path: string[] = [];
+      let current: HTMLElement | null = element;
+      
+      while (current && current !== document.body) {
+        let selector = current.tagName.toLowerCase();
+        
+        if (current.id) {
+          selector += `#${current.id}`;
+        } else if (current.className) {
+          selector += `.${current.className.split(' ').join('.')}`;
+        }
+        
+        path.unshift(selector);
+        current = current.parentElement;
+      }
+      
+      return path.join(' > ');
+    }
+
+    // Click handler with modifier key (hold Alt/Option key)
+    document.addEventListener('click', (event) => {
+      // Only activate when Alt key is held
+      if (!event.altKey) return;
+      
+      event.preventDefault();
+      event.stopPropagation();
+      
+      const target = event.target as HTMLElement;
+      const componentInfo = getReactComponentInfo(target);
+      
+      const data = {
+        timestamp: Date.now(),
+        elementPath: getComponentElementPath(target),
+        tagName: target.tagName,
+        className: target.className,
+        id: target.id,
+        textContent: target.textContent?.slice(0, 50), // First 50 chars
+        componentInfo: componentInfo,
+        boundingRect: target.getBoundingClientRect(),
+      };
+      
+      console.log('React Component clicked:', data);
+      
+      // Send to dev tool endpoint
+      fetch('http://localhost:61595/api/component-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).catch(err => console.error('Failed to send component info:', err));
+      
+      // Visual feedback
+      const originalBorder = target.style.border;
+      const originalBoxShadow = target.style.boxShadow;
+      target.style.border = '2px solid #ff0066';
+      target.style.boxShadow = '0 0 10px #ff0066';
+      
+      setTimeout(() => {
+        target.style.border = originalBorder;
+        target.style.boxShadow = originalBoxShadow;
+      }, 1000);
+    }, true); // Use capture phase to catch clicks before React
+
+    // Add visual indicator when Alt key is pressed
+    let componentIndicator: HTMLDivElement | null = null;
+    
+    document.addEventListener('keydown', (event) => {
+      if (event.altKey && !componentIndicator) {
+        componentIndicator = document.createElement('div');
+        componentIndicator.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #ff0066;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 14px;
+          z-index: 999999;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        `;
+        componentIndicator.textContent = '🎯 Component Inspector Active';
+        document.body.appendChild(componentIndicator);
+      }
+    });
+    
+    document.addEventListener('keyup', (event) => {
+      if (!event.altKey && componentIndicator) {
+        componentIndicator.remove();
+        componentIndicator = null;
+      }
+    });
+
+    console.log('React Component Inspector ready - Hold Alt/Option key and click any component to inspect it');
   }
 }

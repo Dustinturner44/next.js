@@ -83,7 +83,7 @@ export function DevOverlay({
     if (panels.size > 0) {
       const panelArray = Array.from(panels)
       // Find the last non-panel-selector panel to set as active
-      const contentPanels = panelArray.filter(p => p !== 'panel-selector')
+      const contentPanels = panelArray.filter((p) => p !== 'panel-selector')
       if (contentPanels.length > 0) {
         const lastContentPanel = contentPanels[contentPanels.length - 1]
         setActivePanel(lastContentPanel)
@@ -196,7 +196,7 @@ export function DevOverlay({
               process.env.__NEXT_DEVTOOL_NEW_PANEL_UI ? (
                 <>
                   <RenderErrorContext
-                    value={{ runtimeErrors, totalErrorCount }}
+                    value={{ runtimeErrors: [], totalErrorCount: 0 }}
                   >
                     <Dev0Provider>
                       <SidebarProvider>

@@ -359,7 +359,6 @@ export const CommandPalette = ({
   const { closePanel, triggerRef, setSelectedIndex, selectedIndex, panels, bringPanelToFront, getPanelZIndex } =
     usePanelRouterContext()
   const { mounted } = usePanelContext()
-  const [searchQuery, setSearchQuery] = useState('')
   const [contextMenu, setContextMenu] = useState<{
     x: number
     y: number
@@ -367,7 +366,6 @@ export const CommandPalette = ({
   } | null>(null)
 
   const paletteRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
 
   useClickOutsideAndEscape(
     paletteRef,
@@ -393,7 +391,6 @@ export const CommandPalette = ({
           }
           closePanel('panel-selector' as PanelStateKind)
           setSelectedIndex(-1)
-          setSearchQuery('')
           return
         }
         default: {
@@ -405,7 +402,6 @@ export const CommandPalette = ({
 
   useLayoutEffect(() => {
     paletteRef.current?.focus()
-    searchInputRef.current?.focus()
     selectMenuItem({
       index: selectedIndex === -1 ? 'first' : selectedIndex,
       paletteRef,
@@ -419,19 +415,10 @@ export const CommandPalette = ({
     bringPanelToFront('panel-selector')
   }, []) // Only run once on mount
 
-  // Filter items based on search query
+  // Filter out falsy items
   const filteredItems = useMemo(() => {
-    const definedItems = items.filter((item) => !!item)
-    
-    if (!searchQuery.trim()) {
-      return definedItems
-    }
-    
-    // Filter all items based on search
-    return definedItems.filter((item) =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  }, [items, searchQuery])
+    return items.filter((item) => !!item)
+  }, [items])
 
   function onPaletteKeydown(e: React.KeyboardEvent<HTMLDivElement | null>) {
     const clickableItems = filteredItems.filter((item) => item.onClick)
@@ -470,7 +457,6 @@ export const CommandPalette = ({
           e.preventDefault()
           closePanel('panel-selector' as PanelStateKind)
           setSelectedIndex(-1)
-          setSearchQuery('')
         }
         break
       case 'Escape':
@@ -493,10 +479,6 @@ export const CommandPalette = ({
         }
         break
       default:
-        // Let other keys through to the search input
-        if (searchInputRef.current && e.target !== searchInputRef.current) {
-          searchInputRef.current.focus()
-        }
         break
     }
   }
@@ -560,59 +542,6 @@ export const CommandPalette = ({
         border: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
-      {/* Search Input */}
-      <div style={{ padding: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="Type a command or search..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value)
-            // Reset selection when search changes
-            setSelectedIndex(-1)
-          }}
-          onFocus={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.08)'
-            e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-          }}
-          onBlur={(e) => {
-            e.target.style.background = 'rgba(255, 255, 255, 0.05)'
-            e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
-          }}
-          style={{
-            width: '100%',
-            padding: '10px 14px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontFamily: 'var(--font-stack-sans)',
-            background: 'rgba(255, 255, 255, 0.05)',
-            color: 'rgba(255, 255, 255, 0.9)',
-            outline: 'none',
-            transition: 'all 0.2s ease',
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-              e.preventDefault()
-              paletteRef.current?.focus()
-              onPaletteKeydown(e as any)
-            } else if (e.key === 'n' && e.ctrlKey) {
-              e.preventDefault()
-              paletteRef.current?.focus()
-              onPaletteKeydown(e as any)
-            } else if (e.key === 'p' && e.ctrlKey) {
-              e.preventDefault()
-              paletteRef.current?.focus()
-              onPaletteKeydown(e as any)
-            } else if (e.key === 'Enter') {
-              e.preventDefault()
-              paletteRef.current?.focus()
-              onPaletteKeydown(e as any)
-            }
-          }}
-        />
-      </div>
 
       <MenuContext
         value={{
@@ -649,16 +578,6 @@ export const CommandPalette = ({
             </div>
           )}
           
-          {filteredItems.length === 0 && searchQuery.trim() && (
-            <div style={{ 
-              padding: '40px 20px', 
-              textAlign: 'center', 
-              color: 'rgba(255, 255, 255, 0.4)',
-              fontSize: '14px'
-            }}>
-              No results for "{searchQuery}"
-            </div>
-          )}
         </div>
       </MenuContext>
     </div>

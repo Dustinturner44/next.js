@@ -262,7 +262,7 @@ const MenuPanel = () => {
   }
 
   // Create MCP tool items
-  const mcpToolItems = mcpTools.map((tool) => {
+  const mcpToolItems = mcpTools.map((tool, index) => {
     const panelName = `mcp-tool-${tool.name}` as PanelStateKind
     const isActive = activePanel === panelName
     
@@ -272,7 +272,7 @@ const MenuPanel = () => {
       : tool.name
 
     return {
-      label: displayName,
+      label: `${index}. ${displayName}`,
       value: isActive ? (
         <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
       ) : tool.online ? (
@@ -345,9 +345,26 @@ const MenuPanel = () => {
     accordionContent: mcpToolItems,
   }
 
+  // Create terminal item for sidebar
+  const terminalItem = {
+    label: 'Terminal',
+    value: sidebarIsOpen ? (
+      <span style={{ color: 'var(--color-green-700)', fontSize: '12px' }}>active</span>
+    ) : (
+      <ChevronRight />
+    ),
+    onClick: () => {
+      toggleSidebar()
+    },
+    attributes: {
+      'data-sidebar-toggle': true,
+    },
+    deletable: false,
+  }
+
   const additionalItems = [
     {
-      label: 'Marketplace',
+      label: 'Community',
       value: <ChevronRight />,
       onClick: () => {
         closePanel('panel-selector')
@@ -373,17 +390,6 @@ const MenuPanel = () => {
     //   },
     //   deletable: false,
     // },
-    {
-      label: sidebarIsOpen ? 'Close Sidebar' : 'Open Sidebar',
-      value: sidebarIsOpen ? <ChevronRight /> : <ChevronRight />,
-      onClick: () => {
-        toggleSidebar()
-      },
-      attributes: {
-        'data-sidebar-toggle': true,
-      },
-      deletable: false,
-    },
     {
       label: 'Preferences',
       value: <GearIcon />,
@@ -416,7 +422,7 @@ const MenuPanel = () => {
         fontSize: '12px',
         color: 'var(--color-text-secondary)' 
       }}>
-        {projectItems.length + 1}
+        {projectItems.length + 2}
         <svg
           width="12"
           height="12"
@@ -438,7 +444,7 @@ const MenuPanel = () => {
     },
     deletable: false,
     isAccordion: true,
-    accordionContent: [createProjectItem, ...projectItems],
+    accordionContent: [createProjectItem, ...projectItems, terminalItem],
   }
 
   const menuItems = [
@@ -547,65 +553,48 @@ const HubModal = () => {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div
+          <button
+            onClick={handleClose}
             style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid var(--color-gray-alpha-400)',
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              background: 'transparent',
+              border: 'none',
+              padding: '8px',
+              cursor: 'pointer',
+              color: 'var(--color-gray-700)',
+              borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              backgroundColor: 'var(--color-background-200)',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor =
+                'var(--color-gray-alpha-200)'
+              e.currentTarget.style.color = 'var(--color-text-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'var(--color-gray-700)'
             }}
           >
-            <h2
-              style={{
-                margin: 0,
-                fontSize: '16px',
-                fontWeight: 600,
-                color: 'var(--color-text-primary)',
-              }}
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              Dev Tools Hub
-            </h2>
-            <button
-              onClick={handleClose}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                padding: '8px',
-                cursor: 'pointer',
-                color: 'var(--color-gray-700)',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  'var(--color-gray-alpha-200)'
-                e.currentTarget.style.color = 'var(--color-text-primary)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = 'var(--color-gray-700)'
-              }}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <HubPanel />
           </div>
