@@ -4,53 +4,47 @@ import Link from 'next/link'
 
 const errorSamples = [
   {
-    id: 'hydration-mismatch',
-    title: 'Hydration Mismatch',
-    description: 'Server and client render different content',
-    severity: 'High'
-  },
-  {
     id: 'missing-import',
     title: 'Missing Import',
     description: 'Component or function not properly imported',
-    severity: 'Medium'
-  },
-  {
-    id: 'client-side-only',
-    title: 'Client-Side Only Code',
-    description: 'Using window/document on server side',
-    severity: 'High'
-  },
-  {
-    id: 'invalid-hooks',
-    title: 'Invalid Hook Usage',
-    description: 'Hooks used conditionally or outside components',
-    severity: 'High'
-  },
-  {
-    id: 'api-route-error',
-    title: 'API Route Error',
-    description: 'Wrong HTTP methods or missing exports',
-    severity: 'Medium'
-  },
-  {
-    id: 'async-errors',
-    title: 'Async & Network Errors',
-    description: 'JSON parsing, fetch failures, and promise rejections',
-    severity: 'High'
-  },
-  {
-    id: 'router-error',
-    title: 'Router Context Error',
-    description: 'useRouter used outside Next.js context',
-    severity: 'High'
   },
   {
     id: 'runtime-error',
     title: 'Runtime Error',
     description: 'Uncaught JavaScript runtime errors',
-    severity: 'High'
-  }
+  },
+  {
+    id: 'async-errors',
+    title: 'Async & Network Errors',
+    description: 'JSON parsing, fetch failures, and promise rejections',
+  },
+  {
+    id: 'hydration-mismatch',
+    title: 'Hydration Mismatch',
+    description: 'Server and client render different content',
+  },
+  
+  {
+    id: 'client-side-only',
+    title: 'Client-Side Only Code',
+    description: 'Using window/document on server side',
+  },
+  {
+    id: 'invalid-hooks',
+    title: 'Invalid Hook Usage',
+    description: 'Hooks used conditionally or outside components',
+  },
+  {
+    id: 'api-route-error',
+    title: 'API Route Error',
+    description: 'Wrong HTTP methods or missing exports',
+  },
+  
+  {
+    id: 'router-error',
+    title: 'Router Context Error',
+    description: 'useRouter used outside Next.js context',
+  },
 ]
 
 export default function ErrorSamplesPage() {
@@ -66,9 +60,6 @@ export default function ErrorSamplesPage() {
           <Link key={sample.id} href={`/${sample.id}`} className="card">
             <div className="card-header">
               <h3>{sample.title}</h3>
-              <span className={`severity ${sample.severity.toLowerCase()}`}>
-                {sample.severity}
-              </span>
             </div>
             <p>{sample.description}</p>
             <div className="card-footer">

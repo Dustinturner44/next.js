@@ -83,6 +83,7 @@ export function getAutoFixMiddleware(projectDir: string) {
     try {
       // Parse request body
       const body = await parseRequestBody(req)
+      console.log('🔨 Auto Fix Request Body:', body)
       const { prompt }: AutoFixRequest = JSON.parse(body)
 
       if (!prompt || typeof prompt !== 'string') {
@@ -141,6 +142,9 @@ async function generateVibeFix(
     // Extract and read file contents from the error/prompt
     const fileContents = await extractAndReadFileContents(prompt, projectDir)
     
+    // Detect if this is a hydration error
+    const isHydrationError = detectHydrationError(prompt)
+    
     // Build file context section for the prompt
     let fileContextSection = ''
     if (fileContents.length > 0) {
@@ -165,6 +169,8 @@ IMPORTANT: The above files show the CURRENT state. Use this context to:
 3. Understand the current code structure and patterns
 4. Generate fixes that work with the existing code state
 5. Place new imports correctly based on existing directive placement
+6. Check if useState, useEffect, or other hooks already exist before adding them
+${isHydrationError ? '\n7. HYDRATION ERROR DETECTED - Focus on server/client consistency fixes' : ''}
 `
     } else {
       console.log('📂 No file contents extracted from error context')
@@ -172,16 +178,40 @@ IMPORTANT: The above files show the CURRENT state. Use this context to:
 
     // Enhanced prompt using v0's Next.js expertise
     const enhancedPrompt = `
-You are v0, an advanced Next.js expert AI assistant with deep knowledge of React, TypeScript, and modern web development patterns. Fix the following development error:
+You are v0, an advanced Next.js expert AI assistant with deep knowledge of React, TypeScript, and modern web development patterns. 
+
+IMPORTANT: This is a fresh request with NO prior context or memory. The file contents shown below represent the CURRENT, LATEST state of the files. Analyze only what is provided in this request.
+
+Fix the following development error:
 
 ${prompt}
 ${fileContextSection}
 CRITICAL INSTRUCTIONS:
+- This is an independent request - ignore any previous conversations or context
+- The file contents above show the EXACT current state - treat this as the source of truth
 - Fix the ROOT CAUSE of the error, never just add try-catch blocks
 - Apply v0's best practices for Next.js development
 - Provide production-ready, optimized code solutions
 - Use modern React patterns and TypeScript when applicable
-- ANALYZE the current file contents above to understand the existing state
+- ANALYZE ONLY the current file contents shown above to understand the existing state
+- NEVER add code that already exists - check the file contents carefully!
+
+HYDRATION ERROR EXPERTISE:
+If this is a hydration mismatch error, follow these specific patterns:
+- Use useState + useEffect pattern for client-only values
+- Initialize with server-safe default values (empty string, null, false)
+- Move dynamic content (Date.now(), Math.random(), window APIs) inside useEffect
+- Use dynamic imports with ssr: false for client-only components
+- Consider suppressHydrationWarning only for unavoidable mismatches
+- NEVER use typeof window checks in render - use useEffect instead
+
+DUPLICATE CODE PREVENTION:
+Before suggesting any import or code addition:
+1. Check if the import already exists in the file contents
+2. Check if the function/variable is already defined
+3. Check if the useEffect or useState already handles the case
+4. Only suggest additions for truly missing code
+5. If code exists but is incorrect, use "replace" action instead of "add"
 
 DIRECTIVE PLACEMENT RULES (CRITICAL):
 - React directives ("use client", "use server", "use strict") MUST be at the very top of the file
@@ -248,7 +278,6 @@ V0'S NEXT.JS EXPERTISE:
 - Meaningful alt text for accessibility
 - priority={true} for above-the-fold images
 - sizes prop for responsive images
-- Configure domains in next.config.js for external images
 
 🔒 Type Safety:
 - Optional chaining: data?.field?.value
@@ -278,6 +307,44 @@ EXAMPLES FROM V0:
 
 ❌ Bad: <Image src="/pic.jpg" />
 ✅ v0: <Image src="/pic.jpg" alt="Description" width={500} height={300} priority />
+
+🔄 HYDRATION ERROR PATTERNS:
+
+❌ Bad: Server/client content differs
+function BadComponent() {
+  return <div>{new Date().toISOString()}</div>
+}
+
+✅ v0: Server-safe with useEffect
+function GoodComponent() {
+  const [time, setTime] = useState('')
+  useEffect(() => setTime(new Date().toISOString()), [])
+  return <div>{time || 'Loading...'}</div>
+}
+
+❌ Bad: typeof window in render
+function BadComponent() {
+  return <div>{typeof window !== 'undefined' && window.innerWidth}</div>
+}
+
+✅ v0: Client-only with useEffect
+function GoodComponent() {
+  const [width, setWidth] = useState(0)
+  useEffect(() => setWidth(window.innerWidth), [])
+  return <div>{width || 'Loading...'}</div>
+}
+
+❌ Bad: Random values in render
+function BadComponent() {
+  return <div>Random: {Math.random()}</div>
+}
+
+✅ v0: Random in useEffect
+function GoodComponent() {
+  const [random, setRandom] = useState(0)
+  useEffect(() => setRandom(Math.random()), [])
+  return <div>Random: {random}</div>
+}
 
 🚨 DIRECTIVE PLACEMENT EXAMPLES:
 
@@ -672,6 +739,44 @@ async function applyLineBasedChange(
 
     const newCodeLines = change.newCode.split('\n')
 
+    // Check for duplicate imports before adding
+    if (change.newCode.trim().startsWith('import ')) {
+      const importRegex = /import\s+.*?from\s+['"]([^'"]+)['"]/
+      const match = change.newCode.match(importRegex)
+      if (match) {
+        const importFrom = match[1]
+        // Check if this import already exists
+        const existingImport = lines.find(line => {
+          const existingMatch = line.match(importRegex)
+          return existingMatch && existingMatch[1] === importFrom
+        })
+        
+        if (existingImport) {
+          console.log(`⚠️  Import from "${importFrom}" already exists in ${fileName}, skipping addition`)
+          console.log(`   Existing: ${existingImport.trim()}`)
+          console.log(`   Attempted: ${change.newCode.trim()}`)
+          return false
+        }
+      }
+    }
+
+    // Check for duplicate function/variable declarations
+    if (change.newCode.includes('useState') || change.newCode.includes('useEffect')) {
+      const hookPattern = /const\s+\[([^\]]+)\]/
+      const match = change.newCode.match(hookPattern)
+      if (match) {
+        const variableName = match[1].split(',')[0].trim()
+        const existingDeclaration = lines.find(line => 
+          line.includes(`[${variableName}`) || line.includes(`${variableName},`)
+        )
+        
+        if (existingDeclaration) {
+          console.log(`⚠️  Variable "${variableName}" already declared in ${fileName}, skipping addition`)
+          return false
+        }
+      }
+    }
+
     // Insert the new lines at the specified position
     // lineIndex represents where to insert (everything at that position and below gets pushed down)
     lines.splice(lineIndex, 0, ...newCodeLines)
@@ -1065,4 +1170,23 @@ async function extractAndReadFileContents(
 function getFileExtension(filePath: string): string {
   const match = filePath.match(/\.(.+)$/)
   return match ? match[1] : ''
+}
+
+function detectHydrationError(prompt: string): boolean {
+  const hydrationKeywords = [
+    'hydration',
+    'Text content does not match',
+    'Warning: Text content did not match',
+    'Server HTML',
+    'client-side rendering',
+    'suppressHydrationWarning',
+    'Expected server HTML',
+    'Hydration failed',
+    'hydrating',
+    'different on server',
+    'server and client'
+  ]
+  
+  const lowerPrompt = prompt.toLowerCase()
+  return hydrationKeywords.some(keyword => lowerPrompt.includes(keyword.toLowerCase()))
 }

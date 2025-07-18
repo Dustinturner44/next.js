@@ -15,7 +15,8 @@ export default function MissingImportPage() {
     try {
       // This would fail without React import in older versions
       // @ts-ignore
-      return React.createElement('div', null, 'Hello')
+      // Demonstrating both createElement and JSX syntax
+      return React.createElement('div', null, 'Hello World')
     } catch (error) {
       throw error
     }
