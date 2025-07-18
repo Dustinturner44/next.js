@@ -138,17 +138,50 @@ async function generateVibeFix(
       `🔑 API Key Status: ${aiConfig.apiKey ? '✅ Available' : '❌ Missing'}`
     )
 
+    // Extract and read file contents from the error/prompt
+    const fileContents = await extractAndReadFileContents(prompt, projectDir)
+    
+    // Build file context section for the prompt
+    let fileContextSection = ''
+    if (fileContents.length > 0) {
+      console.log(`📂 Found ${fileContents.length} file(s) in error context:`)
+      fileContents.forEach((file) => {
+        console.log(`   📄 ${file.path} (${file.content.split('\n').length} lines)`)
+      })
+
+      fileContextSection = `
+
+CURRENT FILE CONTENTS:
+${fileContents.map(file => `
+=== ${file.path} ===
+\`\`\`${getFileExtension(file.path)}
+${file.content}
+\`\`\`
+`).join('\n')}
+
+IMPORTANT: The above files show the CURRENT state. Use this context to:
+1. Understand existing directives ('use client', 'use server') and their positions
+2. See what imports already exist to avoid duplicates
+3. Understand the current code structure and patterns
+4. Generate fixes that work with the existing code state
+5. Place new imports correctly based on existing directive placement
+`
+    } else {
+      console.log('📂 No file contents extracted from error context')
+    }
+
     // Enhanced prompt using v0's Next.js expertise
     const enhancedPrompt = `
 You are v0, an advanced Next.js expert AI assistant with deep knowledge of React, TypeScript, and modern web development patterns. Fix the following development error:
 
 ${prompt}
-
+${fileContextSection}
 CRITICAL INSTRUCTIONS:
 - Fix the ROOT CAUSE of the error, never just add try-catch blocks
 - Apply v0's best practices for Next.js development
 - Provide production-ready, optimized code solutions
 - Use modern React patterns and TypeScript when applicable
+- ANALYZE the current file contents above to understand the existing state
 
 DIRECTIVE PLACEMENT RULES (CRITICAL):
 - React directives ("use client", "use server", "use strict") MUST be at the very top of the file
@@ -158,6 +191,7 @@ DIRECTIVE PLACEMENT RULES (CRITICAL):
   * Insert imports starting at line 2 (after directives)
   * Maintain blank line between directives and imports if it exists
 - If no directives exist, imports go at line 1 as normal
+- CHECK the current file contents to see if directives already exist!
 
 RESPONSE FORMAT (JSON only - MUST include fileChanges):
 {
@@ -183,7 +217,8 @@ RESPONSE FORMAT (JSON only - MUST include fileChanges):
 CRITICAL LINE NUMBER RULES:
 - If file starts with 'use client' or other directive: add imports at line 2
 - If no directive: add imports at line 1
-- Always check first line for directives before determining insertion point
+- Always check the current file contents above to see existing directives
+- NEVER duplicate existing imports - check what's already there
 
 CRITICAL: Always provide specific fileChanges array with actionable fixes. Do not leave fileChanges empty unless no code changes are needed.
 
@@ -956,4 +991,78 @@ function extractFilePathFromPrompt(
   }
 
   return null
+}
+
+async function extractAndReadFileContents(
+  prompt: string,
+  projectDir: string
+): Promise<{ path: string; content: string }[]> {
+  const fileContents: { path: string; content: string }[] = []
+
+  // Enhanced patterns to extract file paths from different error contexts
+  const patterns = [
+    // Direct file references
+    /(?:in|file|update|change|modify|from|at)\s+([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
+    // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)"
+    /at\s+[^(]*\(([^:)]+\.(?:tsx?|jsx?|js|ts))/g,
+    // Module paths like "./components/Component.tsx"
+    /(\.?\/[\w/-]+\.(?:tsx?|jsx?|js|ts))/g,
+    // Error message patterns
+    /Error in ([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
+  ]
+
+  const foundFiles = new Set<string>()
+
+  for (const pattern of patterns) {
+    const matches = prompt.match(pattern)
+    if (matches) {
+      for (const match of matches) {
+        // Extract the file path from the match
+        let filePath = match.replace(/^(?:in|file|update|change|modify|from|at)\s+/i, '')
+        filePath = filePath.replace(/^at\s+[^(]*\(/i, '').replace(/\)$/, '')
+        filePath = filePath.replace(/['"`]/g, '').trim()
+        
+        // Clean up any remaining parentheses or line/column numbers
+        filePath = filePath.replace(/:[\d:]+$/, '')
+        
+        if (filePath && isValidFilePath(filePath, projectDir)) {
+          foundFiles.add(filePath)
+        }
+      }
+    }
+  }
+
+  // Read the contents of found files
+  for (const filePath of foundFiles) {
+    try {
+      const fullPath = path.resolve(projectDir, filePath)
+      const content = await fsp.readFile(fullPath, 'utf8')
+      fileContents.push({ path: filePath, content })
+      console.log(`📄 Extracted content for: ${filePath}`)
+    } catch (error) {
+      console.warn(`⚠️  Could not read file ${filePath}:`, error)
+    }
+  }
+
+  // If no files found via patterns, try the original extraction logic as fallback
+  if (fileContents.length === 0) {
+    const fallbackPath = extractFilePathFromPrompt(prompt, projectDir)
+    if (fallbackPath && isValidFilePath(fallbackPath, projectDir)) {
+      try {
+        const fullPath = path.resolve(projectDir, fallbackPath)
+        const content = await fsp.readFile(fullPath, 'utf8')
+        fileContents.push({ path: fallbackPath, content })
+        console.log(`📄 Extracted content via fallback for: ${fallbackPath}`)
+      } catch (error) {
+        console.warn(`⚠️  Could not read fallback file ${fallbackPath}:`, error)
+      }
+    }
+  }
+
+  return fileContents
+}
+
+function getFileExtension(filePath: string): string {
+  const match = filePath.match(/\.(.+)$/)
+  return match ? match[1] : ''
 }

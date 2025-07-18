@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import '../shared.css'
 // Intentionally missing imports to demonstrate errors
 
 export default function MissingImportPage() {
@@ -67,7 +68,7 @@ export default function MissingImportPage() {
         <p>This page demonstrates errors caused by missing or incorrect imports</p>
       </header>
 
-      <div className="content">
+              <div className="content main-page">
         <div className="explanation">
           <h2>Common Import Errors</h2>
           <ul>
@@ -166,201 +167,6 @@ import { utils } from '../lib/utilities'
 import { utils } from '@/utils/utilities' // With path mapping`}</pre>
         </div>
       </div>
-
-      <style jsx>{`
-        .container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 2rem;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          line-height: 1.6;
-          color: #333;
-        }
-
-        .header {
-          margin-bottom: 2rem;
-        }
-
-        .back-link {
-          color: #0070f3;
-          text-decoration: none;
-          margin-bottom: 1rem;
-          display: inline-block;
-        }
-
-        .back-link:hover {
-          text-decoration: underline;
-        }
-
-        .header h1 {
-          font-size: 2rem;
-          font-weight: 600;
-          margin: 0.5rem 0;
-          color: #1a1a1a;
-        }
-
-        .header p {
-          color: #666;
-          margin: 0;
-        }
-
-        .content {
-          display: flex;
-          flex-direction: column;
-          gap: 2rem;
-        }
-
-        .explanation {
-          background: #f8f9fa;
-          border-radius: 8px;
-          padding: 1.5rem;
-          border-left: 4px solid #0070f3;
-        }
-
-        .explanation h2 {
-          margin: 0 0 1rem 0;
-          color: #1a1a1a;
-        }
-
-        .explanation ul {
-          margin: 0;
-          padding-left: 1.5rem;
-        }
-
-        .explanation li {
-          margin-bottom: 0.5rem;
-        }
-
-        .demo {
-          border: 1px solid #e1e5e9;
-          border-radius: 8px;
-          padding: 1.5rem;
-        }
-
-        .demo h3 {
-          margin: 0 0 1rem 0;
-          color: #1a1a1a;
-        }
-
-        .controls {
-          margin: 1.5rem 0;
-        }
-
-        .button-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 0.75rem;
-        }
-
-        .error-btn {
-          padding: 0.75rem 1rem;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          color: white;
-        }
-
-        .error-btn.react {
-          background: #1e40af;
-        }
-
-        .error-btn.react:hover {
-          background: #1d4ed8;
-        }
-
-        .error-btn.hook {
-          background: #059669;
-        }
-
-        .error-btn.hook:hover {
-          background: #047857;
-        }
-
-        .error-btn.component {
-          background: #7c2d12;
-        }
-
-        .error-btn.component:hover {
-          background: #5b1a0b;
-        }
-
-        .error-btn.util {
-          background: #7c3aed;
-        }
-
-        .error-btn.util:hover {
-          background: #6d28d9;
-        }
-
-        .clear-btn {
-          padding: 0.75rem 1rem;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          background: white;
-          color: #374151;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .clear-btn:hover {
-          background: #f9fafb;
-          border-color: #9ca3af;
-        }
-
-        .warning {
-          background: #fef3c7;
-          border: 1px solid #f59e0b;
-          border-radius: 6px;
-          padding: 1rem;
-          margin-top: 1rem;
-        }
-
-        .warning strong {
-          color: #92400e;
-        }
-
-        .warning p {
-          margin: 0.5rem 0 0 0;
-          color: #92400e;
-        }
-
-        .code-example {
-          background: #1e1e1e;
-          border-radius: 8px;
-          padding: 1.5rem;
-          color: white;
-        }
-
-        .code-example h3 {
-          margin: 0 0 1rem 0;
-          color: white;
-        }
-
-        .code-example pre {
-          margin: 0;
-          font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-          font-size: 0.9rem;
-          line-height: 1.5;
-          overflow-x: auto;
-        }
-
-        @media (max-width: 768px) {
-          .container {
-            padding: 1rem;
-          }
-
-          .header h1 {
-            font-size: 1.5rem;
-          }
-
-          .button-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-      `}</style>
     </div>
   )
 } 

@@ -28,22 +28,16 @@ const errorSamples = [
     severity: 'High'
   },
   {
-    id: 'async-component',
-    title: 'Async Component Error',
-    description: 'Trying to make components async incorrectly',
-    severity: 'Medium'
-  },
-  {
     id: 'api-route-error',
     title: 'API Route Error',
     description: 'Wrong HTTP methods or missing exports',
     severity: 'Medium'
   },
   {
-    id: 'image-error',
-    title: 'Next.js Image Error',
-    description: 'Incorrect Image component usage',
-    severity: 'Medium'
+    id: 'async-errors',
+    title: 'Async & Network Errors',
+    description: 'JSON parsing, fetch failures, and promise rejections',
+    severity: 'High'
   },
   {
     id: 'router-error',
