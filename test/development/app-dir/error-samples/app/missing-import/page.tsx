@@ -25,15 +25,11 @@ export default function MissingImportPage() {
   const triggerMissingHookImport = () => {
     setErrorType('Missing Hook Import')
     setTriggerError(true)
-    try {
-      // This will fail without proper useEffect import
-      // @ts-ignore
-      useEffect(() => {
-        console.log('Effect running')
-      }, [])
-    } catch (error) {
-      throw error
-    }
+    // try {
+     
+    // } catch (error) {
+    //   throw error
+    // }
   }
 
   const triggerMissingComponentImport = () => {
@@ -61,10 +57,16 @@ export default function MissingImportPage() {
     setErrorType(null)
   }
 
+   // This will fail without proper useEffect import
+  // @ts-ignore
+  useEffect(() => {
+    console.log('Effect running')
+  }, [])
+
   return (
     <div className="container">
       <header className="header">
-        <Link href="/" className="back-link">← Back to Error Samples</Link>
+        <Link href="/" className="back-link">← Back to Error Samples</Link>No changes applied to
         <h1>Missing Import Errors</h1>
         <p>This page demonstrates errors caused by missing or incorrect imports</p>
       </header>
@@ -94,15 +96,11 @@ export default function MissingImportPage() {
                 <button onClick={triggerMissingHookImport} className="error-btn hook">
                   Missing Hook
                 </button>
-                <button onClick={triggerMissingComponentImport} className="error-btn component">
-                  Missing Component
-                </button>
+
                 <button onClick={triggerMissingUtilImport} className="error-btn util">
                   Missing Utility
                 </button>
-                <button onClick={clearError} className="clear-btn">
-                  Clear
-                </button>
+                
               </div>
             </div>
 

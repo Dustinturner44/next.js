@@ -225,6 +225,14 @@ Before suggesting any import or code addition:
 4. Only suggest additions for truly missing code
 5. If code exists but is incorrect, use "replace" action instead of "add"
 
+IMPORT RECONCILIATION (NEW CAPABILITY):
+The system now intelligently merges imports from the same module:
+- If file has: import { useState } from "react"
+- And you suggest: import React from "react" 
+- System will merge to: import React, { useState } from "react"
+- Similarly: import { useEffect } from "react" + existing useState = import { useState, useEffect } from "react"
+- Feel free to suggest imports even if the module is already imported - the system will merge them properly
+
 DIRECTIVE PLACEMENT RULES (CRITICAL):
 - React directives ("use client", "use server", "use strict") MUST be at the very top of the file
 - NEVER insert imports, comments, or any code before directives
@@ -839,25 +847,25 @@ async function applyLineBasedChange(
 
     const newCodeLines = change.newCode.split('\n')
 
-    // Check for duplicate imports before adding
+    // Handle import reconciliation for smart merging
     if (change.newCode.trim().startsWith('import ')) {
-      const importRegex = /import\s+.*?from\s+['"]([^'"]+)['"]/
-      const match = change.newCode.match(importRegex)
-      if (match) {
-        const importFrom = match[1]
-        // Check if this import already exists
-        const existingImport = lines.find(line => {
-          const existingMatch = line.match(importRegex)
-          return existingMatch && existingMatch[1] === importFrom
-        })
-        
-        if (existingImport) {
-          console.log(`⚠️  Import from "${importFrom}" already exists in ${fileName}, skipping addition`)
-          console.log(`   Existing: ${existingImport.trim()}`)
-          console.log(`   Attempted: ${change.newCode.trim()}`)
-          return false
-        }
+      const reconciledResult = reconcileImports(lines, change.newCode.trim(), fileName)
+      if (reconciledResult.shouldSkip) {
+        console.log(`⚠️  Import already exists in ${fileName}, skipping addition`)
+        return false
       }
+      
+      if (reconciledResult.shouldReplace) {
+        // Replace existing import with merged version
+        const existingLineIndex = reconciledResult.existingLineIndex!
+        lines[existingLineIndex] = reconciledResult.mergedImport!
+        console.log(`✓ Merged imports in ${fileName}:`)
+        console.log(`   Original: ${reconciledResult.originalImport}`)
+        console.log(`   New: ${reconciledResult.mergedImport}`)
+        return true
+      }
+      
+      // If we get here, it's a new import that should be added normally
     }
 
     // Check for duplicate 'use client' directive
@@ -1140,6 +1148,125 @@ function getFallbackResponse(): {
   }
 }
 
+interface ImportReconcileResult {
+  shouldSkip: boolean
+  shouldReplace: boolean
+  existingLineIndex?: number
+  originalImport?: string
+  mergedImport?: string
+}
+
+function reconcileImports(lines: string[], newImport: string, fileName: string): ImportReconcileResult {
+  // Parse the new import statement
+  const newImportInfo = parseImportStatement(newImport)
+  if (!newImportInfo) {
+    return { shouldSkip: false, shouldReplace: false }
+  }
+
+  // Find existing imports from the same module
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (line.startsWith('import ')) {
+      const existingImportInfo = parseImportStatement(line)
+      if (existingImportInfo && existingImportInfo.from === newImportInfo.from) {
+        // Found an import from the same module
+        console.log(`🔍 Found existing import from "${newImportInfo.from}":`)
+        console.log(`   Existing: ${line}`)
+        console.log(`   New: ${newImport}`)
+
+        // Check if we're trying to add something that already exists
+        const isCompletelyDuplicate = 
+          (newImportInfo.defaultImport && existingImportInfo.defaultImport === newImportInfo.defaultImport) ||
+          (newImportInfo.namedImports.length > 0 && 
+           newImportInfo.namedImports.every(imp => existingImportInfo.namedImports.includes(imp)))
+
+        if (isCompletelyDuplicate) {
+          return { shouldSkip: true, shouldReplace: false }
+        }
+
+        // Merge the imports
+        const mergedImport = mergeImportStatements(existingImportInfo, newImportInfo)
+        return {
+          shouldSkip: false,
+          shouldReplace: true,
+          existingLineIndex: i,
+          originalImport: line,
+          mergedImport
+        }
+      }
+    }
+  }
+
+  // No existing import found, should add normally
+  return { shouldSkip: false, shouldReplace: false }
+}
+
+interface ImportInfo {
+  defaultImport?: string
+  namedImports: string[]
+  from: string
+  originalStatement: string
+}
+
+function parseImportStatement(importStatement: string): ImportInfo | null {
+  const importRegex = /import\s+(.*?)\s+from\s+['"]([^'"]+)['"]/
+  const match = importStatement.match(importRegex)
+  
+  if (!match) return null
+
+  const importClause = match[1].trim()
+  const from = match[2]
+  let defaultImport: string | undefined
+  let namedImports: string[] = []
+
+  // Handle different import patterns
+  if (importClause.includes('{')) {
+    // Has named imports: import React, { useState, useEffect } from 'react'
+    const defaultMatch = importClause.match(/^([^,{]+),/)
+    if (defaultMatch) {
+      defaultImport = defaultMatch[1].trim()
+    }
+    
+    const namedMatch = importClause.match(/\{([^}]+)\}/)
+    if (namedMatch) {
+      namedImports = namedMatch[1]
+        .split(',')
+        .map(name => name.trim())
+        .filter(name => name.length > 0)
+    }
+  } else {
+    // Default import only: import React from 'react'
+    defaultImport = importClause.trim()
+  }
+
+  return {
+    defaultImport,
+    namedImports,
+    from,
+    originalStatement: importStatement
+  }
+}
+
+function mergeImportStatements(existing: ImportInfo, newImport: ImportInfo): string {
+  let defaultImport = existing.defaultImport || newImport.defaultImport
+  
+  // Merge named imports, removing duplicates
+  const allNamedImports = [...new Set([...existing.namedImports, ...newImport.namedImports])]
+  
+  // Construct the merged import statement
+  let importClause = ''
+  
+  if (defaultImport && allNamedImports.length > 0) {
+    importClause = `${defaultImport}, { ${allNamedImports.join(', ')} }`
+  } else if (defaultImport) {
+    importClause = defaultImport
+  } else if (allNamedImports.length > 0) {
+    importClause = `{ ${allNamedImports.join(', ')} }`
+  }
+  
+  return `import ${importClause} from '${existing.from}'`
+}
+
 function isValidFilePath(filePath: string, projectDir: string): boolean {
   // Check if the file path looks like a valid file path
   if (!filePath || typeof filePath !== 'string') {
@@ -1151,9 +1278,18 @@ function isValidFilePath(filePath: string, projectDir: string): boolean {
     return false
   }
 
+  // Skip obvious function/variable names
+  if (filePath.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*\.(?:tsx?|jsx?|js|ts)$/)) {
+    console.log(`🔍 Skipping apparent function/variable name: ${filePath}`)
+    return false
+  }
+
   const absolutePath = path.join(projectDir, filePath)
   if (!fs.existsSync(absolutePath)) {
-    console.warn(`⚠️  File not found: ${absolutePath}`)
+    // Only log if the path looks reasonable (not a mangled extraction)
+    if (filePath.includes('/') && !filePath.includes('(') && filePath.length > 6) {
+      console.log(`📂 File not found (extracted path): ${filePath}`)
+    }
     return false
   }
 
@@ -1167,41 +1303,36 @@ function extractFilePathFromPrompt(
 ): string | null {
   // Try to extract file path from error stack traces or error messages
   const patterns = [
-    // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)"
-    /at\s+[^(]*\(([^:)]+\.(?:tsx?|jsx?|js|ts))/g,
-    // Error message patterns like "Error in file.tsx"
-    /(?:in|at|file|from)\s+([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
-    // Module paths like "./components/Component.tsx"
-    /(\.?\/[\w/-]+\.(?:tsx?|jsx?|js|ts))/g,
-    // Absolute paths
-    /([a-zA-Z]:)?\/[\w/-]+\.(?:tsx?|jsx?|js|ts)/g,
+    // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)" - more precise
+    /at\s+[^(]*\(([^:)]*\/[^:)]*\.(?:tsx?|jsx?|js|ts))(?::\d+)*\)/g,
+    // Module paths like "./components/Component.tsx" or "app/page.tsx"
+    /(?:^|\s|['"`])((?:\.?\/)?(?:[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts))(?:['"`]|\s|$|:)/g,
+    // Error message patterns with better boundaries
+    /(?:Error in|file|from)\s+(['"`]?)([^'"`\s()]+\.(?:tsx?|jsx?|js|ts))\1/gi,
+    // Direct file references with word boundaries
+    /\b((?:app|src|pages)\/(?:[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts))\b/g,
   ]
 
   for (const pattern of patterns) {
-    const matches = prompt.match(pattern)
-    if (matches) {
+    const matches = Array.from(prompt.matchAll(pattern))
+    if (matches.length > 0) {
       for (const match of matches) {
-        // Extract just the file path part
-        const pathMatch = match.match(/([^\s()]+\.(?:tsx?|jsx?|js|ts))/i)
-        if (pathMatch && isValidFilePath(pathMatch[1], projectDir)) {
-          // Convert absolute paths to relative if they're within common project dirs
-          let filePath = pathMatch[1]
-          if (
-            filePath.includes('/app/') ||
-            filePath.includes('/src/') ||
-            filePath.includes('/pages/')
-          ) {
-            const parts = filePath.split('/')
-            const relevantIndex = Math.max(
-              parts.lastIndexOf('app'),
-              parts.lastIndexOf('src'),
-              parts.lastIndexOf('pages')
-            )
-            if (relevantIndex >= 0) {
-              filePath = parts.slice(relevantIndex).join('/')
-            }
+        // Get the captured file path (different capture group for different patterns)
+        let filePath = match[1] || match[2] || match[0]
+        
+        // Clean up the file path
+        filePath = filePath.replace(/['"`]/g, '').trim()
+        filePath = filePath.replace(/:[\d:]+$/, '') // Remove line:column numbers
+        filePath = filePath.replace(/^\s*at\s+[^(]*\(/, '') // Remove stack trace prefix
+        filePath = filePath.replace(/\)$/, '') // Remove trailing parenthesis
+        
+        // Skip if this looks like a function name rather than a file path
+        if (filePath && !filePath.includes('(') && !filePath.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/)) {
+          // Validate and normalize the file path
+          const normalizedPath = normalizeFilePath(filePath, projectDir)
+          if (normalizedPath && isValidFilePath(normalizedPath, projectDir)) {
+            return normalizedPath
           }
-          return filePath
         }
       }
     }
@@ -1218,32 +1349,38 @@ async function extractAndReadFileContents(
 
   // Enhanced patterns to extract file paths from different error contexts
   const patterns = [
-    // Direct file references
-    /(?:in|file|update|change|modify|from|at)\s+([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
-    // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)"
-    /at\s+[^(]*\(([^:)]+\.(?:tsx?|jsx?|js|ts))/g,
-    // Module paths like "./components/Component.tsx"
-    /(\.?\/[\w/-]+\.(?:tsx?|jsx?|js|ts))/g,
-    // Error message patterns
-    /Error in ([^\s]+\.(?:tsx?|jsx?|js|ts))/gi,
+    // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)" - more precise
+    /at\s+[^(]*\(([^:)]*\/[^:)]*\.(?:tsx?|jsx?|js|ts))(?::\d+)*\)/g,
+    // Module paths like "./components/Component.tsx" or "app/page.tsx"
+    /(?:^|\s|['"`])((?:\.?\/)?(?:[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts))(?:['"`]|\s|$|:)/g,
+    // Error message patterns with better boundaries
+    /(?:Error in|file|from)\s+(['"`]?)([^'"`\s()]+\.(?:tsx?|jsx?|js|ts))\1/gi,
+    // Direct file references with word boundaries
+    /\b((?:app|src|pages)\/(?:[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts))\b/g,
   ]
 
   const foundFiles = new Set<string>()
 
   for (const pattern of patterns) {
-    const matches = prompt.match(pattern)
+    const matches = Array.from(prompt.matchAll(pattern))
     if (matches) {
       for (const match of matches) {
-        // Extract the file path from the match
-        let filePath = match.replace(/^(?:in|file|update|change|modify|from|at)\s+/i, '')
-        filePath = filePath.replace(/^at\s+[^(]*\(/i, '').replace(/\)$/, '')
+        // Get the captured file path (different capture group for different patterns)
+        let filePath = match[1] || match[2] || match[0]
+        
+        // Clean up the file path
         filePath = filePath.replace(/['"`]/g, '').trim()
+        filePath = filePath.replace(/:[\d:]+$/, '') // Remove line:column numbers
+        filePath = filePath.replace(/^\s*at\s+[^(]*\(/, '') // Remove stack trace prefix
+        filePath = filePath.replace(/\)$/, '') // Remove trailing parenthesis
         
-        // Clean up any remaining parentheses or line/column numbers
-        filePath = filePath.replace(/:[\d:]+$/, '')
-        
-        if (filePath && isValidFilePath(filePath, projectDir)) {
-          foundFiles.add(filePath)
+        // Skip if this looks like a function name rather than a file path
+        if (filePath && !filePath.includes('(') && !filePath.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*$/)) {
+          // Validate and normalize the file path
+          const normalizedPath = normalizeFilePath(filePath, projectDir)
+          if (normalizedPath && isValidFilePath(normalizedPath, projectDir)) {
+            foundFiles.add(normalizedPath)
+          }
         }
       }
     }
@@ -1277,6 +1414,44 @@ async function extractAndReadFileContents(
   }
 
   return fileContents
+}
+
+function normalizeFilePath(filePath: string, projectDir: string): string | null {
+  if (!filePath) return null
+  
+  // Remove any leading/trailing whitespace and quotes
+  filePath = filePath.trim().replace(/^['"`]/, '').replace(/['"`]$/, '')
+  
+  // If it's already a relative path starting with common directories, return as-is
+  if (filePath.match(/^(?:app|src|pages|components|lib|utils)\//)) {
+    return filePath
+  }
+  
+  // If it's an absolute path, try to extract the relative part
+  if (filePath.startsWith('/')) {
+    const parts = filePath.split('/')
+    const relevantDirs = ['app', 'src', 'pages', 'components', 'lib', 'utils']
+    
+    for (const dir of relevantDirs) {
+      const dirIndex = parts.lastIndexOf(dir)
+      if (dirIndex >= 0) {
+        return parts.slice(dirIndex).join('/')
+      }
+    }
+    
+    // If no relevant directory found, try to get the last few parts that look like a file path
+    const fileIndex = parts.findIndex(part => part.includes('.'))
+    if (fileIndex > 0) {
+      return parts.slice(Math.max(0, fileIndex - 2)).join('/')
+    }
+  }
+  
+  // If it starts with ./ or ../, clean it up
+  if (filePath.startsWith('./')) {
+    filePath = filePath.substring(2)
+  }
+  
+  return filePath
 }
 
 function getFileExtension(filePath: string): string {

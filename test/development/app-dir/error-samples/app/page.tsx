@@ -13,11 +13,7 @@ const errorSamples = [
     title: 'Runtime Error',
     description: 'Uncaught JavaScript runtime errors',
   },
-  {
-    id: 'async-errors',
-    title: 'Async & Network Errors',
-    description: 'JSON parsing, fetch failures, and promise rejections',
-  },
+  
   {
     id: 'hydration-mismatch',
     title: 'Hydration Mismatch',
@@ -25,26 +21,39 @@ const errorSamples = [
   },
   
   {
-    id: 'client-side-only',
-    title: 'Client-Side Only Code',
-    description: 'Using window/document on server side',
+    id: 'bad-styled-jsx',
+    title: 'Bad Usage of styled-jsx',
+    description: 'Using styled-jsx on RSC page',
   },
+  
   {
     id: 'invalid-hooks',
     title: 'Invalid Hook Usage',
     description: 'Hooks used conditionally or outside components',
   },
+
   {
-    id: 'api-route-error',
-    title: 'API Route Error',
-    description: 'Wrong HTTP methods or missing exports',
+    id: 'rsc-prop-error',
+    title: 'RSC Prop Error',
+    description: 'Passing function prop to client component',
   },
+
+  // {
+  //   id: 'async-errors',
+  //   title: 'Async & Network Errors',
+  //   description: 'JSON parsing, fetch failures, and promise rejections',
+  // },
+  // {
+  //   id: 'api-route-error',
+  //   title: 'API Route Error',
+  //   description: 'Wrong HTTP methods or missing exports',
+  // },
   
-  {
-    id: 'router-error',
-    title: 'Router Context Error',
-    description: 'useRouter used outside Next.js context',
-  },
+  // {
+  //   id: 'router-error',
+  //   title: 'Router Context Error',
+  //   description: 'useRouter used outside Next.js context',
+  // },
 ]
 
 export default function ErrorSamplesPage() {
