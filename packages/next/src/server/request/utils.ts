@@ -37,5 +37,5 @@ export function throwForSearchParamsAccessInUseCache(
 
 export function isRequestAPICallableInsideAfter() {
   const afterTaskStore = afterTaskAsyncStorage.getStore()
-  return afterTaskStore?.rootTaskSpawnPhase === WorkUnitPhase.After
+  return afterTaskStore?.rootTaskSpawnPhase === WorkUnitPhase.Action
 }
