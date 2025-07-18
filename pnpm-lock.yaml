@@ -243,7 +243,7 @@ importers:
         version: 3.0.0
       ai:
         specifier: 4.3.19
-        version: 4.3.19(react@19.2.0-canary-d85ec5f5-20250716)(zod@3.25.76)
+        version: 4.3.19(react@19.2.0-canary-dffacc7b-20250717)(zod@3.25.76)
       alex:
         specifier: 9.1.0
         version: 9.1.0
@@ -1236,7 +1236,7 @@ importers:
         version: 8.14.0
       ai:
         specifier: 4.3.19
-        version: 4.3.19(react@19.2.0-canary-d85ec5f5-20250716)(zod@3.25.76)
+        version: 4.3.19(react@19.2.0-canary-dffacc7b-20250717)(zod@3.25.76)
       amphtml-validator:
         specifier: 1.0.38
         version: 1.0.38
@@ -1947,7 +1947,7 @@ packages:
     resolution: {integrity: sha512-jK1IZZ22evPZoQW3vlkZ7wvjYGYF+tRBKXtrcolduIkQ/m/sOAVcVeVDUDvh1T91xCnWCdUGCPZg2avZ90mv3g==}
     engines: {node: '>=18'}
     peerDependencies:
-      react: 19.2.0-canary-d85ec5f5-20250716
+      react: 19.2.0-canary-dffacc7b-20250717
       zod: ^3.23.8
     peerDependenciesMeta:
       zod:
@@ -6336,7 +6336,7 @@ packages:
     resolution: {integrity: sha512-dIE2bfNpqHN3r6IINp9znguYdhIOheKW2LDigAMrgt/upT3B8eBGPSCblENvaZGoq+hxaN9fSMzjWpbqloP+7Q==}
     engines: {node: '>=18'}
     peerDependencies:
-      react: 19.2.0-canary-d85ec5f5-20250716
+      react: 19.2.0-canary-dffacc7b-20250717
       zod: ^3.23.8
     peerDependenciesMeta:
       react:
@@ -15587,7 +15587,7 @@ packages:
   swr@2.3.4:
     resolution: {integrity: sha512-bYd2lrhc+VarcpkgWclcUi92wYCpOgMws9Sd1hG1ntAu0NEy+14CbotuFjshBU2kt9rYj9TSmDcybpxpeTU1fg==}
     peerDependencies:
-      react: 19.2.0-canary-d85ec5f5-20250716
+      react: 19.2.0-canary-dffacc7b-20250717
 
   symbol-observable@1.0.1:
     resolution: {integrity: sha512-Kb3PrPYz4HanVF1LVGuAdW6LoVgIwjUYJGzFe7NDrBLCN4lsV/5J0MFurV+ygS4bRVwrCEt2c7MQ1R2a72oJDw==}
@@ -17113,12 +17113,12 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@1.2.12(react@19.2.0-canary-d85ec5f5-20250716)(zod@3.25.76)':
+  '@ai-sdk/react@1.2.12(react@19.2.0-canary-dffacc7b-20250717)(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
       '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
-      react: 19.2.0-canary-d85ec5f5-20250716
-      swr: 2.3.4(react@19.2.0-canary-d85ec5f5-20250716)
+      react: 19.2.0-canary-dffacc7b-20250717
+      swr: 2.3.4(react@19.2.0-canary-dffacc7b-20250717)
       throttleit: 2.1.0
     optionalDependencies:
       zod: 3.25.76
@@ -22558,17 +22558,17 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@4.3.19(react@19.2.0-canary-d85ec5f5-20250716)(zod@3.25.76):
+  ai@4.3.19(react@19.2.0-canary-dffacc7b-20250717)(zod@3.25.76):
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.8(zod@3.25.76)
-      '@ai-sdk/react': 1.2.12(react@19.2.0-canary-d85ec5f5-20250716)(zod@3.25.76)
+      '@ai-sdk/react': 1.2.12(react@19.2.0-canary-dffacc7b-20250717)(zod@3.25.76)
       '@ai-sdk/ui-utils': 1.2.11(zod@3.25.76)
       '@opentelemetry/api': 1.9.0
       jsondiffpatch: 0.6.0
       zod: 3.25.76
     optionalDependencies:
-      react: 19.2.0-canary-d85ec5f5-20250716
+      react: 19.2.0-canary-dffacc7b-20250717
 
   ajv-formats@2.1.1(ajv@8.17.1):
     optionalDependencies:
@@ -34288,11 +34288,11 @@ snapshots:
       react: 19.2.0-canary-dffacc7b-20250717
       use-sync-external-store: 1.2.0(react@19.2.0-canary-dffacc7b-20250717)
 
-  swr@2.3.4(react@19.2.0-canary-d85ec5f5-20250716):
+  swr@2.3.4(react@19.2.0-canary-dffacc7b-20250717):
     dependencies:
       dequal: 2.0.3
-      react: 19.2.0-canary-d85ec5f5-20250716
-      use-sync-external-store: 1.5.0(react@19.2.0-canary-d85ec5f5-20250716)
+      react: 19.2.0-canary-dffacc7b-20250717
+      use-sync-external-store: 1.5.0(react@19.2.0-canary-dffacc7b-20250717)
 
   symbol-observable@1.0.1: {}
 
