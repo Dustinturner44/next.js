@@ -72,10 +72,6 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
       // Filter out optimistic projects and replace with real ones
       setProjects((prevProjects) => {
         const realProjects = data.projects || []
-        console.log('Fetched projects with display names:', realProjects.map((p: Dev0Project) => ({ 
-          name: p.name, 
-          displayName: p.displayName 
-        })))
         const optimisticProjects = prevProjects.filter((p) => p.isOptimistic)
 
         // Remove optimistic projects that now exist as real projects
@@ -91,7 +87,6 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch projects')
-      console.error('Failed to fetch dev-0 projects:', err)
     } finally {
       setIsLoading(false)
     }
@@ -137,7 +132,6 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
       setProjects((prev) => prev.filter((p) => p.name !== tempId))
       creatingProjectIds.delete(tempId)
       setError(err instanceof Error ? err.message : 'Failed to create project')
-      console.error('Failed to create dev-0 project:', err)
       return null
     }
   }, [fetchProjects, creatingProjectIds])
@@ -158,7 +152,6 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
         await fetchProjects()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to kill project')
-        console.error('Failed to kill dev-0 project:', err)
       }
     },
     [fetchProjects]
@@ -180,14 +173,12 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
         await fetchProjects()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to start project')
-        console.error('Failed to start dev-0 project:', err)
       }
     },
     [fetchProjects]
   )
 
   const updateDisplayName = useCallback(async (projectName: string, displayName: string) => {
-    console.log('updateDisplayName called:', projectName, '->', displayName)
     
     // Optimistically update the project's displayName
     setProjects(prev => prev.map(p => 
@@ -200,8 +191,6 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setError(null)
       const url = `${DEV0_API_URL}/set-display-name`
-      console.log('Making request to:', url)
-      console.log('Request body:', { projectName, displayName })
       
       const response = await fetch(url, {
         method: 'POST',
@@ -209,20 +198,16 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
         body: JSON.stringify({ projectName, displayName }),
       })
       
-      console.log('Response status:', response.status)
       const data = await response.json()
-      console.log('Response data:', data)
       
       if (data.error) {
         throw new Error(data.error)
       }
-      console.log('Display name saved successfully')
       // Don't refetch immediately to avoid timing issues with the UI
       // The optimistic update should be sufficient
     } catch (err) {
       // On error, revert the optimistic update by fetching fresh data
       setError(err instanceof Error ? err.message : 'Failed to update display name')
-      console.error('Failed to update display name:', err)
       await fetchProjects()
       await fetchDisplayNames()
     }
@@ -251,7 +236,6 @@ export const Dev0Provider: React.FC<{ children: React.ReactNode }> = ({
       }
       setDisplayNames(data.displayNames || {})
     } catch (err) {
-      console.error('Failed to fetch display names:', err)
     }
   }, [])
 

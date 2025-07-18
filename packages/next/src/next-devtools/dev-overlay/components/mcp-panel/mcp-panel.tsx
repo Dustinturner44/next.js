@@ -51,12 +51,15 @@ export const MCPPanel = () => {
   // Fetch tools from WebSocket singleton
   const fetchTools = async () => {
     try {
+      console.log('[MCP PANEL ISSUE] Fetching tools...')
       setLoading(true)
       
       // Get tools with status from WebSocket singleton
-      const wsResponse = await fetch('http://localhost:8001/tools')
+      // Use all-tools endpoint to get ALL tools, not just online ones
+      const wsResponse = await fetch('http://localhost:8001/all-tools')
       
       if (!wsResponse.ok) {
+        console.log('[MCP PANEL ISSUE] Failed to fetch tools - not connected')
         setConnected(false)
         setTools([])
         return
@@ -64,17 +67,36 @@ export const MCPPanel = () => {
       
       setConnected(true)
       const wsData = await wsResponse.json()
+      console.log('[MCP PANEL ISSUE] Received tools:', wsData.tools.length, 'tools')
+      
+      // Log mighty-moon tools specifically
+      const mightyMoonTools = wsData.tools.filter((t: any) => t.projectId === 'mighty-moon-285')
+      console.log('[MCP PANEL ISSUE] mighty-moon-285 tools:', mightyMoonTools.map((t: any) => ({
+        name: t.name,
+        online: t.online,
+        lastSeen: t.lastSeen
+      })))
       
       if (wsData.tools && wsData.tools.length > 0) {
-        // Use the tools directly from WebSocket singleton
-        // They already have all the information we need
-        const toolsWithStatus = wsData.tools.map((tool: any) => ({
-          ...tool,
-          online: tool.online || false,
-          projectId: tool.projectId || tool.name.split('_')[0],
-          isDisabled: tool.isDisabled || false,
-        }))
+        // Use the tools directly - they now include online/offline status
+        const toolsWithStatus = wsData.tools.map((tool: any) => {
+          // Create a completely new object to ensure React detects changes
+          return {
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+            online: tool.online !== undefined ? tool.online : true,
+            projectId: tool.projectId || tool.name.split('_')[0],
+            isDisabled: tool.isDisabled || false,
+          }
+        })
         
+        console.log('[MCP PANEL ISSUE] Setting tools state with:', toolsWithStatus.length, 'tools')
+        // Log the first mighty-moon tool to see its full structure
+        const mightyMoonTool = toolsWithStatus.find((t: any) => t.name.includes('mighty-moon'))
+        if (mightyMoonTool) {
+          console.log('[MCP PANEL ISSUE] Full mighty-moon tool object:', JSON.stringify(mightyMoonTool, null, 2))
+        }
         setTools(toolsWithStatus)
       } else {
         setTools([])
@@ -89,22 +111,28 @@ export const MCPPanel = () => {
   }
 
   useEffect(() => {
-    // Initial fetch with small delay to let hidden panels establish connections
-    const initialTimeout = setTimeout(() => {
-      fetchTools()
-    }, 500)
+    // Immediate fetch to show tools (even if offline)
+    fetchTools()
     
-    // Check connection and fetch tools every 1 second
+    // Multiple retries to catch tools coming online after panel switch
+    const timeouts = [
+      setTimeout(() => fetchTools(), 500),   // Quick retry
+      setTimeout(() => fetchTools(), 1000),  // 1 second
+      setTimeout(() => fetchTools(), 2000),  // 2 seconds  
+      setTimeout(() => fetchTools(), 3000),  // 3 seconds
+    ]
+    
+    // Regular polling interval
     const interval = setInterval(() => {
       checkConnection()
       fetchTools()
-    }, 1000)
+    }, 1000) // Poll every second
     
     return () => {
-      clearTimeout(initialTimeout)
+      timeouts.forEach(t => clearTimeout(t))
       clearInterval(interval)
     }
-  }, [])
+  }, []) // Empty dependency array - set up once
 
   const toggleToolEnabled = async (toolName: string, isDisabled: boolean) => {
     try {
@@ -219,6 +247,8 @@ export const MCPPanel = () => {
     acc[projectId].push(tool)
     return acc
   }, {} as Record<string, Tool[]>)
+  
+  
 
   return (
     <>
@@ -271,21 +301,68 @@ export const MCPPanel = () => {
                 title={connected ? 'Connected to WebSocket' : 'Disconnected'}
               />
             </div>
-            <button
-              onClick={fetchTools}
-              style={{
-                background: 'transparent',
-                border: '1px solid var(--color-gray-alpha-400)',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                fontSize: '11px',
-                cursor: 'pointer',
-                color: 'var(--color-text-secondary)',
-              }}
-              disabled={loading}
-            >
-              {loading ? 'Loading...' : 'Refresh'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={fetchTools}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--color-gray-alpha-400)',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-secondary)',
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : 'Refresh'}
+              </button>
+              <button
+                onClick={async () => {
+                  if (confirm('Are you sure you want to clear all tools? This will remove all registered tools from memory and Redis.')) {
+                    try {
+                      const response = await fetch('http://localhost:8001/clear-tools', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                      })
+                      
+                      if (response.ok) {
+                        const result = await response.json()
+                        // Refresh the tools list after clearing
+                        setTimeout(() => fetchTools(), 500)
+                      } else {
+                        console.error('[MCP Panel] Failed to clear tools')
+                      }
+                    } catch (error) {
+                      console.error('[MCP Panel] Error clearing tools:', error)
+                    }
+                  }
+                }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--color-red-alpha-400)',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  color: 'var(--color-red-700)',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-red-alpha-100)'
+                  e.currentTarget.style.borderColor = 'var(--color-red-alpha-600)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.borderColor = 'var(--color-red-alpha-400)'
+                }}
+                title="Clear all registered tools from memory and Redis"
+              >
+                Clear All
+              </button>
+            </div>
           </div>
 
           {loading && tools.length === 0 ? (
@@ -323,11 +400,15 @@ export const MCPPanel = () => {
                   >
                     {projectId}
                   </div>
-                  {projectTools.map((tool) => (
-                    <button
-                      key={tool.name}
+                  {projectTools.map((tool) => {
+                    // Log each tool as it's being rendered
+                    if (tool.name.includes('mighty-moon')) {
+                    }
+                    return (
+                      <button
+                      key={`${tool.name}-${tool.online ? 'online' : 'offline'}`}
                       onClick={() => {
-                        if (!tool.isDisabled) {
+                        if (!tool.isDisabled && tool.online !== false) {
                           setSelectedTool(tool)
                           setExecutionArgs('{}')
                           setExecutionResult(null)
@@ -343,10 +424,10 @@ export const MCPPanel = () => {
                           selectedTool?.name === tool.name
                             ? 'var(--color-gray-alpha-200)'
                             : 'var(--color-background-100)',
-                        cursor: tool.isDisabled ? 'default' : 'pointer',
+                        cursor: tool.isDisabled || tool.online === false ? 'default' : 'pointer',
                         textAlign: 'left',
                         transition: 'all 0.2s',
-                        opacity: tool.isDisabled ? 0.6 : 1,
+                        opacity: tool.isDisabled || tool.online === false ? 0.6 : 1,
                       }}
                       onMouseEnter={(e) => {
                         if (selectedTool?.name !== tool.name) {
@@ -380,6 +461,15 @@ export const MCPPanel = () => {
                                 color: 'var(--color-gray-600)',
                               }}>
                                 (disabled)
+                              </span>
+                            )}
+                            {tool.online === false && (
+                              <span style={{
+                                fontSize: '10px',
+                                marginLeft: '6px',
+                                color: 'var(--color-orange-600)',
+                              }}>
+                                (offline)
                               </span>
                             )}
                           </div>
@@ -450,7 +540,8 @@ export const MCPPanel = () => {
                         </button>
                       </div>
                     </button>
-                  ))}
+                    )
+                  })}
                 </div>
               ))}
             </div>

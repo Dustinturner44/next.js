@@ -1,6 +1,5 @@
 import { usePanelRouterContext, type PanelStateKind } from './context'
 import { ChevronRight, IssueCount } from './dev-overlay-menu'
-import { CommandPalette } from './command-palette'
 import { DynamicPanel } from '../panel/dynamic-panel'
 import {
   learnMoreLink,
@@ -34,11 +33,12 @@ import { Dev0Header } from '../components/dev-zero-panel/dev-zero-header'
 import { Dev0Panel } from '../components/dev-zero-panel/dev-zero-panel'
 import { HubPanel } from '../components/hub-panel/hub-panel'
 import { ForkUrlPanel } from '../components/fork-url/fork-url-panel'
-import { MCPPanel } from '../components/mcp-panel/mcp-panel'
+import { MCPToolPanel } from '../components/mcp-tool-panel/mcp-tool-panel'
 import { useSidebarContext } from '../context/sidebar-context'
 import { css } from '../utils/css'
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useClickOutsideAndEscape } from '../components/errors/dev-tools-indicator/utils'
+import { AccordionCommandPalette } from './accordion-command-palette'
 
 const MenuPanel = () => {
   const {
@@ -55,6 +55,30 @@ const MenuPanel = () => {
   const { projects, createProject, isLoading, killProject, getDisplayName, updateDisplayName } = useDev0Context()
   const { toggleSidebar, isOpen: sidebarIsOpen } = useSidebarContext()
   const [renamingProject, setRenamingProject] = useState<string | null>(null)
+  const [mcpTools, setMcpTools] = useState<any[]>([])
+  const [mcpLoading, setMcpLoading] = useState(true)
+
+  // Fetch MCP tools
+  useEffect(() => {
+    const fetchMCPTools = async () => {
+      try {
+        const response = await fetch('http://localhost:8001/all-tools')
+        if (response.ok) {
+          const data = await response.json()
+          setMcpTools(data.tools || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch MCP tools:', error)
+      } finally {
+        setMcpLoading(false)
+      }
+    }
+
+    fetchMCPTools()
+    // Poll for updates
+    const interval = setInterval(fetchMCPTools, 2000)
+    return () => clearInterval(interval)
+  }, [])
 
   const visibleProjects = projects.filter(
     (p) => p.status === 'running' || p.status === 'creating'
@@ -205,24 +229,125 @@ const MenuPanel = () => {
     }
   })
 
-  const additionalItems = [
-    {
-      label: 'MCP Tools',
-      value:
-        activePanel === 'mcp-tools' ? (
-          <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
-        ) : (
-          <ChevronRight />
-        ),
-      onClick: () => togglePanel('mcp-tools'),
+  // Create New Project item - standalone at top
+  const createProjectItem = {
+    label: 'Create New Project',
+    value: isLoading ? (
+      <span
+        className="loading-spinner"
+        style={{ width: '14px', height: '14px' }}
+      />
+    ) : (
+      <svg 
+        width="16" 
+        height="16" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="var(--color-green-700)" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+      >
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    ),
+    onClick: isLoading ? undefined : handleCreateProject,
+    disabled: isLoading,
+    attributes: {
+      'data-create-project': true,
+      'data-item-type': 'create-project',
+    },
+    deletable: false,
+  }
+
+  // Create MCP tool items
+  const mcpToolItems = mcpTools.map((tool) => {
+    const panelName = `mcp-tool-${tool.name}` as PanelStateKind
+    const isActive = activePanel === panelName
+    
+    // Extract the tool name without the project prefix
+    const displayName = tool.name.includes('_') 
+      ? tool.name.split('_').slice(1).join('_')
+      : tool.name
+
+    return {
+      label: displayName,
+      value: isActive ? (
+        <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
+      ) : tool.online ? (
+        <span style={{ 
+          width: '8px', 
+          height: '8px', 
+          borderRadius: '50%', 
+          backgroundColor: 'var(--color-green-700)',
+          display: 'inline-block'
+        }} />
+      ) : (
+        <span style={{ 
+          width: '8px', 
+          height: '8px', 
+          borderRadius: '50%', 
+          backgroundColor: 'var(--color-gray-500)',
+          display: 'inline-block'
+        }} />
+      ),
+      onClick: () => togglePanel(panelName),
       attributes: {
-        'data-mcp-tools': true,
-        'data-panel-active': activePanel === 'mcp-tools' ? 'true' : 'false',
+        'data-mcp-tool': tool.name,
+        'data-mcp-online': tool.online ? 'true' : 'false',
+        'data-panel-active': isActive ? 'true' : 'false',
       },
       deletable: false,
+    }
+  })
+
+  // Create MCP Tools accordion
+  const mcpToolsAccordionItem = {
+    label: 'MCP Tools',
+    value: (
+      <span style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '6px',
+        fontSize: '12px',
+        color: 'var(--color-text-secondary)' 
+      }}>
+        {mcpLoading ? (
+          <span
+            className="loading-spinner"
+            style={{ width: '12px', height: '12px' }}
+          />
+        ) : (
+          mcpTools.length
+        )}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </span>
+    ),
+    onClick: undefined,
+    attributes: {
+      'data-accordion': 'mcp-tools',
+      'data-accordion-open': 'false',
     },
+    deletable: false,
+    isAccordion: true,
+    accordionContent: mcpToolItems,
+  }
+
+  const additionalItems = [
     {
-      label: 'Hub',
+      label: 'Marketplace',
       value: <ChevronRight />,
       onClick: () => {
         closePanel('panel-selector')
@@ -233,31 +358,21 @@ const MenuPanel = () => {
       },
       deletable: false,
     },
-    {
-      label: 'Create New Project',
-      value: isLoading ? 'Creating...' : '+',
-      onClick: handleCreateProject,
-      disabled: isLoading,
-      attributes: {
-        'data-create-project': true,
-      },
-      deletable: false,
-    },
-    {
-      label: 'Fork URL',
-      value:
-        activePanel === 'fork-url' ? (
-          <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
-        ) : (
-          <ChevronRight />
-        ),
-      onClick: () => togglePanel('fork-url'),
-      attributes: {
-        'data-fork-url': true,
-        'data-panel-active': activePanel === 'fork-url' ? 'true' : 'false',
-      },
-      deletable: false,
-    },
+    // {
+    //   label: 'Fork URL',
+    //   value:
+    //     activePanel === 'fork-url' ? (
+    //       <span style={{ color: 'var(--color-blue-700)', fontSize: '13px' }}>open</span>
+    //     ) : (
+    //       <ChevronRight />
+    //     ),
+    //   onClick: () => togglePanel('fork-url'),
+    //   attributes: {
+    //     'data-fork-url': true,
+    //     'data-panel-active': activePanel === 'fork-url' ? 'true' : 'false',
+    //   },
+    //   deletable: false,
+    // },
     {
       label: sidebarIsOpen ? 'Close Sidebar' : 'Open Sidebar',
       value: sidebarIsOpen ? <ChevronRight /> : <ChevronRight />,
@@ -290,10 +405,53 @@ const MenuPanel = () => {
     }
   }
 
+  // Create accordion item for Plugins
+  const devToolsAccordionItem = {
+    label: 'Plugins',
+    value: (
+      <span style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '6px',
+        fontSize: '12px',
+        color: 'var(--color-text-secondary)' 
+      }}>
+        {projectItems.length + 1}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </span>
+    ),
+    onClick: undefined, // Don't close panel when clicking accordion
+    attributes: {
+      'data-accordion': 'devtools',
+      'data-accordion-open': 'false',
+    },
+    deletable: false,
+    isAccordion: true,
+    accordionContent: [createProjectItem, ...projectItems],
+  }
+
+  const menuItems = [
+    ...baseItems,
+    devToolsAccordionItem,
+    mcpToolsAccordionItem,
+    ...additionalItems,
+  ].filter(Boolean)
+
   return (
     <>
-      <CommandPalette
-        items={[...projectItems, ...baseItems, ...additionalItems]}
+      <AccordionCommandPalette
+        items={menuItems}
         closeOnClickOutside={false}
         onDeleteItem={handleDeleteItem}
       />
@@ -638,33 +796,7 @@ export const PanelRouter = () => {
         <HubModal />
       </PanelRoute>
 
-      <PanelRoute name="mcp-tools">
-        <DynamicPanel
-          sharePanelSizeGlobally={false}
-          sharePanelPositionGlobally={true}
-          draggable
-          sizeConfig={{
-            kind: 'resizable',
-            maxHeight: '90vh',
-            maxWidth: '90vw',
-            minHeight: 400 / state.scale,
-            minWidth: 700 / state.scale,
-            initialSize: {
-              height: 600 / state.scale,
-              width: 900 / state.scale,
-            },
-          }}
-          header={
-            <DevToolsHeader title="MCP Tools">
-              <MCPHeaderContent />
-            </DevToolsHeader>
-          }
-        >
-          <div id="mcp-panel" style={{ height: '100%' }}>
-            <MCPPanel />
-          </div>
-        </DynamicPanel>
-      </PanelRoute>
+      <MCPToolRoutes />
     </>
   )
 }
@@ -722,6 +854,138 @@ const Dev0ProjectRoutes = () => {
         </PanelRoute>
       ))}
     </>
+  )
+}
+
+const MCPToolRoutes = () => {
+  const { state } = useDevOverlayContext()
+  const [mcpTools, setMcpTools] = useState<any[]>([])
+
+  // Fetch MCP tools
+  useEffect(() => {
+    const fetchMCPTools = async () => {
+      try {
+        const response = await fetch('http://localhost:8001/all-tools')
+        if (response.ok) {
+          const data = await response.json()
+          setMcpTools(data.tools || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch MCP tools:', error)
+      }
+    }
+
+    fetchMCPTools()
+    const interval = setInterval(fetchMCPTools, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <>
+      {mcpTools.map((tool) => (
+        <PanelRoute key={tool.name} name={`mcp-tool-${tool.name}`}>
+          <DynamicPanel
+            sharePanelSizeGlobally={false}
+            sharePanelPositionGlobally={true}
+            draggable
+            sizeConfig={{
+              kind: 'resizable',
+              maxHeight: '90vh',
+              maxWidth: '90vw',
+              minHeight: 400 / state.scale,
+              minWidth: 500 / state.scale,
+              initialSize: {
+                height: 500 / state.scale,
+                width: 600 / state.scale,
+              },
+            }}
+            header={
+              <DevToolsHeader title={tool.name.includes('_') 
+                ? tool.name.split('_').slice(1).join('_')
+                : tool.name}>
+                <MCPToolHeaderContent tool={tool} />
+              </DevToolsHeader>
+            }
+          >
+            <MCPToolPanel toolName={tool.name} tool={tool} />
+          </DynamicPanel>
+        </PanelRoute>
+      ))}
+    </>
+  )
+}
+
+const MCPToolHeaderContent = ({ tool }: { tool: any }) => {
+  const { getDisplayName } = useDev0Context()
+  const projectId = tool.name.split('_')[0] || 'unknown'
+  const displayName = getDisplayName(projectId)
+  const [copyFeedback, setCopyFeedback] = useState<'idle' | 'copied' | 'failed'>('idle')
+  
+  const handleCopy = async () => {
+    try {
+      const command = 'claude mcp add devtools -- node /Users/robby/dev-0/packages/mcp-server/dist/index.js --stdio'
+      await navigator.clipboard.writeText(command)
+      setCopyFeedback('copied')
+      setTimeout(() => setCopyFeedback('idle'), 2000)
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      setCopyFeedback('failed')
+      setTimeout(() => setCopyFeedback('idle'), 2000)
+    }
+  }
+  
+  return (
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '8px',
+      fontSize: '12px',
+      color: 'var(--color-text-secondary)',
+    }}>
+      <span style={{
+        padding: '2px 8px',
+        borderRadius: '4px',
+        backgroundColor: 'var(--color-gray-alpha-200)',
+        border: '1px solid var(--color-gray-alpha-400)',
+      }}>
+        {displayName}
+      </span>
+      <code
+        style={{
+          backgroundColor: 'var(--color-gray-alpha-200)',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '11px',
+          fontFamily: 'monospace',
+          color: 'var(--color-text-primary)',
+          border: '1px solid var(--color-gray-alpha-400)',
+        }}
+      >
+        claude mcp add devtools
+      </code>
+      <button
+        onClick={handleCopy}
+        style={{
+          background: 'transparent',
+          border: '1px solid var(--color-gray-alpha-400)',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '11px',
+          cursor: 'pointer',
+          color: copyFeedback === 'copied' ? 'var(--color-green-700)' : 
+                copyFeedback === 'failed' ? 'var(--color-red-700)' : 
+                'var(--color-text-secondary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}
+        title="Copy command to add MCP server to Claude Code"
+      >
+        {copyFeedback === 'copied' ? '✓ Copied' : 
+         copyFeedback === 'failed' ? '✗ Failed' : 
+         'Copy'}
+      </button>
+    </div>
   )
 }
 
@@ -834,59 +1098,3 @@ function PanelRoute({
   )
 }
 
-function MCPHeaderContent() {
-  const [copyFeedback, setCopyFeedback] = useState<'idle' | 'copied' | 'failed'>('idle')
-  
-  const handleCopy = async () => {
-    try {
-      const command = 'claude mcp add devtools -- node /Users/robby/dev-0/packages/mcp-server/dist/index.js --stdio'
-      await navigator.clipboard.writeText(command)
-      setCopyFeedback('copied')
-      setTimeout(() => setCopyFeedback('idle'), 2000)
-    } catch (error) {
-      console.error('Failed to copy:', error)
-      setCopyFeedback('failed')
-      setTimeout(() => setCopyFeedback('idle'), 2000)
-    }
-  }
-  
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <code
-        style={{
-          backgroundColor: 'var(--color-gray-alpha-200)',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          fontFamily: 'monospace',
-          color: 'var(--color-text-primary)',
-          border: '1px solid var(--color-gray-alpha-400)',
-        }}
-      >
-        claude mcp add devtools -- node .../index.js --stdio
-      </code>
-      <button
-        onClick={handleCopy}
-        style={{
-          background: 'transparent',
-          border: '1px solid var(--color-gray-alpha-400)',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          cursor: 'pointer',
-          color: copyFeedback === 'copied' ? 'var(--color-green-700)' : 
-                copyFeedback === 'failed' ? 'var(--color-red-700)' : 
-                'var(--color-text-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-        }}
-        title="Copy command to add MCP server to Claude Code"
-      >
-        {copyFeedback === 'copied' ? '✓ Copied' : 
-         copyFeedback === 'failed' ? '✗ Failed' : 
-         'Copy'}
-      </button>
-    </div>
-  )
-}

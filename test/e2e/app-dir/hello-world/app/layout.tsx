@@ -48,6 +48,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
+        <script src="http://localhost:8097"></script>
         {children}
       </body>
     </html>

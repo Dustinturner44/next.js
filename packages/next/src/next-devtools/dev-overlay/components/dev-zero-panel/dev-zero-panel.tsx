@@ -12,7 +12,9 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
   port,
   refreshKey = 0,
 }) => {
-  const iframeUrl = `http://localhost:${port}?projectName=${encodeURIComponent(projectName)}`
+  // Always add timestamp to force WebSocket reconnection in hidden iframes
+  const baseUrl = `http://localhost:${port}?projectName=${encodeURIComponent(projectName)}`
+  const iframeUrl = refreshKey > 0 ? `${baseUrl}&refresh=${refreshKey}` : baseUrl
   const [isLoading, setIsLoading] = useState(true)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [isInstrumentationReady, setIsInstrumentationReady] = useState(false)
@@ -26,9 +28,9 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
       setIsLoading(true)
       setHasLoaded(false)
       setHasError(false)
-      iframeRef.current.src = `${iframeUrl}&refresh=${refreshKey}`
+      iframeRef.current.src = `${baseUrl}&refresh=${refreshKey}`
     }
-  }, [refreshKey, iframeUrl])
+  }, [refreshKey, baseUrl])
 
   useEffect(() => {
     if (hasError) {
@@ -39,7 +41,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
         setHasLoaded(false)
         // Force iframe reload
         if (iframeRef.current) {
-          iframeRef.current.src = `${iframeUrl}&retry=${Date.now()}`
+          iframeRef.current.src = `${baseUrl}&retry=${Date.now()}`
         }
       }, 2000)
 
@@ -49,7 +51,7 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
         }
       }
     }
-  }, [hasError, iframeUrl])
+  }, [hasError, baseUrl])
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -422,11 +424,10 @@ export const Dev0Panel: React.FC<Dev0PanelProps> = ({
           try {
             if (iframeRef.current?.contentWindow?.document) {
               iframeRef.current.contentWindow.document.title = projectName
-              console.log(`[Dev0Panel] Set iframe title to: ${projectName}`)
             }
           } catch (e) {
-            console.error('[Dev0Panel] Failed to set iframe title:', e)
           }
+          
 
           setTimeout(() => {
             setHasLoaded(true)
