@@ -932,6 +932,9 @@ importers:
 
   packages/next:
     dependencies:
+      '@ai-sdk/vercel':
+        specifier: 0.0.3
+        version: 0.0.3(zod@3.25.76)
       '@next/env':
         specifier: 15.4.2-canary.8
         version: link:../next-env

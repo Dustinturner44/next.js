@@ -1,28 +1,30 @@
 /**
  * Next.js Auto-Fix Middleware
- * 
+ *
  * Supports dual AI providers:
  * - Anthropic Claude (default): Set ANTHROPIC_API_KEY
  * - Vercel AI (v0 mode): Set v0=1 and VERCEL_API_TOKEN
- * 
+ *
  * Provider selection is based on process.env.v0:
  * - If v0 is set (any truthy value), uses Vercel AI with llama-3.1-70b-instruct
  * - Otherwise, uses Anthropic Claude with claude-3-5-sonnet-20241022
  */
 import type { ServerResponse, IncomingMessage } from 'http'
 import { middlewareResponse } from './middleware-response'
-import { promises as fs } from 'fs'
+import fs, { promises as fsp } from 'fs'
 import path from 'path'
 
 import { generateText } from 'ai'
 import { createVercel } from '@ai-sdk/vercel'
 import { createAnthropic } from '@ai-sdk/anthropic'
 
-const provider = process.env.v0 ? createVercel({
-  apiKey: process.env.VERCEL_API_TOKEN,
-}) : createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+const provider = process.env.v0
+  ? createVercel({
+      apiKey: process.env.VERCEL_API_TOKEN,
+    })
+  : createAnthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    })
 
 function getAIProvider() {
   if (process.env.v0) {
@@ -31,7 +33,7 @@ function getAIProvider() {
       provider,
       model: 'llama-3.1-70b-instruct',
       apiKey: process.env.VERCEL_API_TOKEN,
-      apiKeyName: 'VERCEL_API_TOKEN'
+      apiKeyName: 'VERCEL_API_TOKEN',
     }
   } else {
     console.log('🤖 Using Anthropic Claude')
@@ -39,7 +41,7 @@ function getAIProvider() {
       provider,
       model: 'claude-3-5-sonnet-20241022',
       apiKey: process.env.ANTHROPIC_API_KEY,
-      apiKeyName: 'ANTHROPIC_API_KEY'
+      apiKeyName: 'ANTHROPIC_API_KEY',
     }
   }
 }
@@ -87,8 +89,8 @@ export function getAutoFixMiddleware(projectDir: string) {
         return middlewareResponse.badRequest(res)
       }
 
-      // Call Claude via AI SDK to generate fix
-      const result = await generateClaudeFix(prompt, req, projectDir)
+      // Call AI model via AI SDK to generate fix
+      const result = await generateVibeFix(prompt, req, projectDir)
 
       return middlewareResponse.json(res, result)
     } catch (error) {
@@ -115,20 +117,27 @@ async function parseRequestBody(req: IncomingMessage): Promise<string> {
   })
 }
 
-async function generateClaudeFix(
+async function generateVibeFix(
   prompt: string,
   req: IncomingMessage,
   projectDir: string
 ): Promise<AutoFixResponse> {
   try {
     const aiConfig = getAIProvider()
-    
+
     console.log('🔨 Auto Fix Request Received:')
-    console.log('📝 Error/Prompt:', prompt.slice(0, 200) + (prompt.length > 200 ? '...' : ''))
+    console.log(
+      '📝 Error/Prompt:',
+      prompt.slice(0, 200) + (prompt.length > 200 ? '...' : '')
+    )
     console.log('📁 Project Directory:', projectDir)
-    console.log(`🤖 AI Provider: ${process.env.v0 ? 'Vercel' : 'Anthropic'} (${aiConfig.model})`)
-    console.log(`🔑 API Key Status: ${aiConfig.apiKey ? '✅ Available' : '❌ Missing'}`)
-    
+    console.log(
+      `🤖 AI Provider: ${process.env.v0 ? 'Vercel' : 'Anthropic'} (${aiConfig.model})`
+    )
+    console.log(
+      `🔑 API Key Status: ${aiConfig.apiKey ? '✅ Available' : '❌ Missing'}`
+    )
+
     // Enhanced prompt using v0's Next.js expertise
     const enhancedPrompt = `
 You are v0, an advanced Next.js expert AI assistant with deep knowledge of React, TypeScript, and modern web development patterns. Fix the following development error:
@@ -259,22 +268,28 @@ Apply v0's expertise to provide the most elegant, performant, and maintainable s
 `.trim()
 
     // Use AI SDK to process the prompt
-    const aiResponse = await callAIWithSDK(enhancedPrompt)
-    
+    const aiResponse = await callAIWithSDK(enhancedPrompt, projectDir)
+
     console.log('🤖 AI Response Received:')
     console.log('💡 Explanation:', aiResponse.explanation)
     console.log('🔧 File Changes:', aiResponse.fileChanges)
     // console.log('📄 File Changes Suggested:', aiResponse.fileChanges?.length || 0)
-    
+
     if (aiResponse.fileChanges && aiResponse.fileChanges.length > 0) {
       console.log('📋 Suggested Changes:')
       aiResponse.fileChanges.forEach((change, index) => {
-        console.log(`  ${index + 1}. ${change.action.toUpperCase()} in ${change.file}:${change.lineNumber}`)
+        console.log(
+          `  ${index + 1}. ${change.action.toUpperCase()} in ${change.file}:${change.lineNumber}`
+        )
         if (change.oldCode) {
-          console.log(`     Old: ${change.oldCode.slice(0, 50)}${change.oldCode.length > 50 ? '...' : ''}`)
+          console.log(
+            `     Old: ${change.oldCode.slice(0, 50)}${change.oldCode.length > 50 ? '...' : ''}`
+          )
         }
         if (change.newCode) {
-          console.log(`     New: ${change.newCode.slice(0, 50)}${change.newCode.length > 50 ? '...' : ''}`)
+          console.log(
+            `     New: ${change.newCode.slice(0, 50)}${change.newCode.length > 50 ? '...' : ''}`
+          )
         }
       })
     }
@@ -298,7 +313,7 @@ Apply v0's expertise to provide the most elegant, performant, and maintainable s
 
     console.log('✅ Auto Fix Completed Successfully!')
     console.log(`📊 Summary: Applied ${appliedChanges.length} changes`)
-    
+
     if (appliedChanges.length > 0) {
       console.log('📝 Files Modified:')
       appliedChanges.forEach((change, index) => {
@@ -315,8 +330,14 @@ Apply v0's expertise to provide the most elegant, performant, and maintainable s
     return result
   } catch (error) {
     console.error('❌ Auto Fix Failed:')
-    console.error('   Error:', error instanceof Error ? error.message : 'Unknown error')
-    console.error('   Stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error(
+      '   Error:',
+      error instanceof Error ? error.message : 'Unknown error'
+    )
+    console.error(
+      '   Stack:',
+      error instanceof Error ? error.stack : 'No stack trace'
+    )
     throw new Error(
       `AI Auto Fix error: ${error instanceof Error ? error.message : 'Unknown error'}`
     )
@@ -332,12 +353,13 @@ interface FileChange {
 }
 
 async function callAIWithSDK(
-  prompt: string
+  prompt: string,
+  projectDir: string
 ): Promise<{ fix: string; explanation: string; fileChanges?: FileChange[] }> {
   try {
     // Get the appropriate AI provider based on environment
     const aiConfig = getAIProvider()
-    
+
     // Check for API key
     if (!aiConfig.apiKey) {
       console.warn(`${aiConfig.apiKeyName} not found. Using fallback response.`)
@@ -357,61 +379,87 @@ async function callAIWithSDK(
 
     console.log('🔍 Raw AI Response:')
     console.log(content.slice(0, 500) + (content.length > 500 ? '...' : ''))
-    
+
     // Try to parse as JSON first, fallback to plain text
     try {
       const parsedResponse = JSON.parse(content)
-      
+
       console.log('✅ Successfully parsed JSON response')
       console.log('📊 Response structure:', {
         hasExplanation: !!parsedResponse.explanation,
         hasFix: !!parsedResponse.fix,
         hasFileChanges: !!parsedResponse.fileChanges,
-        fileChangesCount: parsedResponse.fileChanges?.length || 0
+        fileChangesCount: parsedResponse.fileChanges?.length || 0,
       })
-      
+
       // Validate that we have fileChanges if fix is provided
-      if (parsedResponse.fix && (!parsedResponse.fileChanges || parsedResponse.fileChanges.length === 0)) {
-        console.log('⚠️ AI provided fix but no fileChanges - attempting to extract from fix text')
-        const extractedChanges = extractFileChangesFromText(parsedResponse.fix, content)
+      if (
+        parsedResponse.fix &&
+        (!parsedResponse.fileChanges || parsedResponse.fileChanges.length === 0)
+      ) {
+        console.log(
+          '⚠️ AI provided fix but no fileChanges - attempting to extract from fix text'
+        )
+        const extractedChanges = extractFileChangesFromText(
+          parsedResponse.fix,
+          content
+        )
         parsedResponse.fileChanges = extractedChanges
-        
+
         if (extractedChanges.length === 0) {
-          console.log('❌ Could not extract any actionable file changes from AI response')
-          console.log('   This may indicate the AI needs better prompting or the error is not code-related')
+          console.log(
+            '❌ Could not extract any actionable file changes from AI response'
+          )
+          console.log(
+            '   This may indicate the AI needs better prompting or the error is not code-related'
+          )
         }
       }
-      
+
       // Fix invalid file paths in AI response
       if (parsedResponse.fileChanges) {
-                 const correctedFileChanges = parsedResponse.fileChanges.map((change: FileChange) => {
-          if (change.file === 'Next.js' || change.file === 'React.js' || !isValidFilePath(change.file)) {
-            console.log(`🔧 Correcting invalid file path: "${change.file}"`)
-            const actualFilePath = extractFilePathFromPrompt(prompt)
-            if (actualFilePath) {
-              console.log(`   Using file path from error context: ${actualFilePath}`)
-              return { ...change, file: actualFilePath }
-            } else {
-              console.warn(`   Could not determine actual file path, using fallback`)
-              return { ...change, file: 'src/page.tsx' } // Reasonable fallback
+        const correctedFileChanges = parsedResponse.fileChanges.map(
+          (change: FileChange) => {
+            if (!isValidFilePath(change.file, projectDir)) {
+              console.log(`🔧 Correcting invalid file path: "${change.file}"`)
+              const actualFilePath = extractFilePathFromPrompt(
+                prompt,
+                projectDir
+              )
+              if (actualFilePath) {
+                console.log(
+                  `   Using file path from error context: ${actualFilePath}`
+                )
+                return { ...change, file: actualFilePath }
+              } else {
+                console.warn(
+                  `   Could not determine actual file path, using fallback`
+                )
+                return { ...change, file: 'src/page.tsx' } // Reasonable fallback
+              }
             }
+            return change
           }
-          return change
-        })
+        )
         parsedResponse.fileChanges = correctedFileChanges
       }
-      
+
       const result = {
         fix: parsedResponse.fix || content,
         explanation: parsedResponse.explanation || 'Generated by AI',
         fileChanges: parsedResponse.fileChanges || [],
       }
-      
-      console.log(`📋 Final result: ${result.fileChanges.length} file changes to apply`)
+
+      console.log(
+        `📋 Final result: ${result.fileChanges.length} file changes to apply`
+      )
       return result
     } catch (parseError) {
       console.log('⚠️ Failed to parse JSON, processing as text response')
-      console.log('Parse error:', parseError instanceof Error ? parseError.message : 'Unknown')
+      console.log(
+        'Parse error:',
+        parseError instanceof Error ? parseError.message : 'Unknown'
+      )
       // If not JSON, treat as plain text and extract useful parts
       return parseTextResponse(content)
     }
@@ -449,17 +497,21 @@ async function applyFileChanges(
     try {
       console.log(`📁 Processing ${changes.length} change(s) for: ${filePath}`)
       console.log(`   Full path: ${path.resolve(projectRoot, filePath)}`)
-      
+
       changes.forEach((change, index) => {
-        console.log(`   Change ${index + 1}: ${change.action} at line ${change.lineNumber}`)
+        console.log(
+          `   Change ${index + 1}: ${change.action} at line ${change.lineNumber}`
+        )
         if (change.oldCode) {
-          console.log(`     Replacing: "${change.oldCode.replace(/\n/g, '\\n')}"`)
+          console.log(
+            `     Replacing: "${change.oldCode.replace(/\n/g, '\\n')}"`
+          )
         }
         if (change.newCode) {
           console.log(`     With: "${change.newCode.replace(/\n/g, '\\n')}"`)
         }
       })
-      
+
       const fullFilePath = path.resolve(projectRoot, filePath)
 
       // Security check: ensure we're not modifying files outside the project
@@ -472,7 +524,7 @@ async function applyFileChanges(
 
       // Check if file exists
       try {
-        await fs.access(fullFilePath)
+        await fsp.access(fullFilePath)
         console.log(`✓ File exists: ${fullFilePath}`)
       } catch {
         console.warn(`⚠️  File not found, skipping: ${filePath}`)
@@ -480,7 +532,7 @@ async function applyFileChanges(
       }
 
       // Read file content
-      const originalContent = await fs.readFile(fullFilePath, 'utf8')
+      const originalContent = await fsp.readFile(fullFilePath, 'utf8')
       const lines = originalContent.split('\n')
 
       // Sort changes by line number in descending order (apply from bottom to top)
@@ -531,12 +583,18 @@ async function applyFileChanges(
       // Write the modified content back to file if any changes were applied
       if (fileWasModified) {
         const newContent = modifiedLines.join('\n')
-        await fs.writeFile(fullFilePath, newContent, 'utf8')
-        console.log(`💾 Successfully saved ${sortedChanges.length} change(s) to: ${filePath}`)
-        console.log(`   File size: ${originalContent.length} → ${newContent.length} characters`)
+        await fsp.writeFile(fullFilePath, newContent, 'utf8')
+        console.log(
+          `💾 Successfully saved ${sortedChanges.length} change(s) to: ${filePath}`
+        )
+        console.log(
+          `   File size: ${originalContent.length} → ${newContent.length} characters`
+        )
         console.log(`   Lines: ${lines.length} → ${modifiedLines.length}`)
       } else {
-        console.log(`⚠️ No changes applied to ${filePath} (no modifications made)`)
+        console.log(
+          `⚠️ No changes applied to ${filePath} (no modifications made)`
+        )
       }
     } catch (error) {
       console.error(`❌ Failed to apply changes to ${filePath}:`, error)
@@ -682,9 +740,12 @@ async function applyContentBasedChange(
   }
 }
 
-function extractFileChangesFromText(fixText: string, fullContent: string): FileChange[] {
+function extractFileChangesFromText(
+  fixText: string,
+  fullContent: string
+): FileChange[] {
   const fileChanges: FileChange[] = []
-  
+
   // Look for common patterns in fix text that might indicate file changes
   const patterns = [
     // Look for file paths
@@ -694,22 +755,27 @@ function extractFileChangesFromText(fixText: string, fullContent: string): FileC
     // Look for line references
     /line\s+(\d+)/gi,
   ]
-  
+
   // Try to extract file paths from the content
   // More robust regex that looks for actual file paths, not just any text ending with file extensions
-  const filePathMatches = fullContent.match(/(?:(?:\.?\/)?[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts)(?!\w)/g) || []
+  const filePathMatches =
+    fullContent.match(
+      /(?:(?:\.?\/)?[\w-]+\/)*[\w-]+\.(?:tsx?|jsx?|js|ts)(?!\w)/g
+    ) || []
   // Filter out common false positives like "Next.js"
-  const filteredMatches = filePathMatches.filter(match => 
-    !match.toLowerCase().includes('next.js') && 
-    !match.toLowerCase().includes('react.js') &&
-    match.includes('/') || match.length > 8  // Either has path separators or is long enough to be a real filename
+  const filteredMatches = filePathMatches.filter(
+    (match) =>
+      (!match.toLowerCase().includes('next.js') &&
+        !match.toLowerCase().includes('react.js') &&
+        match.includes('/')) ||
+      match.length > 8 // Either has path separators or is long enough to be a real filename
   )
   const uniqueFiles = [...new Set(filteredMatches)]
-  
+
   // If we found potential files and the fix contains actionable text, create basic file changes
   if (uniqueFiles.length > 0 && fixText.length > 50) {
     const firstFile = uniqueFiles[0]
-    
+
     // Look for import-related fixes
     if (fixText.toLowerCase().includes('import') && fixText.includes('from')) {
       const importMatch = fixText.match(/import\s+.*?from\s+['"][^'"]+['"]/i)
@@ -721,30 +787,30 @@ function extractFileChangesFromText(fixText: string, fullContent: string): FileC
           file: firstFile,
           action: 'add',
           lineNumber: 2,
-          newCode: importMatch[0]
+          newCode: importMatch[0],
         })
       }
     }
-    
+
     // Look for code replacement patterns
     const codeMatches = fixText.match(/```[\s\S]*?```/g)
     if (codeMatches && codeMatches.length >= 2) {
       // Assume first block is old code, second is new code
       const oldCode = codeMatches[0].replace(/```\w*\n?/g, '').trim()
       const newCode = codeMatches[1].replace(/```\w*\n?/g, '').trim()
-      
+
       if (oldCode && newCode && oldCode !== newCode) {
         fileChanges.push({
           file: firstFile,
           action: 'replace',
           lineNumber: 10, // Default line number
           oldCode: oldCode.split('\n')[0], // First line only for safety
-          newCode: newCode.split('\n')[0]
+          newCode: newCode.split('\n')[0],
         })
       }
     }
   }
-  
+
   console.log(`🔍 File path extraction results:`)
   console.log(`   Raw matches found: ${filePathMatches.length}`)
   console.log(`   Filtered matches: ${filteredMatches.length}`)
@@ -752,13 +818,17 @@ function extractFileChangesFromText(fixText: string, fullContent: string): FileC
   if (uniqueFiles.length > 0) {
     console.log(`   Files: [${uniqueFiles.join(', ')}]`)
   }
-  console.log(`🔍 Extracted ${fileChanges.length} file changes from text response`)
-  
+  console.log(
+    `🔍 Extracted ${fileChanges.length} file changes from text response`
+  )
+
   // If no valid files were found, log a warning
   if (uniqueFiles.length === 0 && fixText.toLowerCase().includes('import')) {
-    console.warn('⚠️ No valid file paths detected, but fix mentions imports. Consider extracting file path from error context.')
+    console.warn(
+      '⚠️ No valid file paths detected, but fix mentions imports. Consider extracting file path from error context.'
+    )
   }
-  
+
   return fileChanges
 }
 
@@ -798,88 +868,51 @@ function parseTextResponse(content: string): {
   return {
     explanation: explanation || 'AI analysis provided',
     fix: fix || content,
-    fileChanges
+    fileChanges,
   }
 }
 
-function parseClaudeTextResponse(content: string): {
+function getFallbackResponse(): {
   fix: string
   explanation: string
+  fileChanges: FileChange[]
 } {
-  // Simple parsing to extract explanation and fix from text response
-  const lines = content.split('\n').filter((line) => line.trim())
-
-  let explanation = ''
-  let fix = ''
-  let currentSection = 'explanation'
-
-  for (const line of lines) {
-    const lowerLine = line.toLowerCase()
-    if (
-      lowerLine.includes('fix') ||
-      lowerLine.includes('solution') ||
-      lowerLine.includes('steps')
-    ) {
-      currentSection = 'fix'
-      continue
-    }
-
-    if (currentSection === 'explanation' && !explanation) {
-      explanation = line.trim()
-    } else if (currentSection === 'fix') {
-      fix += (fix ? '\n' : '') + line.trim()
-    }
-  }
-
-  return {
-    explanation: explanation || 'Claude analysis provided',
-    fix: fix || content,
-  }
-}
-
-function getFallbackResponse(): { fix: string; explanation: string; fileChanges: FileChange[] } {
   const isV0Mode = !!process.env.v0
   const requiredKey = isV0Mode ? 'VERCEL_API_TOKEN' : 'ANTHROPIC_API_KEY'
   const requiredPackage = isV0Mode ? '@ai-sdk/vercel' : '@ai-sdk/anthropic'
-  
+
   return {
-    explanation:
-      `Auto-fix service requires ${requiredKey} environment variable to be set. Install AI SDK dependencies: npm install ai ${requiredPackage}`,
+    explanation: `Auto-fix service requires ${requiredKey} environment variable to be set. Install AI SDK dependencies: npm install ai ${requiredPackage}`,
     fix: `1. Check the error message and stack trace carefully\n2. Verify your code syntax and imports\n3. Check Next.js documentation for similar issues\n4. Restart your development server\n5. Clear Next.js cache with \`rm -rf .next\`\n\nTo enable AI-powered auto-fix:\n1. Set ${requiredKey} environment variable\n2. Install dependencies: npm install ai ${requiredPackage}\n\nProvider selection:\n- Set v0=1 environment variable to use Vercel AI (requires VERCEL_API_TOKEN)\n- Default: Anthropic Claude (requires ANTHROPIC_API_KEY)`,
-    fileChanges: []
+    fileChanges: [],
   }
 }
 
-function isValidFilePath(filePath: string): boolean {
+function isValidFilePath(filePath: string, projectDir: string): boolean {
   // Check if the file path looks like a valid file path
   if (!filePath || typeof filePath !== 'string') {
     return false
   }
-  
-  // Exclude common false positives
-  const invalidPatterns = [
-    'Next.js',
-    'React.js', 
-    'next.js',
-    'react.js',
-    'JavaScript',
-    'TypeScript'
-  ]
-  
-  if (invalidPatterns.some(pattern => filePath.toLowerCase().includes(pattern.toLowerCase()))) {
-    return false
-  }
-  
+
   // Must have a valid file extension
   if (!/\.(?:tsx?|jsx?|js|ts)$/.test(filePath)) {
     return false
   }
-  
+
+  const absolutePath = path.join(projectDir, filePath)
+  if (!fs.existsSync(absolutePath)) {
+    console.warn(`⚠️  File not found: ${absolutePath}`)
+    return false
+  }
+
   // Should either contain path separators or be a reasonable filename
   return filePath.includes('/') || filePath.length > 6
 }
 
-function extractFilePathFromPrompt(prompt: string): string | null {
+function extractFilePathFromPrompt(
+  prompt: string,
+  projectDir: string
+): string | null {
   // Try to extract file path from error stack traces or error messages
   const patterns = [
     // Stack trace patterns like "at Component (/path/to/file.tsx:10:5)"
@@ -889,23 +922,27 @@ function extractFilePathFromPrompt(prompt: string): string | null {
     // Module paths like "./components/Component.tsx"
     /(\.?\/[\w/-]+\.(?:tsx?|jsx?|js|ts))/g,
     // Absolute paths
-    /([a-zA-Z]:)?\/[\w/-]+\.(?:tsx?|jsx?|js|ts)/g
+    /([a-zA-Z]:)?\/[\w/-]+\.(?:tsx?|jsx?|js|ts)/g,
   ]
-  
+
   for (const pattern of patterns) {
     const matches = prompt.match(pattern)
     if (matches) {
       for (const match of matches) {
         // Extract just the file path part
         const pathMatch = match.match(/([^\s()]+\.(?:tsx?|jsx?|js|ts))/i)
-        if (pathMatch && isValidFilePath(pathMatch[1])) {
+        if (pathMatch && isValidFilePath(pathMatch[1], projectDir)) {
           // Convert absolute paths to relative if they're within common project dirs
           let filePath = pathMatch[1]
-          if (filePath.includes('/app/') || filePath.includes('/src/') || filePath.includes('/pages/')) {
+          if (
+            filePath.includes('/app/') ||
+            filePath.includes('/src/') ||
+            filePath.includes('/pages/')
+          ) {
             const parts = filePath.split('/')
             const relevantIndex = Math.max(
               parts.lastIndexOf('app'),
-              parts.lastIndexOf('src'), 
+              parts.lastIndexOf('src'),
               parts.lastIndexOf('pages')
             )
             if (relevantIndex >= 0) {
@@ -917,6 +954,6 @@ function extractFilePathFromPrompt(prompt: string): string | null {
       }
     }
   }
-  
+
   return null
 }
