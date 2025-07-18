@@ -3,38 +3,38 @@ import Link from 'next/link'
 import '../shared.css'
 
 export default function ClientSideOnlyPage() {
-  const [triggerError, setTriggerError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  // const [triggerError, setTriggerError] = useState(false)
+  // const [errorMessage, setErrorMessage] = useState('')
 
   // This will cause an error when called during SSR
-  const accessWindowObject = () => {
-    try {
-      if (triggerError) {
-        // This will throw "ReferenceError: window is not defined" on server
-        const userAgent = window.navigator.userAgent
-        const windowWidth = window.innerWidth
-        return `User Agent: ${userAgent}, Width: ${windowWidth}`
-      }
-      return 'Safe - not accessing window'
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setErrorMessage(message)
-      throw error
-    }
-  }
+  // const accessWindowObject = () => {
+  //   try {
+  //     if (triggerError) {
+  //       // This will throw "ReferenceError: window is not defined" on server
+  //       const userAgent = window.navigator.userAgent
+  //       const windowWidth = window.innerWidth
+  //       return `User Agent: ${userAgent}, Width: ${windowWidth}`
+  //     }
+  //     return 'Safe - not accessing window'
+  //   } catch (error) {
+  //     const message = error instanceof Error ? error.message : 'Unknown error'
+  //     setErrorMessage(message)
+  //     throw error
+  //   }
+  // }
 
-  const handleTriggerError = () => {
-    setErrorMessage('')
-    setTriggerError(!triggerError)
+  // const handleTriggerError = () => {
+  //   setErrorMessage('')
+  //   setTriggerError(!triggerError)
     
-    if (!triggerError) {
-      try {
-        accessWindowObject()
-      } catch (error) {
-        console.error('Client-side error:', error)
-      }
-    }
-  }
+  //   if (!triggerError) {
+  //     try {
+  //       accessWindowObject()
+  //     } catch (error) {
+  //       console.error('Client-side error:', error)
+  //     }
+  //   }
+  // }
 
   return (
     <div className="container">
@@ -58,27 +58,34 @@ export default function ClientSideOnlyPage() {
         <div className="demo">
           <h3>Interactive Demo</h3>
           <div className="demo-content">
-            <p>Current status: {triggerError ? 'Error mode' : 'Safe mode'}</p>
+            {/* <p>Current status: {triggerError ? 'Error mode' : 'Safe mode'}</p> */}
             
-            <div className="error-zone">
+            <style jsx>{`
+              .jsx-error-zone {
+                background-color: #f0f0f0;
+                padding: 1rem;
+                border-radius: 0.5rem;
+              }
+            `}</style>
+            <div className="error-zone jsx-error-zone">
               <h4>Browser API Access:</h4>
               <div className="content-box">
-                {triggerError ? (
+                {/* {triggerError ? (
                   <span style={{ color: '#dc2626' }}>
                     Trying to access window.navigator.userAgent...
                   </span>
                 ) : (
                   'Not accessing browser APIs'
-                )}
+                )} */}
               </div>
-              {errorMessage && (
+              {/* {errorMessage && (
                 <div className="error-display">
                   Error: {errorMessage}
                 </div>
-              )}
+              )} */}
             </div>
 
-            <div className="controls">
+            {/* <div className="controls">
               <button 
                 onClick={handleTriggerError}
                 className={`trigger-btn ${triggerError ? 'error' : 'safe'}`}
@@ -92,7 +99,7 @@ export default function ClientSideOnlyPage() {
                 <strong>⚠️ Client-Side API Access Active</strong>
                 <p>The code is trying to access `window.navigator.userAgent` which doesn't exist on the server.</p>
               </div>
-            )}
+            )} */}
           </div>
         </div>
 

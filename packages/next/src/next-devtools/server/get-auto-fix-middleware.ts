@@ -145,6 +145,9 @@ async function generateVibeFix(
     // Detect if this is a hydration error
     const isHydrationError = detectHydrationError(prompt)
     
+    // Detect if this is a client component error
+    const isClientComponentError = detectClientComponentError(prompt)
+    
     // Build file context section for the prompt
     let fileContextSection = ''
     if (fileContents.length > 0) {
@@ -171,6 +174,7 @@ IMPORTANT: The above files show the CURRENT state. Use this context to:
 5. Place new imports correctly based on existing directive placement
 6. Check if useState, useEffect, or other hooks already exist before adding them
 ${isHydrationError ? '\n7. HYDRATION ERROR DETECTED - Focus on server/client consistency fixes' : ''}
+${isClientComponentError ? '\n8. CLIENT COMPONENT ERROR DETECTED - Add \'use client\' directive if missing' : ''}
 `
     } else {
       console.log('📂 No file contents extracted from error context')
@@ -195,6 +199,14 @@ CRITICAL INSTRUCTIONS:
 - Use modern React patterns and TypeScript when applicable
 - ANALYZE ONLY the current file contents shown above to understand the existing state
 - NEVER add code that already exists - check the file contents carefully!
+
+CLIENT COMPONENT ERROR EXPERTISE:
+If error mentions "only works in a Client Component" or "none of its parents are marked with 'use client'":
+- Add 'use client' directive at the very top of the file (line 1)
+- This applies to: useState, useEffect, onClick handlers, window/document APIs, browser events
+- 'use client' must be the first line, before any imports or other code
+- Only add if the file doesn't already have 'use client' directive
+- This converts Server Component to Client Component for interactivity
 
 HYDRATION ERROR EXPERTISE:
 If this is a hydration mismatch error, follow these specific patterns:
@@ -223,7 +235,11 @@ DIRECTIVE PLACEMENT RULES (CRITICAL):
 - If no directives exist, imports go at line 1 as normal
 - CHECK the current file contents to see if directives already exist!
 
-RESPONSE FORMAT (JSON only - MUST include fileChanges):
+RESPONSE FORMAT (CRITICAL - MUST be valid JSON ONLY):
+
+You MUST respond with ONLY valid JSON - no explanatory text before or after. The response must be parseable with JSON.parse().
+
+Required JSON structure:
 {
   "explanation": "Concise explanation of the root cause",
   "fix": "Summary of the solution applied", 
@@ -243,6 +259,14 @@ RESPONSE FORMAT (JSON only - MUST include fileChanges):
     }
   ]
 }
+
+CRITICAL JSON RULES:
+- Start response with { and end with }
+- Use double quotes for all strings
+- Escape quotes inside strings with \"
+- No trailing commas
+- No comments or extra text
+- Test your JSON mentally before responding
 
 CRITICAL LINE NUMBER RULES:
 - If file starts with 'use client' or other directive: add imports at line 2
@@ -308,6 +332,26 @@ EXAMPLES FROM V0:
 ❌ Bad: <Image src="/pic.jpg" />
 ✅ v0: <Image src="/pic.jpg" alt="Description" width={500} height={300} priority />
 
+🖱️ CLIENT COMPONENT ERROR PATTERNS:
+
+❌ Bad: Server Component with client features
+import { useState } from 'react'
+
+export default function MyComponent() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+
+✅ v0: Add 'use client' directive first
+'use client'
+
+import { useState } from 'react'
+
+export default function MyComponent() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+
 🔄 HYDRATION ERROR PATTERNS:
 
 ❌ Bad: Server/client content differs
@@ -367,6 +411,8 @@ import React from 'react'
 import { useState } from 'react'
 
 Apply v0's expertise to provide the most elegant, performant, and maintainable solution.
+
+FINAL REMINDER: Your response must be ONLY valid JSON. Start with { and end with }. No markdown, no explanations, just pure JSON.
 `.trim()
 
     // Use AI SDK to process the prompt
@@ -482,9 +528,26 @@ async function callAIWithSDK(
     console.log('🔍 Raw AI Response:')
     console.log(content.slice(0, 500) + (content.length > 500 ? '...' : ''))
 
+    // Clean up common JSON formatting issues
+    let cleanedContent = content.trim()
+    
+    // Remove any text before the first {
+    const firstBrace = cleanedContent.indexOf('{')
+    if (firstBrace > 0) {
+      console.log('⚠️  Removing text before JSON object')
+      cleanedContent = cleanedContent.substring(firstBrace)
+    }
+    
+    // Remove any text after the last }
+    const lastBrace = cleanedContent.lastIndexOf('}')
+    if (lastBrace >= 0 && lastBrace < cleanedContent.length - 1) {
+      console.log('⚠️  Removing text after JSON object')
+      cleanedContent = cleanedContent.substring(0, lastBrace + 1)
+    }
+
     // Try to parse as JSON first, fallback to plain text
     try {
-      const parsedResponse = JSON.parse(content)
+      const parsedResponse = JSON.parse(cleanedContent)
 
       console.log('✅ Successfully parsed JSON response')
       console.log('📊 Response structure:', {
@@ -562,8 +625,45 @@ async function callAIWithSDK(
         'Parse error:',
         parseError instanceof Error ? parseError.message : 'Unknown'
       )
-      // If not JSON, treat as plain text and extract useful parts
-      return parseTextResponse(content)
+      console.log('🔍 Cleaned content for debugging:')
+      console.log(cleanedContent.slice(0, 800) + (cleanedContent.length > 800 ? '...' : ''))
+      
+      // Look for obvious JSON issues
+      if (cleanedContent.includes('"')) {
+        console.log('💡 Content contains quotes - may be escaping issue')
+      }
+      if (cleanedContent.includes('`')) {
+        console.log('💡 Content contains backticks - AI may have used markdown code blocks')
+      }
+      if (!cleanedContent.startsWith('{')) {
+        console.log('💡 Content does not start with { - AI may have added explanatory text')
+      }
+      
+      // Try one more time with common fixes
+      try {
+        console.log('🔧 Attempting to fix common JSON issues...')
+        let fixedContent = cleanedContent
+        
+        // Fix backticks in code blocks (common AI mistake)
+        fixedContent = fixedContent.replace(/`/g, '\\"')
+        
+        // Fix unescaped quotes in strings
+        fixedContent = fixedContent.replace(/"([^"]*)"([^",}]*)"([^"]*)":/g, '"$1\\"$2\\"$3":')
+        
+        // Try parsing the fixed version
+        const parsedResponse = JSON.parse(fixedContent)
+        console.log('✅ Successfully parsed JSON after fixes')
+        
+        return {
+          fix: parsedResponse.fix || fixedContent,
+          explanation: parsedResponse.explanation || 'Generated by AI (fixed)',
+          fileChanges: parsedResponse.fileChanges || [],
+        }
+      } catch (secondParseError) {
+        console.log('❌ Still failed to parse after fixes, falling back to text parsing')
+        // If not JSON, treat as plain text and extract useful parts
+        return parseTextResponse(content)
+      }
     }
   } catch (error) {
     console.error('AI SDK call failed:', error)
@@ -757,6 +857,18 @@ async function applyLineBasedChange(
           console.log(`   Attempted: ${change.newCode.trim()}`)
           return false
         }
+      }
+    }
+
+    // Check for duplicate 'use client' directive
+    if (change.newCode.trim() === "'use client'") {
+      const hasUseClient = lines.some(line => 
+        line.trim() === "'use client'" || line.trim() === '"use client"'
+      )
+      
+      if (hasUseClient) {
+        console.log(`⚠️  'use client' directive already exists in ${fileName}, skipping addition`)
+        return false
       }
     }
 
@@ -1189,4 +1301,24 @@ function detectHydrationError(prompt: string): boolean {
   
   const lowerPrompt = prompt.toLowerCase()
   return hydrationKeywords.some(keyword => lowerPrompt.includes(keyword.toLowerCase()))
+}
+
+function detectClientComponentError(prompt: string): boolean {
+  const clientComponentKeywords = [
+    'only works in a client component',
+    'none of its parents are marked with "use client"',
+    'server components by default',
+    'usestate',
+    'useeffect',
+    'onclick',
+    'onchange',
+    'window is not defined',
+    'document is not defined',
+    'cannot read properties of undefined (reading \'addeventlistener\')',
+    'referenceerror: window is not defined',
+    'referenceerror: document is not defined'
+  ]
+  
+  const lowerPrompt = prompt.toLowerCase()
+  return clientComponentKeywords.some(keyword => lowerPrompt.includes(keyword.toLowerCase()))
 }
