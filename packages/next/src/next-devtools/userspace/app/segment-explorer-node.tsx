@@ -1,6 +1,19 @@
 'use client'
 
 import type { ReactNode } from 'react'
+
+// Extend Window interface for Next.js devtools
+declare global {
+  interface Window {
+    __next_rendered_states?: Array<{
+      type: string
+      pagePath: string
+      boundaryType: string | null
+      timestamp: number
+      id: string
+    }>
+  }
+}
 import {
   useState,
   createContext,
@@ -44,6 +57,24 @@ function SegmentTrieNode({
   // `useEffect` won't work as the state is preserved during suspense.
   useLayoutEffect(() => {
     dispatcher.segmentExplorerNodeAdd(nodeState)
+    
+    // Track rendered states for auto-fix debugging
+    if (typeof window !== 'undefined') {
+      if (!window.__next_rendered_states) {
+        window.__next_rendered_states = []
+      }
+      window.__next_rendered_states.push({
+        ...nodeState,
+        timestamp: Date.now(),
+        id: `${nodeState.type}-${nodeState.pagePath}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      })
+      
+      // Keep only last 50 states to prevent memory leaks
+      if (window.__next_rendered_states.length > 50) {
+        window.__next_rendered_states = window.__next_rendered_states.slice(-50)
+      }
+    }
+    
     return () => {
       dispatcher.segmentExplorerNodeRemove(nodeState)
     }

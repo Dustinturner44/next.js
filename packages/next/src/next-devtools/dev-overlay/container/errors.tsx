@@ -171,7 +171,9 @@ export function Errors({
     if (message) {
       parts.push(`## Error Message\n${message}`)
     }
+    
     // Append call stack
+    let hasUsefulCallStack = false
     if (frames.length > 0) {
       const visibleFrames = frames.filter((frame) => !frame.ignored)
       if (visibleFrames.length > 0) {
@@ -192,11 +194,36 @@ export function Errors({
 
         if (stackLines.length > 0) {
           parts.push(`\n${stackLines.join('\n')}`)
+          
+          // Check if call stack is helpful - contains real files and methods
+          hasUsefulCallStack = stackLines.some(line => {
+            const lowerLine = line.toLowerCase()
+            return !lowerLine.includes('stringify') && 
+                   !lowerLine.includes('<anonymous>') && 
+                   !lowerLine.includes('anonymous') &&
+                   (lowerLine.includes('.tsx') || lowerLine.includes('.ts') || lowerLine.includes('.jsx') || lowerLine.includes('.js')) &&
+                   !lowerLine.includes('node_modules')
+          })
         }
       }
     }
 
-    // 3. Code Frame (decoded)
+    // 4. Include rendered states when call stack is not helpful
+    if (!hasUsefulCallStack && typeof window !== 'undefined') {
+      const renderedStates = (window as any).__next_rendered_states
+      if (renderedStates && Array.isArray(renderedStates) && renderedStates.length > 0) {
+        const recentStates = renderedStates.slice(-10) // Get last 10 states
+        const statesInfo = recentStates.map((state: any) => {
+          return `  - ${state.type} (${state.pagePath}) [${state.boundaryType || 'normal'}] - ${new Date(state.timestamp).toLocaleTimeString()}`
+        }).join('\n')
+        
+        parts.push(`## Recently Rendered Components\n${statesInfo}
+        
+Note: Call stack was not helpful (contains stringify/anonymous functions), so including recently rendered component states for context.`)
+      }
+    }
+
+    // 5. Code Frame (decoded)
     if (firstFrame?.originalCodeFrame) {
       const decodedCodeFrame = stripAnsi(
         formatCodeFrame(firstFrame.originalCodeFrame)

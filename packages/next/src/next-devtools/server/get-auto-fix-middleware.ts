@@ -142,6 +142,9 @@ async function generateVibeFix(
     // Extract and read file contents from the error/prompt
     const fileContents = await extractAndReadFileContents(prompt, projectDir)
     
+    // Extract additional context from rendered states if available
+    const renderedStatesContext = extractRenderedStatesFromPrompt(prompt, projectDir)
+    
     // Detect if this is a hydration error
     const isHydrationError = detectHydrationError(prompt)
     
@@ -165,6 +168,7 @@ ${fileContents.map(file => `
 ${file.content}
 \`\`\`
 `).join('\n')}
+${renderedStatesContext}
 
 IMPORTANT: The above files show the CURRENT state. Use this context to:
 1. Understand existing directives ('use client', 'use server') and their positions
@@ -175,9 +179,23 @@ IMPORTANT: The above files show the CURRENT state. Use this context to:
 6. Check if useState, useEffect, or other hooks already exist before adding them
 ${isHydrationError ? '\n7. HYDRATION ERROR DETECTED - Focus on server/client consistency fixes' : ''}
 ${isClientComponentError ? '\n8. CLIENT COMPONENT ERROR DETECTED - Add \'use client\' directive if missing' : ''}
+${renderedStatesContext ? '\n9. RENDERED STATES CONTEXT - Check the additional files from recently rendered components' : ''}
 `
     } else {
       console.log('📂 No file contents extracted from error context')
+      
+      // If we have rendered states context but no file contents, still include it
+      if (renderedStatesContext) {
+        fileContextSection = `
+${renderedStatesContext}
+
+IMPORTANT: No direct file contents were found in the error context, but rendered component states are available above.
+${isHydrationError ? '\nHYDRATION ERROR DETECTED - Focus on server/client consistency fixes' : ''}
+${isClientComponentError ? '\nCLIENT COMPONENT ERROR DETECTED - Add \'use client\' directive if missing' : ''}
+
+The rendered states may help identify which files are involved in this error.
+`
+      }
     }
 
     // Enhanced prompt using v0's Next.js expertise
@@ -1267,6 +1285,88 @@ function mergeImportStatements(existing: ImportInfo, newImport: ImportInfo): str
   return `import ${importClause} from '${existing.from}'`
 }
 
+function extractRenderedStatesFromPrompt(prompt: string, projectDir: string): string {
+  // Look for the "Recently Rendered Components" section
+  const renderedStatesMatch = prompt.match(/## Recently Rendered Components\n([\s\S]*?)(?:\n\n|$)/i)
+  
+  if (!renderedStatesMatch) {
+    return ''
+  }
+  
+  const renderedStatesSection = renderedStatesMatch[1]
+  console.log('🎯 Found rendered states context in error prompt')
+  
+  // Parse the rendered states to extract potential file paths
+  const stateLines = renderedStatesSection.split('\n').filter(line => line.trim().startsWith('-'))
+  const potentialFiles = new Set<string>()
+  
+  stateLines.forEach(line => {
+    // Extract page path from format: "- type (pagePath) [boundaryType] - timestamp"
+    const pagePathMatch = line.match(/\(([^)]+)\)/)
+    if (pagePathMatch) {
+      const pagePath = pagePathMatch[1].trim()
+      // Convert page path to potential file paths
+      if (pagePath.startsWith('/')) {
+        // Convert route path to file path
+        const appPath = `app${pagePath === '/' ? '/page' : pagePath}/page.tsx`
+        const srcPath = `src/app${pagePath === '/' ? '/page' : pagePath}/page.tsx`
+        potentialFiles.add(appPath)
+        potentialFiles.add(srcPath)
+      }
+    }
+  })
+  
+  if (potentialFiles.size > 0) {
+    console.log(`📂 Extracted ${potentialFiles.size} potential file paths from rendered states:`)
+    Array.from(potentialFiles).forEach(file => console.log(`   - ${file}`))
+    
+    return `\nADDITIONAL CONTEXT FROM RENDERED STATES:
+The following files were recently rendered and may be related to this error:
+${Array.from(potentialFiles).map(file => `- ${file}`).join('\n')}
+
+Note: Since the call stack was not helpful, these recently rendered component paths have been included as potential sources of the error.`
+  }
+  
+  return ''
+}
+
+function extractFilePathsFromRenderedStates(prompt: string, projectDir: string): string[] {
+  // Look for the "Recently Rendered Components" section
+  const renderedStatesMatch = prompt.match(/## Recently Rendered Components\n([\s\S]*?)(?:\n\n|$)/i)
+  
+  if (!renderedStatesMatch) {
+    return []
+  }
+  
+  const renderedStatesSection = renderedStatesMatch[1]
+  const stateLines = renderedStatesSection.split('\n').filter(line => line.trim().startsWith('-'))
+  const potentialFiles: string[] = []
+  
+  stateLines.forEach(line => {
+    // Extract page path from format: "- type (pagePath) [boundaryType] - timestamp"
+    const pagePathMatch = line.match(/\(([^)]+)\)/)
+    if (pagePathMatch) {
+      const pagePath = pagePathMatch[1].trim()
+      // Convert page path to potential file paths
+      if (pagePath.startsWith('/')) {
+        // Convert route path to file path
+        const appPath = `app${pagePath === '/' ? '/page' : pagePath}/page.tsx`
+        const srcPath = `src/app${pagePath === '/' ? '/page' : pagePath}/page.tsx`
+        
+        // Check if files exist and add them
+        if (fs.existsSync(path.resolve(projectDir, appPath))) {
+          potentialFiles.push(appPath)
+        }
+        if (fs.existsSync(path.resolve(projectDir, srcPath))) {
+          potentialFiles.push(srcPath)
+        }
+      }
+    }
+  })
+  
+  return [...new Set(potentialFiles)] // Remove duplicates
+}
+
 function isValidFilePath(filePath: string, projectDir: string): boolean {
   // Check if the file path looks like a valid file path
   if (!filePath || typeof filePath !== 'string') {
@@ -1409,6 +1509,23 @@ async function extractAndReadFileContents(
         console.log(`📄 Extracted content via fallback for: ${fallbackPath}`)
       } catch (error) {
         console.warn(`⚠️  Could not read fallback file ${fallbackPath}:`, error)
+      }
+    }
+  }
+  
+  // If still no files found, try extracting from rendered states context
+  if (fileContents.length === 0) {
+    const renderedStatesPaths = extractFilePathsFromRenderedStates(prompt, projectDir)
+    for (const filePath of renderedStatesPaths) {
+      try {
+        const fullPath = path.resolve(projectDir, filePath)
+        if (fs.existsSync(fullPath)) {
+          const content = await fsp.readFile(fullPath, 'utf8')
+          fileContents.push({ path: filePath, content })
+          console.log(`📄 Extracted content from rendered states: ${filePath}`)
+        }
+      } catch (error) {
+        console.warn(`⚠️  Could not read rendered states file ${filePath}:`, error)
       }
     }
   }

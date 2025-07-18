@@ -149,6 +149,13 @@ const trie: SegmentTrie = createTrie({
 export const insertSegmentNode = trie.insert
 export const removeSegmentNode = trie.remove
 
+if (typeof window !== 'undefined') {
+  // @ts-ignore
+  window.__next_rendered_states = []
+  // @ts-ignore
+  window.__next_trie = trie
+}
+
 export function useSegmentTree(): SegmentTrieNode {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
   return state

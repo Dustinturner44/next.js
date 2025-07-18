@@ -26,17 +26,17 @@ const errorSamples = [
     description: 'Using styled-jsx on RSC page',
   },
   
-  {
-    id: 'invalid-hooks',
-    title: 'Invalid Hook Usage',
-    description: 'Hooks used conditionally or outside components',
-  },
+  // {
+  //   id: 'invalid-hooks',
+  //   title: 'Invalid Hook Usage',
+  //   description: 'Hooks used conditionally or outside components',
+  // },
 
-  {
-    id: 'rsc-prop-error',
-    title: 'RSC Prop Error',
-    description: 'Passing function prop to client component',
-  },
+  // {
+  //   id: 'rsc-prop-error',
+  //   title: 'RSC Prop Error',
+  //   description: 'Passing function prop to client component',
+  // },
 
   // {
   //   id: 'async-errors',
