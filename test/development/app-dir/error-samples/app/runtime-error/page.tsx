@@ -5,11 +5,11 @@ import Link from 'next/link'
 import '../shared.css'
 
 export default function RuntimeErrorPage() {
-  const [errorType, setErrorType] = useState<string | null>(null)
+  const [errorTriggered, setErrorTriggered] = useState(false)
   const [lastError, setLastError] = useState<string>('')
 
   const triggerTypeError = () => {
-    setErrorType('TypeError')
+    setErrorTriggered(true)
     setLastError('')
     try {
       // @ts-ignore - intentionally cause TypeError
@@ -21,86 +21,23 @@ export default function RuntimeErrorPage() {
     }
   }
 
-  const triggerReferenceError = () => {
-    setErrorType('ReferenceError')
-    setLastError('')
-    try {
-      // @ts-ignore - intentionally cause ReferenceError
-      console.log(undefinedVariable)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setLastError(message)
-      throw error
-    }
-  }
-
-  const triggerRangeError = () => {
-    setErrorType('RangeError')
-    setLastError('')
-    try {
-      // Create array with negative length
-      const arr = new Array(-1)
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setLastError(message)
-      throw error
-    }
-  }
-
-  const triggerSyntaxError = () => {
-    setErrorType('SyntaxError')
-    setLastError('')
-    try {
-      // Intentional syntax error via eval
-      eval('var a = {')
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setLastError(message)
-      throw error
-    }
-  }
-
-  const triggerCustomError = () => {
-    setErrorType('Custom Error')
-    setLastError('')
-    try {
-      throw new Error('This is a custom error for testing the auto-fix feature')
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setLastError(message)
-      throw error
-    }
-  }
-
-  const clearError = () => {
-    setErrorType(null)
-    setLastError('')
-  }
+  
 
   return (
     <div className="container">
       <header className="header">
         <Link href="/" className="back-link">← Back to Error Samples</Link>
-        <h1>Runtime Error Examples</h1>
-        <p>This page demonstrates common JavaScript runtime errors that occur during execution</p>
+        <h1>Runtime Error Example</h1>
+        <p>This page demonstrates a common JavaScript runtime error that occurs during execution</p>
       </header>
 
       <div className="content main-page">
-        <div className="explanation">
-          <h2>Common Runtime Errors</h2>
-          <ul>
-            <li><strong>TypeError:</strong> Attempting to use a value in an inappropriate way</li>
-            <li><strong>ReferenceError:</strong> Trying to access an undefined variable</li>
-            <li><strong>RangeError:</strong> Number is outside the allowable range</li>
-            <li><strong>SyntaxError:</strong> Code cannot be parsed (rare in runtime)</li>
-            <li><strong>Custom Errors:</strong> Application-specific error conditions</li>
-          </ul>
-        </div>
+        
 
         <div className="demo">
           <h3>Interactive Demo</h3>
           <div className="demo-content">
-            <p>Current status: {errorType ? `${errorType} triggered` : 'No error active'}</p>
+            <p>Current status: {errorTriggered ? 'TypeError triggered' : 'No error active'}</p>
             
             {lastError && (
               <div className="error-display">
@@ -112,29 +49,15 @@ export default function RuntimeErrorPage() {
             <div className="controls">
               <div className="button-grid">
                 <button onClick={triggerTypeError} className="error-btn type">
-                  TypeError
+                  Trigger TypeError
                 </button>
-                <button onClick={triggerReferenceError} className="error-btn reference">
-                  ReferenceError
-                </button>
-                <button onClick={triggerRangeError} className="error-btn range">
-                  RangeError
-                </button>
-                <button onClick={triggerSyntaxError} className="error-btn syntax">
-                  SyntaxError
-                </button>
-                <button onClick={triggerCustomError} className="error-btn custom">
-                  Custom Error
-                </button>
-                <button onClick={clearError} className="clear-btn">
-                  Clear
-                </button>
+                
               </div>
             </div>
 
-            {errorType && (
+            {errorTriggered && (
               <div className="warning">
-                <strong>⚠️ {errorType} Active</strong>
+                <strong>⚠️ TypeError Active</strong>
                 <p>Check the dev tools console and error overlay for details. Click the auto-fix button to test the AI fixing feature.</p>
               </div>
             )}
@@ -147,32 +70,22 @@ export default function RuntimeErrorPage() {
 const user = null
 const name = user.name // TypeError: Cannot read properties of null
 
-// ❌ ReferenceError - undefined variable
-console.log(undefinedVariable) // ReferenceError: undefinedVariable is not defined
-
-// ❌ RangeError - invalid array length
-const arr = new Array(-1) // RangeError: Invalid array length
-
-// ❌ Custom errors
-if (!userInput) {
-  throw new Error('User input is required')
-}
+// ❌ Common mistake
+const data = null
+const value = data.someProperty.anotherProperty
 
 // ✅ Proper error handling
 const user = null
-const name = user?.name ?? 'Unknown' // Safe access
+const name = user?.name ?? 'Unknown' // Safe access with optional chaining
 
 // ✅ Check before use
-if (typeof myVariable !== 'undefined') {
-  console.log(myVariable)
+if (user && user.name) {
+  console.log(user.name)
 }
 
-// ✅ Validate inputs
-const createArray = (length) => {
-  if (length < 0) {
-    throw new Error('Array length must be non-negative')
-  }
-  return new Array(length)
+// ✅ Defensive programming
+const getValue = (obj) => {
+  return obj && obj.someProperty && obj.someProperty.anotherProperty
 }`}</pre>
         </div>
       </div>
