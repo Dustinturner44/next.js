@@ -115,7 +115,7 @@ async function getSourceMappedStackFramesInternal(
 ) {
   try {
     const normalizedStack = preprocessStackTrace(stackTrace, distDir)
-    const frames = parseStack(normalizedStack, distDir)
+    const frames = parseStack(normalizedStack)
 
     if (frames.length === 0) {
       return {
