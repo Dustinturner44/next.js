@@ -1,4 +1,5 @@
 import type { DeepReadonly } from '../../shared/lib/deep-readonly'
+import { findSourceMap } from 'node:module'
 /* eslint-disable import/no-extraneous-dependencies */
 import {
   renderToReadableStream,
@@ -61,6 +62,8 @@ import {
 import type { Params } from '../request/params'
 import React from 'react'
 import { createLazyResult, isResolvedLazyResult } from '../lib/lazy-result'
+import { LRUCache } from '../lib/lru-cache'
+import type { ModernSourceMapPayload } from '../lib/source-maps'
 import { dynamicAccessAsyncStorage } from '../app-render/dynamic-access-async-storage.external'
 import { isReactLargeShellError } from '../app-render/react-large-shell-error'
 import type { CacheLife } from './cache-life'
@@ -773,6 +776,38 @@ function wrapAsInvalidDynamicUsageError(
   return error
 }
 
+const sourceMapURLs = new LRUCache<string | null>(100)
+
+function findSourceMapURL(scriptNameOrSourceURL: string): string | null {
+  let sourceMapURL = sourceMapURLs.get(scriptNameOrSourceURL)
+  if (sourceMapURL === undefined) {
+    let sourceMapPayload: ModernSourceMapPayload | undefined
+    try {
+      sourceMapPayload = findSourceMap(scriptNameOrSourceURL)?.payload
+    } catch (cause) {
+      console.error(
+        `${scriptNameOrSourceURL}: Invalid source map. Only conformant source maps can be used to find the original code. Cause: ${cause}`
+      )
+    }
+
+    if (sourceMapPayload === undefined) {
+      sourceMapURL = null
+    } else {
+      // TODO: Might be more efficient to extract the relevant section from Index Maps.
+      // Unclear if that search is worth the smaller payload we have to stringify.
+      const sourceMapJSON = JSON.stringify(sourceMapPayload)
+      const sourceMapURLData = Buffer.from(sourceMapJSON, 'utf8').toString(
+        'base64'
+      )
+      sourceMapURL = `data:application/json;base64,${sourceMapURLData}`
+    }
+
+    sourceMapURLs.set(scriptNameOrSourceURL, sourceMapURL)
+  }
+
+  return sourceMapURL
+}
+
 export function cache(
   kind: string,
   id: string,
@@ -1469,6 +1504,7 @@ export function cache(
       }
 
       return createFromReadableStream(stream, {
+        findSourceMapURL,
         serverConsumerManifest,
         temporaryReferences,
         replayConsoleLogs,
