@@ -183,7 +183,7 @@ export function markCurrentScopeAsDynamic(
 }
 
 /**
- * This function is meant to be used when prerendering without dynamicIO or PPR.
+ * This function is meant to be used when prerendering without cacheComponents or PPR.
  * When called during a build it will cause Next.js to consider the route as dynamic.
  *
  * @internal
@@ -289,12 +289,12 @@ export function trackSynchronousPlatformIOAccessInDev(
 }
 
 /**
- * use this function when prerendering with dynamicIO. If we are doing a
+ * use this function when prerendering with cacheComponents. If we are doing a
  * prospective prerender we don't actually abort because we want to discover
  * all caches for the shell. If this is the actual prerender we do abort.
  *
  * This function accepts a prerenderStore but the caller should ensure we're
- * actually running in dynamicIO mode.
+ * actually running in cacheComponents mode.
  *
  * @internal
  */
@@ -574,7 +574,7 @@ export function useDynamicRouteParams(expression: string) {
     if (workUnitStore) {
       switch (workUnitStore.type) {
         case 'prerender-client':
-          // We are in a prerender with dynamicIO semantics. We are going to
+          // We are in a prerender with cacheComponents semantics. We are going to
           // hang here and never resolve. This will cause the currently
           // rendering component to effectively be a dynamic hole.
           React.use(makeHangingPromise(workUnitStore.renderSignal, expression))
@@ -678,7 +678,10 @@ export enum PreludeState {
   Errored = 2,
 }
 
-function logDisallowedDynamicError(workStore: WorkStore, error: Error): void {
+export function logDisallowedDynamicError(
+  workStore: WorkStore,
+  error: Error
+): void {
   console.error(error)
 
   if (!workStore.dev) {
@@ -700,11 +703,6 @@ export function throwIfDisallowedDynamic(
   dynamicValidation: DynamicValidationState,
   serverDynamic: DynamicTrackingState
 ): void {
-  if (workStore.invalidDynamicUsageError) {
-    logDisallowedDynamicError(workStore, workStore.invalidDynamicUsageError)
-    throw new StaticGenBailoutError()
-  }
-
   if (prelude !== PreludeState.Full) {
     if (dynamicValidation.hasSuspenseAboveBody) {
       // This route has opted into allowing fully dynamic rendering
