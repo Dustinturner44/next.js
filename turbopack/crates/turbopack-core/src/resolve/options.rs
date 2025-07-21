@@ -610,7 +610,7 @@ pub struct ResolveOptions {
     pub before_resolve_plugins: Vec<ResolvedVc<Box<dyn BeforeResolvePlugin>>>,
     pub after_resolve_plugins: Vec<ResolvedVc<Box<dyn AfterResolvePlugin>>>,
     /// Support resolving *.js requests to *.ts files
-    pub enable_typescript_with_output_extension: bool,
+    pub typescript_file_extension_substitution: bool,
     /// Warn instead of error for resolve errors
     pub loose_errors: bool,
     /// Whether to parse data URIs into modules (as opposed to keeping them as externals)
