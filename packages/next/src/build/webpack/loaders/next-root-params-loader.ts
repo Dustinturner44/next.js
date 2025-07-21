@@ -19,11 +19,10 @@ const rootParamsLoader: webpack.LoaderDefinitionFunction<RootParamsLoaderOpts> =
     const allRootParams = await collectRootParamsFromFileSystem({
       appDir,
       pageExtensions,
-      // Track every directory we traverse in case a layout gets added to it
-      // (which would make it the new root layout for that subtree).
-      // This is relevant both in dev (for file watching) and in prod (for caching).
-      trackDirectory: (directory) => this.addContextDependency(directory),
     })
+    // invalidate the result whenever a file/directory is added/removed inside the app dir or its subdirectories,
+    // because that might mean that a root layout has been moved.
+    this.addContextDependency(appDir)
 
     // If there's no root params, there's nothing to generate.
     if (allRootParams.size === 0) {
@@ -78,11 +77,9 @@ function collectRootParams({
 async function findRootLayouts({
   appDir,
   pageExtensions,
-  trackDirectory,
 }: {
   appDir: string
   pageExtensions: string[]
-  trackDirectory: ((dirPath: string) => void) | undefined
 }) {
   const layoutFilenameRegex = new RegExp(
     `^layout\\.(?:${pageExtensions.join('|')})$`
@@ -105,8 +102,6 @@ async function findRootLayouts({
 
       throw err
     }
-
-    trackDirectory?.(directory)
 
     const subdirectories: string[] = []
     for (const entry of dir) {
