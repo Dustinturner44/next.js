@@ -844,6 +844,85 @@ async function getBuildId(
     .traceAsyncFn(() => generateBuildId(config.generateBuildId, nanoid))
 }
 
+function generateRoutesManifest(
+  customRoutes: CustomRoutes,
+  pageKeys: { pages: string[]; app: string[] | undefined },
+  config: NextConfigComplete
+): RoutesManifest {
+  const isAppPPREnabled = checkIsAppPPREnabled(config.experimental.ppr)
+  const restrictedRedirectPaths = ['/_next'].map((p) =>
+    config.basePath ? `${config.basePath}${p}` : p
+  )
+
+  const { headers, rewrites, redirects } = customRoutes
+  const sortedRoutes = getSortedRoutes([
+    ...pageKeys.pages,
+    ...(pageKeys.app ?? []),
+  ])
+  const dynamicRoutes: Array<ManifestRoute> = []
+  const staticRoutes: Array<ManifestRoute> = []
+
+  for (const route of sortedRoutes) {
+    if (isDynamicRoute(route)) {
+      dynamicRoutes.push(pageToRoute(route))
+    } else if (!isReservedPage(route)) {
+      staticRoutes.push(pageToRoute(route))
+    }
+  }
+
+  return {
+    version: 3,
+    pages404: true,
+    caseSensitive: !!config.experimental.caseSensitiveRoutes,
+    basePath: config.basePath,
+    redirects: redirects.map((r) =>
+      buildCustomRoute('redirect', r, restrictedRedirectPaths)
+    ),
+    headers: headers.map((r) => buildCustomRoute('header', r)),
+    rewrites: {
+      beforeFiles: rewrites.beforeFiles.map((r) =>
+        buildCustomRoute('rewrite', r)
+      ),
+      afterFiles: rewrites.afterFiles.map((r) =>
+        buildCustomRoute('rewrite', r)
+      ),
+      fallback: rewrites.fallback.map((r) => buildCustomRoute('rewrite', r)),
+    },
+    dynamicRoutes,
+    staticRoutes,
+    dataRoutes: [],
+    i18n: config.i18n || undefined,
+    rsc: {
+      header: RSC_HEADER,
+      // This vary header is used as a default. It is technically re-assigned in `base-server`,
+      // and may include an additional Vary option for `Next-URL`.
+      varyHeader: `${RSC_HEADER}, ${NEXT_ROUTER_STATE_TREE_HEADER}, ${NEXT_ROUTER_PREFETCH_HEADER}, ${NEXT_ROUTER_SEGMENT_PREFETCH_HEADER}`,
+      prefetchHeader: NEXT_ROUTER_PREFETCH_HEADER,
+      didPostponeHeader: NEXT_DID_POSTPONE_HEADER,
+      contentTypeHeader: RSC_CONTENT_TYPE_HEADER,
+      suffix: RSC_SUFFIX,
+      prefetchSuffix: RSC_PREFETCH_SUFFIX,
+      prefetchSegmentHeader: NEXT_ROUTER_SEGMENT_PREFETCH_HEADER,
+      prefetchSegmentSuffix: RSC_SEGMENT_SUFFIX,
+      prefetchSegmentDirSuffix: RSC_SEGMENTS_DIR_SUFFIX,
+    },
+    rewriteHeaders: {
+      pathHeader: NEXT_REWRITTEN_PATH_HEADER,
+      queryHeader: NEXT_REWRITTEN_QUERY_HEADER,
+    },
+    skipMiddlewareUrlNormalize: config.skipMiddlewareUrlNormalize,
+    ppr: isAppPPREnabled
+      ? {
+          chain: {
+            headers: {
+              [NEXT_RESUME_HEADER]: '1',
+            },
+          },
+        }
+      : undefined,
+  } satisfies RoutesManifest
+}
+
 export default async function build(
   dir: string,
   reactProductionProfiling = false,
@@ -1317,10 +1396,6 @@ export default async function build(
         )
       }
 
-      const restrictedRedirectPaths = ['/_next'].map((p) =>
-        config.basePath ? `${config.basePath}${p}` : p
-      )
-
       const isAppDynamicIOEnabled = Boolean(config.experimental.dynamicIO)
       const isAuthInterruptsEnabled = Boolean(
         config.experimental.authInterrupts
@@ -1330,80 +1405,7 @@ export default async function build(
       const routesManifestPath = path.join(distDir, ROUTES_MANIFEST)
       const routesManifest: RoutesManifest = nextBuildSpan
         .traceChild('generate-routes-manifest')
-        .traceFn(() => {
-          const sortedRoutes = getSortedRoutes([
-            ...pageKeys.pages,
-            ...(pageKeys.app ?? []),
-          ])
-          const dynamicRoutes: Array<ManifestRoute> = []
-          const staticRoutes: Array<ManifestRoute> = []
-
-          for (const route of sortedRoutes) {
-            if (isDynamicRoute(route)) {
-              dynamicRoutes.push(pageToRoute(route))
-            } else if (!isReservedPage(route)) {
-              staticRoutes.push(pageToRoute(route))
-            }
-          }
-
-          return {
-            version: 3,
-            pages404: true,
-            caseSensitive: !!config.experimental.caseSensitiveRoutes,
-            basePath: config.basePath,
-            redirects: redirects.map((r) =>
-              buildCustomRoute('redirect', r, restrictedRedirectPaths)
-            ),
-            headers: headers.map((r) => buildCustomRoute('header', r)),
-            rewrites: {
-              beforeFiles: [],
-              afterFiles: [],
-              fallback: [],
-            },
-            dynamicRoutes,
-            staticRoutes,
-            dataRoutes: [],
-            i18n: config.i18n || undefined,
-            rsc: {
-              header: RSC_HEADER,
-              // This vary header is used as a default. It is technically re-assigned in `base-server`,
-              // and may include an additional Vary option for `Next-URL`.
-              varyHeader: `${RSC_HEADER}, ${NEXT_ROUTER_STATE_TREE_HEADER}, ${NEXT_ROUTER_PREFETCH_HEADER}, ${NEXT_ROUTER_SEGMENT_PREFETCH_HEADER}`,
-              prefetchHeader: NEXT_ROUTER_PREFETCH_HEADER,
-              didPostponeHeader: NEXT_DID_POSTPONE_HEADER,
-              contentTypeHeader: RSC_CONTENT_TYPE_HEADER,
-              suffix: RSC_SUFFIX,
-              prefetchSuffix: RSC_PREFETCH_SUFFIX,
-              prefetchSegmentHeader: NEXT_ROUTER_SEGMENT_PREFETCH_HEADER,
-              prefetchSegmentSuffix: RSC_SEGMENT_SUFFIX,
-              prefetchSegmentDirSuffix: RSC_SEGMENTS_DIR_SUFFIX,
-            },
-            rewriteHeaders: {
-              pathHeader: NEXT_REWRITTEN_PATH_HEADER,
-              queryHeader: NEXT_REWRITTEN_QUERY_HEADER,
-            },
-            skipMiddlewareUrlNormalize: config.skipMiddlewareUrlNormalize,
-            ppr: isAppPPREnabled
-              ? {
-                  chain: {
-                    headers: {
-                      [NEXT_RESUME_HEADER]: '1',
-                    },
-                  },
-                }
-              : undefined,
-          } satisfies RoutesManifest
-        })
-
-      routesManifest.rewrites = {
-        beforeFiles: rewrites.beforeFiles.map((r) =>
-          buildCustomRoute('rewrite', r)
-        ),
-        afterFiles: rewrites.afterFiles.map((r) =>
-          buildCustomRoute('rewrite', r)
-        ),
-        fallback: rewrites.fallback.map((r) => buildCustomRoute('rewrite', r)),
-      }
+        .traceFn(() => generateRoutesManifest(customRoutes, pageKeys, config))
 
       let clientRouterFilters:
         | undefined
