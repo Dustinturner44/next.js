@@ -656,7 +656,8 @@ export default function LinkComponent(
         return
       }
 
-      if (!prefetchEnabled || process.env.NODE_ENV === 'development') {
+      if (!prefetchEnabled) {
+        console.log('[TEST] enable prefetch for dev')
         return
       }
 
