@@ -185,13 +185,11 @@ export interface NextJsHotReloaderInterface {
     clientOnly,
     appPaths,
     definition,
-    isApp,
     url,
   }: {
     page: string
     clientOnly: boolean
     appPaths?: ReadonlyArray<string> | null
-    isApp?: boolean
     definition: RouteDefinition | undefined
     url?: string
   }): Promise<void>

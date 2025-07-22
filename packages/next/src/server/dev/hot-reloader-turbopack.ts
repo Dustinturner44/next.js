@@ -985,7 +985,6 @@ export async function createHotReloaderTurbopack(
       // clientOnly,
       appPaths,
       definition,
-      isApp,
       url: requestUrl,
     }) {
       // When there is no route definition this is an internal file not a route the user added.
@@ -1096,13 +1095,6 @@ export async function createHotReloaderTurbopack(
             if (page === '/src/instrumentation') return
 
             throw new PageNotFoundError(`route not found ${page}`)
-          }
-
-          // We don't throw on ensureOpts.isApp === true for page-api
-          // since this can happen when app pages make
-          // api requests to page API routes.
-          if (isApp && route.type === 'page') {
-            throw new Error(`mis-matched route type: isApp && page for ${page}`)
           }
 
           const finishBuilding = startBuilding(pathname, requestUrl, false)

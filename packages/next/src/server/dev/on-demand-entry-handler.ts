@@ -721,13 +721,11 @@ export function onDemandEntryHandler({
     page,
     appPaths,
     definition,
-    isApp,
     url,
   }: {
     page: string
     appPaths: ReadonlyArray<string> | null
     definition: RouteDefinition | undefined
-    isApp: boolean | undefined
     url?: string
   }): Promise<void> {
     const stalledTime = 60
@@ -753,15 +751,6 @@ export function onDemandEntryHandler({
       }
 
       const isInsideAppDir = !!appDir && route.filename.startsWith(appDir)
-
-      if (typeof isApp === 'boolean' && isApp !== isInsideAppDir) {
-        Error.stackTraceLimit = 15
-        throw new Error(
-          `Ensure bailed, found path "${
-            route.page
-          }" does not match ensure type (${isApp ? 'app' : 'pages'})`
-        )
-      }
 
       const pageBundleType = getPageBundleType(route.bundlePath)
       const addEntry = (
@@ -882,7 +871,9 @@ export function onDemandEntryHandler({
       const hasNewEntry = addedValues.some((entry) => entry.newEntry)
 
       if (hasNewEntry) {
-        const routePage = isApp ? route.page : normalizeAppPath(route.page)
+        const routePage = isInsideAppDir
+          ? normalizeAppPath(route.page)
+          : route.page
         reportTrigger(routePage, url)
       }
 
@@ -925,7 +916,6 @@ export function onDemandEntryHandler({
     page: string
     appPaths?: ReadonlyArray<string> | null
     definition?: RouteDefinition
-    isApp?: boolean
     url?: string
   }
 
@@ -949,7 +939,6 @@ export function onDemandEntryHandler({
       page,
       appPaths = null,
       definition,
-      isApp,
       url,
     }: EnsurePageOptions) {
       // If the route is actually an app page route, then we should have access
@@ -961,12 +950,11 @@ export function onDemandEntryHandler({
       // Wrap the invocation of the ensurePageImpl function in the pending
       // wrapper, which will ensure that we don't have multiple compilations
       // for the same page happening concurrently.
-      return batcher.batch({ page, appPaths, definition, isApp }, async () => {
+      return batcher.batch({ page, appPaths, definition }, async () => {
         await ensurePageImpl({
           page,
           appPaths,
           definition,
-          isApp,
           url,
         })
       })

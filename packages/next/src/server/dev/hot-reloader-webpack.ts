@@ -1667,13 +1667,11 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     clientOnly,
     appPaths,
     definition,
-    isApp,
     url,
   }: {
     page: string
     clientOnly: boolean
     appPaths?: ReadonlyArray<string> | null
-    isApp?: boolean
     definition?: RouteDefinition
     url?: string
   }): Promise<void> {
@@ -1697,7 +1695,6 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
           page,
           appPaths,
           definition,
-          isApp,
           url,
         })
       })

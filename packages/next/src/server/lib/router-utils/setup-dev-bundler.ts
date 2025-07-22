@@ -251,7 +251,6 @@ async function startWatcher(
       await hotReloader.ensurePage({
         clientOnly: false,
         page: item.itemPath,
-        isApp: item.type === 'appFile',
         definition: undefined,
       })
     }
