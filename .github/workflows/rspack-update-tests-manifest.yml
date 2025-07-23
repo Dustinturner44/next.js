@@ -48,6 +48,7 @@ jobs:
           SCRIPT: test/update-bundler-manifest.js --bundler rspack --test-suite dev --override
           PR_TITLE: Update Rspack development test manifest
           PR_BODY: This auto-generated PR updates the development integration test manifest used when testing Rspack.
+          NEXT_RSPACK: '1'
   update_build_manifest:
     name: Update and upload Rspack production test manifest
     if: github.repository_owner == 'vercel'
@@ -84,3 +85,4 @@ jobs:
           SCRIPT: test/update-bundler-manifest.js --bundler rspack --test-suite build --override
           PR_TITLE: Update Rspack production test manifest
           PR_BODY: This auto-generated PR updates the production integration test manifest used when testing Rspack.
+          NEXT_RSPACK: '1'

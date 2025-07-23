@@ -50,6 +50,7 @@ jobs:
     outputs:
       docs-only: ${{ steps.docs-change.outputs.DOCS_ONLY != 'false' }}
       is-release: ${{ steps.is-release.outputs.IS_RELEASE == 'true' }}
+      # Keep label name in sync with scripts/automated-update-workflow.js
       rspack: >-
         ${{
           github.event_name == 'pull_request' &&

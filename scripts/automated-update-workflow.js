@@ -10,6 +10,7 @@ const {
   BRANCH_NAME = 'unknown',
   PR_TITLE = 'Automated update',
   PR_BODY = '',
+  NEXT_RSPACK = '',
 } = process.env
 
 if (!GITHUB_TOKEN) {
@@ -66,11 +67,17 @@ async function main() {
     body: PR_BODY,
   })
 
+  const labels = ['run-react-18-tests']
+  if (NEXT_RSPACK) {
+    // When we update the Rspack manifests, we also want to run the Rspack tests.
+    // Keep label in sync with .github/workflows/build_and_test.yml
+    labels.push('Rspack')
+  }
   await octokit.rest.issues.addLabels({
     owner,
     repo,
     issue_number: pullRequest.data.number,
-    labels: ['run-react-18-tests'],
+    labels,
   })
 
   console.log('Created pull request', pullRequest.url)
