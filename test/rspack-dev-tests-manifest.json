@@ -3704,6 +3704,15 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/development/config-validation/index.test.ts": {
+    "passed": [
+      "config validation - validation only runs once should validate config only once in root process"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/development/correct-tsconfig-defaults/index.test.ts": {
     "passed": [
       "correct tsconfig.json defaults should add `moduleResolution` when generating tsconfig.json in dev",
@@ -7125,7 +7134,6 @@
       "app-dir - fetch logging placeholder to satisfy at least one test when isNextDev is false",
       "app-dir - logging with default logging should not log fetch requests at all",
       "app-dir - logging with fetches default logging should log each page request only once",
-      "app-dir - logging with fetches default logging should not contain trailing word page for app router routes",
       "app-dir - logging with fetches verbose logging should log each page request only once",
       "app-dir - logging with fetches verbose logging should not contain trailing word page for app router routes",
       "app-dir - logging with verbose logging for edge runtime should log each page request only once",
@@ -7142,6 +7150,7 @@
       "app-dir - logging with fetches default logging should log requests for client-side navigations",
       "app-dir - logging with fetches default logging should log requests with correct indentation",
       "app-dir - logging with fetches default logging should not contain metadata internal segments for dynamic metadata routes",
+      "app-dir - logging with fetches default logging should not contain trailing word page for app router routes",
       "app-dir - logging with fetches default logging should not limit the number of requests that are logged",
       "app-dir - logging with fetches default logging should not log _rsc query for client navigation RSC request",
       "app-dir - logging with fetches default logging should only log requests in development mode",
@@ -13327,6 +13336,7 @@
       "API routes dev support should not conflict with /api routes",
       "API routes dev support should not show warning if using externalResolver flag",
       "API routes dev support should not show warning when the API resolves and the response is piped",
+      "API routes dev support should not strip .json from API route",
       "API routes dev support should not warn if response body is larger than 4MB with responseLimit config = false",
       "API routes dev support should parse JSON body",
       "API routes dev support should parse bigger body then 1mb",
@@ -13380,6 +13390,7 @@
       "API routes production mode should handle 204 status correctly",
       "API routes production mode should handle proxying to self correctly",
       "API routes production mode should not conflict with /api routes",
+      "API routes production mode should not strip .json from API route",
       "API routes production mode should not warn if response body is larger than 4MB with responseLimit config = false",
       "API routes production mode should parse JSON body",
       "API routes production mode should parse bigger body then 1mb",
