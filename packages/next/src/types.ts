@@ -23,6 +23,7 @@ import type { GetStaticPathsFallback } from './lib/fallback'
 import type { NextApiRequestCookies } from './server/api-utils'
 
 import next from './server/next'
+import type { RouteHas } from './lib/load-custom-routes'
 
 export type ServerRuntime = 'nodejs' | 'experimental-edge' | 'edge' | undefined
 
@@ -73,17 +74,22 @@ declare module 'react' {
   }
 }
 
+interface RedirectBase {
+  source: string
+  destination: string
+  has?: RouteHas[]
+  missing?: RouteHas[]
+  basePath?: false
+  locale?: false
+}
+
 export type Redirect =
-  | {
+  | (RedirectBase & {
       statusCode: 301 | 302 | 303 | 307 | 308
-      destination: string
-      basePath?: false
-    }
-  | {
+    })
+  | (RedirectBase & {
       permanent: boolean
-      destination: string
-      basePath?: false
-    }
+    })
 
 /**
  * `NextPage` type, use it as a guide to create `pages`.
