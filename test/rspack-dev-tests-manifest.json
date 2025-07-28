@@ -2152,12 +2152,11 @@
     "runtimeError": false
   },
   "test/development/acceptance-app/editor-links.test.ts": {
-    "passed": [
-      "Error overlay - editor links should be possible to open source file on build error"
-    ],
+    "passed": [],
     "failed": [
       "Error overlay - editor links opening links in import traces should be possible to open import trace files on RSC parse error",
-      "Error overlay - editor links opening links in import traces should be possible to open import trace files on module not found error"
+      "Error overlay - editor links opening links in import traces should be possible to open import trace files on module not found error",
+      "Error overlay - editor links should be possible to open source file on build error"
     ],
     "pending": [],
     "flakey": [],
@@ -3698,6 +3697,15 @@
       "client-dev-overlay should have a role of \"dialog\" if the page is focused",
       "client-dev-overlay should keep the error indicator visible when there are errors",
       "client-dev-overlay should nudge to use Turbopack unless Turbopack is disabled"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/development/config-validation/index.test.ts": {
+    "passed": [
+      "config validation - validation only runs once should validate config only once in root process"
     ],
     "failed": [],
     "pending": [],
@@ -6078,10 +6086,10 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/conflicting-page-segments/conflicting-page-segments.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "conflicting-page-segments should throw an error when a route groups causes a conflict with a parallel segment"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -13327,6 +13335,7 @@
       "API routes dev support should not conflict with /api routes",
       "API routes dev support should not show warning if using externalResolver flag",
       "API routes dev support should not show warning when the API resolves and the response is piped",
+      "API routes dev support should not strip .json from API route",
       "API routes dev support should not warn if response body is larger than 4MB with responseLimit config = false",
       "API routes dev support should parse JSON body",
       "API routes dev support should parse bigger body then 1mb",
@@ -13380,6 +13389,7 @@
       "API routes production mode should handle 204 status correctly",
       "API routes production mode should handle proxying to self correctly",
       "API routes production mode should not conflict with /api routes",
+      "API routes production mode should not strip .json from API route",
       "API routes production mode should not warn if response body is larger than 4MB with responseLimit config = false",
       "API routes production mode should parse JSON body",
       "API routes production mode should parse bigger body then 1mb",
