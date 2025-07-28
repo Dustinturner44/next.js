@@ -1,32 +1,24 @@
 'use client'
+import {Link} from "next"
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
 
-interface Task {
+
+interface Note {
   id: string
   title: string
-  description?: string
-  status: 'todo' | 'inprogress' | 'done'
+  content: string
   createdAt: Date
-  priority: 'low' | 'medium' | 'high'
+  updatedAt: Date
+  color?: string
 }
 
-const COLUMNS = {
-  todo: { title: 'To Do', color: '#737373' },
-  inprogress: { title: 'In Progress', color: '#f59e0b' },
-  done: { title: 'Done', color: '#10b981' },
-} as const
-
 export default function Page() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [newTask, setNewTask] = useState('')
-  const [newDescription, setNewDescription] = useState('')
-  const [newPriority, setNewPriority] = useState<'low' | 'medium' | 'high'>(
-    'medium'
-  )
+  const [notes, setNotes] = useState<Note[]>([])
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [sidebarWidth, setSidebarWidth] = useState(0)
-  const [draggedTask, setDraggedTask] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const titleRef = useRef<HTMLInputElement>(null)
+  const contentRef = useRef<HTMLTextAreaElement>(null)
 
   // Monitor sidebar width changes
   useEffect(() => {
@@ -61,521 +53,389 @@ export default function Page() {
     }
   }, [])
 
-  // Load tasks from localStorage
+  // Load notes from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('vercel-kanban')
+    const saved = localStorage.getItem('dark-notes-app')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        setTasks(
-          parsed.map((task: any) => ({
-            ...task,
-            createdAt: new Date(task.createdAt),
-          }))
-        )
+        const notesWithDates = parsed.map((note: any) => ({
+          ...note,
+          createdAt: new Date(note.createdAt),
+          updatedAt: new Date(note.updatedAt),
+        }))
+        setNotes(notesWithDates)
+        if (notesWithDates.length > 0) {
+          setSelectedNote(notesWithDates[0])
+        }
       } catch (e) {
-        console.error('Failed to parse saved tasks')
+        console.error('Failed to parse saved notes')
       }
     }
   }, [])
 
-  // Save tasks to localStorage
+  // Save notes to localStorage
   useEffect(() => {
-    if (tasks.length > 0) {
-      localStorage.setItem('vercel-kanban', JSON.stringify(tasks))
+    if (notes.length > 0) {
+      localStorage.setItem('dark-notes-app', JSON.stringify(notes))
     }
-  }, [tasks])
+  }, [notes])
 
-  // Design System
+  // Super Dark Theme Colors
   const colors = {
-    neutral: {
-      0: '#000000',
-      50: '#0a0a0a',
-      100: '#0f0f0f',
-      150: '#101010',
-      200: '#151515',
-      250: '#1a1a1a',
-      300: '#262626',
-      400: '#404040',
-      500: '#737373',
-      600: '#a3a3a3',
-      700: '#d4d4d8',
-      800: '#e4e4e7',
-      900: '#f4f4f5',
-      1000: '#ffffff',
+    bg: {
+      primary: '#000000',
+      secondary: '#0a0a0a',
+      tertiary: '#111111',
+      hover: '#1a1a1a',
+      border: '#222222',
+    },
+    text: {
+      primary: '#e5e5e5',
+      secondary: '#999999',
+      tertiary: '#666666',
     },
     accent: {
-      blue: '#3b82f6',
-      green: '#10b981',
-      yellow: '#f59e0b',
-      red: '#ef4444',
-      purple: '#8b5cf6',
+      primary: '#7c3aed',
+      hover: '#8b5cf6',
+      danger: '#dc2626',
     },
   }
 
   const styles = {
     page: {
-      minHeight: '100vh',
-      backgroundColor: colors.neutral[50],
-      color: colors.neutral[800],
+      height: '100vh',
+      backgroundColor: colors.bg.primary,
+      color: colors.text.primary,
       fontFamily:
         'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
       WebkitFontSmoothing: 'antialiased' as const,
       MozOsxFontSmoothing: 'grayscale' as const,
-      padding: '32px',
-      zIndex: 0,
-    },
-    container: {
-      width: sidebarWidth > 0 ? `calc(100% - ${sidebarWidth}px)` : '100%',
-      margin: 0,
-    },
-    header: {
-      marginBottom: '48px',
-    },
-    pageTitle: {
-      fontSize: '32px',
-      fontWeight: 600,
-      color: colors.neutral[1000],
-      margin: '0 0 12px 0',
-      lineHeight: 1.2,
-    },
-    pageSubtitle: {
-      fontSize: '16px',
-      color: colors.neutral[600],
-      margin: '0 0 32px 0',
-      lineHeight: 1.5,
-    },
-    navLinks: {
       display: 'flex',
-      gap: '16px',
-      flexWrap: 'wrap' as const,
+      margin: 0,
+      padding: 0,
+      overflow: 'hidden',
     },
-    navLink: {
-      fontSize: '14px',
-      color: colors.accent.blue,
-      textDecoration: 'none',
-      padding: '8px 16px',
-      borderRadius: '8px',
-      border: `1px solid ${colors.neutral[300]}`,
-      backgroundColor: colors.neutral[150],
-      cursor: 'pointer',
-    },
-    addSection: {
-      backgroundColor: colors.neutral[150],
-      border: `1px solid ${colors.neutral[300]}`,
-      borderRadius: '16px',
-      padding: '32px',
-      marginBottom: '48px',
-    },
-    addTitle: {
-      fontSize: '18px',
-      fontWeight: 600,
-      color: colors.neutral[900],
-      margin: '0 0 20px 0',
-    },
-    form: {
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr auto',
-      gap: '16px',
-      alignItems: 'end',
-    },
-    inputGroup: {
+    sidebar: {
+      flex: '0 0 auto',
+      width: '25%',
+      minWidth: '250px',
+      maxWidth: '400px',
+      backgroundColor: colors.bg.secondary,
+      borderRight: `1px solid ${colors.bg.border}`,
+      height: '100%',
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '8px',
+      overflow: 'hidden',
     },
-    label: {
-      fontSize: '14px',
-      color: colors.neutral[600],
-      fontWeight: 500,
+    mainContent: {
+      flex: 1,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      overflow: 'hidden',
     },
-    input: {
-      padding: '12px 16px',
-      backgroundColor: colors.neutral[250],
-      border: `1px solid ${colors.neutral[300]}`,
+    sidebarHeader: {
+      padding: '24px',
+      borderBottom: `1px solid ${colors.bg.border}`,
+    },
+    logo: {
+      fontSize: '20px',
+      fontWeight: 700,
+      color: colors.text.primary,
+      margin: 0,
+    },
+    searchBox: {
+      margin: '16px',
+    },
+    searchInput: {
+      width: '100%',
+      padding: '10px 16px',
+      backgroundColor: colors.bg.tertiary,
+      border: `1px solid ${colors.bg.border}`,
       borderRadius: '8px',
       fontSize: '14px',
-      color: colors.neutral[900],
+      color: colors.text.primary,
       outline: 'none',
+      boxSizing: 'border-box' as const,
     },
-    textarea: {
-      padding: '12px 16px',
-      backgroundColor: colors.neutral[250],
-      border: `1px solid ${colors.neutral[300]}`,
-      borderRadius: '8px',
-      fontSize: '14px',
-      color: colors.neutral[900],
-      outline: 'none',
-      resize: 'vertical' as const,
-      minHeight: '44px',
-      maxHeight: '120px',
-    },
-    select: {
-      padding: '12px 16px',
-      backgroundColor: colors.neutral[250],
-      border: `1px solid ${colors.neutral[300]}`,
-      borderRadius: '8px',
-      fontSize: '14px',
-      color: colors.neutral[800],
-      outline: 'none',
-      cursor: 'pointer',
-    },
-    addButton: {
-      padding: '12px 24px',
-      backgroundColor: colors.accent.blue,
-      color: colors.neutral[1000],
+    newNoteButton: {
+      margin: '0 16px 16px',
+      padding: '12px',
+      backgroundColor: colors.accent.primary,
+      color: colors.text.primary,
       border: 'none',
       borderRadius: '8px',
       fontSize: '14px',
       fontWeight: 500,
       cursor: 'pointer',
-      whiteSpace: 'nowrap' as const,
-      height: 'fit-content',
+      transition: 'background-color 0.2s',
     },
-    board: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '32px',
+    notesList: {
+      flex: 1,
+      overflowY: 'auto' as const,
+      padding: '8px',
     },
-    column: {
-      backgroundColor: colors.neutral[100],
-      borderRadius: '16px',
-      padding: '24px',
-      minHeight: '400px',
+    noteItem: {
+      padding: '12px 16px',
+      margin: '4px 0',
+      backgroundColor: colors.bg.tertiary,
+      borderRadius: '8px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      border: `1px solid transparent`,
     },
-    columnHeader: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      marginBottom: '24px',
-      paddingBottom: '16px',
-      borderBottom: `1px solid ${colors.neutral[300]}`,
+    noteItemActive: {
+      backgroundColor: colors.bg.hover,
+      border: `1px solid ${colors.accent.primary}`,
     },
-    columnTitle: {
-      fontSize: '16px',
-      fontWeight: 600,
-      color: colors.neutral[900],
-      margin: 0,
-    },
-    columnCount: {
-      fontSize: '12px',
+    noteTitle: {
+      fontSize: '14px',
       fontWeight: 500,
-      padding: '4px 8px',
-      borderRadius: '12px',
-      backgroundColor: colors.neutral[250],
-      color: colors.neutral[600],
+      color: colors.text.primary,
+      margin: 0,
+      whiteSpace: 'nowrap' as const,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
-    statusDot: {
-      width: '8px',
-      height: '8px',
-      borderRadius: '50%',
+    noteDate: {
+      fontSize: '12px',
+      color: colors.text.tertiary,
+      margin: '4px 0 0',
     },
-    taskList: {
+    editor: {
+      height: '100%',
       display: 'flex',
       flexDirection: 'column' as const,
-      gap: '16px',
+      backgroundColor: colors.bg.secondary,
     },
-    taskCard: {
-      backgroundColor: colors.neutral[150],
-      border: `1px solid ${colors.neutral[300]}`,
-      borderRadius: '12px',
-      padding: '20px',
-      cursor: 'grab',
-    },
-    taskCardDragging: {
-      opacity: 0.5,
-      cursor: 'grabbing',
-    },
-    taskTitle: {
-      fontSize: '14px',
-      fontWeight: 600,
-      color: colors.neutral[900],
-      margin: '0 0 8px 0',
-      lineHeight: 1.4,
-    },
-    taskDescription: {
-      fontSize: '13px',
-      color: colors.neutral[700],
-      margin: '0 0 16px 0',
-      lineHeight: 1.5,
-    },
-    taskFooter: {
+    editorHeader: {
+      padding: '24px 32px',
+      borderBottom: `1px solid ${colors.bg.border}`,
       display: 'flex',
-      justifyContent: 'space-between',
       alignItems: 'center',
+      justifyContent: 'space-between',
     },
-    priority: {
-      fontSize: '11px',
-      padding: '4px 8px',
-      borderRadius: '6px',
-      textTransform: 'uppercase' as const,
+    editorTitle: {
+      fontSize: '24px',
       fontWeight: 600,
-      letterSpacing: '0.5px',
-    },
-    priorityHigh: {
-      backgroundColor: `${colors.accent.red}20`,
-      color: colors.accent.red,
-    },
-    priorityMedium: {
-      backgroundColor: `${colors.accent.yellow}20`,
-      color: colors.accent.yellow,
-    },
-    priorityLow: {
-      backgroundColor: `${colors.accent.green}20`,
-      color: colors.accent.green,
-    },
-    deleteButton: {
-      width: '28px',
-      height: '28px',
+      color: colors.text.primary,
       border: 'none',
       backgroundColor: 'transparent',
-      color: colors.neutral[500],
-      cursor: 'pointer',
+      outline: 'none',
+      width: '100%',
+      marginRight: '16px',
+    },
+    deleteButton: {
+      padding: '8px 16px',
+      backgroundColor: 'transparent',
+      color: colors.accent.danger,
+      border: `1px solid ${colors.accent.danger}`,
       borderRadius: '6px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      fontSize: '14px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    },
+    editorContent: {
+      flex: 1,
+      padding: '32px',
+    },
+    editorTextarea: {
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'transparent',
+      border: 'none',
+      outline: 'none',
       fontSize: '16px',
+      lineHeight: 1.6,
+      color: colors.text.primary,
+      resize: 'none',
+      fontFamily: 'inherit',
     },
-    dropZone: {
-      minHeight: '60px',
-      borderRadius: '8px',
-      border: `2px dashed ${colors.neutral[400]}`,
+    emptyState: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      color: colors.neutral[500],
-      fontSize: '13px',
+      height: '100%',
+      flexDirection: 'column' as const,
+      gap: '16px',
     },
-    dropZoneActive: {
-      borderColor: colors.accent.blue,
-      backgroundColor: `${colors.accent.blue}10`,
-      color: colors.accent.blue,
+    emptyStateText: {
+      fontSize: '18px',
+      color: colors.text.tertiary,
     },
   }
 
-  const addTask = () => {
-    if (!newTask.trim()) return
-
-    const task: Task = {
+  const createNewNote = () => {
+    const newNote: Note = {
       id: Date.now().toString(),
-      title: newTask.trim(),
-      description: newDescription.trim() || undefined,
-      status: 'todo',
+      title: 'Untitled Note',
+      content: '',
       createdAt: new Date(),
-      priority: newPriority,
+      updatedAt: new Date(),
     }
 
-    setTasks((prev) => [task, ...prev])
-    setNewTask('')
-    setNewDescription('')
-    inputRef.current?.focus()
+    setNotes((prev) => [newNote, ...prev])
+    setSelectedNote(newNote)
+    setTimeout(() => titleRef.current?.focus(), 100)
   }
 
-  const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id))
-  }
-
-  const moveTask = (taskId: string, newStatus: Task['status']) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
+  const updateNote = (id: string, updates: Partial<Note>) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? { ...note, ...updates, updatedAt: new Date() }
+          : note
       )
     )
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      addTask()
+    if (selectedNote?.id === id) {
+      setSelectedNote((prev) =>
+        prev ? { ...prev, ...updates, updatedAt: new Date() } : null
+      )
     }
   }
 
-  const handleDragStart = (e: React.DragEvent, taskId: string) => {
-    setDraggedTask(taskId)
-    e.dataTransfer.setData('text/plain', taskId)
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDrop = (e: React.DragEvent, status: Task['status']) => {
-    e.preventDefault()
-    const taskId = e.dataTransfer.getData('text/plain')
-    if (taskId) {
-      moveTask(taskId, status)
+  const deleteNote = (id: string) => {
+    setNotes((prev) => prev.filter((note) => note.id !== id))
+    if (selectedNote?.id === id) {
+      const remainingNotes = notes.filter((note) => note.id !== id)
+      setSelectedNote(remainingNotes.length > 0 ? remainingNotes[0] : null)
     }
-    setDraggedTask(null)
   }
 
-  const getTasksByStatus = (status: Task['status']) => {
-    return tasks.filter((task) => task.status === status)
-  }
+  const filteredNotes = notes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
-  const stats = {
-    todo: getTasksByStatus('todo').length,
-    inprogress: getTasksByStatus('inprogress').length,
-    done: getTasksByStatus('done').length,
+  const formatDate = (date: Date) => {
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return 'Just now'
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    if (days < 7) return `${days}d ago`
+    return date.toLocaleDateString()
   }
 
   return (
     <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <h1 style={styles.pageTitle}>Project Board</h1>
-          <p style={styles.pageSubtitle}>
-            Organize your work with a visual workflow
-          </p>
+      {/* Sidebar */}
+      <div style={styles.sidebar}>
+        <div style={styles.sidebarHeader}>
+          <h1 style={styles.logo}>Dark Notes</h1>
+        </div>
+        
+        <div style={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={styles.searchInput}
+          />
+        </div>
 
-          <div style={styles.navLinks}>
-            <Link href="/test-network" style={styles.navLink}>
-              Network Test
-            </Link>
-            <button
-              onClick={() => window.history.pushState({}, '', '/virtual-page')}
-              style={styles.navLink}
-            >
-              Virtual Navigation
-            </button>
-            <button
-              onClick={() => window.location.reload()}
-              style={styles.navLink}
-            >
-              Reload Page
-            </button>
-          </div>
-        </header>
+        <button
+          onClick={createNewNote}
+          style={styles.newNoteButton}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colors.accent.hover
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = colors.accent.primary
+          }}
+        >
+          + New Note
+        </button>
 
-        {/* Add Task Section */}
-        <div style={styles.addSection}>
-          <h2 style={styles.addTitle}>Add New Task</h2>
-          <div style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Task Title</label>
-              <input
-                ref={inputRef}
-                type="text"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Enter task title..."
-                style={styles.input}
-                autoFocus
-              />
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Description (optional)</label>
-              <textarea
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Add more details..."
-                style={styles.textarea}
-              />
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Priority</label>
-              <select
-                value={newPriority}
-                onChange={(e) =>
-                  setNewPriority(e.target.value as 'low' | 'medium' | 'high')
-                }
-                style={styles.select}
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-            <button
-              onClick={addTask}
-              disabled={!newTask.trim()}
+        <div style={styles.notesList}>
+          {filteredNotes.map((note) => (
+            <div
+              key={note.id}
+              onClick={() => setSelectedNote(note)}
               style={{
-                ...styles.addButton,
-                opacity: !newTask.trim() ? 0.5 : 1,
-                cursor: !newTask.trim() ? 'not-allowed' : 'pointer',
+                ...styles.noteItem,
+                ...(selectedNote?.id === note.id ? styles.noteItemActive : {}),
+              }}
+              onMouseEnter={(e) => {
+                if (selectedNote?.id !== note.id) {
+                  e.currentTarget.style.backgroundColor = colors.bg.hover
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedNote?.id !== note.id) {
+                  e.currentTarget.style.backgroundColor = colors.bg.tertiary
+                }
               }}
             >
-              Add Task
-            </button>
-          </div>
+              <h3 style={styles.noteTitle}>{note.title || 'Untitled'}</h3>
+              <p style={styles.noteDate}>{formatDate(note.updatedAt)}</p>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Kanban Board */}
-        <div style={styles.board}>
-          {(Object.keys(COLUMNS) as Array<keyof typeof COLUMNS>).map(
-            (status) => (
-              <div
-                key={status}
-                style={styles.column}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, status)}
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        {selectedNote ? (
+          <div style={styles.editor}>
+            <div style={styles.editorHeader}>
+              <input
+                ref={titleRef}
+                type="text"
+                value={selectedNote.title}
+                onChange={(e) =>
+                  updateNote(selectedNote.id, { title: e.target.value })
+                }
+                style={styles.editorTitle}
+                placeholder="Note title..."
+              />
+              <button
+                onClick={() => {
+                  if (confirm('Delete this note?')) {
+                    deleteNote(selectedNote.id)
+                  }
+                }}
+                style={styles.deleteButton}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.accent.danger
+                  e.currentTarget.style.color = colors.text.primary
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.color = colors.accent.danger
+                }}
               >
-                <div style={styles.columnHeader}>
-                  <div
-                    style={{
-                      ...styles.statusDot,
-                      backgroundColor: COLUMNS[status].color,
-                    }}
-                  />
-                  <h3 style={styles.columnTitle}>{COLUMNS[status].title}</h3>
-                  <span style={styles.columnCount}>{stats[status]}</span>
-                </div>
-
-                <div style={styles.taskList}>
-                  {getTasksByStatus(status).map((task) => (
-                    <div
-                      key={task.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, task.id)}
-                      style={{
-                        ...styles.taskCard,
-                        ...(draggedTask === task.id
-                          ? styles.taskCardDragging
-                          : {}),
-                      }}
-                    >
-                      <h4 style={styles.taskTitle}>{task.title}</h4>
-                      {task.description && (
-                        <p style={styles.taskDescription}>{task.description}</p>
-                      )}
-                      <div style={styles.taskFooter}>
-                        <span
-                          style={{
-                            ...styles.priority,
-                            ...(task.priority === 'high'
-                              ? styles.priorityHigh
-                              : task.priority === 'medium'
-                                ? styles.priorityMedium
-                                : styles.priorityLow),
-                          }}
-                        >
-                          {task.priority}
-                        </span>
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          style={styles.deleteButton}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {getTasksByStatus(status).length === 0 && (
-                    <div style={styles.dropZone}>
-                      {status === 'todo'
-                        ? 'Add your first task above'
-                        : status === 'inprogress'
-                          ? 'Drag tasks here to start working'
-                          : 'Drag completed tasks here'}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          )}
-        </div>
+                Delete
+              </button>
+            </div>
+            <div style={styles.editorContent}>
+              <textarea
+                ref={contentRef}
+                value={selectedNote.content}
+                onChange={(e) =>
+                  updateNote(selectedNote.id, { content: e.target.value })
+                }
+                style={styles.editorTextarea}
+                placeholder="Start typing..."
+              />
+            </div>
+          </div>
+        ) : (
+          <div style={styles.emptyState}>
+            <p style={styles.emptyStateText}>
+              {notes.length === 0
+                ? 'Create your first note'
+                : 'Select a note to edit'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

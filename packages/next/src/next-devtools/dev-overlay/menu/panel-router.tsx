@@ -75,7 +75,6 @@ const MenuPanel = () => {
     }
 
     fetchMCPTools()
-    // Poll for updates
     const interval = setInterval(fetchMCPTools, 2000)
     return () => clearInterval(interval)
   }, [])
@@ -86,7 +85,6 @@ const MenuPanel = () => {
 
   const handleCreateProject = async () => {
     await createProject()
-    // Don't auto-open panel, let the project appear in the menu
   }
 
   const baseItems = [
@@ -163,7 +161,6 @@ const MenuPanel = () => {
     },
   ].filter(Boolean)
 
-  // Add dev-0 projects - sort by createdAt to show newest first
   const projectItems = visibleProjects
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
     .map((project) => {
@@ -229,7 +226,6 @@ const MenuPanel = () => {
     }
   })
 
-  // Create New Project item - standalone at top
   const createProjectItem = {
     label: 'Create New Project',
     value: isLoading ? (
@@ -261,12 +257,10 @@ const MenuPanel = () => {
     deletable: false,
   }
 
-  // Create MCP tool items
   const mcpToolItems = mcpTools.map((tool, index) => {
     const panelName = `mcp-tool-${tool.name}` as PanelStateKind
     const isActive = activePanel === panelName
     
-    // Extract the tool name without the project prefix
     const displayName = tool.name.includes('_') 
       ? tool.name.split('_').slice(1).join('_')
       : tool.name
@@ -345,7 +339,6 @@ const MenuPanel = () => {
     accordionContent: mcpToolItems,
   }
 
-  // Create terminal item for sidebar
   const terminalItem = {
     label: 'Terminal',
     value: sidebarIsOpen ? (
@@ -411,7 +404,6 @@ const MenuPanel = () => {
     }
   }
 
-  // Create accordion item for Plugins
   const devToolsAccordionItem = {
     label: 'Plugins',
     value: (
@@ -437,7 +429,7 @@ const MenuPanel = () => {
         </svg>
       </span>
     ),
-    onClick: undefined, // Don't close panel when clicking accordion
+    onClick: undefined, 
     attributes: {
       'data-accordion': 'devtools',
       'data-accordion-open': 'false',
@@ -476,7 +468,6 @@ const MenuPanel = () => {
           }
         }
 
-        /* Keep minimal styles for active items */
         .dev-tools-indicator-item[data-panel-active='true'] {
           background-color: var(--color-gray-alpha-100);
         }
@@ -521,7 +512,7 @@ const HubModal = () => {
           backgroundColor: 'rgba(0, 0, 0, 0.75)',
           backdropFilter: 'blur(4px)',
           WebkitBackdropFilter: 'blur(4px)',
-          zIndex: 2147483647, // Maximum z-index to render above all panels
+          zIndex: 2147483647, 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -549,7 +540,7 @@ const HubModal = () => {
             transform: isClosing ? 'scale(0.95)' : 'scale(1)',
             opacity: isClosing ? 0 : 1,
             transition: 'all 200ms ease-out',
-            zIndex: 2147483647, // Also set z-index on the modal content
+            zIndex: 2147483647, 
           }}
           onClick={(e) => e.stopPropagation()}
         >
