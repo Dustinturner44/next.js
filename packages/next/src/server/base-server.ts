@@ -1707,7 +1707,8 @@ export default abstract class Server<
   ): Promise<void>
 
   public setAssetPrefix(prefix?: string): void {
-    this.renderOpts.assetPrefix = prefix ? prefix.replace(/\/$/, '') : ''
+    this.nextConfig.assetPrefix = prefix ? prefix.replace(/\/$/, '') : ''
+    this.renderOpts.assetPrefix = this.nextConfig.assetPrefix
   }
 
   protected prepared: boolean = false
