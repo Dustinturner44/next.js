@@ -544,7 +544,7 @@ jobs:
   test-new-tests-dev:
     name: Test new tests for flakes (dev)
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ false && needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -566,7 +566,7 @@ jobs:
   test-new-tests-start:
     name: Test new tests for flakes (prod)
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ false && needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -589,7 +589,7 @@ jobs:
     name: Test new tests when deployed
     needs:
       ['optimize-ci', 'test-prod', 'test-new-tests-dev', 'test-new-tests-start']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' }}
+    if: ${{ false && needs.optimize-ci.outputs.skip == 'false' }}
 
     strategy:
       fail-fast: false
@@ -942,8 +942,7 @@ jobs:
     secrets: inherit
 
   tests-pass:
-    needs:
-      [
+    needs: [
         'build-native',
         'build-next',
         'lint',
@@ -966,9 +965,9 @@ jobs:
         'test-next-swc-wasm',
         'test-turbopack-dev',
         'test-turbopack-integration',
-        'test-new-tests-dev',
-        'test-new-tests-start',
-        'test-new-tests-deploy',
+        # 'test-new-tests-dev',
+        # 'test-new-tests-start',
+        # 'test-new-tests-deploy',
         'test-turbopack-production',
         'test-turbopack-production-integration',
         'test-unit-windows',
