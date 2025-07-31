@@ -882,6 +882,8 @@ export default function Page({ userId }: { userId: string }) {
 
 ### TODO Comments with Existing Stubs (CRITICAL)
 
+<!-- prettier-ignore-start -->
+
 ```tsx
 // Given file with TODO and existing stub:
 // TODO: Implement ClientMeta component
@@ -898,7 +900,7 @@ export default function ClientMeta() {
   return null
 }
 
-;('use client') // WRONG: 'use client' in wrong place
+'use client'// WRONG: 'use client' in wrong place
 
 export default function ClientMeta() {
   // ERROR: Duplicate default export
@@ -909,9 +911,12 @@ export default function ClientMeta() {
     </>
   )
 }
+```
+<!-- prettier-ignore-end -->
 
+```tsx
 // CORRECT: Modify the existing component
-;('use client') // CORRECT: At the top
+'use client' // CORRECT: At the top
 
 // TODO: Implement ClientMeta component - DONE
 export default function ClientMeta() {
