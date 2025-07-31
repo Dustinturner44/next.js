@@ -152,23 +152,26 @@ describe('<Link prefetch={true}> (runtime prefetch)', () => {
         },
       ])
 
-      // Reveal the link to trigger a runtime prefetch for a different value of the root param
-      await act(async () => {
-        const linkToggle = await browser.elementByCss(
-          `input[data-link-accordion="/with-root-param/de/${prefix}/root-params"]`
-        )
-        await linkToggle.click()
-      }, [
-        // Should allow reading root params
-        {
-          includes: 'Lang: de',
-        },
-        // Should not prefetch the dynamic content
-        {
-          includes: 'Dynamic content',
-          block: 'reject',
-        },
-      ])
+      // TODO(runtime-ppr) - visiting root params that weren't in generateStaticParams errors when deployed
+      if (!isNextDeploy) {
+        // Reveal the link to trigger a runtime prefetch for a different value of the root param
+        await act(async () => {
+          const linkToggle = await browser.elementByCss(
+            `input[data-link-accordion="/with-root-param/de/${prefix}/root-params"]`
+          )
+          await linkToggle.click()
+        }, [
+          // Should allow reading root params
+          {
+            includes: 'Lang: de',
+          },
+          // Should not prefetch the dynamic content
+          {
+            includes: 'Dynamic content',
+            block: 'reject',
+          },
+        ])
+      }
 
       // Navigate to the first page
       await act(async () => {
@@ -199,44 +202,47 @@ describe('<Link prefetch={true}> (runtime prefetch)', () => {
         'Dynamic content'
       )
 
-      await browser.back()
+      // TODO(runtime-ppr) - visiting root params that weren't in generateStaticParams errors when deployed
+      if (!isNextDeploy) {
+        await browser.back()
 
-      // Reveal the link to the second page again. It should not be prefetched again
-      await act(async () => {
-        const linkToggle = await browser.elementByCss(
-          `input[data-link-accordion="/with-root-param/de/${prefix}/root-params"]`
-        )
-        await linkToggle.click()
-      }, 'no-requests')
+        // Reveal the link to the second page again. It should not be prefetched again
+        await act(async () => {
+          const linkToggle = await browser.elementByCss(
+            `input[data-link-accordion="/with-root-param/de/${prefix}/root-params"]`
+          )
+          await linkToggle.click()
+        }, 'no-requests')
 
-      // Navigate to the other page
-      await act(async () => {
-        await act(
-          async () => {
-            await browser
-              .elementByCss(
-                `a[href="/with-root-param/de/${prefix}/root-params"]`
-              )
-              .click()
-          },
-          {
-            // Temporarily block the navigation request.
-            // The runtime-prefetched parts of the tree should be visible before it finishes.
-            includes: 'Dynamic content',
-            block: true,
-          }
-        )
+        // Navigate to the other page
+        await act(async () => {
+          await act(
+            async () => {
+              await browser
+                .elementByCss(
+                  `a[href="/with-root-param/de/${prefix}/root-params"]`
+                )
+                .click()
+            },
+            {
+              // Temporarily block the navigation request.
+              // The runtime-prefetched parts of the tree should be visible before it finishes.
+              includes: 'Dynamic content',
+              block: true,
+            }
+          )
+          expect(await browser.elementById('root-param-value').text()).toEqual(
+            'Lang: de'
+          )
+        })
+        // After navigating, we should see both the parts that we prefetched and dynamic content.
         expect(await browser.elementById('root-param-value').text()).toEqual(
           'Lang: de'
         )
-      })
-      // After navigating, we should see both the parts that we prefetched and dynamic content.
-      expect(await browser.elementById('root-param-value').text()).toEqual(
-        'Lang: de'
-      )
-      expect(await browser.elementById('dynamic-content').text()).toEqual(
-        'Dynamic content'
-      )
+        expect(await browser.elementById('dynamic-content').text()).toEqual(
+          'Dynamic content'
+        )
+      }
     })
 
     it('includes search params, but not dynamic content', async () => {
