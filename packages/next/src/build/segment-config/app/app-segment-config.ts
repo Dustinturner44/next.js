@@ -73,16 +73,14 @@ export function parseAppSegmentConfig(
   route: string
 ): AppSegmentConfig {
   const parsed = AppSegmentConfigSchema.safeParse(data, {
-    errorMap: (issue, ctx) => {
-      if (issue.path.length === 1 && issue.path[0] === 'revalidate') {
-        return {
-          message: `Invalid revalidate value ${JSON.stringify(
-            ctx.data
-          )} on "${route}", must be a non-negative number or false`,
-        }
+    error: (input) => {
+      if (input.path?.length === 1 && input.path[0] === 'revalidate') {
+        return `Invalid revalidate value ${JSON.stringify(
+          input.data
+        )} on "${route}", must be a non-negative number or false`
       }
 
-      return { message: ctx.defaultError }
+      return undefined
     },
   })
 

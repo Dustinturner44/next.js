@@ -31,6 +31,33 @@ const zSizeLimit = z.custom<SizeLimit>((val) => {
   return false
 })
 
+const functionSchema = <T>(_schema: T) =>
+  z.custom<
+    (
+      defaultMap: ExportPathMap,
+      ctx: {
+        dev: boolean
+        dir: string
+        outDir: string | null
+        distDir: string
+        buildId: string
+      }
+    ) => ExportPathMap | Promise<ExportPathMap>
+  >((val) => typeof val === 'function')
+
+const generateBuildIdSchema = <T>(_schema: T) =>
+  z.custom<() => string | Promise<string | null> | null>(
+    (val) => typeof val === 'function'
+  )
+
+const runAfterProductionCompileSchema = <T>(_schema: T) =>
+  z.custom<
+    (metadata: { projectDir: string; distDir: string }) => Promise<void>
+  >((val) => typeof val === 'function')
+
+const createAsyncFunctionSchema = <T>(_schema: T) =>
+  z.custom<() => Promise<any>>((val) => typeof val === 'function')
+
 const zExportMap: zod.ZodType<ExportPathMap> = z.record(
   z.string(),
   z.object({
@@ -271,10 +298,11 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
         ]),
         define: z.record(z.string(), z.string()).optional(),
         defineServer: z.record(z.string(), z.string()).optional(),
-        runAfterProductionCompile: z
-          .function()
-          .returns(z.promise(z.void()))
-          .optional(),
+        runAfterProductionCompile: runAfterProductionCompileSchema(
+          z.function({
+            output: z.promise(z.void()),
+          })
+        ).optional(),
       })
       .optional(),
     compress: z.boolean().optional(),
@@ -340,6 +368,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
           .optional(),
         cacheLife: z
           .record(
+            z.string(),
             z.object({
               stale: z.number().optional(),
               revalidate: z.number().optional(),
@@ -538,37 +567,36 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
         optimizeRouterScrolling: z.boolean().optional(),
       })
       .optional(),
-    exportPathMap: z
-      .function()
-      .args(
-        zExportMap,
-        z.object({
-          dev: z.boolean(),
-          dir: z.string(),
-          outDir: z.string().nullable(),
-          distDir: z.string(),
-          buildId: z.string(),
-        })
-      )
-      .returns(z.union([zExportMap, z.promise(zExportMap)]))
-      .optional(),
-    generateBuildId: z
-      .function()
-      .args()
-      .returns(
-        z.union([
+    exportPathMap: functionSchema(
+      z.function({
+        input: z.tuple([
+          zExportMap,
+          z.object({
+            dev: z.boolean(),
+            dir: z.string(),
+            outDir: z.string().nullable(),
+            distDir: z.string(),
+            buildId: z.string(),
+          }),
+        ]),
+        output: z.union([zExportMap, z.promise(zExportMap)]),
+      })
+    ).optional(),
+    generateBuildId: generateBuildIdSchema(
+      z.function({
+        output: z.union([
           z.string(),
           z.null(),
           z.promise(z.union([z.string(), z.null()])),
-        ])
-      )
-      .optional(),
+        ]),
+      })
+    ).optional(),
     generateEtags: z.boolean().optional(),
-    headers: z
-      .function()
-      .args()
-      .returns(z.promise(z.array(zHeader)))
-      .optional(),
+    headers: createAsyncFunctionSchema(
+      z.function({
+        output: z.promise(z.array(zHeader)),
+      })
+    ).optional(),
     htmlLimitedBots: z.instanceof(RegExp).optional(),
     httpAgentOptions: z
       .strictObject({ keepAlive: z.boolean().optional() })
@@ -699,16 +727,14 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
     reactProductionProfiling: z.boolean().optional(),
     reactStrictMode: z.boolean().nullable().optional(),
     reactMaxHeadersLength: z.number().nonnegative().int().optional(),
-    redirects: z
-      .function()
-      .args()
-      .returns(z.promise(z.array(zRedirect)))
-      .optional(),
-    rewrites: z
-      .function()
-      .args()
-      .returns(
-        z.promise(
+    redirects: createAsyncFunctionSchema(
+      z.function({
+        output: z.promise(z.array(zRedirect)),
+      })
+    ).optional(),
+    rewrites: createAsyncFunctionSchema(
+      z.function({
+        output: z.promise(
           z.union([
             z.array(zRewrite),
             z.object({
@@ -717,9 +743,9 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
               fallback: z.array(zRewrite),
             }),
           ])
-        )
-      )
-      .optional(),
+        ),
+      })
+    ).optional(),
     // sassOptions properties are unknown besides implementation, use z.any() here
     sassOptions: z
       .object({

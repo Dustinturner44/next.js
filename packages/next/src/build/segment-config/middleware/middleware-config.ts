@@ -8,11 +8,11 @@ const RouteHasSchema = z.discriminatedUnion('type', [
     .object({
       type: z.enum(['header', 'query', 'cookie']),
       key: z.string({
-        required_error: 'key is required when type is header, query or cookie',
+        error: 'key is required when type is header, query or cookie',
       }),
       value: z
         .string({
-          invalid_type_error: 'value must be a string',
+          error: 'value must be a string',
         })
         .optional(),
     })
@@ -21,7 +21,7 @@ const RouteHasSchema = z.discriminatedUnion('type', [
     .object({
       type: z.literal('host'),
       value: z.string({
-        required_error: 'host must have a value',
+        error: () => 'host must have a value',
       }),
     })
     .strict(),
@@ -32,23 +32,28 @@ const RouteHasSchema = z.discriminatedUnion('type', [
  */
 export const SourceSchema = z
   .string({
-    required_error: 'source is required',
+    error: (issue) =>
+      typeof issue.input !== 'string'
+        ? 'source must be a string'
+        : 'source is required',
   })
   .max(4096, 'exceeds max built length of 4096 for route')
   .superRefine((val, ctx) => {
     if (!val.startsWith('/')) {
-      return ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+      ctx.issues.push({
+        code: 'custom',
         message: `source must start with /`,
+        input: '',
       })
     }
 
     const { error, regexStr } = tryToParsePath(val)
 
     if (error || !regexStr) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+      ctx.issues.push({
+        code: 'custom',
         message: `Invalid source '${val}': ${error.message}`,
+        input: '',
       })
     }
   })
@@ -66,7 +71,7 @@ const MiddlewareConfigMatcherInputSchema = z.union([
   SourceSchema,
   z.array(
     z.union([SourceSchema, MiddlewareMatcherInputSchema], {
-      invalid_type_error: 'must be an array of strings or middleware matchers',
+      error: () => 'must be an array of strings or middleware matchers',
     })
   ),
 ])
@@ -82,9 +87,10 @@ const GlobSchema = z.string().superRefine((val, ctx) => {
   try {
     picomatch(val)
   } catch (err: any) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+    ctx.issues.push({
+      code: 'custom',
       message: `Invalid glob pattern '${val}': ${err.message}`,
+      input: '',
     })
   }
 })
