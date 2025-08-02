@@ -3741,6 +3741,36 @@ export default async function build(
           // remove temporary export folder
           await fs.rm(outdir, { recursive: true, force: true })
           await writeManifest(pagesManifestPath, pagesManifest)
+
+          if (config.experimental.clientSegmentCache) {
+            for (const route of [
+              ...routesManifest.staticRoutes,
+              ...routesManifest.dynamicRoutes,
+            ]) {
+              // If the segment paths aren't defined, we need to insert a
+              // reverse routing rule so that there isn't any conflicts
+              // with other dynamic routes for the prefetch segment
+              // routes. This is true for any route that is not PPR-enabled,
+              // including all routes defined by Pages Router.
+
+              // We don't need to add the prefetch segment data routes if it was
+              // added due to a page that was already generated. This would have
+              // happened if the page was static or partially static.
+              if (route.prefetchSegmentDataRoutes) {
+                continue
+              }
+
+              route.prefetchSegmentDataRoutes = [
+                buildInversePrefetchSegmentDataRoute(
+                  route.page,
+                  // We use the special segment path of `/_tree` because it's
+                  // the first one sent by the client router so it's the only
+                  // one we need to rewrite to the regular prefetch RSC route.
+                  '/_tree'
+                ),
+              ]
+            }
+          }
         })
 
         // As we may have modified the dynamicRoutes, we need to sort the
