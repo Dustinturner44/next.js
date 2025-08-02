@@ -1,38 +1,68 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer } from 'react'
 
 export function useUpdateAnimation(
   issueCount: number,
-  animationDurationMs = 0
+  animationDurationMs: number
 ) {
-  const lastUpdatedTimeStamp = useRef<number | null>(null)
-  const [animate, setAnimate] = useState(false)
+  const [{ animate, lastSeenIssueCount }, dispatch] = useReducer<
+    {
+      animate: boolean
+      lastSeenIssueCount: number
+      lastUpdatedTime: number
+    },
+    [{ type: 'UPDATE'; payload: number } | { type: 'STOP' }]
+  >(
+    (pendingState, action) => {
+      const actionType = action.type
+      switch (actionType) {
+        case 'UPDATE':
+          const deltaMS =
+            pendingState.lastUpdatedTime === -1
+              ? Number.POSITIVE_INFINITY
+              : performance.now() - pendingState.lastUpdatedTime
+
+          const nextIssueCount = action.payload
+          return {
+            ...pendingState,
+            animate: nextIssueCount > 0 && deltaMS > animationDurationMs,
+            lastSeenIssueCount: nextIssueCount,
+            lastUpdatedTime: nextIssueCount > 0 ? performance.now() : -1,
+          }
+        case 'STOP':
+          return { ...pendingState, animate: false }
+        default:
+          actionType satisfies never
+          return pendingState
+      }
+    },
+    {
+      animate: false,
+      lastSeenIssueCount: -1,
+      lastUpdatedTime: -1,
+    }
+  )
+
+  if (issueCount !== lastSeenIssueCount) {
+    dispatch({
+      type: 'UPDATE',
+      payload: issueCount,
+    })
+  }
 
   useEffect(() => {
-    if (issueCount > 0) {
-      const deltaMs = lastUpdatedTimeStamp.current
-        ? Date.now() - lastUpdatedTimeStamp.current
-        : -1
-      lastUpdatedTimeStamp.current = Date.now()
-
-      // We don't animate if `issueCount` changes too quickly
-      if (deltaMs <= animationDurationMs) {
-        return
-      }
-
-      // eslint-disable-next-line react-hooks/react-compiler -- TODO
-      setAnimate(true)
+    if (animate) {
       // It is important to use a CSS transitioned state, not a CSS keyframed animation
       // because if the issue count increases faster than the animation duration, it
       // will abruptly stop and not transition smoothly back to its original state.
       const timeoutId = window.setTimeout(() => {
-        setAnimate(false)
+        dispatch({ type: 'STOP' })
       }, animationDurationMs)
 
       return () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [issueCount, animationDurationMs])
+  }, [animationDurationMs, animate])
 
   return animate
 }
