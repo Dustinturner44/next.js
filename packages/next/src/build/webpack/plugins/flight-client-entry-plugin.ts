@@ -69,10 +69,14 @@ type Actions = {
     layer: {
       [name: string]: string
     }
+    // The exported name of the server action function
+    exportedName?: string
+    // The filename where the server action is defined
+    filename?: string
   }
 }
 
-type ActionIdNamePair = { id: string; exportedName: string }
+type ActionIdNamePair = { id: string; exportedName: string; filename?: string }
 
 export type ActionManifest = {
   // Assign a unique encryption key during production build.
@@ -628,6 +632,7 @@ export class FlightClientEntryPlugin {
             Object.entries(actionIds).map(([id, exportedName]) => ({
               id,
               exportedName,
+              filename: modResource,
             }))
           )
         }
@@ -949,11 +954,13 @@ export class FlightClientEntryPlugin {
       : pluginState.serverActions
 
     for (const [, actionsFromModule] of actionsArray) {
-      for (const { id } of actionsFromModule) {
+      for (const { id, exportedName, filename } of actionsFromModule) {
         if (typeof currentCompilerServerActions[id] === 'undefined') {
           currentCompilerServerActions[id] = {
             workers: {},
             layer: {},
+            exportedName: exportedName,
+            filename: filename,
           }
         }
         currentCompilerServerActions[id].workers[bundlePath] = {
