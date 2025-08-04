@@ -797,6 +797,7 @@ export async function handleAction({
             decodeAction,
             decodeFormState,
           } =
+            // @ts-expect-error File 'react-server.node.ts' is not a module. ts(2306)
             require('./react-server.node') as typeof import('./react-server.node')
 
           temporaryReferences = createTemporaryReferenceSet()
