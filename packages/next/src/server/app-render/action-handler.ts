@@ -796,9 +796,8 @@ export async function handleAction({
             decodeReplyFromBusboy,
             decodeAction,
             decodeFormState,
-          } = require(
-            `./react-server.node`
-          ) as typeof import('react-server-dom-webpack/server.node')
+          } =
+            require('./react-server.node') as typeof import('./react-server.node')
 
           temporaryReferences = createTemporaryReferenceSet()
 

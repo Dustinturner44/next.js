@@ -30,7 +30,6 @@ function getAltProxyForBindingsDEV(
 let ReactServerDOMTurbopackClient, ReactServerDOMWebpackClient
 if (process.env.TURBOPACK) {
   ReactServerDOMTurbopackClient =
-    // @ts-expect-error -- TODO: Add types
     // eslint-disable-next-line import/no-extraneous-dependencies
     require('react-server-dom-turbopack/client') as typeof import('react-server-dom-turbopack/client')
   if (process.env.NODE_ENV === 'development') {

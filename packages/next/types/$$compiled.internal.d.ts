@@ -390,6 +390,28 @@ declare module 'react-server-dom-webpack/client.edge' {
   ): Promise<string | FormData>
 }
 
+declare module 'react-server-dom-turbopack/client' {
+  export * from 'react-server-dom-webpack/client'
+}
+declare module 'react-server-dom-turbopack/client.browser' {
+  export * from 'react-server-dom-webpack/client.browser'
+}
+declare module 'react-server-dom-turbopack/server.edge' {
+  export * from 'react-server-dom-webpack/server.edge'
+}
+declare module 'react-server-dom-turbopack/server' {
+  export * from 'react-server-dom-webpack/server'
+}
+declare module 'react-server-dom-turbopack/server.node' {
+  export * from 'react-server-dom-webpack/server.node'
+}
+declare module 'react-server-dom-turbopack/static' {
+  export * from 'react-server-dom-webpack/static'
+}
+declare module 'react-server-dom-turbopack/client.edge' {
+  export * from 'react-server-dom-webpack/client.edge'
+}
+
 declare module 'VAR_MODULE_GLOBAL_ERROR'
 declare module 'VAR_MODULE_GLOBAL_NOT_FOUND'
 declare module 'VAR_USERLAND'

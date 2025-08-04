@@ -34,7 +34,6 @@ let ReactServerDOMTurbopackStatic, ReactServerDOMWebpackStatic
 
 if (process.env.TURBOPACK) {
   ReactServerDOMTurbopackServer =
-    // @ts-expect-error -- TODO: Add types
     // eslint-disable-next-line import/no-extraneous-dependencies
     require('react-server-dom-turbopack/server') as typeof import('react-server-dom-turbopack/server')
   if (process.env.NODE_ENV === 'development') {
@@ -44,7 +43,6 @@ if (process.env.TURBOPACK) {
     )
   }
   ReactServerDOMTurbopackStatic =
-    // @ts-expect-error -- TODO: Add types
     // eslint-disable-next-line import/no-extraneous-dependencies
     require('react-server-dom-turbopack/static') as typeof import('react-server-dom-turbopack/static')
   if (process.env.NODE_ENV === 'development') {
