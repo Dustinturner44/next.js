@@ -1695,6 +1695,28 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/bun-externals/bun-externals.test.ts": {
+    "passed": [
+      "app-dir - bun externals should handle bun builtins as external modules",
+      "app-dir - bun externals should handle bun builtins in edge runtime",
+      "app-dir - bun externals should handle bun builtins in route handlers",
+      "app-dir - bun externals should handle bun builtins in server actions",
+      "app-dir - bun externals should not bundle bun builtins in server bundles"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/cache-components-create-component-tree/cache-components-create-component-tree.test.ts": {
+    "passed": [
+      "hello-world should not indicate there is an error when incidental math.random calls occur during component tree generation during build"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/cache-components-dynamic-imports/cache-components-dynamic-imports.test.ts": {
     "passed": [
       "async imports in cacheComponents - external packages does not instrument import() in external packages",
@@ -6257,6 +6279,17 @@
   },
   "test/e2e/app-dir/turbopack-reports/turbopack-reports.test.ts": {
     "passed": ["turbopack-reports should render page importing sqlite3"],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/typed-routes/typed-routes.test.ts": {
+    "passed": [
+      "typed-routes should correctly convert custom route patterns from path-to-regexp to bracket syntax",
+      "typed-routes should generate route types correctly",
+      "typed-routes should throw type errors"
+    ],
     "failed": [],
     "pending": [],
     "flakey": [],
@@ -18728,6 +18761,17 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/integration/webpack-bun-externals/test/index.test.js": {
+    "passed": [
+      "Webpack - Bun Externals should externalize Bun builtins in server bundles",
+      "Webpack - Bun Externals should not bundle Bun module implementations",
+      "Webpack - Bun Externals should successfully build with Bun module imports"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/integration/webpack-config-extensionalias/test/index.test.js": {
     "passed": [
       "webpack config with extensionAlias setting should run correctly with an tsx file import with .js extension"
@@ -20004,10 +20048,11 @@
   },
   "test/production/pnpm-support/index.test.ts": {
     "passed": [
-      "pnpm support should build with dependencies installed via pnpm",
+      "pnpm support should build with dependencies installed via pnpm"
+    ],
+    "failed": [
       "pnpm support should execute client-side JS on each page in output: \"standalone\""
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
