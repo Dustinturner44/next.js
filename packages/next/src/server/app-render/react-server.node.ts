@@ -1,10 +1,11 @@
 // This file should be opted into the react-server layer
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-export {
-  createTemporaryReferenceSet,
-  decodeReply,
-  decodeReplyFromBusboy,
-  decodeAction,
-  decodeFormState,
-} from 'react-server-dom-webpack/server.node'
+if (process.env.TURBOPACK) {
+  module.exports =
+    // eslint-disable-next-line import/no-extraneous-dependencies, @next/internal/typechecked-require
+    require('react-server-dom-turbopack/server.node') as typeof import('react-server-dom-webpack/server.node')
+} else {
+  module.exports =
+    // eslint-disable-next-line import/no-extraneous-dependencies
+    require('react-server-dom-webpack/server.node') as typeof import('react-server-dom-webpack/server.node')
+}

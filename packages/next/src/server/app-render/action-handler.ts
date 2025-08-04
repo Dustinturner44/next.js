@@ -798,7 +798,7 @@ export async function handleAction({
             decodeFormState,
           } = require(
             `./react-server.node`
-          ) as typeof import('./react-server.node')
+          ) as typeof import('react-server-dom-webpack/server.node')
 
           temporaryReferences = createTemporaryReferenceSet()
 
