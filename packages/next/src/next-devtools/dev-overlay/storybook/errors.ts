@@ -15,16 +15,16 @@ const sourceStackFrame = {
   file: 'app/page.tsx',
   methodName: 'Home',
   arguments: [],
-  lineNumber: 2,
-  column: 9,
+  line1: 2,
+  column1: 9,
 }
 
 const originalStackFrame = {
   file: 'app/page.tsx',
   methodName: 'Home',
   arguments: [],
-  lineNumber: 2,
-  column: 9,
+  line1: 2,
+  column1: 9,
   ignored: false,
 }
 
@@ -33,16 +33,16 @@ const frame = {
     file: './app/page.tsx',
     methodName: 'MyComponent',
     arguments: [],
-    lineNumber: 10,
-    column: 5,
+    line1: 10,
+    column1: 5,
     ignored: false,
   },
   sourceStackFrame: {
     file: './app/page.tsx',
     methodName: 'MyComponent',
     arguments: [],
-    lineNumber: 10,
-    column: 5,
+    line1: 10,
+    column1: 5,
   },
   originalCodeFrame: 'export default function MyComponent() {',
   error: false,
@@ -66,8 +66,8 @@ export const errors: SupportedErrorEvent[] = [
       {
         file: 'app/page.tsx',
         component: 'Home',
-        lineNumber: 10,
-        column: 5,
+        line1: 10,
+        column1: 5,
         canOpenInEditor: true,
       },
     ],
@@ -76,8 +76,8 @@ export const errors: SupportedErrorEvent[] = [
         file: 'app/page.tsx',
         methodName: 'Home',
         arguments: [],
-        lineNumber: 10,
-        column: 5,
+        line1: 10,
+        column1: 5,
       },
     ],
     type: 'runtime',
@@ -126,6 +126,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
         },
         ...Array(20).fill(ignoredFrame),
       ]),
+    componentStackFrames: undefined,
     type: 'runtime',
   },
   {
@@ -144,6 +145,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Second error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'console',
   },
   {
@@ -162,6 +164,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Third error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'recoverable',
   },
   {
@@ -180,6 +183,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('typeof window !== undefined'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'runtime',
   },
   {
@@ -204,6 +208,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Fifth error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'console',
   },
   {
@@ -222,6 +227,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Sixth error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'recoverable',
   },
   {
@@ -240,6 +246,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Sixth error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'runtime',
   },
   {
@@ -258,6 +265,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Eighth error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'runtime',
   },
   {
@@ -276,6 +284,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Ninth error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'runtime',
   },
   {
@@ -294,6 +303,7 @@ export const runtimeErrors: ReadyRuntimeError[] = [
           originalCodeFrame: originalCodeFrame('Tenth error message'),
         },
       ]),
+    componentStackFrames: undefined,
     type: 'runtime',
   },
 ]
