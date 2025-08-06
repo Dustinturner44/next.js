@@ -58,7 +58,7 @@ describe('error-ignored-frames', () => {
       `)
     } else {
       expect(defaultStack).toMatchInlineSnapshot(`
-       "at eval (app/interleaved/page.tsx (7:11))
+       "at app/interleaved/page.tsx (7:11)
        at Page (app/interleaved/page.tsx (6:36))"
       `)
     }

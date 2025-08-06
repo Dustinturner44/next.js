@@ -31,11 +31,11 @@ describe('hello-world', () => {
                   "description": "A Cache Function (\`use cache\`) was passed to startActiveSpan which means it will receive a Span argument with a possibly random ID on every invocation leading to cache misses. Provide a wrapping function around the Cache Function that does not forward the Span argument to avoid this issue.",
                   "environmentLabel": "Cache",
                   "label": "Console Error",
-                  "source": "app/traced-work.tsx (26:19) @ eval
+                  "source": "app/traced-work.tsx (26:19)
                 > 26 |     return tracer.startActiveSpan('span-active-span', fn)
                      |                   ^",
                   "stack": [
-                    "eval app/traced-work.tsx (26:19)",
+                    "app/traced-work.tsx (26:19)",
                     "Inner app/traced-work.tsx (97:26)",
                     "Page <anonymous>",
                   ],
@@ -79,11 +79,11 @@ describe('hello-world', () => {
                   "description": "A Cache Function (\`use cache\`) was passed to startActiveSpan which means it will receive a Span argument with a possibly random ID on every invocation leading to cache misses. Provide a wrapping function around the Cache Function that does not forward the Span argument to avoid this issue.",
                   "environmentLabel": "Cache",
                   "label": "Console Error",
-                  "source": "app/traced-work.tsx (26:19) @ eval
+                  "source": "app/traced-work.tsx (26:19)
                 > 26 |     return tracer.startActiveSpan('span-active-span', fn)
                      |                   ^",
                   "stack": [
-                    "eval app/traced-work.tsx (26:19)",
+                    "app/traced-work.tsx (26:19)",
                     "Inner app/traced-work.tsx (97:26)",
                     "Page <anonymous>",
                   ],
@@ -127,11 +127,11 @@ describe('hello-world', () => {
                   "description": "A Cache Function (\`use cache\`) was passed to startActiveSpan which means it will receive a Span argument with a possibly random ID on every invocation leading to cache misses. Provide a wrapping function around the Cache Function that does not forward the Span argument to avoid this issue.",
                   "environmentLabel": "Prerender",
                   "label": "Console Error",
-                  "source": "app/traced-work.tsx (26:19) @ eval
+                  "source": "app/traced-work.tsx (26:19)
                 > 26 |     return tracer.startActiveSpan('span-active-span', fn)
                      |                   ^",
                   "stack": [
-                    "eval app/traced-work.tsx (26:19)",
+                    "app/traced-work.tsx (26:19)",
                     "Inner app/traced-work.tsx (97:26)",
                     "CachedInnerTraceActiveSpan app/traced-work.tsx (104:9)",
                     "Page app/[slug]/server/page.tsx (29:7)",
@@ -177,11 +177,11 @@ describe('hello-world', () => {
                   "description": "A Cache Function (\`use cache\`) was passed to startActiveSpan which means it will receive a Span argument with a possibly random ID on every invocation leading to cache misses. Provide a wrapping function around the Cache Function that does not forward the Span argument to avoid this issue.",
                   "environmentLabel": "Prerender",
                   "label": "Console Error",
-                  "source": "app/traced-work.tsx (26:19) @ eval
+                  "source": "app/traced-work.tsx (26:19)
                 > 26 |     return tracer.startActiveSpan('span-active-span', fn)
                      |                   ^",
                   "stack": [
-                    "eval app/traced-work.tsx (26:19)",
+                    "app/traced-work.tsx (26:19)",
                     "Inner app/traced-work.tsx (97:26)",
                     "CachedInnerTraceActiveSpan app/traced-work.tsx (104:9)",
                     "Page app/[slug]/server/page.tsx (29:7)",

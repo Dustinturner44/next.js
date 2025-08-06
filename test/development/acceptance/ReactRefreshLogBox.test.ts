@@ -121,13 +121,13 @@ describe('ReactRefreshLogBox', () => {
            "description": "no",
            "environmentLabel": null,
            "label": "Runtime Error",
-           "source": "index.js (3:7) @ {module evaluation}
+           "source": "index.js (3:7)
          > 3 | throw new Error('no')
              |       ^",
            "stack": [
-             "{module evaluation} index.js (3:7)",
-             "{module evaluation} pages/index.js (1:1)",
-             "{module evaluation} pages/index.js (1:1)",
+             "index.js (3:7)",
+             "pages/index.js (1:1)",
+             "pages/index.js (1:1)",
              "<FIXME-next-dist-dir>",
            ],
          }
@@ -138,13 +138,13 @@ describe('ReactRefreshLogBox', () => {
            "description": "no",
            "environmentLabel": null,
            "label": "Runtime Error",
-           "source": "index.js (3:7) @ eval
+           "source": "index.js (3:7)
          > 3 | throw new Error('no')
              |       ^",
            "stack": [
-             "eval index.js (3:7)",
+             "index.js (3:7)",
              "<FIXME-next-dist-dir>",
-             "eval ./pages/index.js",
+             "./pages/index.js",
              "<FIXME-next-dist-dir>",
              "<FIXME-next-dist-dir>",
              "<FIXME-next-dist-dir>",
@@ -162,13 +162,13 @@ describe('ReactRefreshLogBox', () => {
            "description": "no",
            "environmentLabel": null,
            "label": "Runtime Error",
-           "source": "index.js (3:7) @ {module evaluation}
+           "source": "index.js (3:7)
          > 3 | throw new Error('no')
              |       ^",
            "stack": [
-             "{module evaluation} index.js (3:7)",
-             "{module evaluation} pages/index.js (1:1)",
-             "{module evaluation} pages/index.js (1:1)",
+             "index.js (3:7)",
+             "pages/index.js (1:1)",
+             "pages/index.js (1:1)",
              "<FIXME-next-dist-dir>",
            ],
          }
@@ -179,13 +179,13 @@ describe('ReactRefreshLogBox', () => {
            "description": "no",
            "environmentLabel": null,
            "label": "Runtime Error",
-           "source": "index.js (3:7) @ eval
+           "source": "index.js (3:7)
          > 3 | throw new Error('no')
              |       ^",
            "stack": [
-             "eval index.js (3:7)",
+             "index.js (3:7)",
              "<FIXME-next-dist-dir>",
-             "eval ./pages/index.js",
+             "./pages/index.js",
              "<FIXME-next-dist-dir>",
              "<FIXME-next-dist-dir>",
              "<FIXME-next-dist-dir>",
@@ -1249,11 +1249,11 @@ describe('ReactRefreshLogBox', () => {
          "description": "anonymous error!",
          "environmentLabel": null,
          "label": "Runtime Error",
-         "source": "pages/index.js (3:11) @ eval
+         "source": "pages/index.js (3:11)
        > 3 |     throw new Error("anonymous error!");
            |           ^",
          "stack": [
-           "eval pages/index.js (3:11)",
+           "pages/index.js (3:11)",
            "Array.map <anonymous>",
            "Page pages/index.js (2:13)",
          ],

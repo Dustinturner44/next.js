@@ -171,14 +171,14 @@ describe('middleware - development errors', () => {
       expect(stripAnsi(next.cliOutput)).toContain(
         isTurbopack
           ? '\n ⨯ Error [ReferenceError]: test is not defined' +
-              '\n    at eval (middleware.js:4:9)' +
+              '\n    at middleware.js:4:9' +
               '\n    at <unknown> (middleware.js:4:9)' +
               // TODO(veil): Should be sourcemapped
               '\n    at __TURBOPACK__default__export__ ('
           : '\n ⨯ Error [ReferenceError]: test is not defined' +
               // TODO(veil): Redundant and not clickable
-              '\n    at eval (file://webpack-internal:///(middleware)/./middleware.js)' +
-              '\n    at eval (middleware.js:4:9)' +
+              '\n    at file://webpack-internal:///(middleware)/./middleware.js' +
+              '\n    at middleware.js:4:9' +
               '\n    at default (middleware.js:4:9)' +
               "\n  2 |       import { NextResponse } from 'next/server'"
       )
@@ -204,11 +204,11 @@ describe('middleware - development errors', () => {
            "description": "test is not defined",
            "environmentLabel": null,
            "label": "Runtime ReferenceError",
-           "source": "middleware.js (4:9) @ eval
+           "source": "middleware.js (4:9)
          > 4 |         eval('test')
              |         ^",
            "stack": [
-             "eval middleware.js (4:9)",
+             "middleware.js (4:9)",
              "<unknown> middleware.js (4:9)",
              "{default export} middleware.js (3:22)",
            ],
@@ -220,12 +220,12 @@ describe('middleware - development errors', () => {
            "description": "test is not defined",
            "environmentLabel": null,
            "label": "Runtime ReferenceError",
-           "source": "middleware.js (4:9) @ eval
+           "source": "middleware.js (4:9)
          > 4 |         eval('test')
              |         ^",
            "stack": [
              "<FIXME-file-protocol>",
-             "eval middleware.js (4:9)",
+             "middleware.js (4:9)",
              "default middleware.js (4:9)",
            ],
          }
@@ -267,12 +267,12 @@ describe('middleware - development errors', () => {
         isTurbopack
           ? '\n ⨯ Error: booooom!' +
               // TODO(veil): Should be sourcemapped
-              '\n    at __TURBOPACK__module__evaluation__ (middleware.js:3:13)'
+              '\n    at middleware.js:3:12'
           : '\n ⨯ Error: booooom!' +
               // TODO: Should be anonymous method without a method name
               '\n    at <unknown> (middleware.js:3)' +
               // TODO: Should be ignore-listed
-              '\n    at eval (middleware.js:3:13)' +
+              '\n    at middleware.js:3:13' +
               '\n    at (middleware)/./middleware.js (.next/server/middleware.js:18:1)' +
               '\n    at __webpack_require__ '
       )
@@ -287,11 +287,11 @@ describe('middleware - development errors', () => {
            "description": "booooom!",
            "environmentLabel": null,
            "label": "Runtime Error",
-           "source": "middleware.js (3:13) @ {module evaluation}
+           "source": "middleware.js (3:13)
          > 3 |       throw new Error('booooom!')
              |             ^",
            "stack": [
-             "{module evaluation} middleware.js (3:13)",
+             "middleware.js (3:13)",
            ],
          }
         `)
@@ -301,12 +301,12 @@ describe('middleware - development errors', () => {
            "description": "booooom!",
            "environmentLabel": null,
            "label": "Runtime Error",
-           "source": "middleware.js (3:13) @ eval
+           "source": "middleware.js (3:13)
          > 3 |       throw new Error('booooom!')
              |             ^",
            "stack": [
              "<unknown> middleware.js (3)",
-             "eval middleware.js (3:13)",
+             "middleware.js (3:13)",
              "<FIXME-next-dist-dir>",
              "<FIXME-next-dist-dir>",
              "<FIXME-next-dist-dir>",

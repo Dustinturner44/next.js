@@ -25,7 +25,7 @@ describe('app-dir - owner-stack-react-missing-key-prop', () => {
        at Page (app/rsc/page.tsx (6:13))"
       `)
       expect(source).toMatchInlineSnapshot(`
-         "app/rsc/page.tsx (7:9) @ <anonymous>
+         "app/rsc/page.tsx (7:9)
 
             5 |     <div>
             6 |       {list.map((item, index) => (
@@ -38,12 +38,12 @@ describe('app-dir - owner-stack-react-missing-key-prop', () => {
     } else {
       expect(stackFramesContent).toMatchInlineSnapshot(`
        "at span ()
-       at eval (app/rsc/page.tsx (7:9))
+       at app/rsc/page.tsx (7:9)
        at Array.map ()
        at Page (app/rsc/page.tsx (6:13))"
       `)
       expect(source).toMatchInlineSnapshot(`
-          "app/rsc/page.tsx (7:9) @ eval
+          "app/rsc/page.tsx (7:9)
 
              5 |     <div>
              6 |       {list.map((item, index) => (
@@ -83,12 +83,12 @@ describe('app-dir - owner-stack-react-missing-key-prop', () => {
     } else {
       expect(stackFramesContent).toMatchInlineSnapshot(`
          "at p ()
-         at eval (app/ssr/page.tsx (9:9))
+         at app/ssr/page.tsx (9:9)
          at Array.map ()
          at Page (app/ssr/page.tsx (8:13))"
         `)
       expect(source).toMatchInlineSnapshot(`
-          "app/ssr/page.tsx (9:9) @ eval
+          "app/ssr/page.tsx (9:9)
 
              7 |     <div>
              8 |       {list.map((item, index) => (

@@ -353,11 +353,11 @@ describe('Client Navigation', () => {
              "description": "An Expected error occurred",
              "environmentLabel": null,
              "label": "Runtime Error",
-             "source": "pages/error-in-the-browser-global-scope.js (2:9) @ {module evaluation}
+             "source": "pages/error-in-the-browser-global-scope.js (2:9)
            > 2 |   throw new Error('An Expected error occurred')
                |         ^",
              "stack": [
-               "{module evaluation} pages/error-in-the-browser-global-scope.js (2:9)",
+               "pages/error-in-the-browser-global-scope.js (2:9)",
              ],
            }
           `)
@@ -367,11 +367,11 @@ describe('Client Navigation', () => {
              "description": "An Expected error occurred",
              "environmentLabel": null,
              "label": "Runtime Error",
-             "source": "pages/error-in-the-browser-global-scope.js (2:9) @ eval
+             "source": "pages/error-in-the-browser-global-scope.js (2:9)
            > 2 |   throw new Error('An Expected error occurred')
                |         ^",
              "stack": [
-               "eval pages/error-in-the-browser-global-scope.js (2:9)",
+               "pages/error-in-the-browser-global-scope.js (2:9)",
                "<FIXME-next-dist-dir>",
              ],
            }

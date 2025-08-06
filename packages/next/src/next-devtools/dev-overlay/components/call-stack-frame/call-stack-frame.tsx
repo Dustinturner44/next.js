@@ -4,6 +4,7 @@ import { HotlinkedText } from '../hot-linked-text'
 import { ExternalIcon, SourceMappingErrorIcon } from '../../icons/external'
 import { getFrameSource } from '../../../shared/stack-frame'
 import { useOpenInEditor } from '../../utils/use-open-in-editor'
+import { isHiddenMethodName } from '../../../../shared/lib/stack-trace-utils'
 
 export const CallStackFrame: React.FC<{
   frame: OriginalStackFrame
@@ -30,15 +31,44 @@ export const CallStackFrame: React.FC<{
     return null
   }
 
+  const hasMethod = f.methodName && !isHiddenMethodName(f.methodName)
+
   return (
     <div
       data-nextjs-call-stack-frame
       data-nextjs-call-stack-frame-no-source={!hasSource}
       data-nextjs-call-stack-frame-ignored={frame.ignored}
     >
-      <div className="call-stack-frame-method-name">
-        <HotlinkedText text={f.methodName} />
-        {hasSource && (
+      {hasMethod && (
+        <div className="call-stack-frame-method-name">
+          <HotlinkedText text={f.methodName} />
+          {hasSource && (
+            <button
+              onClick={open}
+              className="open-in-editor-button"
+              aria-label={`Open ${f.methodName} in editor`}
+            >
+              <ExternalIcon width={16} height={16} />
+            </button>
+          )}
+          {frame.error ? (
+            <button
+              className="source-mapping-error-button"
+              onClick={() => console.error(frame.reason)}
+              title="Sourcemapping failed. Click to log cause of error."
+            >
+              <SourceMappingErrorIcon width={16} height={16} />
+            </button>
+          ) : null}
+        </div>
+      )}
+      <div
+        className="call-stack-frame-file-source"
+        data-has-source={hasSource}
+        data-has-method={hasMethod}
+      >
+        {fileSource}
+        {!hasMethod && hasSource && (
           <button
             onClick={open}
             className="open-in-editor-button"
@@ -47,7 +77,7 @@ export const CallStackFrame: React.FC<{
             <ExternalIcon width={16} height={16} />
           </button>
         )}
-        {frame.error ? (
+        {!hasMethod && frame.error ? (
           <button
             className="source-mapping-error-button"
             onClick={() => console.error(frame.reason)}
@@ -57,12 +87,6 @@ export const CallStackFrame: React.FC<{
           </button>
         ) : null}
       </div>
-      <span
-        className="call-stack-frame-file-source"
-        data-has-source={hasSource}
-      >
-        {fileSource}
-      </span>
     </div>
   )
 }
@@ -141,8 +165,19 @@ export const CALL_STACK_FRAME_STYLES = `
   }
 
   .call-stack-frame-file-source {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
     color: var(--color-gray-900);
     font-size: var(--size-14);
+    line-height: var(--size-20);
+  }
+
+  .call-stack-frame-file-source[data-has-method="false"] {
+    color: var(--color-gray-1000);
+    font-size: var(--size-14);
+    font-weight: 500;
     line-height: var(--size-20);
   }
 `

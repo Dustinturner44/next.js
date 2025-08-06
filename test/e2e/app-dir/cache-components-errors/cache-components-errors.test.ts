@@ -2425,11 +2425,11 @@ describe('Cache Components Errors', () => {
                  "description": ""use cache: private" must not be used within \`unstable_cache()\`.",
                  "environmentLabel": null,
                  "label": "Runtime Error",
-                 "source": "app/use-cache-private-in-unstable-cache/page.tsx (21:38) @ {module evaluation}
+                 "source": "app/use-cache-private-in-unstable-cache/page.tsx (21:38)
                > 21 | const getCachedData = unstable_cache(async () => {
                     |                                      ^",
                  "stack": [
-                   "{module evaluation} app/use-cache-private-in-unstable-cache/page.tsx (21:38)",
+                   "app/use-cache-private-in-unstable-cache/page.tsx (21:38)",
                    "<FIXME-file-protocol>",
                    "<FIXME-file-protocol>",
                    "<FIXME-next-dist-dir>",
@@ -2442,11 +2442,11 @@ describe('Cache Components Errors', () => {
                  "description": ""use cache: private" must not be used within \`unstable_cache()\`.",
                  "environmentLabel": null,
                  "label": "Runtime Error",
-                 "source": "app/use-cache-private-in-unstable-cache/page.tsx (21:38) @ eval
+                 "source": "app/use-cache-private-in-unstable-cache/page.tsx (21:38)
                > 21 | const getCachedData = unstable_cache(async () => {
                     |                                      ^",
                  "stack": [
-                   "eval app/use-cache-private-in-unstable-cache/page.tsx (21:38)",
+                   "app/use-cache-private-in-unstable-cache/page.tsx (21:38)",
                    "<FIXME-next-dist-dir>",
                    "<FIXME-next-dist-dir>",
                  ],
@@ -2458,11 +2458,11 @@ describe('Cache Components Errors', () => {
                  "description": ""use cache: private" must not be used within \`unstable_cache()\`.",
                  "environmentLabel": null,
                  "label": "Runtime Error",
-                 "source": "app/use-cache-private-in-unstable-cache/page.tsx (21:38) @ eval
+                 "source": "app/use-cache-private-in-unstable-cache/page.tsx (21:38)
                > 21 | const getCachedData = unstable_cache(async () => {
                     |                                      ^",
                  "stack": [
-                   "eval app/use-cache-private-in-unstable-cache/page.tsx (21:38)",
+                   "app/use-cache-private-in-unstable-cache/page.tsx (21:38)",
                    "<FIXME-next-dist-dir>",
                  ],
                }
@@ -2486,7 +2486,7 @@ describe('Cache Components Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: "use cache: private" must not be used within \`unstable_cache()\`.
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-unstable-cache/page.tsx:21:38)
+                     at bundler:///app/use-cache-private-in-unstable-cache/page.tsx:21:38
                      at a (<next-dist-dir>)
                      at b (<next-dist-dir>)
                    19 | }
@@ -2505,7 +2505,7 @@ describe('Cache Components Errors', () => {
               } else {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: "use cache: private" must not be used within \`unstable_cache()\`.
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-unstable-cache/page.tsx:21:38)
+                     at bundler:///app/use-cache-private-in-unstable-cache/page.tsx:21:38
                      at a (<next-dist-dir>)
                    19 | }
                    20 |
@@ -2569,11 +2569,11 @@ describe('Cache Components Errors', () => {
                  "description": ""use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".",
                  "environmentLabel": null,
                  "label": "Runtime Error",
-                 "source": "app/use-cache-private-in-use-cache/page.tsx (15:1) @ {module evaluation}
+                 "source": "app/use-cache-private-in-use-cache/page.tsx (15:1)
                > 15 | async function Private() {
                     | ^",
                  "stack": [
-                   "{module evaluation} app/use-cache-private-in-use-cache/page.tsx (15:1)",
+                   "app/use-cache-private-in-use-cache/page.tsx (15:1)",
                    "<FIXME-file-protocol>",
                    "<FIXME-file-protocol>",
                    "<FIXME-next-dist-dir>",
@@ -2586,11 +2586,11 @@ describe('Cache Components Errors', () => {
                  "description": ""use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".",
                  "environmentLabel": null,
                  "label": "Runtime Error",
-                 "source": "app/use-cache-private-in-use-cache/page.tsx (15:1) @ eval
+                 "source": "app/use-cache-private-in-use-cache/page.tsx (15:1)
                > 15 | async function Private() {
                     | ^",
                  "stack": [
-                   "eval app/use-cache-private-in-use-cache/page.tsx (15:1)",
+                   "app/use-cache-private-in-use-cache/page.tsx (15:1)",
                    "<FIXME-next-dist-dir>",
                    "<FIXME-next-dist-dir>",
                  ],
@@ -2602,11 +2602,11 @@ describe('Cache Components Errors', () => {
                  "description": ""use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".",
                  "environmentLabel": null,
                  "label": "Runtime Error",
-                 "source": "app/use-cache-private-in-use-cache/page.tsx (15:1) @ eval
+                 "source": "app/use-cache-private-in-use-cache/page.tsx (15:1)
                > 15 | async function Private() {
                     | ^",
                  "stack": [
-                   "eval app/use-cache-private-in-use-cache/page.tsx (15:1)",
+                   "app/use-cache-private-in-use-cache/page.tsx (15:1)",
                    "<FIXME-next-dist-dir>",
                  ],
                }
@@ -2631,7 +2631,7 @@ describe('Cache Components Errors', () => {
               if (isDebugPrerender) {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: "use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1)
+                     at bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1
                      at a (<next-dist-dir>)
                      at b (<next-dist-dir>)
                    13 | }
@@ -2642,7 +2642,7 @@ describe('Cache Components Errors', () => {
                    17 |
                    18 |   return <p>Private</p>
                  Error: "use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1)
+                     at bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1
                      at c (<next-dist-dir>)
                      at d (<next-dist-dir>)
                    13 | }
@@ -2661,8 +2661,8 @@ describe('Cache Components Errors', () => {
               } else {
                 expect(output).toMatchInlineSnapshot(`
                  "Error: "use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1)
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-use-cache/page.tsx:15:16)
+                     at bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1
+                     at bundler:///app/use-cache-private-in-use-cache/page.tsx:15:16
                      at a (<next-dist-dir>)
                    13 | }
                    14 |
@@ -2672,8 +2672,8 @@ describe('Cache Components Errors', () => {
                    17 |
                    18 |   return <p>Private</p>
                  Error: "use cache: private" must not be used within "use cache". It can only be nested inside of another "use cache: private".
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1)
-                     at __TURBOPACK__module__evaluation__ (bundler:///app/use-cache-private-in-use-cache/page.tsx:15:16)
+                     at bundler:///app/use-cache-private-in-use-cache/page.tsx:15:1
+                     at bundler:///app/use-cache-private-in-use-cache/page.tsx:15:16
                      at b (<next-dist-dir>)
                    13 | }
                    14 |

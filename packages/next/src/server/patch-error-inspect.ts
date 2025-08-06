@@ -13,6 +13,7 @@ import { parseStack, type StackFrame } from './lib/parse-stack'
 import { getOriginalCodeFrame } from '../next-devtools/server/shared'
 import { workUnitAsyncStorage } from './app-render/work-unit-async-storage.external'
 import { dim } from '../lib/picocolors'
+import { isHiddenMethodName } from '../shared/lib/stack-trace-utils'
 
 type FindSourceMapPayload = (
   sourceURL: string
@@ -66,7 +67,7 @@ function frameToString(
     fileLocation = sourceURL
   }
 
-  return methodName
+  return methodName && !isHiddenMethodName(methodName)
     ? `    at ${methodName} (${fileLocation}${sourceLocation})`
     : `    at ${fileLocation}${sourceLocation}`
 }
