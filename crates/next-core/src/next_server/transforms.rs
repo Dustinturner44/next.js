@@ -53,8 +53,14 @@ pub async fn get_next_server_transforms_rules(
         rules.extend([
             // Ignore the internal ModuleCssAsset -> CssModuleAsset references
             // The CSS Module module itself is still needed for class names
-            ModuleRule::new(
-                RuleCondition::ReferenceType(ReferenceType::Css(CssReferenceSubType::ModuleStyles)),
+            ModuleRule::new_internal(
+                RuleCondition::all(vec![
+                    RuleCondition::any(vec![
+                        RuleCondition::ResourcePathEndsWith(".module.css".into()),
+                        RuleCondition::ContentTypeStartsWith("text/css+module".into()),
+                    ]),
+                    RuleCondition::ReferenceType(ReferenceType::Css(CssReferenceSubType::Internal)),
+                ]),
                 vec![ModuleRuleEffect::Ignore],
             ),
         ]);
