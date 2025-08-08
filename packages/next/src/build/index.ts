@@ -133,7 +133,7 @@ import {
   copyTracedFiles,
   isReservedPage,
   isAppBuiltinNotFoundPage,
-  collectRoutesUsingEdgeRuntime,
+  // collectRoutesUsingEdgeRuntime,
   collectMeta,
 } from './utils'
 import type { PageInfo, PageInfos } from './utils'
@@ -172,8 +172,8 @@ import { startTypeChecking } from './type-check'
 import { generateInterceptionRoutesRewrites } from '../lib/generate-interception-routes-rewrites'
 
 import { buildDataRoute } from '../server/lib/router-utils/build-data-route'
-import { collectBuildTraces } from './collect-build-traces'
-import type { BuildTraceContext } from './webpack/plugins/next-trace-entrypoints-plugin'
+// import { collectBuildTraces } from './collect-build-traces'
+// import type { BuildTraceContext } from './webpack/plugins/next-trace-entrypoints-plugin'
 import { formatManifest } from './manifests/formatter/format-manifest'
 import {
   recordFrameworkVersion,
@@ -1568,7 +1568,7 @@ export default async function build(
         PAGES_MANIFEST
       )
 
-      let buildTraceContext: undefined | BuildTraceContext
+      // let buildTraceContext: undefined | BuildTraceContext
       let buildTracesPromise: Promise<any> | undefined = undefined
 
       // If there's has a custom webpack config and disable the build worker.
@@ -1615,7 +1615,7 @@ export default async function build(
           const {
             duration: compilerDuration,
             shutdownPromise: p,
-            ...rest
+            // ...rest
           } = await turbopackBuild(
             process.env.NEXT_TURBOPACK_USE_WORKER === undefined ||
               process.env.NEXT_TURBOPACK_USE_WORKER !== '0'
@@ -1623,7 +1623,7 @@ export default async function build(
           shutdownPromise = p
           traceMemoryUsage('Finished build', nextBuildSpan)
 
-          buildTraceContext = rest.buildTraceContext
+          // buildTraceContext = rest.buildTraceContext
 
           const durationString = durationToString(compilerDuration)
           Log.event(`Compiled successfully in ${durationString}`)
@@ -1650,37 +1650,37 @@ export default async function build(
               'server',
             ]).then((res) => {
               traceMemoryUsage('Finished server compilation', nextBuildSpan)
-              buildTraceContext = res.buildTraceContext
+              // buildTraceContext = res.buildTraceContext
               durationInSeconds += res.duration
 
               if (collectServerBuildTracesInParallel) {
-                const buildTraceWorker = new Worker(
-                  require.resolve('./collect-build-traces'),
-                  {
-                    debuggerPortOffset: -1,
-                    isolatedMemory: false,
-                    numWorkers: 1,
-                    exposedMethods: ['collectBuildTraces'],
-                  }
-                ) as Worker & typeof import('./collect-build-traces')
-
-                buildTracesPromise = buildTraceWorker
-                  .collectBuildTraces({
-                    dir,
-                    config,
-                    distDir,
-                    // Serialize Map as this is sent to the worker.
-                    edgeRuntimeRoutes: collectRoutesUsingEdgeRuntime(new Map()),
-                    staticPages: [],
-                    hasSsrAmpPages: false,
-                    buildTraceContext,
-                    outputFileTracingRoot,
-                    isTurbopack: false,
-                  })
-                  .catch((err) => {
-                    console.error(err)
-                    process.exit(1)
-                  })
+                console.log('Dangerously skipping build traces!')
+                // const buildTraceWorker = new Worker(
+                //   require.resolve('./collect-build-traces'),
+                //   {
+                //     debuggerPortOffset: -1,
+                //     isolatedMemory: false,
+                //     numWorkers: 1,
+                //     exposedMethods: ['collectBuildTraces'],
+                //   }
+                // ) as Worker & typeof import('./collect-build-traces')
+                // buildTracesPromise = buildTraceWorker
+                //   .collectBuildTraces({
+                //     dir,
+                //     config,
+                //     distDir,
+                //     // Serialize Map as this is sent to the worker.
+                //     edgeRuntimeRoutes: collectRoutesUsingEdgeRuntime(new Map()),
+                //     staticPages: [],
+                //     hasSsrAmpPages: false,
+                //     buildTraceContext,
+                //     outputFileTracingRoot,
+                //     isTurbopack: false,
+                //   })
+                //   .catch((err) => {
+                //     console.error(err)
+                //     process.exit(1)
+                //   })
               }
             })
             if (!runServerAndEdgeInParallel) {
@@ -1727,13 +1727,11 @@ export default async function build(
               })
             )
           } else {
-            const { duration: compilerDuration, ...rest } = await webpackBuild(
-              useBuildWorker,
-              null
-            )
+            const { duration: compilerDuration /* , ...rest */ } =
+              await webpackBuild(useBuildWorker, null)
             traceMemoryUsage('Finished build', nextBuildSpan)
 
-            buildTraceContext = rest.buildTraceContext
+            // buildTraceContext = rest.buildTraceContext
 
             telemetry.record(
               eventBuildCompleted(pagesPaths, {
@@ -2570,21 +2568,22 @@ export default async function build(
       await writeFunctionsConfigManifest(distDir, functionsConfigManifest)
 
       if (!isGenerateMode && !buildTracesPromise) {
-        buildTracesPromise = collectBuildTraces({
-          dir,
-          config,
-          distDir,
-          edgeRuntimeRoutes: collectRoutesUsingEdgeRuntime(pageInfos),
-          staticPages: [...staticPages],
-          nextBuildSpan,
-          hasSsrAmpPages,
-          buildTraceContext,
-          outputFileTracingRoot,
-          isTurbopack: true,
-        }).catch((err) => {
-          console.error(err)
-          process.exit(1)
-        })
+        console.log('Dangerously skipping build traces!')
+        // buildTracesPromise = collectBuildTraces({
+        //   dir,
+        //   config,
+        //   distDir,
+        //   edgeRuntimeRoutes: collectRoutesUsingEdgeRuntime(pageInfos),
+        //   staticPages: [...staticPages],
+        //   nextBuildSpan,
+        //   hasSsrAmpPages,
+        //   buildTraceContext,
+        //   outputFileTracingRoot,
+        //   isTurbopack: true,
+        // }).catch((err) => {
+        //   console.error(err)
+        //   process.exit(1)
+        // })
       }
 
       if (serverPropsPages.size > 0 || ssgPages.size > 0) {
