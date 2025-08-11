@@ -9,6 +9,9 @@
  */
 
 "use strict";
+
+console.log('file override react-dom-server.node.production.js')
+
 var util = require("util"),
   crypto = require("crypto"),
   async_hooks = require("async_hooks"),
@@ -5792,7 +5795,15 @@ function retryNode(request, task) {
                         0 < task.replay.nodes.length
                       )
                         throw Error(
-                          "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering."
+                          "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering. Debug info: " + JSON.stringify({
+                            component: getComponentNameFromType(type) || "Unknown",
+                            props: Object.keys(props || {}),
+                            keyPath: task.keyPath,
+                            childIndex: task.childIndex,
+                            replayNodes: task.replay.nodes,
+                            replaySlots: task.replay.slots,
+                            pendingTasks: task.replay.pendingTasks
+                          })
                         );
                       task.replay.pendingTasks--;
                     } catch (x) {
@@ -5883,7 +5894,15 @@ function retryNode(request, task) {
                           0 < task.replay.nodes.length
                         )
                           throw Error(
-                            "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering."
+                            "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering. Debug info: " + JSON.stringify({
+                              boundaryID: props.rootSegmentID || "Unknown",
+                              content: typeof content === "string" ? content.substring(0, 100) : typeof content,
+                              keyPath: task.keyPath,
+                              childIndex: task.childIndex,
+                              replayNodes: task.replay.nodes,
+                              replaySlots: task.replay.slots,
+                              pendingTasks: task.replay.pendingTasks
+                            })
                           );
                         task.replay.pendingTasks--;
                         if (0 === props.pendingTasks && 0 === props.status) {
@@ -6064,7 +6083,15 @@ function renderChildrenArray(request, task, children, childIndex) {
           renderChildrenArray(request, task, children, -1);
           if (1 === task.replay.pendingTasks && 0 < task.replay.nodes.length)
             throw Error(
-              "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering."
+              "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering. Debug info: " + JSON.stringify({
+                arrayIndex: childIndex,
+                childrenCount: Array.isArray(children) ? children.length : "not array",
+                keyPath: task.keyPath,
+                childIndex: task.childIndex,
+                replayNodes: task.replay.nodes,
+                replaySlots: task.replay.slots,
+                pendingTasks: task.replay.pendingTasks
+              })
             );
           task.replay.pendingTasks--;
         } catch (x) {
@@ -6829,7 +6856,14 @@ function performWork(request$jscomp$1) {
                 0 < task.replay.nodes.length
               )
                 throw Error(
-                  "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering."
+                  "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering. Debug info: " + JSON.stringify({
+                    taskNode: task.node || "Unknown",
+                    keyPath: task.keyPath,
+                    childIndex: task.childIndex,
+                    replayNodes: task.replay.nodes,
+                    replaySlots: task.replay.slots,
+                    pendingTasks: task.replay.pendingTasks
+                  })
                 );
               task.replay.pendingTasks--;
               task.abortSet.delete(task);
