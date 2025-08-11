@@ -420,11 +420,11 @@ async function createComponentTreeInternal(
       ? process.env.__NEXT_EDGE_PROJECT_DIR
       : ctx.renderOpts.dir) || ''
 
-  // Use the same condition to render metadataOutlet as metadata
-  const metadataOutlet = StreamingMetadataOutlet ? (
-    <StreamingMetadataOutlet />
-  ) : (
-    <MetadataOutlet ready={getMetadataReady} />
+  const metadataOutlet = (
+    <MetadataOutlet
+      ready={getMetadataReady}
+      StreamingComponent={StreamingMetadataOutlet}
+    />
   )
 
   const [notFoundElement, notFoundFilePath] =
@@ -1014,9 +1014,15 @@ async function createComponentTreeInternal(
 
 async function MetadataOutlet({
   ready,
+  StreamingComponent,
 }: {
   ready: () => Promise<void> & { status?: string; value?: unknown }
+  StreamingComponent?: React.ComponentType | null
 }) {
+  if (StreamingComponent) {
+    return <StreamingComponent />
+  }
+
   const r = ready()
   // We can avoid a extra microtask by unwrapping the instrumented promise directly if available.
   if (r.status === 'rejected') {
