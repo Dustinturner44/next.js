@@ -2454,6 +2454,7 @@ export default async function getBaseWebpackConfig(
     isEdgeRuntime: isEdgeServer,
     targetWeb: isClient || isEdgeServer,
     assetPrefix: config.assetPrefix || '',
+    deploymentId: config.deploymentId,
     sassOptions: config.sassOptions,
     productionBrowserSourceMaps: config.productionBrowserSourceMaps,
     future: config.future,
