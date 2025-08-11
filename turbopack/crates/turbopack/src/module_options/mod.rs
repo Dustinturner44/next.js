@@ -137,6 +137,7 @@ impl ModuleOptions {
                 CssOptionsContext {
                     enable_raw_css,
                     source_maps: css_source_maps,
+                    ref module_css_condition,
                     ..
                 },
             ref enable_postcss_transform,
@@ -148,6 +149,28 @@ impl ModuleOptions {
             keep_last_successful_parse,
             ..
         } = *module_options_context.await?;
+
+        let module_css_condition = module_css_condition.clone().unwrap_or_else(|| {
+            RuleCondition::any(vec![
+                RuleCondition::ResourcePathEndsWith(".module.css".to_string()),
+                RuleCondition::ContentTypeStartsWith("text/css+module".to_string()),
+            ])
+        });
+
+        // For React Client References, the CSS Module "facade" module lives in the parent (server)
+        // module context, but the facade's references should be transitioned to the client (and
+        // only then be processed with Webpack/PostCSS).
+        //
+        // Note that this is not an exhaustive condition for PostCSS/Webpack, but excludes certain
+        // cases, so it should be added conjunctively together with the `module_css_condition` rule.
+        //
+        // If module css, then only when (Inner or Analyze or Compose)
+        // <=> (not (module css)) or (Inner or Analyzer or Compose)
+        let module_css_external_transform_conditions = vec![
+            RuleCondition::ReferenceType(ReferenceType::Css(CssReferenceSubType::Inner)),
+            RuleCondition::ReferenceType(ReferenceType::Css(CssReferenceSubType::Analyze)),
+            RuleCondition::ReferenceType(ReferenceType::Css(CssReferenceSubType::Compose)),
+        ];
 
         let mut ts_preprocess = vec![];
         let mut ecma_preprocess = vec![];
@@ -458,10 +481,7 @@ impl ModuleOptions {
                     })],
                 ),
                 ModuleRule::new(
-                    RuleCondition::any(vec![
-                        RuleCondition::ResourcePathEndsWith(".module.css".to_string()),
-                        RuleCondition::ContentTypeStartsWith("text/css+module".to_string()),
-                    ]),
+                    module_css_condition.clone(),
                     vec![ModuleRuleEffect::ModuleType(ModuleType::Css {
                         ty: CssModuleAssetType::Module,
                         environment,
@@ -486,8 +506,21 @@ impl ModuleOptions {
 
                 rules.push(ModuleRule::new(
                     RuleCondition::Any(vec![
-                        RuleCondition::ResourcePathEndsWith(".css".to_string()),
-                        RuleCondition::ContentTypeStartsWith("text/css".to_string()),
+                        RuleCondition::All(vec![
+                            RuleCondition::Any(vec![
+                                RuleCondition::ResourcePathEndsWith(".css".to_string()),
+                                RuleCondition::ContentTypeStartsWith("text/css".to_string()),
+                            ]),
+                            RuleCondition::not(module_css_condition.clone()),
+                        ]),
+                        RuleCondition::All(
+                            [
+                                vec![module_css_condition.clone()],
+                                // see comment on module_css_external_transform_conditions
+                                module_css_external_transform_conditions.clone(),
+                            ]
+                            .concat(),
+                        ),
                     ]),
                     vec![ModuleRuleEffect::SourceTransforms(ResolvedVc::cell(vec![
                         ResolvedVc::upcast(
@@ -523,10 +556,7 @@ impl ModuleOptions {
                 ),
                 ModuleRule::new(
                     RuleCondition::all(vec![
-                        RuleCondition::Any(vec![
-                            RuleCondition::ResourcePathEndsWith(".module.css".to_string()),
-                            RuleCondition::ContentTypeStartsWith("text/css+module".to_string()),
-                        ]),
+                        module_css_condition.clone(),
                         // Only create a module CSS asset if not `@import`ed from CSS already.
                         // NOTE: `composes` references should not be treated as `@import`s and
                         // should also create a module CSS asset.
@@ -538,10 +568,7 @@ impl ModuleOptions {
                 ),
                 ModuleRule::new(
                     RuleCondition::all(vec![
-                        RuleCondition::Any(vec![
-                            RuleCondition::ResourcePathEndsWith(".module.css".to_string()),
-                            RuleCondition::ContentTypeStartsWith("text/css+module".to_string()),
-                        ]),
+                        module_css_condition.clone(),
                         // Create a normal CSS asset if `@import`ed from CSS already.
                         RuleCondition::ReferenceType(ReferenceType::Css(
                             CssReferenceSubType::AtImport(None),
@@ -553,10 +580,12 @@ impl ModuleOptions {
                     })],
                 ),
                 // Ecmascript CSS Modules referencing the actual CSS module to include it
-                ModuleRule::new_internal(
-                    RuleCondition::Any(vec![
-                        RuleCondition::ResourcePathEndsWith(".module.css".to_string()),
-                        RuleCondition::ContentTypeStartsWith("text/css+module".to_string()),
+                ModuleRule::new(
+                    RuleCondition::all(vec![
+                        RuleCondition::ReferenceType(ReferenceType::Css(
+                            CssReferenceSubType::Inner,
+                        )),
+                        module_css_condition.clone(),
                     ]),
                     vec![ModuleRuleEffect::ModuleType(ModuleType::Css {
                         ty: CssModuleAssetType::Module,
@@ -569,10 +598,7 @@ impl ModuleOptions {
                         RuleCondition::ReferenceType(ReferenceType::Css(
                             CssReferenceSubType::Analyze,
                         )),
-                        RuleCondition::Any(vec![
-                            RuleCondition::ResourcePathEndsWith(".module.css".to_string()),
-                            RuleCondition::ContentTypeStartsWith("text/css+module".to_string()),
-                        ]),
+                        module_css_condition.clone(),
                     ]),
                     vec![ModuleRuleEffect::ModuleType(ModuleType::Css {
                         ty: CssModuleAssetType::Module,
@@ -677,6 +703,14 @@ impl ModuleOptions {
                             RuleCondition::ResourceBasePathGlob(Glob::new(key.clone()).await?)
                         },
                         RuleCondition::not(RuleCondition::ResourceIsVirtualSource),
+                        // see comment on module_css_external_transform_conditions
+                        RuleCondition::Any(
+                            [
+                                vec![RuleCondition::not(module_css_condition.clone())],
+                                module_css_external_transform_conditions.clone(),
+                            ]
+                            .concat(),
+                        ),
                     ]),
                     vec![ModuleRuleEffect::SourceTransforms(ResolvedVc::cell(vec![
                         ResolvedVc::upcast(
