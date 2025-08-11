@@ -218,6 +218,8 @@ pub struct EcmascriptOptions {
     /// If true, it reads a sourceMappingURL comment from the end of the file,
     /// reads and generates a source map.
     pub extract_source_map: bool,
+    /// Packages that are considered side effect free.
+    pub side_effect_free_packages: Option<ResolvedVc<Glob>>,
     /// If true, it stores the last successful parse result in state and keeps using it when
     /// parsing fails. This is useful to keep the module graph structure intact when syntax errors
     /// are temporarily introduced.
@@ -736,7 +738,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleAsset {
         // Check package.json first, so that we can skip parsing the module if it's marked that way.
         let pkg_side_effect_free = is_marked_as_side_effect_free(
             self.ident().path().owned().await?,
-            side_effect_free_packages,
+            Some(side_effect_free_packages),
         );
         Ok(if *pkg_side_effect_free.await? {
             pkg_side_effect_free

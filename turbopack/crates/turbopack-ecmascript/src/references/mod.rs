@@ -138,9 +138,9 @@ use crate::{
         parse_require_context,
         top_level_await::has_top_level_await,
     },
-    chunk::{EcmascriptExports, EcmascriptExportsType},
+    chunk::{EcmascriptExports, EcmascriptExportsType, placeable::is_marked_as_side_effect_free},
     code_gen::{CodeGen, CodeGens, IntoCodeGenReference},
-    export::Liveness,
+    export::{EsmEvaluation, Liveness},
     magic_identifier,
     references::{
         async_module::{AsyncModule, OptionAsyncModule},
@@ -795,6 +795,17 @@ pub async fn analyse_ecmascript_module_internal(
             }
         }
 
+        let marked_as_side_effect_free = has_side_effect_free_directive
+            || *is_marked_as_side_effect_free(
+                path.clone(),
+                options.side_effect_free_packages.map(|l| *l),
+            )
+            .await?;
+        let evaluation = if marked_as_side_effect_free {
+            EsmEvaluation::SideEffectFree
+        } else {
+            EsmEvaluation::SideEffects
+        };
         let exports = if !esm_exports.is_empty() || !esm_star_exports.is_empty() {
             if specified_type == SpecifiedModuleType::CommonJs {
                 SpecifiedModuleTypeIssue {
@@ -809,6 +820,7 @@ pub async fn analyse_ecmascript_module_internal(
             let esm_exports = EsmExports {
                 exports: esm_exports,
                 star_exports: esm_star_exports,
+                evaluation,
             }
             .cell();
 
@@ -829,6 +841,7 @@ pub async fn analyse_ecmascript_module_internal(
                         EsmExports {
                             exports: Default::default(),
                             star_exports: Default::default(),
+                            evaluation,
                         }
                         .resolved_cell(),
                     )
@@ -840,6 +853,7 @@ pub async fn analyse_ecmascript_module_internal(
                     EsmExports {
                         exports: Default::default(),
                         star_exports: Default::default(),
+                        evaluation,
                     }
                     .resolved_cell(),
                 ),
@@ -854,6 +868,7 @@ pub async fn analyse_ecmascript_module_internal(
                         EsmExports {
                             exports: Default::default(),
                             star_exports: Default::default(),
+                            evaluation,
                         }
                         .resolved_cell(),
                     )

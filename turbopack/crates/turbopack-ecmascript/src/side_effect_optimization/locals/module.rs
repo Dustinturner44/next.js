@@ -159,6 +159,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleLocalsModule {
         let exports = EsmExports {
             exports,
             star_exports: vec![],
+            evaluation: esm_exports.evaluation,
         }
         .resolved_cell();
         Ok(EcmascriptExports {

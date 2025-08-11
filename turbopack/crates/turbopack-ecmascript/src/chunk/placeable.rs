@@ -39,7 +39,7 @@ pub trait EcmascriptChunkPlaceable: ChunkableModule + Module + Asset {
     ) -> Result<Vc<bool>> {
         Ok(is_marked_as_side_effect_free(
             self.ident().path().owned().await?,
-            side_effect_free_packages,
+            Some(side_effect_free_packages),
         ))
     }
 }
@@ -193,9 +193,11 @@ impl Issue for SideEffectsInPackageJsonIssue {
 #[turbo_tasks::function]
 pub async fn is_marked_as_side_effect_free(
     path: FileSystemPath,
-    side_effect_free_packages: Vc<Glob>,
+    side_effect_free_packages: Option<Vc<Glob>>,
 ) -> Result<Vc<bool>> {
-    if side_effect_free_packages.await?.matches(&path.path) {
+    if let Some(side_effect_free_packages) = side_effect_free_packages
+        && side_effect_free_packages.await?.matches(&path.path)
+    {
         return Ok(Vc::cell(true));
     }
 

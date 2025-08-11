@@ -14,7 +14,7 @@ use swc_core::{
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
     FxIndexMap, NonLocalValue, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc,
-    trace::TraceRawVcs,
+    debug::ValueDebugFormat, trace::TraceRawVcs,
 };
 use turbo_tasks_fs::glob::Glob;
 use turbopack_core::{
@@ -435,7 +435,7 @@ pub async fn expand_star_exports(
                     if let Entry::Vacant(entry) = esm_exports.entry(key.clone()) {
                         entry.insert(match esm_export {
                             EsmExport::LocalBinding(_, liveness) => EsmExport::ImportedBinding(
-                                ResolvedVc::upcast(reference),
+                                reference,
                                 key.clone(),
                                 *liveness == Liveness::Mutable,
                             ),
@@ -526,11 +526,42 @@ async fn emit_star_exports_issue(source_ident: Vc<AssetIdent>, message: RcStr) -
     Ok(())
 }
 
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    ValueDebugFormat,
+    Serialize,
+    Deserialize,
+    TraceRawVcs,
+    NonLocalValue,
+)]
+pub enum EsmEvaluation {
+    /// The module has module evaluation side effects.
+    #[default]
+    SideEffects,
+    /// The module has no module evaluation side effects when none of the references have side
+    /// effects.
+    LocalSideEffectFree,
+    /// The module has no module evaluation side effects. It can be ignored when looking for
+    /// the module evaluation.
+    SideEffectFree,
+    /// The module has no module evaluation side effects other than evaluating the referenced
+    /// module. In this case the module itself can be skipped in favor of these module that is
+    /// referenced here.
+    DelegatedSideEffects(ResolvedVc<Box<dyn ModuleReference>>),
+}
+
 #[turbo_tasks::value(shared)]
 #[derive(Hash, Debug)]
 pub struct EsmExports {
     pub exports: BTreeMap<RcStr, EsmExport>,
     pub star_exports: Vec<ResolvedVc<Box<dyn ModuleReference>>>,
+    pub evaluation: EsmEvaluation,
 }
 
 /// The expanded version of [`EsmExports`], the `exports` field here includes all exports that could
