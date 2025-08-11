@@ -238,7 +238,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
     async fn get_exports(&self) -> Result<Vc<EcmascriptExports>> {
         let mut exports = BTreeMap::new();
         let mut star_exports = Vec::new();
-        let mut evaluation = EsmEvaluation::SideEffects;
+        let evaluation;
 
         match &self.part {
             ModulePart::Facade => {
@@ -320,6 +320,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                         false,
                     ),
                 );
+                evaluation = EsmEvaluation::SideEffectFree;
             }
             ModulePart::RenamedNamespace { export } => {
                 exports.insert(
@@ -334,6 +335,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                         .await?,
                     )),
                 );
+                evaluation = EsmEvaluation::SideEffectFree;
             }
             _ => bail!("Unexpected ModulePart for EcmascriptModuleFacadeModule"),
         }
