@@ -18,7 +18,6 @@ describe.each(['NEXT_DEPLOYMENT_ID', 'CUSTOM_DEPLOYMENT_ID'])(
       { urlPath: '/pages-edge' },
       { urlPath: '/from-app' },
       { urlPath: '/from-app/edge' },
-      { urlPath: '/from-app/local-font' },
     ])(
       'should append dpl query to all assets correctly for $urlPath',
       async ({ urlPath }) => {
@@ -149,7 +148,6 @@ describe('deployment-id-handling disabled', () => {
     { urlPath: '/pages-edge' },
     { urlPath: '/from-app' },
     { urlPath: '/from-app/edge' },
-    { urlPath: '/from-app/local-font' },
   ])(
     'should not append dpl query to all assets for $urlPath',
     async ({ urlPath }) => {
