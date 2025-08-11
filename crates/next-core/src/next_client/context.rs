@@ -64,10 +64,7 @@ use crate::{
         get_decorators_transform_options, get_jsx_transform_options,
         get_typescript_transform_options,
     },
-    util::{
-        OptionEnvMap, defines, foreign_code_context_condition, internal_assets_conditions,
-        module_styles_rule_condition,
-    },
+    util::{OptionEnvMap, defines, foreign_code_context_condition, internal_assets_conditions},
 };
 
 #[turbo_tasks::function]
@@ -319,7 +316,6 @@ pub async fn get_client_module_options_context(
         },
         css: CssOptionsContext {
             source_maps,
-            module_css_condition: Some(module_styles_rule_condition()),
             ..Default::default()
         },
         environment: Some(env),

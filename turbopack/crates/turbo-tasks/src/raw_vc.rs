@@ -1,9 +1,4 @@
-use std::{
-    fmt::{Debug, Display},
-    future::Future,
-    pin::Pin,
-    task::Poll,
-};
+use std::{fmt::Display, future::Future, pin::Pin, task::Poll};
 
 use anyhow::Result;
 use auto_hash_map::AutoSet;
@@ -59,7 +54,7 @@ impl Display for CellId {
 /// otherwise be treated as an internal implementation detail of `turbo-tasks`.
 ///
 /// [monomorphization]: https://doc.rust-lang.org/book/ch10-01-syntax.html#performance-of-code-using-generics
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RawVc {
     /// The synchronous return value of a task (after argument resolution). This is the
     /// representation used by [`OperationVc`][crate::OperationVc].
@@ -77,28 +72,6 @@ pub enum RawVc {
     /// Task's APIs are designed to prevent escapes of local [`Vc`]s, but [`ExecutionId`] is used
     /// for a fallback runtime assertion.
     LocalOutput(ExecutionId, LocalTaskId, TaskPersistence),
-}
-
-impl Debug for RawVc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            RawVc::TaskOutput(task_id) => f
-                .debug_tuple("RawVc::TaskOutput")
-                .field(&**task_id)
-                .finish(),
-            RawVc::TaskCell(task_id, cell_id) => f
-                .debug_tuple("RawVc::TaskCell")
-                .field(&**task_id)
-                .field(&cell_id.to_string())
-                .finish(),
-            RawVc::LocalOutput(execution_id, local_task_id, task_persistence) => f
-                .debug_tuple("RawVc::LocalOutput")
-                .field(&**execution_id)
-                .field(&**local_task_id)
-                .field(task_persistence)
-                .finish(),
-        }
-    }
 }
 
 impl RawVc {

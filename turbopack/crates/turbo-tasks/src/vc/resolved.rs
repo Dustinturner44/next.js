@@ -295,7 +295,9 @@ where
     T: ?Sized,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ResolvedVc").field(&self.node.node).finish()
+        f.debug_struct("ResolvedVc")
+            .field("node", &self.node.node)
+            .finish()
     }
 }
 

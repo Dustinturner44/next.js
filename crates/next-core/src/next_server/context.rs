@@ -75,7 +75,6 @@ use crate::{
     util::{
         NextRuntime, OptionEnvMap, defines, foreign_code_context_condition,
         get_transpiled_packages, internal_assets_conditions, load_next_js_templateon,
-        module_styles_rule_condition,
     },
 };
 
@@ -584,7 +583,6 @@ pub async fn get_server_module_options_context(
         environment: Some(environment),
         css: CssOptionsContext {
             source_maps,
-            module_css_condition: Some(module_styles_rule_condition()),
             ..Default::default()
         },
         tree_shaking_mode: tree_shaking_mode_for_user_code,

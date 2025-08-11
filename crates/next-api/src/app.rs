@@ -34,7 +34,7 @@ use next_core::{
     },
     next_server_utility::{NEXT_SERVER_UTILITY_MERGE_TAG, NextServerUtilityTransition},
     parse_segment_config_from_source,
-    util::{NextRuntime, module_styles_rule_condition, styles_rule_condition},
+    util::NextRuntime,
 };
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
@@ -99,6 +99,37 @@ pub struct AppProject {
 pub struct OptionAppProject(Option<ResolvedVc<AppProject>>);
 
 impl AppProject {}
+
+fn styles_rule_condition() -> RuleCondition {
+    RuleCondition::any(vec![
+        RuleCondition::all(vec![
+            RuleCondition::ResourcePathEndsWith(".css".into()),
+            RuleCondition::not(RuleCondition::ResourcePathEndsWith(".module.css".into())),
+        ]),
+        RuleCondition::all(vec![
+            RuleCondition::ResourcePathEndsWith(".scss".into()),
+            RuleCondition::not(RuleCondition::ResourcePathEndsWith(".module.scss".into())),
+        ]),
+        RuleCondition::all(vec![
+            RuleCondition::ResourcePathEndsWith(".sass".into()),
+            RuleCondition::not(RuleCondition::ResourcePathEndsWith(".module.sass".into())),
+        ]),
+        RuleCondition::all(vec![
+            RuleCondition::ContentTypeStartsWith("text/css".into()),
+            RuleCondition::not(RuleCondition::ContentTypeStartsWith(
+                "text/css+module".into(),
+            )),
+        ]),
+    ])
+}
+fn module_styles_rule_condition() -> RuleCondition {
+    RuleCondition::any(vec![
+        RuleCondition::ResourcePathEndsWith(".module.css".into()),
+        RuleCondition::ResourcePathEndsWith(".module.scss".into()),
+        RuleCondition::ResourcePathEndsWith(".module.sass".into()),
+        RuleCondition::ContentTypeStartsWith("text/css+module".into()),
+    ])
+}
 impl AppProject {
     pub fn client_transition_name() -> RcStr {
         rcstr!("next-ecmascript-client-reference")
@@ -375,10 +406,10 @@ impl AppProject {
             transition_rules: vec![
                 // Mark as client reference (and exclude from RSC chunking) the edge from the
                 // CSS Module to the actual CSS
-                TransitionRule::new(
+                TransitionRule::new_internal(
                     RuleCondition::all(vec![
                         RuleCondition::ReferenceType(ReferenceType::Css(
-                            CssReferenceSubType::Inner,
+                            CssReferenceSubType::Internal,
                         )),
                         module_styles_rule_condition(),
                     ]),
@@ -647,18 +678,6 @@ impl AppProject {
         Ok(ModuleAssetContext::new(
             TransitionOptions {
                 named_transitions: transitions,
-                transition_rules: vec![
-                    // Change context, this is used to determine the list of CSS module classes.
-                    TransitionRule::new(
-                        RuleCondition::all(vec![
-                            RuleCondition::ReferenceType(ReferenceType::Css(
-                                CssReferenceSubType::Analyze,
-                            )),
-                            module_styles_rule_condition(),
-                        ]),
-                        ResolvedVc::upcast(self.client_transition().to_resolved().await?),
-                    ),
-                ],
                 ..Default::default()
             }
             .cell(),
@@ -719,18 +738,6 @@ impl AppProject {
         Ok(ModuleAssetContext::new(
             TransitionOptions {
                 named_transitions: transitions,
-                transition_rules: vec![
-                    // Change context, this is used to determine the list of CSS module classes.
-                    TransitionRule::new(
-                        RuleCondition::all(vec![
-                            RuleCondition::ReferenceType(ReferenceType::Css(
-                                CssReferenceSubType::Analyze,
-                            )),
-                            module_styles_rule_condition(),
-                        ]),
-                        ResolvedVc::upcast(self.client_transition().to_resolved().await?),
-                    ),
-                ],
                 ..Default::default()
             }
             .cell(),
