@@ -477,12 +477,13 @@ function Router({
     const [headCacheNode, headKey] = matchingHead
     head = <Head key={headKey} headCacheNode={headCacheNode} />
   } else {
-    head = null
+    // Always render a consistent placeholder to maintain tree structure during PPR
+    head = <>{null}</>
   }
 
   let content = (
     <RedirectBoundary>
-      {head}
+      {/* {head} <- rule out mismatch from here */}
       {/* RootLayoutBoundary enables detection of Suspense boundaries around the root layout.
           When users wrap their layout in <Suspense>, this creates the component stack pattern
           "Suspense -> RootLayoutBoundary" which dynamic-rendering.ts uses to allow dynamic rendering. */}
