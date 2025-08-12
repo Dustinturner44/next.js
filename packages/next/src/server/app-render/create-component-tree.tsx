@@ -825,10 +825,12 @@ async function createComponentTreeInternal(
       <React.Fragment key={cacheNodeKey}>
         {wrappedPageElement}
         {layerAssets}
+        {/* TEST: Commenting out metadata outlets to verify error source
         <OutletBoundary>
           <MetadataOutlet ready={getViewportReady} />
           {metadataOutlet}
         </OutletBoundary>
+        */}
       </React.Fragment>,
       parallelRouteCacheNodeSeedData,
       loadingData,
