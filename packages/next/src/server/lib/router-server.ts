@@ -9,7 +9,6 @@ import '../require-hook'
 
 import url from 'url'
 import path from 'path'
-import loadConfig from '../config'
 import { serveStatic } from '../serve-static'
 import setupDebug from 'next/dist/compiled/debug'
 import * as Log from '../../build/output/log'
@@ -27,11 +26,7 @@ import { signalFromNodeResponse } from '../web/spec-extension/adapters/next-requ
 import { isPostpone } from './router-utils/is-postpone'
 import { parseUrl as parseUrlUtil } from '../../shared/lib/router/utils/parse-url'
 
-import {
-  PHASE_PRODUCTION_SERVER,
-  PHASE_DEVELOPMENT_SERVER,
-  UNDERSCORE_NOT_FOUND_ROUTE,
-} from '../../shared/lib/constants'
+import { UNDERSCORE_NOT_FOUND_ROUTE } from '../../shared/lib/constants'
 import { RedirectStatusCode } from '../../client/components/redirect-status-code'
 import { DevBundlerService } from './dev-bundler-service'
 import { type Span, trace } from '../../trace'
@@ -59,6 +54,7 @@ import {
   handleChromeDevtoolsWorkspaceRequest,
   isChromeDevtoolsWorkspaceUrl,
 } from './chrome-devtools-workspace'
+import type { NextConfigComplete } from '../config-shared'
 
 const debug = setupDebug('next:router-server:main')
 const isNextFont = (pathname: string | null) =>
@@ -80,6 +76,7 @@ const requestHandlers: Record<string, WorkerRequestHandler> = {}
 
 export async function initialize(opts: {
   dir: string
+  config: NextConfigComplete
   port: number
   dev: boolean
   onDevServerCleanup: ((listener: () => Promise<void>) => void) | undefined
@@ -92,19 +89,9 @@ export async function initialize(opts: {
   startServerSpan?: Span
   quiet?: boolean
 }): Promise<ServerInitResult> {
-  if (!process.env.NODE_ENV) {
-    // @ts-ignore not readonly
-    process.env.NODE_ENV = opts.dev ? 'development' : 'production'
-  }
-
-  const config = await loadConfig(
-    opts.dev ? PHASE_DEVELOPMENT_SERVER : PHASE_PRODUCTION_SERVER,
-    opts.dir,
-    { silent: false }
-  )
+  const { config } = opts
 
   let compress: ReturnType<typeof setupCompression> | undefined
-
   if (config?.compress !== false) {
     compress = setupCompression()
   }

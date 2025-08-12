@@ -28,8 +28,12 @@ import {
   getNodeDebugType,
 } from './utils'
 import { formatHostname } from './format-hostname'
-import { initialize } from './router-server'
-import { CONFIG_FILES } from '../../shared/lib/constants'
+import { initialize as initializeRouterServer } from './router-server'
+import {
+  CONFIG_FILES,
+  PHASE_DEVELOPMENT_SERVER,
+  PHASE_PRODUCTION_SERVER,
+} from '../../shared/lib/constants'
 import { getStartServerInfo, logStartInfo } from './app-info-log'
 import { validateTurboNextConfig } from '../../lib/turbopack-warning'
 import { type Span, trace, flushAllTraces } from '../../trace'
@@ -37,6 +41,7 @@ import { isIPv6 } from './is-ipv6'
 import { AsyncCallbackSet } from './async-callback-set'
 import type { NextServer } from '../next'
 import type { ConfiguredExperimentalFeature } from '../config'
+import loadConfig from '../config'
 
 const debug = setupDebug('next:start-server')
 let startServerSpan: Span | undefined
@@ -127,44 +132,7 @@ export interface StartServerOptions {
   keepAliveTimeout?: number
   // this is dev-server only
   selfSignedCertificate?: SelfSignedCertificate
-}
-
-export async function getRequestHandlers({
-  dir,
-  port,
-  isDev,
-  onDevServerCleanup,
-  server,
-  hostname,
-  minimalMode,
-  keepAliveTimeout,
-  experimentalHttpsServer,
-  quiet,
-}: {
-  dir: string
-  port: number
-  isDev: boolean
-  onDevServerCleanup: ((listener: () => Promise<void>) => void) | undefined
-  server?: import('http').Server
-  hostname?: string
-  minimalMode?: boolean
-  keepAliveTimeout?: number
-  experimentalHttpsServer?: boolean
-  quiet?: boolean
-}): ReturnType<typeof initialize> {
-  return initialize({
-    dir,
-    port,
-    hostname,
-    onDevServerCleanup,
-    dev: isDev,
-    minimalMode,
-    server,
-    keepAliveTimeout,
-    experimentalHttpsServer,
-    startServerSpan,
-    quiet,
-  })
+  isRestart?: boolean
 }
 
 export async function startServer(
@@ -178,6 +146,7 @@ export async function startServer(
     allowRetry,
     keepAliveTimeout,
     selfSignedCertificate,
+    isRestart,
   } = serverOptions
   let { port } = serverOptions
 
@@ -364,7 +333,29 @@ export async function startServer(
         process.env.__NEXT_EXPERIMENTAL_HTTPS = '1'
       }
 
-      // Only load env and config in dev to for logging purposes
+      // @ts-ignore not readonly
+      process.env.NODE_ENV ||= isDev ? 'development' : 'production'
+
+      // this needs to happen before `getStartServerInfo`, which also calls `loadConfig`, so that
+      // the `silent` flag applies.
+      const config = await loadConfig(
+        isDev ? PHASE_DEVELOPMENT_SERVER : PHASE_PRODUCTION_SERVER,
+        dir,
+        {
+          // Normally, the parent process is responsible for emitting any configuration-related
+          // warnings.
+          //
+          // If this is a restart, the parent process cannot read the config again because there's
+          // no way to invalidate the node ESM import cache.
+          //
+          // Instead, we should load the config with `silent: false` so that we log any new
+          // warnings. This may also cause us to re-log deprecation warnings that were previously
+          // logged prior to the restart -- there's no way for us to re-use the `warnOnce` cache.
+          silent: !isRestart,
+        }
+      )
+
+      // Only load env and and experimental feature info in dev to for logging purposes
       let envInfo: string[] | undefined
       let experimentalFeatures: ConfiguredExperimentalFeature[] | undefined
       try {
@@ -428,10 +419,11 @@ export async function startServer(
           process.on('SIGTERM', cleanup)
         }
 
-        const initResult = await getRequestHandlers({
+        const initResult = await initializeRouterServer({
           dir,
+          config,
           port,
-          isDev,
+          dev: isDev,
           onDevServerCleanup: cleanupListeners
             ? cleanupListeners.add.bind(cleanupListeners)
             : undefined,
