@@ -203,6 +203,42 @@ function warnCustomizedOption(
   }
 }
 
+function warnReactCompilerStyledJsxIncompatibility(
+  config: NextConfig,
+  configFileName: string,
+  silent: boolean
+) {
+  if (
+    !silent &&
+    config.compiler?.styledJsx &&
+    config.experimental?.reactCompiler
+  ) {
+    Log.warnOnce(
+      'Due to an ordering incompatibility between SWC and Babel transformations, Next.js cannot ' +
+        'safely use both the built-in `styledJsx` and `reactCompiler` options. You should ' +
+        `disable both of these options in ${configFileName} and manually configure them as babel ` +
+        'plugins instead.\n' +
+        '\n' +
+        'See this page for how to configure babel: https://nextjs.org/docs/pages/guides/babel\n' +
+        '\n' +
+        'Details on configuring styled-jsx and React Compiler:\n' +
+        ' \u2022 https://github.com/vercel/styled-jsx#getting-started\n' +
+        ' \u2022 https://react.dev/reference/react-compiler/configuration\n' +
+        '\n' +
+        'You must configure the `styled-jsx/babel` plugin to run before ' +
+        '`babel-plugin-react-compiler`:\n' +
+        '\n' +
+        '  // babel.config.js\n' +
+        '  module.exports = {\n' +
+        '    "plugins": ["styled-jsx/babel", "babel-plugin-react-compiler"],\n' +
+        '  }\n' +
+        '\n' +
+        'The Babel implementation of styled-jsx may be slower and may have minor ' +
+        'incompabilities with the SWC version that Next.js uses by default.\n'
+    )
+  }
+}
+
 /**
  * Assigns defaults to the user config and validates the config.
  *
@@ -1205,6 +1241,8 @@ function assignDefaultsAndValidate(
   ) {
     result.distDir = join(result.distDir, 'dev')
   }
+
+  warnReactCompilerStyledJsxIncompatibility(result, configFileName, silent)
 
   return result as NextConfigComplete
 }
