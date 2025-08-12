@@ -420,11 +420,10 @@ async function createComponentTreeInternal(
       ? process.env.__NEXT_EDGE_PROJECT_DIR
       : ctx.renderOpts.dir) || ''
 
+  console.log('StreamingMetadataOutlet', !!StreamingMetadataOutlet)
+
   const metadataOutlet = (
-    <MetadataOutlet
-      ready={getMetadataReady}
-      StreamingComponent={StreamingMetadataOutlet}
-    />
+    <MetadataOutlet ready={getMetadataReady} StreamingComponent={null} />
   )
 
   const [notFoundElement, notFoundFilePath] =
