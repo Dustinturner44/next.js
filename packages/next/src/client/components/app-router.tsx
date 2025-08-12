@@ -466,23 +466,26 @@ function Router({
     }
   }, [tree, focusAndScrollRef, nextUrl])
 
-  let head
-  if (matchingHead !== null) {
-    // The head is wrapped in an extra component so we can use
-    // `useDeferredValue` to swap between the prefetched and final versions of
-    // the head. (This is what LayoutRouter does for segment data, too.)
-    //
-    // The `key` is used to remount the component whenever the head moves to
-    // a different segment.
-    const [headCacheNode, headKey] = matchingHead
-    head = <Head key={headKey} headCacheNode={headCacheNode} />
-  } else {
-    // Always render a consistent placeholder to maintain tree structure during PPR
-    head = <>{null}</>
-  }
+  // let head
+  // if (matchingHead !== null) {
+  //   // The head is wrapped in an extra component so we can use
+  //   // `useDeferredValue` to swap between the prefetched and final versions of
+  //   // the head. (This is what LayoutRouter does for segment data, too.)
+  //   //
+  //   // The `key` is used to remount the component whenever the head moves to
+  //   // a different segment.
+  //   const [headCacheNode, headKey] = matchingHead
+  //   head = <Head key={headKey} headCacheNode={headCacheNode} />
+  // } else {
+  //   // Always render a consistent placeholder to maintain tree structure during PPR
+  //   head = <>{null}</>
+  // }
+
+  console.log('matchingHead', matchingHead)
 
   let content = (
     <RedirectBoundary>
+      <ConditionalHead matchingHead={matchingHead} />
       {/* {head} <- rule out mismatch from here */}
       {/* RootLayoutBoundary enables detection of Suspense boundaries around the root layout.
           When users wrap their layout in <Suspense>, this creates the component stack pattern
@@ -628,4 +631,26 @@ function RuntimeStyles() {
       // nonce={TODO}
     />
   ))
+}
+
+const ConditionalHead = ({
+  matchingHead,
+}: {
+  matchingHead: [CacheNode, string] | null
+}) => {
+  let head
+  if (matchingHead !== null) {
+    // The head is wrapped in an extra component so we can use
+    // `useDeferredValue` to swap between the prefetched and final versions of
+    // the head. (This is what LayoutRouter does for segment data, too.)
+    //
+    // The `key` is used to remount the component whenever the head moves to
+    // a different segment.
+    const [headCacheNode, headKey] = matchingHead
+    head = <Head key={headKey} headCacheNode={headCacheNode} />
+  } else {
+    // Always render a consistent placeholder to maintain tree structure during PPR
+    head = <>{null}</>
+  }
+  return head
 }
