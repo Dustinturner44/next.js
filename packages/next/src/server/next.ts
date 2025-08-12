@@ -373,8 +373,8 @@ class NextCustomServer implements NextWrapperServer {
   }
 
   async prepare() {
-    const { getRequestHandlers } =
-      require('./lib/start-server') as typeof import('./lib/start-server')
+    const { initialize } =
+      require('./lib/router-server') as typeof import('./lib/router-server')
 
     let onDevServerCleanup: AsyncCallbackSet['add'] | undefined
     if (this.options.dev) {
@@ -382,16 +382,26 @@ class NextCustomServer implements NextWrapperServer {
       onDevServerCleanup = this.cleanupListeners.add.bind(this.cleanupListeners)
     }
 
-    const initResult = await getRequestHandlers({
+    let dev = !!this.options.dev
+    let dir = this.options.dir!
+
+    // @ts-ignore not readonly
+    process.env.NODE_ENV ||= dev ? 'development' : 'production'
+    const config = await loadConfig(
+      dev ? PHASE_DEVELOPMENT_SERVER : PHASE_PRODUCTION_SERVER,
+      dir
+    )
+
+    this.init = await initialize({
       dir: this.options.dir!,
+      config,
       port: this.options.port || 3000,
-      isDev: !!this.options.dev,
+      dev: !!this.options.dev,
       onDevServerCleanup,
       hostname: this.options.hostname || 'localhost',
       minimalMode: this.options.minimalMode,
       quiet: this.options.quiet,
     })
-    this.init = initResult
   }
 
   private setupWebSocketHandler(

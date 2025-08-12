@@ -346,7 +346,7 @@ const nextDev = async (
             })
           }
 
-          return startServer({ ...startServerOptions, port })
+          return startServer({ ...startServerOptions, port, isRestart: true })
         }
         // Call handler (e.g. upload telemetry). Don't try to send a signal to
         // the child, as it has already exited.
