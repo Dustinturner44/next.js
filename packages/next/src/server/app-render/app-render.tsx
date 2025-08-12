@@ -441,7 +441,9 @@ async function generateDynamicRSCPayload(
     url,
   } = ctx
 
-  const serveStreamingMetadata = !!ctx.renderOpts.serveStreamingMetadata
+  // TEST: Hardcode serveStreamingMetadata to true
+  const serveStreamingMetadata = true
+  // Original: !!ctx.renderOpts.serveStreamingMetadata
 
   if (!options?.skipFlight) {
     const preloadCallbacks: PreloadCallbacks = []
@@ -1067,7 +1069,9 @@ async function getRSCPayload(
     getDynamicParamFromSegment,
     query
   )
-  const serveStreamingMetadata = !!ctx.renderOpts.serveStreamingMetadata
+  // TEST: Hardcode serveStreamingMetadata to true
+  const serveStreamingMetadata = true
+  // Original: !!ctx.renderOpts.serveStreamingMetadata
   const hasGlobalNotFound = !!tree[2]['global-not-found']
 
   const {
@@ -1200,7 +1204,9 @@ async function getErrorRSCPayload(
     workStore,
   } = ctx
 
-  const serveStreamingMetadata = !!ctx.renderOpts.serveStreamingMetadata
+  // TEST: Hardcode serveStreamingMetadata to true
+  const serveStreamingMetadata = true
+  // Original: !!ctx.renderOpts.serveStreamingMetadata
   const { MetadataTree, ViewportTree } = createMetadataComponents({
     tree,
     parsedQuery: query,

@@ -268,13 +268,17 @@ export async function handler(
   // being true for a revalidate due to modifying the base-server this.renderOpts
   // when fixing this to correct logic it causes hydration issue since we set
   // serveStreamingMetadata to true during export
-  let serveStreamingMetadata = !userAgent
-    ? true
-    : shouldServeStreamingMetadata(userAgent, nextConfig.htmlLimitedBots)
+  // TEST: Hardcode serveStreamingMetadata to true
+  let serveStreamingMetadata = true
+  // Original logic:
+  // let serveStreamingMetadata = !userAgent
+  //   ? true
+  //   : shouldServeStreamingMetadata(userAgent, nextConfig.htmlLimitedBots)
 
   if (isHtmlBot && isRoutePPREnabled) {
     isSSG = false
-    serveStreamingMetadata = false
+    // TEST: Don't set serveStreamingMetadata to false
+    // serveStreamingMetadata = false
   }
 
   // In development, we always want to generate dynamic HTML.

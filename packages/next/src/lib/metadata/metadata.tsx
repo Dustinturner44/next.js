@@ -80,6 +80,9 @@ export function createMetadataComponents({
   getViewportReady: () => Promise<void>
   StreamingMetadataOutlet: React.ComponentType | null
 } {
+  // TEST: Hardcode serveStreamingMetadata to true to rule out edge case
+  serveStreamingMetadata = true
+  
   const searchParams = createServerSearchParamsForMetadata(
     parsedQuery,
     workStore
