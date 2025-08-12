@@ -823,7 +823,7 @@ async function createComponentTreeInternal(
         {wrappedPageElement}
         {layerAssets}
         <OutletBoundary>
-          <MetadataOutlet ready={getViewportReady} />
+          <MetadataOutlet ready={getViewportReady} StreamingComponent={null} />
           {metadataOutlet}
         </OutletBoundary>
       </React.Fragment>,
