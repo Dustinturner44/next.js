@@ -486,7 +486,7 @@ function Router({
 
   let content = (
     <RedirectBoundary>
-      <Head key={headKey} headCacheNode={headCacheNode} />
+      <Head headCacheNode={headCacheNode} />
       {/* {head} <- rule out mismatch from here */}
       {/* RootLayoutBoundary enables detection of Suspense boundaries around the root layout.
           When users wrap their layout in <Suspense>, this creates the component stack pattern
