@@ -420,10 +420,13 @@ async function createComponentTreeInternal(
       ? process.env.__NEXT_EDGE_PROJECT_DIR
       : ctx.renderOpts.dir) || ''
 
-  console.log('StreamingMetadataOutlet', !!StreamingMetadataOutlet)
-
+  // StreamingMetadataOutlet is now always null from createMetadataComponents
+  // to ensure consistency between prerender and resume for PPR routes
   const metadataOutlet = (
-    <MetadataOutlet ready={getMetadataReady} StreamingComponent={null} />
+    <MetadataOutlet
+      ready={getMetadataReady}
+      StreamingComponent={StreamingMetadataOutlet}
+    />
   )
 
   const [notFoundElement, notFoundFilePath] =
@@ -823,7 +826,7 @@ async function createComponentTreeInternal(
         {wrappedPageElement}
         {layerAssets}
         <OutletBoundary>
-          <MetadataOutlet ready={getViewportReady} StreamingComponent={null} />
+          <MetadataOutlet ready={getViewportReady} />
           {metadataOutlet}
         </OutletBoundary>
       </React.Fragment>,
