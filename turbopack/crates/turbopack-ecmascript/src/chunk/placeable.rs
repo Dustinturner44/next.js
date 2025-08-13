@@ -21,7 +21,7 @@ use turbopack_core::{
 
 use crate::references::{
     async_module::OptionAsyncModule,
-    esm::{EsmExport, EsmExports},
+    esm::{EsmEvaluation, EsmExport, EsmExports},
 };
 
 #[turbo_tasks::value_trait]
@@ -222,6 +222,7 @@ pub async fn is_marked_as_side_effect_free(
 #[turbo_tasks::value(shared)]
 pub struct EcmascriptExports {
     pub ty: EcmascriptExportsType,
+    pub evaluation: EsmEvaluation,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TraceRawVcs, NonLocalValue)]

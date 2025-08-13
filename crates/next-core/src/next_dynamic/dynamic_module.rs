@@ -118,10 +118,10 @@ impl EcmascriptChunkPlaceable for NextDynamicEntryModule {
                 EsmExports {
                     exports,
                     star_exports: vec![module_reference],
-                    evaluation: EsmEvaluation::DelegatedSideEffects(module_reference),
                 }
                 .resolved_cell(),
             ),
+            evaluation: EsmEvaluation::DelegatedSideEffects(module_reference),
         }
         .cell())
     }

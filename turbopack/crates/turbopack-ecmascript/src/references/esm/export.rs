@@ -561,7 +561,6 @@ pub enum EsmEvaluation {
 pub struct EsmExports {
     pub exports: BTreeMap<RcStr, EsmExport>,
     pub star_exports: Vec<ResolvedVc<Box<dyn ModuleReference>>>,
-    pub evaluation: EsmEvaluation,
 }
 
 /// The expanded version of [`EsmExports`], the `exports` field here includes all exports that could

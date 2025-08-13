@@ -343,11 +343,11 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
         let exports = EsmExports {
             exports,
             star_exports,
-            evaluation,
         }
         .resolved_cell();
         Ok(EcmascriptExports {
             ty: EcmascriptExportsType::EsmExports(exports),
+            evaluation,
         }
         .cell())
     }

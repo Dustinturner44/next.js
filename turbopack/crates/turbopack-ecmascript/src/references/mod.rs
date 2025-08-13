@@ -227,6 +227,7 @@ pub struct AnalyzeEcmascriptModuleResultBuilder {
 
     code_gens: Vec<CodeGen>,
     exports: EcmascriptExportsType,
+    evaluation: EsmEvaluation,
     async_module: ResolvedVc<OptionAsyncModule>,
     successful: bool,
     source_map: Option<ResolvedVc<Box<dyn GenerateSourceMap>>>,
@@ -245,6 +246,7 @@ impl AnalyzeEcmascriptModuleResultBuilder {
             esm_references_free_var: Default::default(),
             code_gens: Default::default(),
             exports: EcmascriptExportsType::Unknown,
+            evaluation: EsmEvaluation::SideEffects,
             async_module: ResolvedVc::cell(None),
             successful: false,
             source_map: None,
@@ -303,6 +305,11 @@ impl AnalyzeEcmascriptModuleResultBuilder {
     /// Sets the analysis result ES export.
     pub fn set_exports(&mut self, exports: EcmascriptExportsType) {
         self.exports = exports;
+    }
+
+    /// Sets the analysis result evaluation.
+    pub fn set_evaluation(&mut self, evaluation: EsmEvaluation) {
+        self.evaluation = evaluation;
     }
 
     /// Sets the analysis result ES export.
@@ -411,7 +418,11 @@ impl AnalyzeEcmascriptModuleResultBuilder {
                     esm_reexport_references.unwrap_or_default(),
                 ),
                 code_generation: ResolvedVc::cell(self.code_gens),
-                exports: EcmascriptExports { ty: self.exports }.resolved_cell(),
+                exports: EcmascriptExports {
+                    ty: self.exports,
+                    evaluation: self.evaluation,
+                }
+                .resolved_cell(),
                 async_module: self.async_module,
                 has_side_effect_free_directive: self.has_side_effect_free_directive,
                 successful: self.successful,
@@ -580,6 +591,18 @@ pub async fn analyse_ecmascript_module_internal(
         ..
     } = &*parsed
     else {
+        // Even a file that failed parsing can be side effect free.
+        // That's important as
+        let marked_as_side_effect_free =
+            *is_marked_as_side_effect_free(path, options.side_effect_free_packages.map(|l| *l))
+                .await?;
+        let evaluation = if marked_as_side_effect_free {
+            EsmEvaluation::SideEffectFree
+        } else {
+            EsmEvaluation::SideEffects
+        };
+        analysis.set_evaluation(evaluation);
+
         return analysis.build(Default::default(), false).await;
     };
 
@@ -806,6 +829,8 @@ pub async fn analyse_ecmascript_module_internal(
         } else {
             EsmEvaluation::SideEffects
         };
+        analysis.set_evaluation(evaluation);
+
         let exports = if !esm_exports.is_empty() || !esm_star_exports.is_empty() {
             if specified_type == SpecifiedModuleType::CommonJs {
                 SpecifiedModuleTypeIssue {
@@ -820,7 +845,6 @@ pub async fn analyse_ecmascript_module_internal(
             let esm_exports = EsmExports {
                 exports: esm_exports,
                 star_exports: esm_star_exports,
-                evaluation,
             }
             .cell();
 
@@ -841,7 +865,6 @@ pub async fn analyse_ecmascript_module_internal(
                         EsmExports {
                             exports: Default::default(),
                             star_exports: Default::default(),
-                            evaluation,
                         }
                         .resolved_cell(),
                     )
@@ -853,7 +876,6 @@ pub async fn analyse_ecmascript_module_internal(
                     EsmExports {
                         exports: Default::default(),
                         star_exports: Default::default(),
-                        evaluation,
                     }
                     .resolved_cell(),
                 ),
@@ -868,7 +890,6 @@ pub async fn analyse_ecmascript_module_internal(
                         EsmExports {
                             exports: Default::default(),
                             star_exports: Default::default(),
-                            evaluation,
                         }
                         .resolved_cell(),
                     )
