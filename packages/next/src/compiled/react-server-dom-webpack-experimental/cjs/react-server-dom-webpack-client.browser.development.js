@@ -1125,6 +1125,8 @@
             if (value instanceof Error) return String(value.message);
             if ("string" === typeof value.url) return value.url;
             if ("string" === typeof value.href) return value.href;
+            if ("string" === typeof value.src) return value.src;
+            if ("string" === typeof value.currentSrc) return value.currentSrc;
             if ("string" === typeof value.command) return value.command;
             if (
               "object" === typeof value.request &&
@@ -4450,10 +4452,10 @@
       return hook.checkDCE ? !0 : !1;
     })({
       bundleType: 1,
-      version: "19.2.0-experimental-f1222f76-20250812",
+      version: "19.2.0-experimental-534bed5f-20250813",
       rendererPackageName: "react-server-dom-webpack",
       currentDispatcherRef: ReactSharedInternals,
-      reconcilerVersion: "19.2.0-experimental-f1222f76-20250812",
+      reconcilerVersion: "19.2.0-experimental-534bed5f-20250813",
       getCurrentComponentInfo: function () {
         return currentOwnerInDEV;
       }
