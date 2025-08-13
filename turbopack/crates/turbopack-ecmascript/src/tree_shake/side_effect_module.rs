@@ -14,6 +14,7 @@ use turbopack_core::{
 use crate::{
     EcmascriptModuleAsset,
     chunk::{EcmascriptChunkPlaceable, EcmascriptExports},
+    export::EcmascriptEvaluation,
     tree_shake::chunk_item::SideEffectsModuleChunkItem,
 };
 
@@ -119,8 +120,20 @@ impl Asset for SideEffectsModule {
 #[turbo_tasks::value_impl]
 impl EcmascriptChunkPlaceable for SideEffectsModule {
     #[turbo_tasks::function]
-    fn get_exports(&self) -> Vc<EcmascriptExports> {
-        self.resolved_as.get_exports()
+    async fn get_exports(&self) -> Result<Vc<EcmascriptExports>> {
+        let exports = self.resolved_as.get_exports();
+        let exports = exports.await?;
+        Ok(EcmascriptExports {
+            ty: exports.ty.clone(),
+            evaluation: EcmascriptEvaluation::SideEffectFree,
+        }
+        .cell())
+    }
+
+    #[turbo_tasks::function]
+
+    fn get_evaluation(self: Vc<Self>) -> Vc<EcmascriptEvaluation> {
+        EcmascriptEvaluation::SideEffectFree.cell()
     }
 }
 
