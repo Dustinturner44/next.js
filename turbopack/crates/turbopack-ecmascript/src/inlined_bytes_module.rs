@@ -18,6 +18,7 @@ use crate::{
         EcmascriptChunkItem, EcmascriptChunkItemContent, EcmascriptChunkPlaceable,
         EcmascriptChunkType, EcmascriptExports, EcmascriptExportsType,
     },
+    export::EcmascriptEvaluation,
     runtime_functions::TURBOPACK_EXPORT_VALUE,
     utils::StringifyJs,
 };
@@ -74,6 +75,7 @@ impl EcmascriptChunkPlaceable for InlinedBytesJsModule {
     fn get_exports(&self) -> Vc<EcmascriptExports> {
         EcmascriptExports {
             ty: EcmascriptExportsType::Value,
+            evaluation: EcmascriptEvaluation::SideEffects,
         }
         .cell()
     }

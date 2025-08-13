@@ -21,7 +21,7 @@ use turbopack_core::{
 
 use crate::references::{
     async_module::OptionAsyncModule,
-    esm::{EsmEvaluation, EsmExport, EsmExports},
+    esm::{EcmascriptEvaluation, EsmExport, EsmExports},
 };
 
 #[turbo_tasks::value_trait]
@@ -31,6 +31,10 @@ pub trait EcmascriptChunkPlaceable: ChunkableModule + Module + Asset {
     #[turbo_tasks::function]
     fn get_async_module(self: Vc<Self>) -> Vc<OptionAsyncModule> {
         Vc::cell(None)
+    }
+    #[turbo_tasks::function]
+    async fn get_evaluation(self: Vc<Self>) -> Result<Vc<EcmascriptEvaluation>> {
+        Ok(self.get_exports().await?.evaluation.cell())
     }
     #[turbo_tasks::function]
     async fn is_marked_as_side_effect_free(
@@ -222,7 +226,7 @@ pub async fn is_marked_as_side_effect_free(
 #[turbo_tasks::value(shared)]
 pub struct EcmascriptExports {
     pub ty: EcmascriptExportsType,
-    pub evaluation: EsmEvaluation,
+    pub evaluation: EcmascriptEvaluation,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TraceRawVcs, NonLocalValue)]

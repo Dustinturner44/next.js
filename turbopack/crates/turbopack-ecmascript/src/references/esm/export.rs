@@ -14,7 +14,7 @@ use swc_core::{
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
     FxIndexMap, NonLocalValue, ResolvedVc, TryFlatJoinIterExt, ValueToString, Vc,
-    debug::ValueDebugFormat, trace::TraceRawVcs,
+    trace::TraceRawVcs,
 };
 use turbo_tasks_fs::glob::Glob;
 use turbopack_core::{
@@ -526,21 +526,9 @@ async fn emit_star_exports_issue(source_ident: Vc<AssetIdent>, message: RcStr) -
     Ok(())
 }
 
-#[derive(
-    Debug,
-    Default,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-    ValueDebugFormat,
-    Serialize,
-    Deserialize,
-    TraceRawVcs,
-    NonLocalValue,
-)]
-pub enum EsmEvaluation {
+#[turbo_tasks::value(shared)]
+#[derive(Default, Copy, Clone)]
+pub enum EcmascriptEvaluation {
     /// The module has module evaluation side effects.
     #[default]
     SideEffects,

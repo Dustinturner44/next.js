@@ -140,7 +140,7 @@ use crate::{
     },
     chunk::{EcmascriptExports, EcmascriptExportsType, placeable::is_marked_as_side_effect_free},
     code_gen::{CodeGen, CodeGens, IntoCodeGenReference},
-    export::{EsmEvaluation, Liveness},
+    export::{EcmascriptEvaluation, Liveness},
     magic_identifier,
     references::{
         async_module::{AsyncModule, OptionAsyncModule},
@@ -227,7 +227,7 @@ pub struct AnalyzeEcmascriptModuleResultBuilder {
 
     code_gens: Vec<CodeGen>,
     exports: EcmascriptExportsType,
-    evaluation: EsmEvaluation,
+    evaluation: EcmascriptEvaluation,
     async_module: ResolvedVc<OptionAsyncModule>,
     successful: bool,
     source_map: Option<ResolvedVc<Box<dyn GenerateSourceMap>>>,
@@ -246,7 +246,7 @@ impl AnalyzeEcmascriptModuleResultBuilder {
             esm_references_free_var: Default::default(),
             code_gens: Default::default(),
             exports: EcmascriptExportsType::Unknown,
-            evaluation: EsmEvaluation::SideEffects,
+            evaluation: EcmascriptEvaluation::SideEffects,
             async_module: ResolvedVc::cell(None),
             successful: false,
             source_map: None,
@@ -308,7 +308,7 @@ impl AnalyzeEcmascriptModuleResultBuilder {
     }
 
     /// Sets the analysis result evaluation.
-    pub fn set_evaluation(&mut self, evaluation: EsmEvaluation) {
+    pub fn set_evaluation(&mut self, evaluation: EcmascriptEvaluation) {
         self.evaluation = evaluation;
     }
 
@@ -593,13 +593,15 @@ pub async fn analyse_ecmascript_module_internal(
     else {
         // Even a file that failed parsing can be side effect free.
         // That's important as
-        let marked_as_side_effect_free =
-            *is_marked_as_side_effect_free(path, options.side_effect_free_packages.map(|l| *l))
-                .await?;
+        let marked_as_side_effect_free = *is_marked_as_side_effect_free(
+            path.clone(),
+            options.side_effect_free_packages.map(|l| *l),
+        )
+        .await?;
         let evaluation = if marked_as_side_effect_free {
-            EsmEvaluation::SideEffectFree
+            EcmascriptEvaluation::SideEffectFree
         } else {
-            EsmEvaluation::SideEffects
+            EcmascriptEvaluation::SideEffects
         };
         analysis.set_evaluation(evaluation);
 
@@ -825,9 +827,9 @@ pub async fn analyse_ecmascript_module_internal(
             )
             .await?;
         let evaluation = if marked_as_side_effect_free {
-            EsmEvaluation::SideEffectFree
+            EcmascriptEvaluation::SideEffectFree
         } else {
-            EsmEvaluation::SideEffects
+            EcmascriptEvaluation::SideEffects
         };
         analysis.set_evaluation(evaluation);
 

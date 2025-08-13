@@ -18,7 +18,7 @@ use turbopack_ecmascript::{
         EcmascriptChunkItem, EcmascriptChunkItemContent, EcmascriptChunkPlaceable,
         EcmascriptChunkType, EcmascriptExports, EcmascriptExportsType,
     },
-    references::esm::{EsmEvaluation, EsmExport, EsmExports},
+    references::esm::{EcmascriptEvaluation, EsmExport, EsmExports},
     runtime_functions::{TURBOPACK_EXPORT_NAMESPACE, TURBOPACK_IMPORT},
     utils::StringifyJs,
 };
@@ -114,7 +114,7 @@ impl EcmascriptChunkPlaceable for NextServerUtilityModule {
                 }
                 .resolved_cell(),
             ),
-            evaluation: EsmEvaluation::DelegatedSideEffects(module_reference),
+            evaluation: EcmascriptEvaluation::DelegatedSideEffects(module_reference),
         }
         .cell())
     }

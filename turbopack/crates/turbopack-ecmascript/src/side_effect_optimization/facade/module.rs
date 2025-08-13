@@ -22,7 +22,7 @@ use crate::{
     EcmascriptModuleContentOptions, EcmascriptOptions, MergedEcmascriptModule, SpecifiedModuleType,
     chunk::{EcmascriptChunkPlaceable, EcmascriptExports, EcmascriptExportsType},
     code_gen::CodeGens,
-    export::{EsmEvaluation, Liveness},
+    export::{EcmascriptEvaluation, Liveness},
     references::{
         async_module::{AsyncModule, OptionAsyncModule},
         esm::{EsmExport, EsmExports, base::EsmAssetReferences},
@@ -290,7 +290,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                     }
                 }
                 star_exports.extend(esm_exports.star_exports.iter().copied());
-                evaluation = EsmEvaluation::DelegatedSideEffects(ResolvedVc::upcast(
+                evaluation = EcmascriptEvaluation::DelegatedSideEffects(ResolvedVc::upcast(
                     EcmascriptModulePartReference::new_part(
                         *self.module,
                         ModulePart::locals(),
@@ -320,7 +320,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                         false,
                     ),
                 );
-                evaluation = EsmEvaluation::SideEffectFree;
+                evaluation = EcmascriptEvaluation::SideEffectFree;
             }
             ModulePart::RenamedNamespace { export } => {
                 exports.insert(
@@ -335,7 +335,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                         .await?,
                     )),
                 );
-                evaluation = EsmEvaluation::SideEffectFree;
+                evaluation = EcmascriptEvaluation::SideEffectFree;
             }
             _ => bail!("Unexpected ModulePart for EcmascriptModuleFacadeModule"),
         }
