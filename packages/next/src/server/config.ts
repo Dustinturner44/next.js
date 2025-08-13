@@ -585,7 +585,8 @@ function assignDefaults(
 
   // Handle buildActivityPosition migration (needs to be done after merging with defaults)
   if (
-    result.devIndicators !== false &&
+    result.devIndicators &&
+    typeof result.devIndicators === 'object' &&
     'buildActivityPosition' in result.devIndicators &&
     result.devIndicators.buildActivityPosition !== result.devIndicators.position
   ) {
