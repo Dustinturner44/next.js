@@ -6,16 +6,50 @@ import { INTERCEPTION_ROUTE_MARKERS } from './interception-routes'
 import { escapeStringRegexp } from '../../escape-regexp'
 import { removeTrailingSlash } from './remove-trailing-slash'
 import { PARAMETER_PATTERN, parseMatchedParameter } from './get-dynamic-param'
+import { LRUCache } from '../../../../server/lib/lru-cache'
 
+/**
+ * A group is a part of a regular expression that is captured and used to
+ * extract the value of a dynamic parameter.
+ */
 export interface Group {
+  /**
+   * The position of the group in the regular expression.
+   */
   pos: number
+
+  /**
+   * Whether the group is a repeat group.
+   */
   repeat: boolean
+
+  /**
+   * Whether the group is an optional group.
+   */
   optional: boolean
 }
 
+/**
+ * A route regex is a regular expression that is used to match a route.
+ */
 export interface RouteRegex {
-  groups: { [groupName: string]: Group }
-  re: RegExp
+  /**
+   * The groups for the route. This is a map of the group name to the group.
+   */
+  readonly groups: Readonly<{ [groupName: string]: Readonly<Group> }>
+
+  /**
+   * The regular expression for the route.
+   */
+  readonly re: Readonly<RegExp>
+
+  /**
+   * Whether this route regex has been cached. This means that a reference to
+   * this object will be retained in an LRU cache. This allows other callers
+   * such as the `getRouteMatcher` function to reuse the route matcher function
+   * for the same route regex and prevent the need to re-generate it.
+   */
+  readonly cache?: boolean
 }
 
 type GetNamedRouteRegexOptions = {
@@ -76,6 +110,14 @@ type GetRouteRegexOptions = {
    * Whether to exclude the optional trailing slash from the route regex.
    */
   excludeOptionalTrailingSlash?: boolean
+
+  /**
+   * Whether to cache the route regex in the LRU cache. Default is true. When
+   * enabled, this will allow the `getRouteMatcher` function to reuse the route
+   * matcher function for the same route regex and prevent the need to
+   * re-generate it.
+   */
+  cache?: boolean
 }
 
 function getParametrizedRoute(
@@ -130,9 +172,22 @@ function getParametrizedRoute(
 }
 
 /**
+ * The LRU cache for route regexes.
+ *
+ * This is used to cache the route regexes for the current request.
+ *
+ * The cache is limited to 100 items to avoid memory leaks.
+ */
+const routeRegexCache = new LRUCache<RouteRegex>(100)
+
+/**
  * From a normalized route this function generates a regular expression and
  * a corresponding groups object intended to be used to store matching groups
  * from the regular expression.
+ *
+ * @param normalizedRoute - The normalized route to get the regex for.
+ * @param options - The options for the route regex.
+ * @returns The route regex.
  */
 export function getRouteRegex(
   normalizedRoute: string,
@@ -140,8 +195,16 @@ export function getRouteRegex(
     includeSuffix = false,
     includePrefix = false,
     excludeOptionalTrailingSlash = false,
+    cache = true,
   }: GetRouteRegexOptions = {}
-): RouteRegex {
+): Readonly<RouteRegex> {
+  let key: string | undefined
+  if (cache) {
+    key = `${normalizedRoute}:${includeSuffix}:${includePrefix}:${excludeOptionalTrailingSlash}`
+    const cached = routeRegexCache.get(key)
+    if (cached) return cached
+  }
+
   const { parameterizedRoute, groups } = getParametrizedRoute(
     normalizedRoute,
     includeSuffix,
@@ -153,10 +216,17 @@ export function getRouteRegex(
     re += '(?:/)?'
   }
 
-  return {
+  const routeRegex: RouteRegex = {
     re: new RegExp(`^${re}$`),
     groups: groups,
+    cache,
   }
+
+  if (cache && key) {
+    routeRegexCache.set(key, routeRegex)
+  }
+
+  return routeRegex
 }
 
 /**
