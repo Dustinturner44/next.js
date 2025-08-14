@@ -529,6 +529,7 @@ impl ChunkableModuleReference for EsmAssetReference {
                     "parallel" => Some(ChunkingType::Parallel {
                         inherit_async: true,
                         hoisted: true,
+                        resolve_export: None,
                     }),
                     "none" => None,
                     _ => return Err(anyhow!("unknown chunking_type: {}", chunking_type)),
@@ -537,6 +538,7 @@ impl ChunkableModuleReference for EsmAssetReference {
                 Some(ChunkingType::Parallel {
                     inherit_async: true,
                     hoisted: true,
+                    resolve_export: None,
                 })
             },
         ))

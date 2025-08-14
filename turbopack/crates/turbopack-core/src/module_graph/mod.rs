@@ -1744,6 +1744,7 @@ struct SingleModuleGraphBuilderEdge {
 const COMMON_CHUNKING_TYPE: ChunkingType = ChunkingType::Parallel {
     inherit_async: true,
     hoisted: true,
+    resolve_export: None,
 };
 
 struct SingleModuleGraphBuilder<'a> {

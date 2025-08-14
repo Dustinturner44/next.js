@@ -292,6 +292,7 @@ impl PreBatches {
                     &ChunkingType::Parallel {
                         inherit_async: false,
                         hoisted: false,
+                        resolve_export: None,
                     },
                     |(_, ty)| &ty.chunking_type,
                 );
@@ -667,6 +668,7 @@ pub async fn compute_module_batches(
                             ChunkingType::Parallel {
                                 inherit_async: false,
                                 hoisted: false,
+                                resolve_export: None,
                             },
                             module,
                         )
@@ -830,6 +832,7 @@ pub async fn compute_module_batches(
                                 ty: ChunkingType::Parallel {
                                     inherit_async: false,
                                     hoisted: false,
+                                    resolve_export: None,
                                 },
                                 module: None,
                             },
