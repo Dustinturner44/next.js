@@ -1,75 +1,172 @@
 [
     (
         "*arrow function 276*",
-        Function(
-            3,
-            276,
-            New(
-                2,
-                Variable(
-                    (
-                        "HelloWorld",
-                        #2,
+        VarMeta {
+            value: Function(
+                3,
+                276,
+                New(
+                    2,
+                    Variable(
+                        (
+                            "HelloWorld",
+                            #2,
+                        ),
                     ),
+                    [],
                 ),
-                [],
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 362*",
-        Function(
-            4,
-            362,
-            MemberCall(
-                3,
-                Variable(
-                    (
-                        "helloWorld",
-                        #3,
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "hi",
+        VarMeta {
+            value: Function(
+                4,
+                362,
+                MemberCall(
+                    3,
+                    Variable(
+                        (
+                            "helloWorld",
+                            #3,
                         ),
                     ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "hi",
+                            ),
+                        ),
+                    ),
+                    [],
                 ),
-                [],
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 471*",
-        Function(
-            2,
-            471,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                471,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "HelloWorld",
-        Unknown {
-            original_value: None,
-            reason: "unsupported expression",
-            has_side_effects: true,
+        VarMeta {
+            value: Unknown {
+                original_value: None,
+                reason: "unsupported expression",
+                has_side_effects: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "Home",
-        Function(
-            11,
-            227,
-            Call(
-                10,
+        VarMeta {
+            value: Function(
+                11,
+                227,
+                Call(
+                    10,
+                    Member(
+                        3,
+                        Module(
+                            ModuleValue {
+                                module: "https://esm.sh/preact/jsx-runtime",
+                                annotations: ImportAnnotations {
+                                    map: {},
+                                },
+                            },
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "jsx",
+                                ),
+                            ),
+                        ),
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "button",
+                                ),
+                            ),
+                        ),
+                        Object {
+                            total_nodes: 5,
+                            parts: [
+                                KeyValue(
+                                    Constant(
+                                        Str(
+                                            Atom(
+                                                "onClick",
+                                            ),
+                                        ),
+                                    ),
+                                    Variable(
+                                        (
+                                            "*arrow function 362*",
+                                            #0,
+                                        ),
+                                    ),
+                                ),
+                                KeyValue(
+                                    Constant(
+                                        Str(
+                                            Atom(
+                                                "children",
+                                            ),
+                                        ),
+                                    ),
+                                    Constant(
+                                        Str(
+                                            Atom(
+                                                "Click me",
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ],
+                            mutable: true,
+                        },
+                    ],
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "cb",
+        VarMeta {
+            value: Argument(
+                528,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "helloWorld",
+        VarMeta {
+            value: Call(
+                6,
                 Member(
                     3,
                     Module(
                         ModuleValue {
-                            module: "https://esm.sh/preact/jsx-runtime",
+                            module: "react",
                             annotations: ImportAnnotations {
                                 map: {},
                             },
@@ -78,102 +175,26 @@
                     Constant(
                         Str(
                             Atom(
-                                "jsx",
+                                "useMemo",
                             ),
                         ),
                     ),
                 ),
                 [
-                    Constant(
-                        Str(
-                            Atom(
-                                "button",
-                            ),
+                    Variable(
+                        (
+                            "*arrow function 276*",
+                            #0,
                         ),
                     ),
-                    Object {
-                        total_nodes: 5,
-                        parts: [
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "onClick",
-                                        ),
-                                    ),
-                                ),
-                                Variable(
-                                    (
-                                        "*arrow function 362*",
-                                        #0,
-                                    ),
-                                ),
-                            ),
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "children",
-                                        ),
-                                    ),
-                                ),
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "Click me",
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ],
+                    Array {
+                        total_nodes: 1,
+                        items: [],
                         mutable: true,
                     },
                 ],
             ),
-        ),
-    ),
-    (
-        "cb",
-        Argument(
-            0,
-            0,
-        ),
-    ),
-    (
-        "helloWorld",
-        Call(
-            6,
-            Member(
-                3,
-                Module(
-                    ModuleValue {
-                        module: "react",
-                        annotations: ImportAnnotations {
-                            map: {},
-                        },
-                    },
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "useMemo",
-                        ),
-                    ),
-                ),
-            ),
-            [
-                Variable(
-                    (
-                        "*arrow function 276*",
-                        #0,
-                    ),
-                ),
-                Array {
-                    total_nodes: 1,
-                    items: [],
-                    mutable: true,
-                },
-            ],
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
 ]

@@ -1,63 +1,75 @@
 [
     (
         "*arrow function 19*",
-        Function(
-            2,
-            19,
-            Constant(
-                False,
+        VarMeta {
+            value: Function(
+                2,
+                19,
+                Constant(
+                    False,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "run",
-        Function(
-            4,
-            48,
-            Alternatives {
+        VarMeta {
+            value: Function(
+                4,
+                48,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "should not run",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "should run",
+                                ),
+                            ),
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "shouldRun",
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 19*",
+                    #0,
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "x",
+        VarMeta {
+            value: Alternatives {
                 total_nodes: 3,
                 values: [
                     Constant(
-                        Str(
-                            Atom(
-                                "should not run",
-                            ),
-                        ),
+                        True,
                     ),
                     Constant(
-                        Str(
-                            Atom(
-                                "should run",
-                            ),
-                        ),
+                        Undefined,
                     ),
                 ],
                 logical_property: None,
             },
-        ),
-    ),
-    (
-        "shouldRun",
-        Variable(
-            (
-                "*arrow function 19*",
-                #0,
-            ),
-        ),
-    ),
-    (
-        "x",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Constant(
-                    True,
-                ),
-                Constant(
-                    Undefined,
-                ),
-            ],
-            logical_property: None,
+            assignment_kinds: AllInFunction,
         },
     ),
 ]

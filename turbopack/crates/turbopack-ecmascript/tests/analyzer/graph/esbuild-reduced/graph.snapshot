@@ -1,261 +1,120 @@
 [
     (
         "binPath",
-        Alternatives {
-            total_nodes: 9,
-            values: [
-                Unknown {
-                    original_value: Some(
-                        Variable(
-                            (
-                                "binPath",
-                                #4,
-                            ),
-                        ),
-                    ),
-                    reason: "pattern without value",
-                    has_side_effects: false,
-                },
-                MemberCall(
-                    7,
-                    FreeVar(
-                        "require",
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "resolve",
-                            ),
-                        ),
-                    ),
-                    [
-                        Concat(
-                            4,
-                            [
-                                Variable(
-                                    (
-                                        "pkg",
-                                        #4,
-                                    ),
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 9,
+                values: [
+                    Unknown {
+                        original_value: Some(
+                            Variable(
+                                (
+                                    "binPath",
+                                    #4,
                                 ),
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "/",
+                            ),
+                        ),
+                        reason: "pattern without value",
+                        has_side_effects: false,
+                    },
+                    MemberCall(
+                        7,
+                        FreeVar(
+                            "require",
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "resolve",
+                                ),
+                            ),
+                        ),
+                        [
+                            Concat(
+                                4,
+                                [
+                                    Variable(
+                                        (
+                                            "pkg",
+                                            #4,
                                         ),
                                     ),
-                                ),
-                                Variable(
-                                    (
-                                        "subpath",
-                                        #4,
+                                    Constant(
+                                        Str(
+                                            Atom(
+                                                "/",
+                                            ),
+                                        ),
                                     ),
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
-            ],
-            logical_property: None,
+                                    Variable(
+                                        (
+                                            "subpath",
+                                            #4,
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
     (
         "e",
-        Unknown {
-            original_value: Some(
-                Variable(
-                    (
-                        "e",
-                        #6,
+        VarMeta {
+            value: Unknown {
+                original_value: Some(
+                    Variable(
+                        (
+                            "e",
+                            #6,
+                        ),
                     ),
                 ),
-            ),
-            reason: "pattern without value",
-            has_side_effects: false,
+                reason: "pattern without value",
+                has_side_effects: false,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
     (
         "generateBinPath",
-        Function(
-            2,
-            387,
-            Variable(
-                (
-                    "binPath",
-                    #4,
+        VarMeta {
+            value: Function(
+                2,
+                387,
+                Variable(
+                    (
+                        "binPath",
+                        #4,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "knownWindowsPackages",
-        Object {
-            total_nodes: 7,
-            parts: [
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "win32 arm64 LE",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "esbuild-windows-arm64",
-                            ),
-                        ),
-                    ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "win32 ia32 LE",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "esbuild-windows-32",
-                            ),
-                        ),
-                    ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "win32 x64 LE",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "esbuild-windows-64",
-                            ),
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
-        },
-    ),
-    (
-        "path",
-        Call(
-            3,
-            FreeVar(
-                "require",
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "path",
-                        ),
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "path2",
-        Call(
-            3,
-            FreeVar(
-                "require",
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "path",
-                        ),
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "pkg#3",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Unknown {
-                    original_value: Some(
-                        Variable(
-                            (
-                                "pkg",
-                                #3,
-                            ),
-                        ),
-                    ),
-                    reason: "pattern without value",
-                    has_side_effects: false,
-                },
-                Member(
-                    3,
-                    Variable(
-                        (
-                            "knownWindowsPackages",
-                            #2,
-                        ),
-                    ),
-                    FreeVar(
-                        "platformKey",
-                    ),
-                ),
-            ],
-            logical_property: None,
-        },
-    ),
-    (
-        "pkg#4",
-        Member(
-            4,
-            Call(
-                2,
-                Variable(
-                    (
-                        "pkgAndSubpathForCurrentPlatform",
-                        #2,
-                    ),
-                ),
-                [],
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "pkg",
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "pkgAndSubpathForCurrentPlatform",
-        Function(
-            6,
-            217,
-            Object {
-                total_nodes: 5,
+        VarMeta {
+            value: Object {
+                total_nodes: 7,
                 parts: [
                     KeyValue(
                         Constant(
                             Str(
                                 Atom(
-                                    "pkg",
+                                    "win32 arm64 LE",
                                 ),
                             ),
                         ),
-                        Variable(
-                            (
-                                "pkg",
-                                #3,
+                        Constant(
+                            Str(
+                                Atom(
+                                    "esbuild-windows-arm64",
+                                ),
                             ),
                         ),
                     ),
@@ -263,84 +122,261 @@
                         Constant(
                             Str(
                                 Atom(
-                                    "subpath",
+                                    "win32 ia32 LE",
                                 ),
                             ),
                         ),
-                        Variable(
-                            (
-                                "subpath",
-                                #3,
+                        Constant(
+                            Str(
+                                Atom(
+                                    "esbuild-windows-32",
+                                ),
+                            ),
+                        ),
+                    ),
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "win32 x64 LE",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "esbuild-windows-64",
+                                ),
                             ),
                         ),
                     ),
                 ],
                 mutable: true,
             },
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
-        "subpath#3",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Unknown {
-                    original_value: Some(
-                        Variable(
-                            (
-                                "subpath",
-                                #3,
+        "path",
+        VarMeta {
+            value: Call(
+                3,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "path",
                             ),
                         ),
                     ),
-                    reason: "pattern without value",
-                    has_side_effects: false,
-                },
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "path2",
+        VarMeta {
+            value: Call(
+                3,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "path",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "pkg#3",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Unknown {
+                        original_value: Some(
+                            Variable(
+                                (
+                                    "pkg",
+                                    #3,
+                                ),
+                            ),
+                        ),
+                        reason: "pattern without value",
+                        has_side_effects: false,
+                    },
+                    Member(
+                        3,
+                        Variable(
+                            (
+                                "knownWindowsPackages",
+                                #2,
+                            ),
+                        ),
+                        FreeVar(
+                            "platformKey",
+                        ),
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "pkg#4",
+        VarMeta {
+            value: Member(
+                4,
+                Call(
+                    2,
+                    Variable(
+                        (
+                            "pkgAndSubpathForCurrentPlatform",
+                            #2,
+                        ),
+                    ),
+                    [],
+                ),
                 Constant(
                     Str(
                         Atom(
-                            "esbuild.exe",
+                            "pkg",
                         ),
                     ),
                 ),
-            ],
-            logical_property: None,
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "pkgAndSubpathForCurrentPlatform",
+        VarMeta {
+            value: Function(
+                6,
+                217,
+                Object {
+                    total_nodes: 5,
+                    parts: [
+                        KeyValue(
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "pkg",
+                                    ),
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "pkg",
+                                    #3,
+                                ),
+                            ),
+                        ),
+                        KeyValue(
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "subpath",
+                                    ),
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "subpath",
+                                    #3,
+                                ),
+                            ),
+                        ),
+                    ],
+                    mutable: true,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "subpath#3",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Unknown {
+                        original_value: Some(
+                            Variable(
+                                (
+                                    "subpath",
+                                    #3,
+                                ),
+                            ),
+                        ),
+                        reason: "pattern without value",
+                        has_side_effects: false,
+                    },
+                    Constant(
+                        Str(
+                            Atom(
+                                "esbuild.exe",
+                            ),
+                        ),
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
     (
         "subpath#4",
-        Member(
-            4,
-            Call(
+        VarMeta {
+            value: Member(
+                4,
+                Call(
+                    2,
+                    Variable(
+                        (
+                            "pkgAndSubpathForCurrentPlatform",
+                            #2,
+                        ),
+                    ),
+                    [],
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "subpath",
+                        ),
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "x",
+        VarMeta {
+            value: Call(
                 2,
                 Variable(
                     (
-                        "pkgAndSubpathForCurrentPlatform",
+                        "generateBinPath",
                         #2,
                     ),
                 ),
                 [],
             ),
-            Constant(
-                Str(
-                    Atom(
-                        "subpath",
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "x",
-        Call(
-            2,
-            Variable(
-                (
-                    "generateBinPath",
-                    #2,
-                ),
-            ),
-            [],
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

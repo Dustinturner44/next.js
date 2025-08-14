@@ -1,767 +1,863 @@
 [
     (
         "a",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a1",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a2",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a3",
-        Member(
-            3,
-            Variable(
-                (
-                    "object_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a4",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a5",
-        Member(
-            3,
-            Variable(
-                (
-                    "unknown_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "unknown_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a6",
-        Member(
-            3,
-            Variable(
-                (
-                    "object2",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object2",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b1",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b2",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b3",
-        Member(
-            3,
-            Variable(
-                (
-                    "object_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b4",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b5",
-        Member(
-            3,
-            Variable(
-                (
-                    "unknown_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "unknown_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b6",
-        Member(
-            3,
-            Variable(
-                (
-                    "object2",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object2",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "b",
+                Constant(
+                    Str(
+                        Atom(
+                            "b",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c1",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c2",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c3",
-        Member(
-            3,
-            Variable(
-                (
-                    "object_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c4",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c5",
-        Member(
-            3,
-            Variable(
-                (
-                    "unknown_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "unknown_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c6",
-        Member(
-            3,
-            Variable(
-                (
-                    "object2",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object2",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "c",
+                Constant(
+                    Str(
+                        Atom(
+                            "c",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "d",
+                Constant(
+                    Str(
+                        Atom(
+                            "d",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d1",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "d",
+                Constant(
+                    Str(
+                        Atom(
+                            "d",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d2",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "d",
+                Constant(
+                    Str(
+                        Atom(
+                            "d",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d3",
-        Member(
-            3,
-            Variable(
-                (
-                    "object_spread",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object_spread",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "d",
+                Constant(
+                    Str(
+                        Atom(
+                            "d",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d4",
-        Member(
-            3,
-            Variable(
-                (
-                    "object",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "d",
+                Constant(
+                    Str(
+                        Atom(
+                            "d",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d6",
-        Member(
-            3,
-            Variable(
-                (
-                    "object2",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object2",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "d",
+                Constant(
+                    Str(
+                        Atom(
+                            "d",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e6",
-        Member(
-            3,
-            Variable(
-                (
-                    "object2",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "object2",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "e",
+                Constant(
+                    Str(
+                        Atom(
+                            "e",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "object",
-        Object {
-            total_nodes: 7,
-            parts: [
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "a",
+        VarMeta {
+            value: Object {
+                total_nodes: 7,
+                parts: [
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "a",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    1.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                1.0,
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "b",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    2.0,
+                                ),
                             ),
                         ),
                     ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "b",
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "c",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    3.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                2.0,
-                            ),
-                        ),
-                    ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "c",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                3.0,
-                            ),
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
+                ],
+                mutable: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "object2",
-        Object {
-            total_nodes: 11,
-            parts: [
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "a",
+        VarMeta {
+            value: Object {
+                total_nodes: 11,
+                parts: [
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "a",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    1.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                1.0,
+                    KeyValue(
+                        FreeVar(
+                            "global",
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    2.0,
+                                ),
                             ),
                         ),
                     ),
-                ),
-                KeyValue(
-                    FreeVar(
-                        "global",
-                    ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                2.0,
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "c",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    3.0,
+                                ),
                             ),
                         ),
                     ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "c",
+                    KeyValue(
+                        FreeVar(
+                            "global",
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    4.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                3.0,
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "e",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    5.0,
+                                ),
                             ),
                         ),
                     ),
-                ),
-                KeyValue(
-                    FreeVar(
-                        "global",
-                    ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                4.0,
-                            ),
-                        ),
-                    ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "e",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                5.0,
-                            ),
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
+                ],
+                mutable: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "object_spread",
-        Object {
-            total_nodes: 6,
-            parts: [
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "a",
+        VarMeta {
+            value: Object {
+                total_nodes: 6,
+                parts: [
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "a",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    11.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                11.0,
+                    Spread(
+                        Variable(
+                            (
+                                "object",
+                                #2,
                             ),
                         ),
                     ),
-                ),
-                Spread(
-                    Variable(
-                        (
-                            "object",
-                            #2,
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "b",
+                                ),
+                            ),
                         ),
-                    ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "b",
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    22.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                22.0,
-                            ),
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
+                ],
+                mutable: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "unknown_spread",
-        Object {
-            total_nodes: 6,
-            parts: [
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "a",
+        VarMeta {
+            value: Object {
+                total_nodes: 6,
+                parts: [
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "a",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    1.0,
+                                ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                1.0,
+                    Spread(
+                        FreeVar(
+                            "global",
+                        ),
+                    ),
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "b",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    2.0,
+                                ),
                             ),
                         ),
                     ),
-                ),
-                Spread(
-                    FreeVar(
-                        "global",
-                    ),
-                ),
-                KeyValue(
-                    Constant(
-                        Str(
-                            Atom(
-                                "b",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                2.0,
-                            ),
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
+                ],
+                mutable: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
 ]

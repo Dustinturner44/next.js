@@ -1,42 +1,51 @@
 [
     (
         "x",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            1.0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
                         ),
                     ),
-                ),
-                Variable(
-                    (
-                        "y",
-                        #2,
+                    Variable(
+                        (
+                            "y",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "y",
-        Variable(
-            (
-                "x",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "x",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z",
-        Variable(
-            (
-                "x",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "x",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

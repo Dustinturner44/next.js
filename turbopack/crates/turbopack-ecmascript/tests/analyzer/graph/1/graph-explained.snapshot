@@ -1,9 +1,9 @@
-a = (...) => undefined
+a (const after eval) = (...) => undefined
 
-b = (...) => undefined
+b (const after eval) = (...) => undefined
 
-c = (...) => undefined
+c (const after eval) = (...) => undefined
 
-x = (1 | `${y}.js`)
+x (non const after eval) = (1 | `${y}.js`)
 
-y = ("hello" | "world")
+y (non const after eval) = ("hello" | "world")

@@ -1,210 +1,222 @@
 [
     (
         "arrPatternBool",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Constant(
-                    True,
-                ),
-                Constant(
-                    False,
-                ),
-            ],
-            logical_property: None,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        True,
+                    ),
+                    Constant(
+                        False,
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "nestedPatternBool",
-        Alternatives {
-            total_nodes: 17,
-            values: [
-                Member(
-                    8,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 17,
+                values: [
                     Member(
-                        6,
-                        Object {
-                            total_nodes: 4,
-                            parts: [
-                                KeyValue(
-                                    Constant(
-                                        Str(
-                                            Atom(
-                                                "inner",
+                        8,
+                        Member(
+                            6,
+                            Object {
+                                total_nodes: 4,
+                                parts: [
+                                    KeyValue(
+                                        Constant(
+                                            Str(
+                                                Atom(
+                                                    "inner",
+                                                ),
                                             ),
                                         ),
+                                        Array {
+                                            total_nodes: 2,
+                                            items: [
+                                                Constant(
+                                                    True,
+                                                ),
+                                            ],
+                                            mutable: true,
+                                        },
                                     ),
-                                    Array {
-                                        total_nodes: 2,
-                                        items: [
-                                            Constant(
-                                                True,
-                                            ),
-                                        ],
-                                        mutable: true,
-                                    },
+                                ],
+                                mutable: true,
+                            },
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "inner",
+                                    ),
                                 ),
-                            ],
-                            mutable: true,
-                        },
+                            ),
+                        ),
                         Constant(
-                            Str(
-                                Atom(
-                                    "inner",
+                            Num(
+                                ConstantNumber(
+                                    0.0,
                                 ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                0.0,
-                            ),
-                        ),
-                    ),
-                ),
-                Member(
-                    8,
                     Member(
-                        6,
-                        Object {
-                            total_nodes: 4,
-                            parts: [
-                                KeyValue(
-                                    Constant(
-                                        Str(
-                                            Atom(
-                                                "inner",
+                        8,
+                        Member(
+                            6,
+                            Object {
+                                total_nodes: 4,
+                                parts: [
+                                    KeyValue(
+                                        Constant(
+                                            Str(
+                                                Atom(
+                                                    "inner",
+                                                ),
                                             ),
                                         ),
+                                        Array {
+                                            total_nodes: 2,
+                                            items: [
+                                                Constant(
+                                                    False,
+                                                ),
+                                            ],
+                                            mutable: true,
+                                        },
                                     ),
-                                    Array {
-                                        total_nodes: 2,
-                                        items: [
-                                            Constant(
-                                                False,
-                                            ),
-                                        ],
-                                        mutable: true,
-                                    },
+                                ],
+                                mutable: true,
+                            },
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "inner",
+                                    ),
                                 ),
-                            ],
-                            mutable: true,
-                        },
+                            ),
+                        ),
                         Constant(
-                            Str(
-                                Atom(
-                                    "inner",
+                            Num(
+                                ConstantNumber(
+                                    0.0,
                                 ),
                             ),
                         ),
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                0.0,
-                            ),
-                        ),
-                    ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "objPatternBool",
-        Alternatives {
-            total_nodes: 11,
-            values: [
-                Member(
-                    5,
-                    Object {
-                        total_nodes: 3,
-                        parts: [
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "objPatternBool",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 11,
+                values: [
+                    Member(
+                        5,
+                        Object {
+                            total_nodes: 3,
+                            parts: [
+                                KeyValue(
+                                    Constant(
+                                        Str(
+                                            Atom(
+                                                "objPatternBool",
+                                            ),
                                         ),
                                     ),
+                                    Constant(
+                                        True,
+                                    ),
                                 ),
-                                Constant(
-                                    True,
+                            ],
+                            mutable: true,
+                        },
+                        Constant(
+                            Str(
+                                Atom(
+                                    "objPatternBool",
                                 ),
-                            ),
-                        ],
-                        mutable: true,
-                    },
-                    Constant(
-                        Str(
-                            Atom(
-                                "objPatternBool",
                             ),
                         ),
                     ),
-                ),
-                Member(
-                    5,
-                    Object {
-                        total_nodes: 3,
-                        parts: [
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "objPatternBool",
+                    Member(
+                        5,
+                        Object {
+                            total_nodes: 3,
+                            parts: [
+                                KeyValue(
+                                    Constant(
+                                        Str(
+                                            Atom(
+                                                "objPatternBool",
+                                            ),
                                         ),
                                     ),
+                                    Constant(
+                                        False,
+                                    ),
                                 ),
-                                Constant(
-                                    False,
+                            ],
+                            mutable: true,
+                        },
+                        Constant(
+                            Str(
+                                Atom(
+                                    "objPatternBool",
                                 ),
-                            ),
-                        ],
-                        mutable: true,
-                    },
-                    Constant(
-                        Str(
-                            Atom(
-                                "objPatternBool",
                             ),
                         ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "singleAssignBool",
-        Member(
-            5,
-            Object {
-                total_nodes: 3,
-                parts: [
-                    KeyValue(
-                        Constant(
-                            Str(
-                                Atom(
-                                    "singleAssignBool",
+        VarMeta {
+            value: Member(
+                5,
+                Object {
+                    total_nodes: 3,
+                    parts: [
+                        KeyValue(
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "singleAssignBool",
+                                    ),
                                 ),
                             ),
+                            Constant(
+                                True,
+                            ),
                         ),
-                        Constant(
-                            True,
+                    ],
+                    mutable: true,
+                },
+                Constant(
+                    Str(
+                        Atom(
+                            "singleAssignBool",
                         ),
-                    ),
-                ],
-                mutable: true,
-            },
-            Constant(
-                Str(
-                    Atom(
-                        "singleAssignBool",
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

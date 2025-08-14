@@ -1,119 +1,134 @@
 [
     (
         "*arrow function 105*",
-        Function(
-            2,
-            105,
-            Variable(
-                (
-                    "value2",
-                    #4,
+        VarMeta {
+            value: Function(
+                2,
+                105,
+                Variable(
+                    (
+                        "value2",
+                        #4,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "Fun",
-        Function(
-            2,
-            39,
-            Variable(
-                (
-                    "value",
-                    #3,
+        VarMeta {
+            value: Function(
+                2,
+                39,
+                Variable(
+                    (
+                        "value",
+                        #3,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "Fun2",
-        Variable(
-            (
-                "*arrow function 105*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 105*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "value",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Member(
-                    3,
-                    Argument(
-                        39,
-                        0,
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "value",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Member(
+                        3,
+                        Argument(
+                            39,
+                            0,
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "value",
+                                ),
                             ),
                         ),
                     ),
-                ),
-                Member(
-                    3,
-                    Module(
-                        ModuleValue {
-                            module: "./module.js",
-                            annotations: ImportAnnotations {
-                                map: {},
+                    Member(
+                        3,
+                        Module(
+                            ModuleValue {
+                                module: "./module.js",
+                                annotations: ImportAnnotations {
+                                    map: {},
+                                },
                             },
-                        },
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "named",
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "named",
+                                ),
                             ),
                         ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
     (
         "value2",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Member(
-                    3,
-                    Argument(
-                        105,
-                        0,
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "value2",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Member(
+                        3,
+                        Argument(
+                            105,
+                            0,
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "value2",
+                                ),
                             ),
                         ),
                     ),
-                ),
-                Member(
-                    3,
-                    Module(
-                        ModuleValue {
-                            module: "./module.js",
-                            annotations: ImportAnnotations {
-                                map: {},
+                    Member(
+                        3,
+                        Module(
+                            ModuleValue {
+                                module: "./module.js",
+                                annotations: ImportAnnotations {
+                                    map: {},
+                                },
                             },
-                        },
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "named",
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "named",
+                                ),
                             ),
                         ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
 ]

@@ -1,548 +1,581 @@
 [
     (
         "arch",
-        Member(
-            5,
-            Call(
-                3,
-                FreeVar(
-                    "require",
-                ),
-                [
-                    Constant(
-                        Str(
-                            Atom(
-                                "os",
+        VarMeta {
+            value: Member(
+                5,
+                Call(
+                    3,
+                    FreeVar(
+                        "require",
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "os",
+                                ),
                             ),
                         ),
-                    ),
-                ],
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "arch",
+                    ],
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "arch",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "binding1",
-        Call(
-            13,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    11,
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "esbuild-",
+        VarMeta {
+            value: Call(
+                13,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Concat(
+                        11,
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "esbuild-",
+                                    ),
                                 ),
                             ),
-                        ),
-                        Member(
-                            3,
-                            FreeVar(
-                                "process",
+                            Member(
+                                3,
+                                FreeVar(
+                                    "process",
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "arch",
+                                        ),
+                                    ),
+                                ),
                             ),
                             Constant(
                                 Str(
                                     Atom(
-                                        "arch",
+                                        "-",
                                     ),
                                 ),
                             ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "platform",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
                                 ),
                             ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "platform",
-                                    #2,
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "endianness",
+                                        #2,
+                                    ),
                                 ),
+                                [],
                             ),
-                            [],
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "endianness",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                    ],
-                ),
-            ],
-        ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "binding2",
-        Call(
-            12,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    10,
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "esbuild-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "arch",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "platform",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "endianness",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                    ],
+        VarMeta {
+            value: Call(
+                12,
+                FreeVar(
+                    "require",
                 ),
-            ],
-        ),
+                [
+                    Concat(
+                        10,
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "esbuild-",
+                                    ),
+                                ),
+                            ),
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "arch",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "platform",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "endianness",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "binding3",
-        Call(
-            13,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    11,
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "esbuild-",
+        VarMeta {
+            value: Call(
+                13,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Concat(
+                        11,
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "esbuild-",
+                                    ),
                                 ),
                             ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "arch",
-                                    #2,
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "arch",
+                                        #2,
+                                    ),
                                 ),
-                            ),
-                            [],
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Member(
-                            3,
-                            FreeVar(
-                                "process",
+                                [],
                             ),
                             Constant(
                                 Str(
                                     Atom(
-                                        "platform",
+                                        "-",
                                     ),
                                 ),
                             ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
+                            Member(
+                                3,
+                                FreeVar(
+                                    "process",
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "platform",
+                                        ),
+                                    ),
                                 ),
                             ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "endianness",
-                                    #2,
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
                                 ),
                             ),
-                            [],
-                        ),
-                    ],
-                ),
-            ],
-        ),
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "endianness",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "binding4",
-        Call(
-            14,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    12,
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "esbuild-",
-                                ),
-                            ),
-                        ),
-                        Member(
-                            3,
-                            FreeVar(
-                                "process",
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "arch",
-                                    ),
-                                ),
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Member(
-                            3,
-                            FreeVar(
-                                "process",
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "platform",
-                                    ),
-                                ),
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "endianness",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                    ],
+        VarMeta {
+            value: Call(
+                14,
+                FreeVar(
+                    "require",
                 ),
-            ],
-        ),
+                [
+                    Concat(
+                        12,
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "esbuild-",
+                                    ),
+                                ),
+                            ),
+                            Member(
+                                3,
+                                FreeVar(
+                                    "process",
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "arch",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
+                            Member(
+                                3,
+                                FreeVar(
+                                    "process",
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "platform",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "endianness",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "binding5",
-        Call(
-            14,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    12,
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "esbuild-",
-                                ),
-                            ),
-                        ),
-                        Member(
-                            3,
-                            Variable(
-                                (
-                                    "p",
-                                    #2,
-                                ),
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "arch",
-                                    ),
-                                ),
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Member(
-                            3,
-                            Variable(
-                                (
-                                    "p",
-                                    #2,
-                                ),
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "platform",
-                                    ),
-                                ),
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "endianness",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                    ],
+        VarMeta {
+            value: Call(
+                14,
+                FreeVar(
+                    "require",
                 ),
-            ],
-        ),
+                [
+                    Concat(
+                        12,
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "esbuild-",
+                                    ),
+                                ),
+                            ),
+                            Member(
+                                3,
+                                Variable(
+                                    (
+                                        "p",
+                                        #2,
+                                    ),
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "arch",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
+                            Member(
+                                3,
+                                Variable(
+                                    (
+                                        "p",
+                                        #2,
+                                    ),
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "platform",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "endianness",
+                                        #2,
+                                    ),
+                                ),
+                                [],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "binding6",
-        Call(
-            12,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    10,
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "esbuild-",
+        VarMeta {
+            value: Call(
+                12,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Concat(
+                        10,
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "esbuild-",
+                                    ),
                                 ),
                             ),
-                        ),
-                        Member(
-                            3,
+                            Member(
+                                3,
+                                Variable(
+                                    (
+                                        "p",
+                                        #2,
+                                    ),
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "arch",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "-",
+                                    ),
+                                ),
+                            ),
                             Variable(
                                 (
-                                    "p",
+                                    "processPlatform",
                                     #2,
                                 ),
                             ),
                             Constant(
                                 Str(
                                     Atom(
-                                        "arch",
+                                        "-",
                                     ),
                                 ),
                             ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
+                            Call(
+                                2,
+                                Variable(
+                                    (
+                                        "endianness",
+                                        #2,
+                                    ),
                                 ),
+                                [],
                             ),
-                        ),
-                        Variable(
-                            (
-                                "processPlatform",
-                                #2,
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "-",
-                                ),
-                            ),
-                        ),
-                        Call(
-                            2,
-                            Variable(
-                                (
-                                    "endianness",
-                                    #2,
-                                ),
-                            ),
-                            [],
-                        ),
-                    ],
-                ),
-            ],
-        ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "endianness",
-        Member(
-            5,
-            Call(
-                3,
-                FreeVar(
-                    "require",
-                ),
-                [
-                    Constant(
-                        Str(
-                            Atom(
-                                "os",
+        VarMeta {
+            value: Member(
+                5,
+                Call(
+                    3,
+                    FreeVar(
+                        "require",
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "os",
+                                ),
                             ),
                         ),
-                    ),
-                ],
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "endianness",
+                    ],
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "endianness",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "p",
-        FreeVar(
-            "process",
-        ),
+        VarMeta {
+            value: FreeVar(
+                "process",
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "platform",
-        Member(
-            5,
-            Call(
-                3,
-                FreeVar(
-                    "require",
-                ),
-                [
-                    Constant(
-                        Str(
-                            Atom(
-                                "os",
+        VarMeta {
+            value: Member(
+                5,
+                Call(
+                    3,
+                    FreeVar(
+                        "require",
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "os",
+                                ),
                             ),
                         ),
-                    ),
-                ],
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "platform",
+                    ],
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "platform",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "processPlatform",
-        Member(
-            5,
-            Call(
-                3,
-                FreeVar(
-                    "require",
-                ),
-                [
-                    Constant(
-                        Str(
-                            Atom(
-                                "process",
+        VarMeta {
+            value: Member(
+                5,
+                Call(
+                    3,
+                    FreeVar(
+                        "require",
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "process",
+                                ),
                             ),
                         ),
-                    ),
-                ],
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "platform",
+                    ],
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "platform",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

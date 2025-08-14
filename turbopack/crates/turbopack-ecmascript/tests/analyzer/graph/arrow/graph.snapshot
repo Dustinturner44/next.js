@@ -1,288 +1,363 @@
 [
     (
         "*anonymous function 116*",
-        Function(
-            2,
-            116,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        3.0,
+        VarMeta {
+            value: Function(
+                2,
+                116,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            3.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "*anonymous function 339*",
-        Function(
-            2,
-            339,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        3.0,
+        VarMeta {
+            value: Function(
+                2,
+                339,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            3.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 11*",
-        Function(
-            2,
-            11,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+        VarMeta {
+            value: Function(
+                2,
+                11,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            1.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "*arrow function 214*",
-        Function(
-            2,
-            214,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+        VarMeta {
+            value: Function(
+                2,
+                214,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            1.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 236*",
-        Function(
-            2,
-            236,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
+        VarMeta {
+            value: Function(
+                2,
+                236,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            2.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 259*",
-        Function(
-            2,
-            259,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+        VarMeta {
+            value: Function(
+                2,
+                259,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            1.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 299*",
-        Function(
-            2,
-            299,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
+        VarMeta {
+            value: Function(
+                2,
+                299,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            2.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 30*",
-        Function(
-            2,
-            30,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
+        VarMeta {
+            value: Function(
+                2,
+                30,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            2.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "*arrow function 50*",
-        Function(
-            2,
-            50,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+        VarMeta {
+            value: Function(
+                2,
+                50,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            1.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "*arrow function 83*",
-        Function(
-            2,
-            83,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
+        VarMeta {
+            value: Function(
+                2,
+                83,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            2.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a",
-        Variable(
-            (
-                "*arrow function 11*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 11*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Variable(
-            (
-                "*arrow function 30*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 30*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Variable(
-            (
-                "*arrow function 50*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 50*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Variable(
-            (
-                "*arrow function 83*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 83*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e#2",
-        Variable(
-            (
-                "*anonymous function 116*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*anonymous function 116*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e#6",
-        Function(
-            2,
-            155,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        4.0,
+        VarMeta {
+            value: Function(
+                2,
+                155,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            4.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "f",
-        Variable(
-            (
-                "e",
-                #6,
+        VarMeta {
+            value: Variable(
+                (
+                    "e",
+                    #6,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "x",
-        Function(
-            2,
-            186,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                186,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "xa",
-        Variable(
-            (
-                "*arrow function 214*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 214*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "xb",
-        Variable(
-            (
-                "*arrow function 236*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 236*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "xc",
-        Variable(
-            (
-                "*arrow function 259*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 259*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "xd",
-        Variable(
-            (
-                "*arrow function 299*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*arrow function 299*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "xe#12",
-        Function(
-            2,
-            385,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        4.0,
+        VarMeta {
+            value: Function(
+                2,
+                385,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            4.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "xe#8",
-        Variable(
-            (
-                "*anonymous function 339*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*anonymous function 339*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "xf",
-        Variable(
-            (
-                "xe",
-                #12,
+        VarMeta {
+            value: Variable(
+                (
+                    "xe",
+                    #12,
+                ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
 ]

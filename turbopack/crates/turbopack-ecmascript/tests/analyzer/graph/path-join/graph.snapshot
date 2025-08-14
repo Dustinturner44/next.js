@@ -1,82 +1,127 @@
 [
     (
         "a",
-        Call(
-            3,
-            FreeVar(
-                "require",
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "foo",
+        VarMeta {
+            value: Call(
+                3,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo",
+                            ),
                         ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "p1",
-        Call(
-            3,
-            FreeVar(
-                "require",
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "path",
+        VarMeta {
+            value: Call(
+                3,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "path",
+                            ),
                         ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "path",
-        Call(
-            3,
-            FreeVar(
-                "require",
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "path",
+        VarMeta {
+            value: Call(
+                3,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "path",
+                            ),
                         ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "path_join1",
-        Member(
-            3,
-            Variable(
-                (
-                    "p1",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "p1",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
+                Constant(
+                    Str(
+                        Atom(
+                            "join",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "path_join2",
-        Member(
-            5,
-            Member(
+        VarMeta {
+            value: Member(
+                5,
+                Member(
+                    3,
+                    Module(
+                        ModuleValue {
+                            module: "path",
+                            annotations: ImportAnnotations {
+                                map: {},
+                            },
+                        },
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "default",
+                            ),
+                        ),
+                    ),
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "join",
+                        ),
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "path_join3",
+        VarMeta {
+            value: Member(
                 3,
                 Module(
                     ModuleValue {
@@ -89,276 +134,267 @@
                 Constant(
                     Str(
                         Atom(
-                            "default",
+                            "join",
                         ),
                     ),
                 ),
             ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "path_join3",
-        Member(
-            3,
-            Module(
-                ModuleValue {
-                    module: "path",
-                    annotations: ImportAnnotations {
-                        map: {},
-                    },
-                },
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "path_join4",
-        Member(
-            6,
-            Awaited(
-                4,
-                Call(
-                    3,
-                    FreeVar(
-                        "import",
-                    ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "path",
+        VarMeta {
+            value: Member(
+                6,
+                Awaited(
+                    4,
+                    Call(
+                        3,
+                        FreeVar(
+                            "import",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "path",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
+                        ],
+                    ),
                 ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
+                Constant(
+                    Str(
+                        Atom(
+                            "join",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z1_joined",
-        MemberCall(
-            5,
-            Variable(
-                (
-                    "path",
-                    #2,
-                ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "foo",
-                        ),
+        VarMeta {
+            value: MemberCall(
+                5,
+                Variable(
+                    (
+                        "path",
+                        #2,
                     ),
                 ),
                 Constant(
                     Str(
                         Atom(
-                            "bar",
+                            "join",
                         ),
                     ),
                 ),
-            ],
-        ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "bar",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z2_joined",
-        MemberCall(
-            5,
-            Variable(
-                (
-                    "path",
-                    #2,
-                ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "foo/",
-                        ),
+        VarMeta {
+            value: MemberCall(
+                5,
+                Variable(
+                    (
+                        "path",
+                        #2,
                     ),
                 ),
                 Constant(
                     Str(
                         Atom(
-                            "bar",
+                            "join",
                         ),
                     ),
                 ),
-            ],
-        ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo/",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "bar",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z3_joined",
-        MemberCall(
-            5,
-            Variable(
-                (
-                    "path",
-                    #2,
-                ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "foo",
-                        ),
+        VarMeta {
+            value: MemberCall(
+                5,
+                Variable(
+                    (
+                        "path",
+                        #2,
                     ),
                 ),
                 Constant(
                     Str(
                         Atom(
-                            "/bar",
+                            "join",
                         ),
                     ),
                 ),
-            ],
-        ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "/bar",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z4_joined",
-        MemberCall(
-            5,
-            Variable(
-                (
-                    "path",
-                    #2,
-                ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "foo/",
-                        ),
+        VarMeta {
+            value: MemberCall(
+                5,
+                Variable(
+                    (
+                        "path",
+                        #2,
                     ),
                 ),
                 Constant(
                     Str(
                         Atom(
-                            "/bar",
+                            "join",
                         ),
                     ),
                 ),
-            ],
-        ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo/",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "/bar",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z5_joined",
-        MemberCall(
-            10,
-            Variable(
-                (
-                    "path",
-                    #2,
+        VarMeta {
+            value: MemberCall(
+                10,
+                Variable(
+                    (
+                        "path",
+                        #2,
+                    ),
                 ),
+                Constant(
+                    Str(
+                        Atom(
+                            "join",
+                        ),
+                    ),
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "bar",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "..",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "baz",
+                            ),
+                        ),
+                    ),
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "..",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "foo",
+                            ),
+                        ),
+                    ),
+                ],
             ),
-            Constant(
-                Str(
-                    Atom(
-                        "join",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "foo",
-                        ),
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "bar",
-                        ),
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "..",
-                        ),
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "baz",
-                        ),
-                    ),
-                ),
-                FreeVar(
-                    "global",
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "..",
-                        ),
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "foo",
-                        ),
-                    ),
-                ),
-            ],
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

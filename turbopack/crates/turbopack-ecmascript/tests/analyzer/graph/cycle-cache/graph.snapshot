@@ -1,273 +1,74 @@
 [
     (
         "*arrow function 425*",
-        Function(
-            2,
-            425,
-            Variable(
-                (
-                    "*arrow function 431*",
-                    #0,
+        VarMeta {
+            value: Function(
+                2,
+                425,
+                Variable(
+                    (
+                        "*arrow function 431*",
+                        #0,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "*arrow function 431*",
-        Function(
-            2,
-            431,
-            Variable(
-                (
-                    "*arrow function 437*",
-                    #0,
+        VarMeta {
+            value: Function(
+                2,
+                431,
+                Variable(
+                    (
+                        "*arrow function 437*",
+                        #0,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 437*",
-        Function(
-            2,
-            437,
-            Variable(
-                (
-                    "*arrow function 443*",
-                    #0,
+        VarMeta {
+            value: Function(
+                2,
+                437,
+                Variable(
+                    (
+                        "*arrow function 443*",
+                        #0,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 443*",
-        Function(
-            2,
-            443,
-            Variable(
-                (
-                    "*arrow function 449*",
-                    #0,
+        VarMeta {
+            value: Function(
+                2,
+                443,
+                Variable(
+                    (
+                        "*arrow function 449*",
+                        #0,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "*arrow function 449*",
-        Function(
-            2,
-            449,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 468*",
-        Function(
-            2,
-            468,
-            Variable(
-                (
-                    "*arrow function 474*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 474*",
-        Function(
-            2,
-            474,
-            Variable(
-                (
-                    "*arrow function 480*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 480*",
-        Function(
-            2,
-            480,
-            Variable(
-                (
-                    "*arrow function 486*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 486*",
-        Function(
-            2,
-            486,
-            Variable(
-                (
-                    "*arrow function 492*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 492*",
-        Function(
-            2,
-            492,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 511*",
-        Function(
-            2,
-            511,
-            Variable(
-                (
-                    "*arrow function 517*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 517*",
-        Function(
-            2,
-            517,
-            Variable(
-                (
-                    "*arrow function 523*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 523*",
-        Function(
-            2,
-            523,
-            Variable(
-                (
-                    "*arrow function 529*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 529*",
-        Function(
-            2,
-            529,
-            Variable(
-                (
-                    "*arrow function 535*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 535*",
-        Function(
-            2,
-            535,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 554*",
-        Function(
-            2,
-            554,
-            Variable(
-                (
-                    "*arrow function 560*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 560*",
-        Function(
-            2,
-            560,
-            Variable(
-                (
-                    "*arrow function 566*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 566*",
-        Function(
-            2,
-            566,
-            Variable(
-                (
-                    "*arrow function 572*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 572*",
-        Function(
-            2,
-            572,
-            Variable(
-                (
-                    "*arrow function 578*",
-                    #0,
-                ),
-            ),
-        ),
-    ),
-    (
-        "*arrow function 578*",
-        Function(
-            2,
-            578,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "a",
-        Alternatives {
-            total_nodes: 5,
-            values: [
+        VarMeta {
+            value: Function(
+                2,
+                449,
                 Constant(
                     Num(
                         ConstantNumber(
@@ -275,6 +76,80 @@
                         ),
                     ),
                 ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 468*",
+        VarMeta {
+            value: Function(
+                2,
+                468,
+                Variable(
+                    (
+                        "*arrow function 474*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "*arrow function 474*",
+        VarMeta {
+            value: Function(
+                2,
+                474,
+                Variable(
+                    (
+                        "*arrow function 480*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 480*",
+        VarMeta {
+            value: Function(
+                2,
+                480,
+                Variable(
+                    (
+                        "*arrow function 486*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 486*",
+        VarMeta {
+            value: Function(
+                2,
+                486,
+                Variable(
+                    (
+                        "*arrow function 492*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 492*",
+        VarMeta {
+            value: Function(
+                2,
+                492,
                 Constant(
                     Num(
                         ConstantNumber(
@@ -282,1554 +157,1931 @@
                         ),
                     ),
                 ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 511*",
+        VarMeta {
+            value: Function(
+                2,
+                511,
+                Variable(
+                    (
+                        "*arrow function 517*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "*arrow function 517*",
+        VarMeta {
+            value: Function(
+                2,
+                517,
+                Variable(
+                    (
+                        "*arrow function 523*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 523*",
+        VarMeta {
+            value: Function(
+                2,
+                523,
+                Variable(
+                    (
+                        "*arrow function 529*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 529*",
+        VarMeta {
+            value: Function(
+                2,
+                529,
+                Variable(
+                    (
+                        "*arrow function 535*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 535*",
+        VarMeta {
+            value: Function(
+                2,
+                535,
                 Constant(
                     Num(
                         ConstantNumber(
-                            3.0,
+                            2.0,
                         ),
                     ),
                 ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 554*",
+        VarMeta {
+            value: Function(
+                2,
+                554,
                 Variable(
                     (
-                        "b",
-                        #2,
+                        "*arrow function 560*",
+                        #0,
                     ),
                 ),
-            ],
-            logical_property: None,
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "*arrow function 560*",
+        VarMeta {
+            value: Function(
+                2,
+                560,
+                Variable(
+                    (
+                        "*arrow function 566*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 566*",
+        VarMeta {
+            value: Function(
+                2,
+                566,
+                Variable(
+                    (
+                        "*arrow function 572*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 572*",
+        VarMeta {
+            value: Function(
+                2,
+                572,
+                Variable(
+                    (
+                        "*arrow function 578*",
+                        #0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "*arrow function 578*",
+        VarMeta {
+            value: Function(
+                2,
+                578,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            1.0,
+                        ),
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "a",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                2.0,
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "b",
+                            #2,
+                        ),
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "b",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            4.0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                4.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            5.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                5.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            6.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                6.0,
+                            ),
                         ),
                     ),
-                ),
-                Variable(
-                    (
-                        "c",
-                        #2,
+                    Variable(
+                        (
+                            "c",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "c",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            7.0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                7.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            8.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                8.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            9.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                9.0,
+                            ),
                         ),
                     ),
-                ),
-                Variable(
-                    (
-                        "a",
-                        #2,
+                    Variable(
+                        (
+                            "a",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "d",
-        Alternatives {
-            total_nodes: 22,
-            values: [
-                Variable(
-                    (
-                        "f11",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 22,
+                values: [
+                    Variable(
+                        (
+                            "f11",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f22",
-                        #2,
+                    Variable(
+                        (
+                            "f22",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f32",
-                        #2,
+                    Variable(
+                        (
+                            "f32",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f42",
-                        #2,
+                    Variable(
+                        (
+                            "f42",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f52",
-                        #2,
+                    Variable(
+                        (
+                            "f52",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f62",
-                        #2,
+                    Variable(
+                        (
+                            "f62",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f72",
-                        #2,
+                    Variable(
+                        (
+                            "f72",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f82",
-                        #2,
+                    Variable(
+                        (
+                            "f82",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f92",
-                        #2,
+                    Variable(
+                        (
+                            "f92",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fa2",
-                        #2,
+                    Variable(
+                        (
+                            "fa2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fb2",
-                        #2,
+                    Variable(
+                        (
+                            "fb2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fc2",
-                        #2,
+                    Variable(
+                        (
+                            "fc2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fd2",
-                        #2,
+                    Variable(
+                        (
+                            "fd2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fe2",
-                        #2,
+                    Variable(
+                        (
+                            "fe2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "ff2",
-                        #2,
+                    Variable(
+                        (
+                            "ff2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fg2",
-                        #2,
+                    Variable(
+                        (
+                            "fg2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fh2",
-                        #2,
+                    Variable(
+                        (
+                            "fh2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fi2",
-                        #2,
+                    Variable(
+                        (
+                            "fi2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fj2",
-                        #2,
+                    Variable(
+                        (
+                            "fj2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fk2",
-                        #2,
+                    Variable(
+                        (
+                            "fk2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fl2",
-                        #2,
+                    Variable(
+                        (
+                            "fl2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f11",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "*arrow function 425*",
-                        #0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "*arrow function 425*",
+                            #0,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "*arrow function 468*",
-                        #0,
+                    Variable(
+                        (
+                            "*arrow function 468*",
+                            #0,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f12",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "*arrow function 511*",
-                        #0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "*arrow function 511*",
+                            #0,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "*arrow function 554*",
-                        #0,
+                    Variable(
+                        (
+                            "*arrow function 554*",
+                            #0,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f21",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f11",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f11",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f12",
-                        #2,
+                    Variable(
+                        (
+                            "f12",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f22",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f12",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f12",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f11",
-                        #2,
+                    Variable(
+                        (
+                            "f11",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f31",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f21",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f21",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f22",
-                        #2,
+                    Variable(
+                        (
+                            "f22",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f32",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f22",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f22",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f21",
-                        #2,
+                    Variable(
+                        (
+                            "f21",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f41",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f31",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f31",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f32",
-                        #2,
+                    Variable(
+                        (
+                            "f32",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f42",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f32",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f32",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f31",
-                        #2,
+                    Variable(
+                        (
+                            "f31",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f51",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f41",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f41",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f42",
-                        #2,
+                    Variable(
+                        (
+                            "f42",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f52",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f42",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f42",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f41",
-                        #2,
+                    Variable(
+                        (
+                            "f41",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f61",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f51",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f51",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f52",
-                        #2,
+                    Variable(
+                        (
+                            "f52",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f62",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f52",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f52",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f51",
-                        #2,
+                    Variable(
+                        (
+                            "f51",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f71",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f61",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f61",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f62",
-                        #2,
+                    Variable(
+                        (
+                            "f62",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f72",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f62",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f62",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f61",
-                        #2,
+                    Variable(
+                        (
+                            "f61",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f81",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f71",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f71",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f72",
-                        #2,
+                    Variable(
+                        (
+                            "f72",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f82",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f72",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f72",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f71",
-                        #2,
+                    Variable(
+                        (
+                            "f71",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f91",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f81",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f81",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f82",
-                        #2,
+                    Variable(
+                        (
+                            "f82",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "f92",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f82",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f82",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f81",
-                        #2,
+                    Variable(
+                        (
+                            "f81",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fa1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f91",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f91",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f92",
-                        #2,
+                    Variable(
+                        (
+                            "f92",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fa2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "f92",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "f92",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "f91",
-                        #2,
+                    Variable(
+                        (
+                            "f91",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fb1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fa1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fa1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fa2",
-                        #2,
+                    Variable(
+                        (
+                            "fa2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fb2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fa2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fa2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fa1",
-                        #2,
+                    Variable(
+                        (
+                            "fa1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fc1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fb1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fb1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fb2",
-                        #2,
+                    Variable(
+                        (
+                            "fb2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fc2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fb2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fb2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fb1",
-                        #2,
+                    Variable(
+                        (
+                            "fb1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fd1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fc1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fc1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fc2",
-                        #2,
+                    Variable(
+                        (
+                            "fc2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fd2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fc2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fc2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fc1",
-                        #2,
+                    Variable(
+                        (
+                            "fc1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fe1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fd1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fd1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fd2",
-                        #2,
+                    Variable(
+                        (
+                            "fd2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fe2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fd2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fd2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fd1",
-                        #2,
+                    Variable(
+                        (
+                            "fd1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "ff1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fe1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fe1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fe2",
-                        #2,
+                    Variable(
+                        (
+                            "fe2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "ff2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fe2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fe2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fe1",
-                        #2,
+                    Variable(
+                        (
+                            "fe1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fg1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "ff1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "ff1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "ff2",
-                        #2,
+                    Variable(
+                        (
+                            "ff2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fg2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "ff2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "ff2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "ff1",
-                        #2,
+                    Variable(
+                        (
+                            "ff1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fh1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fg1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fg1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fg2",
-                        #2,
+                    Variable(
+                        (
+                            "fg2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fh2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fg2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fg2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fg1",
-                        #2,
+                    Variable(
+                        (
+                            "fg1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fi1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fh1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fh1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fh2",
-                        #2,
+                    Variable(
+                        (
+                            "fh2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fi2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fh2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fh2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fh1",
-                        #2,
+                    Variable(
+                        (
+                            "fh1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fj1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fi1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fi1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fi2",
-                        #2,
+                    Variable(
+                        (
+                            "fi2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fj2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fi2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fi2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fi1",
-                        #2,
+                    Variable(
+                        (
+                            "fi1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fk1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fj1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fj1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fj2",
-                        #2,
+                    Variable(
+                        (
+                            "fj2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fk2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fj2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fj2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fj1",
-                        #2,
+                    Variable(
+                        (
+                            "fj1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fl1",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fk1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fk1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fk2",
-                        #2,
+                    Variable(
+                        (
+                            "fk2",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "fl2",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Variable(
-                    (
-                        "fk2",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "fk2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "fk1",
-                        #2,
+                    Variable(
+                        (
+                            "fk1",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x",
-        Alternatives {
-            total_nodes: 4,
-            values: [
-                Variable(
-                    (
-                        "a",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 4,
+                values: [
+                    Variable(
+                        (
+                            "a",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "b",
-                        #2,
+                    Variable(
+                        (
+                            "b",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "c",
-                        #2,
+                    Variable(
+                        (
+                            "c",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x1",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Variable(
-                    (
-                        "x1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Variable(
+                        (
+                            "x1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x2",
-                        #2,
+                    Variable(
+                        (
+                            "x2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x3",
-                        #2,
+                    Variable(
+                        (
+                            "x3",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x4",
-                        #2,
+                    Variable(
+                        (
+                            "x4",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x5",
-                        #2,
+                    Variable(
+                        (
+                            "x5",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x6",
-                        #2,
+                    Variable(
+                        (
+                            "x6",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x2",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Variable(
-                    (
-                        "x1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Variable(
+                        (
+                            "x1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x2",
-                        #2,
+                    Variable(
+                        (
+                            "x2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x3",
-                        #2,
+                    Variable(
+                        (
+                            "x3",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x4",
-                        #2,
+                    Variable(
+                        (
+                            "x4",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x5",
-                        #2,
+                    Variable(
+                        (
+                            "x5",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x6",
-                        #2,
+                    Variable(
+                        (
+                            "x6",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x3",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Variable(
-                    (
-                        "x1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Variable(
+                        (
+                            "x1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x2",
-                        #2,
+                    Variable(
+                        (
+                            "x2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x3",
-                        #2,
+                    Variable(
+                        (
+                            "x3",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x4",
-                        #2,
+                    Variable(
+                        (
+                            "x4",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x5",
-                        #2,
+                    Variable(
+                        (
+                            "x5",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x6",
-                        #2,
+                    Variable(
+                        (
+                            "x6",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x4",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Variable(
-                    (
-                        "x1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Variable(
+                        (
+                            "x1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x2",
-                        #2,
+                    Variable(
+                        (
+                            "x2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x3",
-                        #2,
+                    Variable(
+                        (
+                            "x3",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x4",
-                        #2,
+                    Variable(
+                        (
+                            "x4",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x5",
-                        #2,
+                    Variable(
+                        (
+                            "x5",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x6",
-                        #2,
+                    Variable(
+                        (
+                            "x6",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x5",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Variable(
-                    (
-                        "x1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Variable(
+                        (
+                            "x1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x2",
-                        #2,
+                    Variable(
+                        (
+                            "x2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x3",
-                        #2,
+                    Variable(
+                        (
+                            "x3",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x4",
-                        #2,
+                    Variable(
+                        (
+                            "x4",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x5",
-                        #2,
+                    Variable(
+                        (
+                            "x5",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x6",
-                        #2,
+                    Variable(
+                        (
+                            "x6",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "x6",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Variable(
-                    (
-                        "x1",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Variable(
+                        (
+                            "x1",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x2",
-                        #2,
+                    Variable(
+                        (
+                            "x2",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x3",
-                        #2,
+                    Variable(
+                        (
+                            "x3",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x4",
-                        #2,
+                    Variable(
+                        (
+                            "x4",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x5",
-                        #2,
+                    Variable(
+                        (
+                            "x5",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x6",
-                        #2,
+                    Variable(
+                        (
+                            "x6",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "y",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Variable(
-                    (
-                        "a",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Variable(
+                        (
+                            "a",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "b",
-                        #2,
+                    Variable(
+                        (
+                            "b",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "c",
-                        #2,
+                    Variable(
+                        (
+                            "c",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "x",
-                        #2,
+                    Variable(
+                        (
+                            "x",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "z",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Variable(
-                    (
-                        "a",
-                        #2,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Variable(
+                        (
+                            "a",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "b",
-                        #2,
+                    Variable(
+                        (
+                            "b",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "c",
-                        #2,
+                    Variable(
+                        (
+                            "c",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "y",
-                        #2,
+                    Variable(
+                        (
+                            "y",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "z1",
-        Variable(
-            (
-                "z",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z2",
-        Variable(
-            (
-                "z1",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z1",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z3",
-        Variable(
-            (
-                "z2",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z2",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z4",
-        Variable(
-            (
-                "z3",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z3",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z5",
-        Variable(
-            (
-                "z4",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z4",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z6",
-        Variable(
-            (
-                "z5",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z5",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z7",
-        Variable(
-            (
-                "z6",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z6",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z8",
-        Variable(
-            (
-                "z7",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z7",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "z9",
-        Variable(
-            (
-                "z8",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "z8",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

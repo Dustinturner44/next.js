@@ -1,62 +1,83 @@
 [
     (
         "a",
-        FreeVar(
-            "require",
-        ),
+        VarMeta {
+            value: FreeVar(
+                "require",
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Variable(
-            (
-                "a",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "a",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Variable(
-            (
-                "b",
-                #3,
+        VarMeta {
+            value: Variable(
+                (
+                    "b",
+                    #3,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Variable(
-            (
-                "a",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "a",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e",
-        Variable(
-            (
-                "d",
-                #4,
+        VarMeta {
+            value: Variable(
+                (
+                    "d",
+                    #4,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "f",
-        Variable(
-            (
-                "a",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "a",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "g",
-        Variable(
-            (
-                "f",
-                #5,
+        VarMeta {
+            value: Variable(
+                (
+                    "f",
+                    #5,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

@@ -1,18 +1,21 @@
 [
     (
         "x",
-        Member(
-            3,
-            WellKnownObject(
-                ImportMeta,
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "prop",
+        VarMeta {
+            value: Member(
+                3,
+                WellKnownObject(
+                    ImportMeta,
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "prop",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

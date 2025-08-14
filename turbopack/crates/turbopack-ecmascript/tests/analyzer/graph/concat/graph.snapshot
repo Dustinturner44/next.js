@@ -1,42 +1,54 @@
 [
     (
         "a",
-        Constant(
-            Str(
-                Atom(
-                    "",
+        VarMeta {
+            value: Constant(
+                Str(
+                    Atom(
+                        "",
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Constant(
-            Str(
-                Atom(
-                    "hello",
+        VarMeta {
+            value: Constant(
+                Str(
+                    Atom(
+                        "hello",
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Constant(
-            Str(
-                RcStr(
-                    "--service=0.14.12",
+        VarMeta {
+            value: Constant(
+                Str(
+                    RcStr(
+                        "--service=0.14.12",
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Constant(
-            Str(
-                RcStr(
-                    "--service=0.14.12",
+        VarMeta {
+            value: Constant(
+                Str(
+                    RcStr(
+                        "--service=0.14.12",
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

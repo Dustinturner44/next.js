@@ -1,89 +1,104 @@
 [
     (
         "a",
-        Function(
-            2,
-            37,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                37,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Function(
-            2,
-            76,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                76,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Function(
-            2,
-            116,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                116,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "x",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            1.0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
                         ),
                     ),
-                ),
-                Concat(
-                    3,
-                    [
-                        Variable(
-                            (
-                                "y",
-                                #2,
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    ".js",
+                    Concat(
+                        3,
+                        [
+                            Variable(
+                                (
+                                    "y",
+                                    #2,
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-            ],
-            logical_property: None,
+                            Constant(
+                                Str(
+                                    Atom(
+                                        ".js",
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: Mixed,
         },
     ),
     (
         "y",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Constant(
-                    Str(
-                        Atom(
-                            "hello",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Str(
+                            Atom(
+                                "hello",
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "world",
+                    Constant(
+                        Str(
+                            Atom(
+                                "world",
+                            ),
                         ),
                     ),
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: Mixed,
         },
     ),
 ]

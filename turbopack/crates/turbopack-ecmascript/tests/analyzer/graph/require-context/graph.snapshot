@@ -1,135 +1,150 @@
 [
     (
         "a",
-        MemberCall(
-            4,
-            Variable(
-                (
-                    "context",
-                    #2,
-                ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "resolve",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "./a",
-                        ),
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "context",
-        MemberCall(
-            6,
-            FreeVar(
-                "require",
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "context",
-                    ),
-                ),
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "./test",
-                        ),
-                    ),
-                ),
-                Constant(
-                    False,
-                ),
-                Constant(
-                    Regex(
-                        (
-                            "\\.test\\.js$",
-                            "",
-                        ),
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "importAll",
-        Function(
-            7,
-            1,
-            MemberCall(
-                6,
-                MemberCall(
-                    3,
-                    Variable(
-                        (
-                            "r",
-                            #3,
-                        ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "keys",
-                            ),
-                        ),
-                    ),
-                    [],
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "map",
-                        ),
-                    ),
-                ),
-                [
-                    Variable(
-                        (
-                            "r",
-                            #3,
-                        ),
-                    ),
-                ],
-            ),
-        ),
-    ),
-    (
-        "items",
-        Call(
-            3,
-            Variable(
-                (
-                    "importAll",
-                    #2,
-                ),
-            ),
-            [
+        VarMeta {
+            value: MemberCall(
+                4,
                 Variable(
                     (
                         "context",
                         #2,
                     ),
                 ),
-            ],
-        ),
+                Constant(
+                    Str(
+                        Atom(
+                            "resolve",
+                        ),
+                    ),
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "./a",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "context",
+        VarMeta {
+            value: MemberCall(
+                6,
+                FreeVar(
+                    "require",
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "context",
+                        ),
+                    ),
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "./test",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        False,
+                    ),
+                    Constant(
+                        Regex(
+                            (
+                                "\\.test\\.js$",
+                                "",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "importAll",
+        VarMeta {
+            value: Function(
+                7,
+                1,
+                MemberCall(
+                    6,
+                    MemberCall(
+                        3,
+                        Variable(
+                            (
+                                "r",
+                                #3,
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "keys",
+                                ),
+                            ),
+                        ),
+                        [],
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "map",
+                            ),
+                        ),
+                    ),
+                    [
+                        Variable(
+                            (
+                                "r",
+                                #3,
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "items",
+        VarMeta {
+            value: Call(
+                3,
+                Variable(
+                    (
+                        "importAll",
+                        #2,
+                    ),
+                ),
+                [
+                    Variable(
+                        (
+                            "context",
+                            #2,
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "r",
-        Argument(
-            1,
-            0,
-        ),
+        VarMeta {
+            value: Argument(
+                1,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
 ]

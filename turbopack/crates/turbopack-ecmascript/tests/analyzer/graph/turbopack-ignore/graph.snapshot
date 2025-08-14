@@ -1,170 +1,185 @@
 [
     (
         "exported_t_r",
-        Call(
-            3,
-            FreeVar(
-                "require",
-            ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "exported_t_r",
-                        ),
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "t_i",
-        Awaited(
-            4,
-            Call(
+        VarMeta {
+            value: Call(
                 3,
                 FreeVar(
-                    "import",
+                    "require",
                 ),
                 [
                     Constant(
                         Str(
                             Atom(
-                                "t_i",
+                                "exported_t_r",
                             ),
                         ),
                     ),
                 ],
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "t_i",
+        VarMeta {
+            value: Awaited(
+                4,
+                Call(
+                    3,
+                    FreeVar(
+                        "import",
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "t_i",
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "t_r",
-        Alternatives {
-            total_nodes: 13,
-            values: [
-                Call(
-                    3,
-                    FreeVar(
-                        "require",
-                    ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "w_i_f",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 13,
+                values: [
+                    Call(
+                        3,
+                        FreeVar(
+                            "require",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "w_i_f",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-                Call(
-                    3,
-                    FreeVar(
-                        "require",
+                        ],
                     ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "t_i_f",
+                    Call(
+                        3,
+                        FreeVar(
+                            "require",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "t_i_f",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-                Call(
-                    3,
-                    FreeVar(
-                        "require",
+                        ],
                     ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "t_r_t",
+                    Call(
+                        3,
+                        FreeVar(
+                            "require",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "t_r_t",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-                Call(
-                    3,
-                    FreeVar(
-                        "require",
+                        ],
                     ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "t_r_f",
+                    Call(
+                        3,
+                        FreeVar(
+                            "require",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "t_r_f",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-            ],
-            logical_property: None,
+                        ],
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "w_i",
-        Awaited(
-            4,
-            Call(
-                3,
-                FreeVar(
-                    "import",
-                ),
-                [
-                    Constant(
-                        Str(
-                            Atom(
-                                "w_i",
+        VarMeta {
+            value: Awaited(
+                4,
+                Call(
+                    3,
+                    FreeVar(
+                        "import",
+                    ),
+                    [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "w_i",
+                                ),
                             ),
                         ),
-                    ),
-                ],
+                    ],
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "w_r",
-        Alternatives {
-            total_nodes: 7,
-            values: [
-                Call(
-                    3,
-                    FreeVar(
-                        "require",
-                    ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "w_r_t",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 7,
+                values: [
+                    Call(
+                        3,
+                        FreeVar(
+                            "require",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "w_r_t",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-                Call(
-                    3,
-                    FreeVar(
-                        "require",
+                        ],
                     ),
-                    [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "w_r_f",
+                    Call(
+                        3,
+                        FreeVar(
+                            "require",
+                        ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "w_r_f",
+                                    ),
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-            ],
-            logical_property: None,
+                        ],
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
 ]

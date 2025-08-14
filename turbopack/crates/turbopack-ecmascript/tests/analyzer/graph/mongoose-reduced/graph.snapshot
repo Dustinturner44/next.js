@@ -1,89 +1,98 @@
 [
     (
         "Collection",
-        Call(
-            5,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    3,
-                    [
-                        Variable(
-                            (
-                                "driver",
-                                #2,
-                            ),
-                        ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "/collection",
+        VarMeta {
+            value: Call(
+                5,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Concat(
+                        3,
+                        [
+                            Variable(
+                                (
+                                    "driver",
+                                    #2,
                                 ),
                             ),
-                        ),
-                    ],
-                ),
-            ],
-        ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "/collection",
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "Connection",
-        Call(
-            5,
-            FreeVar(
-                "require",
-            ),
-            [
-                Concat(
-                    3,
-                    [
-                        Variable(
-                            (
-                                "driver",
-                                #2,
+        VarMeta {
+            value: Call(
+                5,
+                FreeVar(
+                    "require",
+                ),
+                [
+                    Concat(
+                        3,
+                        [
+                            Variable(
+                                (
+                                    "driver",
+                                    #2,
+                                ),
                             ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "/connection",
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "driver",
+        VarMeta {
+            value: Logical(
+                5,
+                Or,
+                [
+                    Member(
+                        3,
+                        FreeVar(
+                            "global",
                         ),
                         Constant(
                             Str(
                                 Atom(
-                                    "/connection",
+                                    "MONGOOSE_DRIVER_PATH",
                                 ),
                             ),
                         ),
-                    ],
-                ),
-            ],
-        ),
-    ),
-    (
-        "driver",
-        Logical(
-            5,
-            Or,
-            [
-                Member(
-                    3,
-                    FreeVar(
-                        "global",
                     ),
                     Constant(
                         Str(
                             Atom(
-                                "MONGOOSE_DRIVER_PATH",
+                                "./drivers/node-mongodb-native",
                             ),
                         ),
                     ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "./drivers/node-mongodb-native",
-                        ),
-                    ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

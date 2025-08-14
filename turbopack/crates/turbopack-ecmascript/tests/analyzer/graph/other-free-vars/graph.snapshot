@@ -1,56 +1,65 @@
 [
     (
         "O",
-        FreeVar(
-            "Object",
-        ),
+        VarMeta {
+            value: FreeVar(
+                "Object",
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a",
-        MemberCall(
-            4,
-            FreeVar(
-                "Object",
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "keys",
+        VarMeta {
+            value: MemberCall(
+                4,
+                FreeVar(
+                    "Object",
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "keys",
+                        ),
                     ),
                 ),
+                [
+                    Variable(
+                        (
+                            "O",
+                            #2,
+                        ),
+                    ),
+                ],
             ),
-            [
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "b",
+        VarMeta {
+            value: MemberCall(
+                4,
                 Variable(
                     (
                         "O",
                         #2,
                     ),
                 ),
-            ],
-        ),
-    ),
-    (
-        "b",
-        MemberCall(
-            4,
-            Variable(
-                (
-                    "O",
-                    #2,
-                ),
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "keys",
+                Constant(
+                    Str(
+                        Atom(
+                            "keys",
+                        ),
                     ),
                 ),
+                [
+                    FreeVar(
+                        "Object",
+                    ),
+                ],
             ),
-            [
-                FreeVar(
-                    "Object",
-                ),
-            ],
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

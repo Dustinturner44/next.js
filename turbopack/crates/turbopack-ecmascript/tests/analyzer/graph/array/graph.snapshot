@@ -1,29 +1,76 @@
 [
     (
         "a",
-        Constant(
-            Num(
-                ConstantNumber(
-                    1.0,
+        VarMeta {
+            value: Constant(
+                Num(
+                    ConstantNumber(
+                        1.0,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Constant(
-            Str(
-                Atom(
-                    "foo",
+        VarMeta {
+            value: Constant(
+                Str(
+                    Atom(
+                        "foo",
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Member(
-            7,
-            Array {
+        VarMeta {
+            value: Member(
+                7,
+                Array {
+                    total_nodes: 3,
+                    items: [
+                        Constant(
+                            Num(
+                                ConstantNumber(
+                                    1.0,
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "foo",
+                                ),
+                            ),
+                        ),
+                    ],
+                    mutable: true,
+                },
+                Member(
+                    3,
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "index",
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "d1",
+        VarMeta {
+            value: Array {
                 total_nodes: 3,
                 items: [
                     Constant(
@@ -43,26 +90,48 @@
                 ],
                 mutable: true,
             },
-            Member(
-                3,
-                FreeVar(
-                    "global",
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "d2",
+        VarMeta {
+            value: Member(
+                5,
+                Variable(
+                    (
+                        "d1",
+                        #2,
+                    ),
                 ),
-                Constant(
-                    Str(
-                        Atom(
-                            "index",
+                Member(
+                    3,
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "index",
+                            ),
                         ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
-        "d1",
-        Array {
-            total_nodes: 3,
-            items: [
+        "d3",
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "d1",
+                        #2,
+                    ),
+                ),
                 Constant(
                     Num(
                         ConstantNumber(
@@ -70,101 +139,59 @@
                         ),
                     ),
                 ),
-                Constant(
-                    Str(
-                        Atom(
-                            "foo",
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
+            ),
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
-        "d2",
-        Member(
-            5,
-            Variable(
-                (
-                    "d1",
-                    #2,
-                ),
-            ),
-            Member(
+        "d4",
+        VarMeta {
+            value: Member(
                 3,
-                FreeVar(
-                    "global",
+                Variable(
+                    (
+                        "d1",
+                        #2,
+                    ),
                 ),
                 Constant(
-                    Str(
-                        Atom(
-                            "index",
+                    Num(
+                        ConstantNumber(
+                            2.0,
                         ),
                     ),
                 ),
             ),
-        ),
-    ),
-    (
-        "d3",
-        Member(
-            3,
-            Variable(
-                (
-                    "d1",
-                    #2,
-                ),
-            ),
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "d4",
-        Member(
-            3,
-            Variable(
-                (
-                    "d1",
-                    #2,
-                ),
-            ),
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
-                    ),
-                ),
-            ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "value#3",
-        Iterated(
-            2,
-            Variable(
-                (
-                    "d1",
-                    #2,
+        VarMeta {
+            value: Iterated(
+                2,
+                Variable(
+                    (
+                        "d1",
+                        #2,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "value#5",
-        Iterated(
-            2,
-            Array {
-                total_nodes: 1,
-                items: [],
-                mutable: true,
-            },
-        ),
+        VarMeta {
+            value: Iterated(
+                2,
+                Array {
+                    total_nodes: 1,
+                    items: [],
+                    mutable: true,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

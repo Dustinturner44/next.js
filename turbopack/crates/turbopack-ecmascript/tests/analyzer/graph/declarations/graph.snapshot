@@ -1,110 +1,146 @@
 [
     (
         "*anonymous function 25*",
-        Function(
-            2,
-            25,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                25,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "a",
-        Function(
-            2,
-            1,
-            Constant(
-                Undefined,
+        VarMeta {
+            value: Function(
+                2,
+                1,
+                Constant(
+                    Undefined,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "aa",
-        Variable(
-            (
-                "a",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "a",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Variable(
-            (
-                "*anonymous function 25*",
-                #0,
+        VarMeta {
+            value: Variable(
+                (
+                    "*anonymous function 25*",
+                    #0,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "bb",
-        Variable(
-            (
-                "b",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "b",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Constant(
-            Num(
-                ConstantNumber(
-                    123.0,
+        VarMeta {
+            value: Constant(
+                Num(
+                    ConstantNumber(
+                        123.0,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "cc",
-        Variable(
-            (
-                "c",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "c",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Constant(
-            Str(
-                Atom(
-                    "hello",
+        VarMeta {
+            value: Constant(
+                Str(
+                    Atom(
+                        "hello",
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "dd",
-        Variable(
-            (
-                "d",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "d",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e",
-        Unknown {
-            original_value: None,
-            reason: "unsupported expression",
-            has_side_effects: true,
+        VarMeta {
+            value: Unknown {
+                original_value: None,
+                reason: "unsupported expression",
+                has_side_effects: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "ee",
-        Variable(
-            (
-                "e",
-                #2,
+        VarMeta {
+            value: Variable(
+                (
+                    "e",
+                    #2,
+                ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "ff",
-        FreeVar(
-            "f",
-        ),
+        VarMeta {
+            value: FreeVar(
+                "f",
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

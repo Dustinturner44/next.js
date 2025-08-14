@@ -1,118 +1,136 @@
 [
     (
         "a",
-        Argument(
-            1,
-            0,
-        ),
+        VarMeta {
+            value: Argument(
+                1,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "b",
-        Argument(
-            1,
-            1,
-        ),
+        VarMeta {
+            value: Argument(
+                1,
+                1,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "c",
-        Function(
-            6,
-            1,
-            Array {
-                total_nodes: 5,
-                items: [
-                    Concat(
-                        3,
-                        [
-                            Variable(
-                                (
-                                    "a",
-                                    #3,
+        VarMeta {
+            value: Function(
+                6,
+                1,
+                Array {
+                    total_nodes: 5,
+                    items: [
+                        Concat(
+                            3,
+                            [
+                                Variable(
+                                    (
+                                        "a",
+                                        #3,
+                                    ),
                                 ),
-                            ),
-                            Variable(
-                                (
-                                    "b",
-                                    #3,
+                                Variable(
+                                    (
+                                        "b",
+                                        #3,
+                                    ),
                                 ),
-                            ),
-                        ],
-                    ),
-                    Variable(
-                        (
-                            "a",
-                            #3,
+                            ],
                         ),
-                    ),
-                ],
-                mutable: true,
-            },
-        ),
+                        Variable(
+                            (
+                                "a",
+                                #3,
+                            ),
+                        ),
+                    ],
+                    mutable: true,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Call(
-            4,
-            Variable(
-                (
-                    "c",
-                    #2,
+        VarMeta {
+            value: Call(
+                4,
+                Variable(
+                    (
+                        "c",
+                        #2,
+                    ),
                 ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "1",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "2",
+                            ),
+                        ),
+                    ),
+                ],
             ),
-            [
-                Constant(
-                    Str(
-                        Atom(
-                            "1",
-                        ),
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "2",
-                        ),
-                    ),
-                ),
-            ],
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e",
-        Member(
-            3,
-            Variable(
-                (
-                    "d",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "d",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Num(
-                    ConstantNumber(
-                        0.0,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            0.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "f",
-        Member(
-            3,
-            Variable(
-                (
-                    "d",
-                    #2,
+        VarMeta {
+            value: Member(
+                3,
+                Variable(
+                    (
+                        "d",
+                        #2,
+                    ),
                 ),
-            ),
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+                Constant(
+                    Num(
+                        ConstantNumber(
+                            1.0,
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

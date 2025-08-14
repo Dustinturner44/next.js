@@ -1,222 +1,258 @@
 [
     (
         "a",
-        Function(
-            4,
-            1,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                1,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Function(
-            4,
-            67,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                67,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Function(
-            4,
-            154,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                154,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Function(
-            4,
-            210,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                210,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "e",
-        Function(
-            4,
-            287,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                287,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "f",
-        Function(
-            4,
-            365,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                365,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "g",
-        Function(
-            4,
-            433,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                433,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "h",
-        Function(
-            4,
-            521,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Undefined,
-                    ),
-                    FreeVar(
-                        "undefined",
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+        VarMeta {
+            value: Function(
+                4,
+                521,
+                Alternatives {
+                    total_nodes: 3,
+                    values: [
+                        Constant(
+                            Undefined,
+                        ),
+                        FreeVar(
+                            "undefined",
+                        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "i",
-        Function(
-            6,
-            606,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Call(
-                        2,
-                        FreeVar(
-                            "i1",
+        VarMeta {
+            value: Function(
+                6,
+                606,
+                Alternatives {
+                    total_nodes: 5,
+                    values: [
+                        Call(
+                            2,
+                            FreeVar(
+                                "i1",
+                            ),
+                            [],
                         ),
-                        [],
-                    ),
-                    Call(
-                        2,
-                        FreeVar(
-                            "i2",
+                        Call(
+                            2,
+                            FreeVar(
+                                "i2",
+                            ),
+                            [],
                         ),
-                        [],
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "j#2",
-        Function(
-            6,
-            673,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Call(
-                        2,
-                        FreeVar(
-                            "i1",
+        VarMeta {
+            value: Function(
+                6,
+                673,
+                Alternatives {
+                    total_nodes: 5,
+                    values: [
+                        Call(
+                            2,
+                            FreeVar(
+                                "i1",
+                            ),
+                            [],
                         ),
-                        [],
-                    ),
-                    Call(
-                        2,
-                        FreeVar(
-                            "i2",
+                        Call(
+                            2,
+                            FreeVar(
+                                "i2",
+                            ),
+                            [],
                         ),
-                        [],
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
+                    ],
+                    logical_property: None,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "j#25",
-        Argument(
-            606,
-            0,
-        ),
+        VarMeta {
+            value: Argument(
+                606,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "j#26",
-        Argument(
-            673,
-            0,
-        ),
+        VarMeta {
+            value: Argument(
+                673,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
 ]

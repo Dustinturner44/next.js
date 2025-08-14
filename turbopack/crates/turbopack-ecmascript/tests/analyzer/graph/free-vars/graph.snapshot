@@ -1,27 +1,30 @@
 [
     (
         "buf",
-        MemberCall(
-            4,
-            FreeVar(
-                "Buffer",
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "from",
-                    ),
+        VarMeta {
+            value: MemberCall(
+                4,
+                FreeVar(
+                    "Buffer",
                 ),
-            ),
-            [
                 Constant(
                     Str(
                         Atom(
-                            "Hello World",
+                            "from",
                         ),
                     ),
                 ),
-            ],
-        ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "Hello World",
+                            ),
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

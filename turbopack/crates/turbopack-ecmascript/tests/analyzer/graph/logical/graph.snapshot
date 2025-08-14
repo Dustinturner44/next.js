@@ -1,163 +1,165 @@
 [
     (
         "a",
-        Logical(
-            3,
-            And,
-            [
-                Variable(
-                    (
-                        "x",
-                        #2,
+        VarMeta {
+            value: Logical(
+                3,
+                And,
+                [
+                    Variable(
+                        (
+                            "x",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "y",
-                        #2,
+                    Variable(
+                        (
+                            "y",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "b",
-        Logical(
-            3,
-            Or,
-            [
-                Variable(
-                    (
-                        "x",
-                        #2,
+        VarMeta {
+            value: Logical(
+                3,
+                Or,
+                [
+                    Variable(
+                        (
+                            "x",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "y",
-                        #2,
+                    Variable(
+                        (
+                            "y",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "c",
-        Logical(
-            3,
-            NullishCoalescing,
-            [
-                Variable(
-                    (
-                        "x",
-                        #2,
+        VarMeta {
+            value: Logical(
+                3,
+                NullishCoalescing,
+                [
+                    Variable(
+                        (
+                            "x",
+                            #2,
+                        ),
                     ),
-                ),
-                Variable(
-                    (
-                        "y",
-                        #2,
+                    Variable(
+                        (
+                            "y",
+                            #2,
+                        ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "chain1",
-        Logical(
-            5,
-            And,
-            [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            1.0,
+        VarMeta {
+            value: Logical(
+                5,
+                And,
+                [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            2.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                2.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            3.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
                         ),
                     ),
-                ),
-                FreeVar(
-                    "global",
-                ),
-            ],
-        ),
+                    FreeVar(
+                        "global",
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "chain2",
-        Logical(
-            7,
-            Or,
-            [
-                Logical(
-                    4,
-                    And,
-                    [
-                        Constant(
-                            Num(
-                                ConstantNumber(
-                                    1.0,
+        VarMeta {
+            value: Logical(
+                7,
+                Or,
+                [
+                    Logical(
+                        4,
+                        And,
+                        [
+                            Constant(
+                                Num(
+                                    ConstantNumber(
+                                        1.0,
+                                    ),
                                 ),
                             ),
-                        ),
-                        Constant(
-                            Num(
-                                ConstantNumber(
-                                    2.0,
+                            Constant(
+                                Num(
+                                    ConstantNumber(
+                                        2.0,
+                                    ),
                                 ),
                             ),
-                        ),
-                        FreeVar(
-                            "global",
-                        ),
-                    ],
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            3.0,
+                            FreeVar(
+                                "global",
+                            ),
+                        ],
+                    ),
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            4.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                4.0,
+                            ),
                         ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "d",
-        Not(
-            2,
-            Variable(
-                (
-                    "x",
-                    #2,
-                ),
-            ),
-        ),
-    ),
-    (
-        "e",
-        Not(
-            3,
-            Not(
+        VarMeta {
+            value: Not(
                 2,
                 Variable(
                     (
@@ -166,158 +168,201 @@
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "e",
+        VarMeta {
+            value: Not(
+                3,
+                Not(
+                    2,
+                    Variable(
+                        (
+                            "x",
+                            #2,
+                        ),
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "resolve1",
-        Logical(
-            6,
-            And,
-            [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            1.0,
+        VarMeta {
+            value: Logical(
+                6,
+                And,
+                [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            2.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                2.0,
+                            ),
                         ),
                     ),
-                ),
-                FreeVar(
-                    "global",
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            3.0,
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            4.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                4.0,
+                            ),
                         ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "resolve2",
-        Logical(
-            6,
-            And,
-            [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            1.0,
+        VarMeta {
+            value: Logical(
+                6,
+                And,
+                [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            2.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                2.0,
+                            ),
                         ),
                     ),
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            0.0,
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                0.0,
+                            ),
                         ),
                     ),
-                ),
-                FreeVar(
-                    "global",
-                ),
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            4.0,
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                4.0,
+                            ),
                         ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "resolve3",
-        Logical(
-            3,
-            Or,
-            [
-                FreeVar(
-                    "global",
-                ),
-                Constant(
-                    True,
-                ),
-            ],
-        ),
+        VarMeta {
+            value: Logical(
+                3,
+                Or,
+                [
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        True,
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "resolve4",
-        Logical(
-            3,
-            Or,
-            [
-                Constant(
-                    True,
-                ),
-                FreeVar(
-                    "global",
-                ),
-            ],
-        ),
+        VarMeta {
+            value: Logical(
+                3,
+                Or,
+                [
+                    Constant(
+                        True,
+                    ),
+                    FreeVar(
+                        "global",
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "resolve5",
-        Logical(
-            3,
-            And,
-            [
-                FreeVar(
-                    "global",
-                ),
-                Constant(
-                    False,
-                ),
-            ],
-        ),
+        VarMeta {
+            value: Logical(
+                3,
+                And,
+                [
+                    FreeVar(
+                        "global",
+                    ),
+                    Constant(
+                        False,
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "resolve6",
-        Logical(
-            3,
-            And,
-            [
-                Constant(
-                    False,
-                ),
-                FreeVar(
-                    "global",
-                ),
-            ],
-        ),
+        VarMeta {
+            value: Logical(
+                3,
+                And,
+                [
+                    Constant(
+                        False,
+                    ),
+                    FreeVar(
+                        "global",
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "x",
-        Constant(
-            True,
-        ),
+        VarMeta {
+            value: Constant(
+                True,
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "y",
-        Constant(
-            False,
-        ),
+        VarMeta {
+            value: Constant(
+                False,
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

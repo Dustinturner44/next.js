@@ -1,264 +1,300 @@
 [
     (
         "*anonymous function 170*",
-        Function(
-            3,
-            170,
-            Array {
-                total_nodes: 2,
+        VarMeta {
+            value: Function(
+                3,
+                170,
+                Array {
+                    total_nodes: 2,
+                    items: [
+                        Variable(
+                            (
+                                "file",
+                                #4,
+                            ),
+                        ),
+                    ],
+                    mutable: true,
+                },
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "*anonymous function 254*",
+        VarMeta {
+            value: Function(
+                5,
+                254,
+                MemberCall(
+                    4,
+                    FreeVar(
+                        "require",
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "resolve",
+                            ),
+                        ),
+                    ),
+                    [
+                        Variable(
+                            (
+                                "file",
+                                #5,
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "*anonymous function 88*",
+        VarMeta {
+            value: Function(
+                2,
+                88,
+                Variable(
+                    (
+                        "file",
+                        #3,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "a",
+        VarMeta {
+            value: Array {
+                total_nodes: 3,
                 items: [
-                    Variable(
-                        (
-                            "file",
-                            #4,
+                    Constant(
+                        Str(
+                            Atom(
+                                "../lib/a.js",
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "../lib/b.js",
+                            ),
                         ),
                     ),
                 ],
                 mutable: true,
             },
-        ),
-    ),
-    (
-        "*anonymous function 254*",
-        Function(
-            5,
-            254,
-            MemberCall(
-                4,
-                FreeVar(
-                    "require",
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "resolve",
-                        ),
-                    ),
-                ),
-                [
-                    Variable(
-                        (
-                            "file",
-                            #5,
-                        ),
-                    ),
-                ],
-            ),
-        ),
-    ),
-    (
-        "*anonymous function 88*",
-        Function(
-            2,
-            88,
-            Variable(
-                (
-                    "file",
-                    #3,
-                ),
-            ),
-        ),
-    ),
-    (
-        "a",
-        Array {
-            total_nodes: 3,
-            items: [
-                Constant(
-                    Str(
-                        Atom(
-                            "../lib/a.js",
-                        ),
-                    ),
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "../lib/b.js",
-                        ),
-                    ),
-                ),
-            ],
-            mutable: true,
+            assignment_kinds: AllInRootScope,
         },
     ),
     (
         "b",
-        MemberCall(
-            6,
-            Array {
-                total_nodes: 3,
-                items: [
-                    Constant(
-                        Str(
-                            Atom(
-                                "../lib/a.js",
+        VarMeta {
+            value: MemberCall(
+                6,
+                Array {
+                    total_nodes: 3,
+                    items: [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "../lib/a.js",
+                                ),
                             ),
                         ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "../lib/b.js",
+                        Constant(
+                            Str(
+                                Atom(
+                                    "../lib/b.js",
+                                ),
                             ),
                         ),
-                    ),
-                ],
-                mutable: true,
-            },
-            Constant(
-                Str(
-                    Atom(
-                        "map",
-                    ),
-                ),
-            ),
-            [
-                Variable(
-                    (
-                        "*anonymous function 88*",
-                        #0,
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "c",
-        MemberCall(
-            6,
-            Array {
-                total_nodes: 3,
-                items: [
-                    Constant(
-                        Str(
-                            Atom(
-                                "../lib/a.js",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "../lib/b.js",
-                            ),
-                        ),
-                    ),
-                ],
-                mutable: true,
-            },
-            Constant(
-                Str(
-                    Atom(
-                        "map",
-                    ),
-                ),
-            ),
-            [
-                Variable(
-                    (
-                        "*anonymous function 170*",
-                        #0,
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "d",
-        MemberCall(
-            6,
-            Array {
-                total_nodes: 3,
-                items: [
-                    Constant(
-                        Str(
-                            Atom(
-                                "../lib/a.js",
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "../lib/b.js",
-                            ),
-                        ),
-                    ),
-                ],
-                mutable: true,
-            },
-            Constant(
-                Str(
-                    Atom(
-                        "map",
-                    ),
-                ),
-            ),
-            [
-                Variable(
-                    (
-                        "*anonymous function 254*",
-                        #0,
-                    ),
-                ),
-            ],
-        ),
-    ),
-    (
-        "file#3",
-        Argument(
-            88,
-            0,
-        ),
-    ),
-    (
-        "file#4",
-        Argument(
-            170,
-            0,
-        ),
-    ),
-    (
-        "file#5",
-        Argument(
-            254,
-            0,
-        ),
-    ),
-    (
-        "file#6",
-        Argument(
-            308,
-            0,
-        ),
-    ),
-    (
-        "func",
-        Function(
-            5,
-            308,
-            MemberCall(
-                4,
-                FreeVar(
-                    "require",
-                ),
+                    ],
+                    mutable: true,
+                },
                 Constant(
                     Str(
                         Atom(
-                            "resolve",
+                            "map",
                         ),
                     ),
                 ),
                 [
                     Variable(
                         (
-                            "file",
-                            #6,
+                            "*anonymous function 88*",
+                            #0,
                         ),
                     ),
                 ],
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "c",
+        VarMeta {
+            value: MemberCall(
+                6,
+                Array {
+                    total_nodes: 3,
+                    items: [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "../lib/a.js",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "../lib/b.js",
+                                ),
+                            ),
+                        ),
+                    ],
+                    mutable: true,
+                },
+                Constant(
+                    Str(
+                        Atom(
+                            "map",
+                        ),
+                    ),
+                ),
+                [
+                    Variable(
+                        (
+                            "*anonymous function 170*",
+                            #0,
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "d",
+        VarMeta {
+            value: MemberCall(
+                6,
+                Array {
+                    total_nodes: 3,
+                    items: [
+                        Constant(
+                            Str(
+                                Atom(
+                                    "../lib/a.js",
+                                ),
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "../lib/b.js",
+                                ),
+                            ),
+                        ),
+                    ],
+                    mutable: true,
+                },
+                Constant(
+                    Str(
+                        Atom(
+                            "map",
+                        ),
+                    ),
+                ),
+                [
+                    Variable(
+                        (
+                            "*anonymous function 254*",
+                            #0,
+                        ),
+                    ),
+                ],
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "file#3",
+        VarMeta {
+            value: Argument(
+                88,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "file#4",
+        VarMeta {
+            value: Argument(
+                170,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "file#5",
+        VarMeta {
+            value: Argument(
+                254,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "file#6",
+        VarMeta {
+            value: Argument(
+                308,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
+    ),
+    (
+        "func",
+        VarMeta {
+            value: Function(
+                5,
+                308,
+                MemberCall(
+                    4,
+                    FreeVar(
+                        "require",
+                    ),
+                    Constant(
+                        Str(
+                            Atom(
+                                "resolve",
+                            ),
+                        ),
+                    ),
+                    [
+                        Variable(
+                            (
+                                "file",
+                                #6,
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]

@@ -1,7 +1,7 @@
-A = (...) => (undefined | FreeVar(undefined))
+A (const after eval) = (...) => (undefined | FreeVar(undefined))
 
-B = (...) => (undefined | FreeVar(undefined))
+B (const after eval) = (...) => (undefined | FreeVar(undefined))
 
-C = (...) => (undefined | FreeVar(undefined))
+C (const after eval) = (...) => (undefined | FreeVar(undefined))
 
 v = arguments[0]

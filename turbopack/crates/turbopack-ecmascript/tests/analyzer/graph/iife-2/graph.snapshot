@@ -1,116 +1,140 @@
 [
     (
         "_",
-        Function(
-            2,
-            17,
-            Variable(
-                (
-                    "parent",
-                    #4,
+        VarMeta {
+            value: Function(
+                2,
+                17,
+                Variable(
+                    (
+                        "parent",
+                        #4,
+                    ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "i",
-        Alternatives {
-            total_nodes: 3,
-            values: [
-                Constant(
-                    Num(
-                        ConstantNumber(
-                            0.0,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                0.0,
+                            ),
                         ),
                     ),
-                ),
-                Unknown {
-                    original_value: None,
-                    reason: "updated with update expression",
-                    has_side_effects: true,
-                },
-            ],
-            logical_property: None,
+                    Unknown {
+                        original_value: None,
+                        reason: "updated with update expression",
+                        has_side_effects: true,
+                    },
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
     (
         "key",
-        Alternatives {
-            total_nodes: 5,
-            values: [
-                Member(
-                    3,
-                    Variable(
-                        (
-                            "keys",
-                            #4,
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 5,
+                values: [
+                    Member(
+                        3,
+                        Variable(
+                            (
+                                "keys",
+                                #4,
+                            ),
+                        ),
+                        Variable(
+                            (
+                                "i",
+                                #4,
+                            ),
                         ),
                     ),
-                    Variable(
-                        (
-                            "i",
-                            #4,
-                        ),
+                    Constant(
+                        Undefined,
                     ),
-                ),
-                Constant(
-                    Undefined,
-                ),
-            ],
-            logical_property: None,
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInFunction,
         },
     ),
     (
         "keys",
-        MemberCall(
-            4,
-            FreeVar(
-                "Object",
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "keys",
+        VarMeta {
+            value: MemberCall(
+                4,
+                FreeVar(
+                    "Object",
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "keys",
+                        ),
                     ),
                 ),
-            ),
-            [
-                Variable(
-                    (
-                        "namespace",
-                        #4,
+                [
+                    Variable(
+                        (
+                            "namespace",
+                            #4,
+                        ),
                     ),
-                ),
-            ],
-        ),
+                ],
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "namespace",
-        Argument(
-            17,
-            0,
-        ),
+        VarMeta {
+            value: Argument(
+                17,
+                0,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "parent",
-        Argument(
-            17,
-            2,
-        ),
+        VarMeta {
+            value: Argument(
+                17,
+                2,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "path",
-        Argument(
-            17,
-            1,
-        ),
+        VarMeta {
+            value: Argument(
+                17,
+                1,
+            ),
+            assignment_kinds: AllInFunction,
+        },
     ),
     (
         "root",
-        Object {
-            total_nodes: 1,
-            parts: [],
-            mutable: true,
+        VarMeta {
+            value: Object {
+                total_nodes: 1,
+                parts: [],
+                mutable: true,
+            },
+            assignment_kinds: AllInRootScope,
         },
     ),
 ]

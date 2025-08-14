@@ -1,67 +1,56 @@
 [
     (
-        "a",
+        "*arrow function 907*",
         VarMeta {
-            value: Alternatives {
-                total_nodes: 5,
-                values: [
-                    Constant(
-                        Str(
-                            Atom(
-                                "",
-                            ),
-                        ),
-                    ),
-                    Concat(
-                        3,
-                        [
-                            Variable(
-                                (
-                                    "a",
-                                    #2,
-                                ),
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "x",
-                                    ),
-                                ),
-                            ),
-                        ],
-                    ),
-                ],
-                logical_property: None,
+            value: Function(
+                2,
+                907,
+                Constant(
+                    Undefined,
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "ConstAfterEvalClass",
+        VarMeta {
+            value: Unknown {
+                original_value: None,
+                reason: "unsupported expression",
+                has_side_effects: true,
             },
             assignment_kinds: AllInRootScope,
         },
     ),
     (
-        "b",
+        "d1",
         VarMeta {
-            value: Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                0.0,
-                            ),
-                        ),
+            value: Constant(
+                Num(
+                    ConstantNumber(
+                        2.0,
                     ),
-                    Unknown {
-                        original_value: None,
-                        reason: "unsupported assign operation",
-                        has_side_effects: true,
-                    },
-                ],
-                logical_property: None,
-            },
+                ),
+            ),
             assignment_kinds: AllInRootScope,
         },
     ),
     (
-        "c",
+        "default_function_export_const_after_eval",
+        VarMeta {
+            value: Function(
+                2,
+                251,
+                Constant(
+                    Undefined,
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "i",
         VarMeta {
             value: Alternatives {
                 total_nodes: 3,
@@ -85,42 +74,29 @@
         },
     ),
     (
-        "d",
+        "named_const_export_const_after_eval",
         VarMeta {
-            value: Alternatives {
-                total_nodes: 3,
-                values: [
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                0.0,
-                            ),
-                        ),
+            value: Constant(
+                Num(
+                    ConstantNumber(
+                        3.0,
                     ),
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                1.0,
-                            ),
-                        ),
-                    ),
-                ],
-                logical_property: None,
-            },
+                ),
+            ),
             assignment_kinds: AllInRootScope,
         },
     ),
     (
-        "e",
+        "named_function_export_const_after_eval",
         VarMeta {
             value: Alternatives {
-                total_nodes: 3,
+                total_nodes: 4,
                 values: [
-                    Constant(
-                        Num(
-                            ConstantNumber(
-                                1.0,
-                            ),
+                    Function(
+                        2,
+                        65,
+                        Constant(
+                            Undefined,
                         ),
                     ),
                     Constant(
@@ -137,7 +113,51 @@
         },
     ),
     (
-        "f",
+        "named_let_export_const_after_eval",
+        VarMeta {
+            value: Constant(
+                Num(
+                    ConstantNumber(
+                        2.0,
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "named_let_export_const_after_eval_2",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Unknown {
+                        original_value: Some(
+                            Variable(
+                                (
+                                    "named_let_export_const_after_eval_2",
+                                    #2,
+                                ),
+                            ),
+                        ),
+                        reason: "pattern without value",
+                        has_side_effects: false,
+                    },
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                5.0,
+                            ),
+                        ),
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "named_let_export_not_const_after_eval",
         VarMeta {
             value: Alternatives {
                 total_nodes: 3,
@@ -152,14 +172,40 @@
                     Constant(
                         Num(
                             ConstantNumber(
-                                2.0,
+                                5.0,
                             ),
                         ),
                     ),
                 ],
                 logical_property: None,
             },
-            assignment_kinds: AllInRootScope,
+            assignment_kinds: Mixed,
+        },
+    ),
+    (
+        "named_let_export_not_const_after_eval_2",
+        VarMeta {
+            value: Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
+                        ),
+                    ),
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
+                        ),
+                    ),
+                ],
+                logical_property: None,
+            },
+            assignment_kinds: Mixed,
         },
     ),
 ]

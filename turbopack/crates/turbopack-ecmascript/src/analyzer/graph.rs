@@ -254,9 +254,67 @@ impl Effect {
     }
 }
 
+pub enum AssignmentKind {
+    InRootScope,
+    InFunction,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum AssignmentKinds {
+    AllInRootScope,
+    AllInFunction,
+    Mixed,
+}
+impl AssignmentKinds {
+    fn new(initial: AssignmentKind) -> Self {
+        match initial {
+            AssignmentKind::InRootScope => AssignmentKinds::AllInRootScope,
+            AssignmentKind::InFunction => AssignmentKinds::AllInFunction,
+        }
+    }
+
+    fn merge(self, other: AssignmentKind) -> Self {
+        // If the other assignment kind is the same as the current one, return the current one.
+        if self == Self::new(other) {
+            self
+        } else {
+            AssignmentKinds::Mixed
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct VarMeta {
+    pub value: JsValue,
+    // Tracks the locations where this was assigned to:
+    // - [AssignmentKinds::AllInRootScope] if it was assigned only in the root scope
+    // - [AssignmentKinds::AllInFunction] if it was assigned in function scopes
+    // - [AssignmentKinds::Mixed] if it was assigned in both
+    // This is used to track the _liveness_ of exports.
+    pub assignment_kinds: AssignmentKinds,
+}
+
+impl VarMeta {
+    pub fn new(value: JsValue, kind: AssignmentKind) -> Self {
+        Self {
+            value,
+            assignment_kinds: AssignmentKinds::new(kind),
+        }
+    }
+
+    pub fn normalize(&mut self) {
+        self.value.normalize();
+    }
+
+    fn add_alt(&mut self, value: JsValue, kind: AssignmentKind) {
+        self.value.add_alt(value);
+        self.assignment_kinds = self.assignment_kinds.merge(kind);
+    }
+}
+
 #[derive(Debug)]
 pub struct VarGraph {
-    pub values: FxHashMap<Id, JsValue>,
+    pub values: FxHashMap<Id, VarMeta>,
     /// Map FreeVar names to their Id to facilitate lookups into [values]
     pub free_var_ids: FxHashMap<Atom, Id>,
 
@@ -292,8 +350,6 @@ pub fn create_graph(m: &Program, eval_context: &EvalContext) -> VarGraph {
             hoisted_effects: Default::default(),
             early_return_stack: Default::default(),
             var_decl_kind: Default::default(),
-            cur_fn_return_values: Default::default(),
-            cur_fn_ident: Default::default(),
         },
         &mut Default::default(),
     );
@@ -795,14 +851,6 @@ struct Analyzer<'a> {
     eval_context: &'a EvalContext,
 
     var_decl_kind: Option<VarDeclKind>,
-
-    /// Return values of the current function.
-    ///
-    /// This is configured to [Some] by function handlers and filled by the
-    /// return statement handler.
-    cur_fn_return_values: Option<Vec<JsValue>>,
-
-    cur_fn_ident: u32,
 }
 
 mod analyzer_state {
@@ -812,15 +860,56 @@ mod analyzer_state {
     /// intentionally private to the rest of the `Analyzer` implementation.
     pub struct AnalyzerState {
         pat_value: Option<JsValue>,
+        // A unique identifier for the current function, based on the span of the function
+        // declaration.  [None] if we are in the root scope.
+        cur_fn_ident: Option<u32>,
+        /// Return values of the current function.
+        ///
+        /// This is configured to [Some] by function handlers and filled by the
+        /// return statement handler.
+        cur_fn_return_values: Option<Vec<JsValue>>,
     }
 
     impl AnalyzerState {
         pub fn new() -> AnalyzerState {
-            AnalyzerState { pat_value: None }
+            AnalyzerState {
+                pat_value: None,
+                cur_fn_ident: None,
+                cur_fn_return_values: None,
+            }
         }
     }
 
     impl Analyzer<'_> {
+        /// Returns true if we are in a function. False if we are in the root scope.
+        pub(super) fn is_in_fn(&self) -> bool {
+            self.state.cur_fn_ident.is_some()
+        }
+
+        /// Returns the identifier of the current function.
+        /// must be called only if `is_in_fn` is true
+        pub(super) fn cur_fn_ident(&self) -> u32 {
+            self.state.cur_fn_ident.expect("not in a function")
+        }
+
+        /// Returns the return values of the current function.
+        ///
+        /// This is configured to [Some] by function handlers and filled by the
+        /// return statement handler.
+        fn take_return_values(&mut self) -> Box<JsValue> {
+            let values = self.state.cur_fn_return_values.take().unwrap();
+
+            Box::new(match values.len() {
+                0 => JsValue::FreeVar(atom!("undefined")),
+                1 => values.into_iter().next().unwrap(),
+                _ => JsValue::alternatives(values),
+            })
+        }
+
+        pub(super) fn get_mut_cur_fn_return_values(&mut self) -> Option<&mut Vec<JsValue>> {
+            self.state.cur_fn_return_values.as_mut()
+        }
+
         /// The RHS (or some part of it) of an pattern or assignment (e.g. `PatAssignTarget`,
         /// `SimpleAssignTarget`, function arguments, etc.), read by the individual parts of LHS
         /// (target).
@@ -843,6 +932,27 @@ mod analyzer_state {
             let out = func(self);
             self.state.pat_value = prev_value;
             out
+        }
+
+        /// Runs `func` with the current function identifier and return values initialized for the
+        /// block.
+        pub(super) fn enter_fn(
+            &mut self,
+            fn_id: u32,
+            initial_return_values: Vec<JsValue>,
+            func: impl FnOnce(&mut Self),
+        ) -> JsValue {
+            let prev_fn_id = self.state.cur_fn_ident.replace(fn_id);
+
+            let old_return_values = self
+                .state
+                .cur_fn_return_values
+                .replace(initial_return_values);
+            func(self);
+            let return_values = self.take_return_values();
+            self.state.cur_fn_ident = prev_fn_id;
+            self.state.cur_fn_return_values = old_return_values;
+            JsValue::function(fn_id, return_values)
         }
     }
 }
@@ -905,10 +1015,15 @@ impl Analyzer<'_> {
             self.data.free_var_ids.insert(id.0.clone(), id.clone());
         }
 
-        if let Some(prev) = self.data.values.get_mut(&id) {
-            prev.add_alt(value);
+        let kind = if self.is_in_fn() {
+            AssignmentKind::InFunction
         } else {
-            self.data.values.insert(id, value);
+            AssignmentKind::InRootScope
+        };
+        if let Some(prev) = self.data.values.get_mut(&id) {
+            prev.add_alt(value, kind);
+        } else {
+            self.data.values.insert(id, VarMeta::new(value, kind));
         }
         // TODO(kdy1): We may need to report an error for this.
         // Variables declared with `var` are hoisted, but using undefined as its
@@ -1290,16 +1405,6 @@ impl Analyzer<'_> {
         });
     }
 
-    fn take_return_values(&mut self) -> Box<JsValue> {
-        let values = self.cur_fn_return_values.take().unwrap();
-
-        Box::new(match values.len() {
-            0 => JsValue::FreeVar(atom!("undefined")),
-            1 => values.into_iter().next().unwrap(),
-            _ => JsValue::alternatives(values),
-        })
-    }
-
     /// Ends a conditional block. All early returns are integrated into the
     /// effects. Returns true if the whole block always early returns.
     fn end_early_return_block(&mut self) -> bool {
@@ -1526,8 +1631,9 @@ impl VisitAstPath for Analyzer<'_> {
         n: &'ast [Param],
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
+        let cur_fn_ident = self.cur_fn_ident();
         for (index, p) in n.iter().enumerate() {
-            self.with_pat_value(Some(JsValue::Argument(self.cur_fn_ident, index)), |this| {
+            self.with_pat_value(Some(JsValue::Argument(cur_fn_ident, index)), |this| {
                 let mut ast_path = ast_path.with_index_guard(index);
                 p.visit_with_ast_path(this, &mut ast_path);
             });
@@ -1565,22 +1671,15 @@ impl VisitAstPath for Analyzer<'_> {
         decl: &'ast FnDecl,
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
-        let old = self
-            .cur_fn_return_values
-            .replace(get_fn_init_return_vals(decl.function.body.as_ref()));
-        let old_ident = self.cur_fn_ident;
-        self.cur_fn_ident = decl.function.span.lo.0;
-        decl.visit_children_with_ast_path(self, ast_path);
-        let return_value = self.take_return_values();
-        self.hoisted_effects.append(&mut self.effects);
-
-        self.add_value(
-            decl.ident.to_id(),
-            JsValue::function(self.cur_fn_ident, return_value),
+        let fn_value = self.enter_fn(
+            decl.function.span.lo.0,
+            get_fn_init_return_vals(decl.function.body.as_ref()),
+            |this| {
+                decl.visit_children_with_ast_path(this, ast_path);
+                this.hoisted_effects.append(&mut this.effects);
+            },
         );
-
-        self.cur_fn_ident = old_ident;
-        self.cur_fn_return_values = old;
+        self.add_value(decl.ident.to_id(), fn_value);
     }
 
     fn visit_fn_expr<'ast: 'r, 'r>(
@@ -1588,31 +1687,24 @@ impl VisitAstPath for Analyzer<'_> {
         expr: &'ast FnExpr,
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
-        let old = self
-            .cur_fn_return_values
-            .replace(get_fn_init_return_vals(expr.function.body.as_ref()));
-        let old_ident = self.cur_fn_ident;
-        self.cur_fn_ident = expr.function.span.lo.0;
-        expr.visit_children_with_ast_path(self, ast_path);
-        let return_value = self.take_return_values();
-
+        let fn_value = self.enter_fn(
+            expr.function.span.lo.0,
+            get_fn_init_return_vals(expr.function.body.as_ref()),
+            |this| {
+                expr.visit_children_with_ast_path(this, ast_path);
+            },
+        );
         if let Some(ident) = &expr.ident {
-            self.add_value(
-                ident.to_id(),
-                JsValue::function(self.cur_fn_ident, return_value),
-            );
+            self.add_value(ident.to_id(), fn_value);
         } else {
             self.add_value(
                 (
                     format!("*anonymous function {}*", expr.function.span.lo.0).into(),
                     SyntaxContext::empty(),
                 ),
-                JsValue::function(self.cur_fn_ident, return_value),
+                fn_value,
             );
         }
-
-        self.cur_fn_ident = old_ident;
-        self.cur_fn_return_values = old;
     }
 
     fn visit_arrow_expr<'ast: 'r, 'r>(
@@ -1620,46 +1712,37 @@ impl VisitAstPath for Analyzer<'_> {
         expr: &'ast ArrowExpr,
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
-        let old_return_values = replace(
-            &mut self.cur_fn_return_values,
-            expr.body
-                .as_block_stmt()
-                .map(|block| get_fn_init_return_vals(Some(block))),
-        );
-        let old_ident = self.cur_fn_ident;
-        self.cur_fn_ident = expr.span.lo.0;
-
-        for (index, p) in expr.params.iter().enumerate() {
-            self.with_pat_value(Some(JsValue::Argument(self.cur_fn_ident, index)), |this| {
-                let mut ast_path = ast_path.with_guard(AstParentNodeRef::ArrowExpr(
-                    expr,
-                    ArrowExprField::Params(index),
-                ));
-                p.visit_with_ast_path(this, &mut ast_path);
-            });
-        }
-
-        {
-            let mut ast_path =
-                ast_path.with_guard(AstParentNodeRef::ArrowExpr(expr, ArrowExprField::Body));
-            expr.body.visit_with_ast_path(self, &mut ast_path);
-        }
-
-        let return_value = match &*expr.body {
-            BlockStmtOrExpr::BlockStmt(_) => self.take_return_values(),
-            BlockStmtOrExpr::Expr(inner_expr) => Box::new(self.eval_context.eval(inner_expr)),
+        let init_return_values = match &*expr.body {
+            BlockStmtOrExpr::BlockStmt(block) => get_fn_init_return_vals(Some(block)),
+            BlockStmtOrExpr::Expr(inner_expr) => vec![self.eval_context.eval(inner_expr)],
         };
+        let fn_value = self.enter_fn(expr.span.lo.0, init_return_values, |this| {
+            for (index, p) in expr.params.iter().enumerate() {
+                this.with_pat_value(
+                    Some(JsValue::Argument(this.cur_fn_ident(), index)),
+                    |this| {
+                        let mut ast_path = ast_path.with_guard(AstParentNodeRef::ArrowExpr(
+                            expr,
+                            ArrowExprField::Params(index),
+                        ));
+                        p.visit_with_ast_path(this, &mut ast_path);
+                    },
+                );
+            }
 
+            {
+                let mut ast_path =
+                    ast_path.with_guard(AstParentNodeRef::ArrowExpr(expr, ArrowExprField::Body));
+                expr.body.visit_with_ast_path(this, &mut ast_path);
+            }
+        });
         self.add_value(
             (
                 format!("*arrow function {}*", expr.span.lo.0).into(),
                 SyntaxContext::empty(),
             ),
-            JsValue::function(self.cur_fn_ident, return_value),
+            fn_value,
         );
-
-        self.cur_fn_ident = old_ident;
-        self.cur_fn_return_values = old_return_values;
     }
 
     fn visit_class_decl<'ast: 'r, 'r>(
@@ -1676,6 +1759,123 @@ impl VisitAstPath for Analyzer<'_> {
             }),
         );
         decl.visit_children_with_ast_path(self, ast_path);
+    }
+
+    fn visit_class_expr<'ast: 'r, 'r>(
+        &mut self,
+        expr: &'ast ClassExpr,
+        ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
+    ) {
+        let id = match &expr.ident {
+            Some(ident) => ident.to_id(),
+            None => (
+                format!("*anonymous class {}*", expr.span().lo.0).into(),
+                SyntaxContext::empty(),
+            ),
+        };
+        self.add_value_from_expr(
+            id,
+            &Expr::Class(ClassExpr {
+                ident: expr.ident.clone(),
+                class: expr.class.clone(),
+            }),
+        );
+        expr.visit_children_with_ast_path(self, ast_path);
+    }
+
+    // N.B. ClassMethod covers both methods and getters/setters.
+
+    fn visit_class_method<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast ClassMethod,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        self.enter_fn(
+            node.function.span.lo.0,
+            get_fn_init_return_vals(node.function.body.as_ref()),
+            |this| {
+                node.visit_children_with_ast_path(this, ast_path);
+                // TODO: do we want to track the value of the class method?
+                this.hoisted_effects.append(&mut this.effects);
+            },
+        );
+    }
+    fn visit_method_prop<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast MethodProp,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        self.enter_fn(
+            node.function.span.lo.0,
+            get_fn_init_return_vals(node.function.body.as_ref()),
+            |this| {
+                node.visit_children_with_ast_path(this, ast_path);
+                // TODO: do we want to track the value of the object method?
+            },
+        );
+    }
+
+    fn visit_getter_prop<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast GetterProp,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        self.enter_fn(
+            node.span.lo.0,
+            get_fn_init_return_vals(node.body.as_ref()),
+            |this| {
+                node.visit_children_with_ast_path(this, ast_path);
+                this.hoisted_effects.append(&mut this.effects);
+            },
+        );
+    }
+
+    fn visit_setter_prop<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast SetterProp,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        self.enter_fn(
+            node.span.lo.0,
+            get_fn_init_return_vals(node.body.as_ref()),
+            |this| {
+                node.visit_children_with_ast_path(this, ast_path);
+                // TODO: do we want to track the value of the object method?
+                this.hoisted_effects.append(&mut this.effects);
+            },
+        );
+    }
+
+    fn visit_private_method<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast PrivateMethod,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        self.enter_fn(
+            node.function.span.lo.0,
+            get_fn_init_return_vals(node.function.body.as_ref()),
+            |this| {
+                node.visit_children_with_ast_path(this, ast_path);
+                // TODO: do we want to track the value of the class method?
+                this.hoisted_effects.append(&mut this.effects);
+            },
+        );
+    }
+
+    fn visit_constructor<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast Constructor,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        self.enter_fn(
+            node.span.lo.0,
+            get_fn_init_return_vals(node.body.as_ref()),
+            |this| {
+                node.visit_children_with_ast_path(this, ast_path);
+                // TODO: do we want to track the value of the constructor?
+                this.hoisted_effects.append(&mut this.effects);
+            },
+        );
     }
 
     fn visit_var_decl<'ast: 'r, 'r>(
@@ -1935,14 +2135,16 @@ impl VisitAstPath for Analyzer<'_> {
     ) {
         stmt.visit_children_with_ast_path(self, ast_path);
 
-        if let Some(values) = &mut self.cur_fn_return_values {
+        if self.is_in_fn() {
             let return_value = stmt
                 .arg
                 .as_deref()
                 .map(|e| self.eval_context.eval(e))
                 .unwrap_or(JsValue::FreeVar(atom!("undefined")));
 
-            values.push(return_value);
+            self.get_mut_cur_fn_return_values()
+                .unwrap()
+                .push(return_value);
         }
 
         self.early_return_stack.push(EarlyReturn::Always {

@@ -1,55 +1,64 @@
 [
     (
         "aa",
-        Member(
-            3,
-            Module(
-                ModuleValue {
-                    module: "x2",
-                    annotations: ImportAnnotations {
-                        map: {},
+        VarMeta {
+            value: Member(
+                3,
+                Module(
+                    ModuleValue {
+                        module: "x2",
+                        annotations: ImportAnnotations {
+                            map: {},
+                        },
                     },
-                },
-            ),
-            Constant(
-                Str(
-                    Atom(
-                        "a",
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "a",
+                        ),
                     ),
                 ),
             ),
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
     (
         "xx",
-        Member(
-            3,
-            Module(
+        VarMeta {
+            value: Member(
+                3,
+                Module(
+                    ModuleValue {
+                        module: "x1",
+                        annotations: ImportAnnotations {
+                            map: {},
+                        },
+                    },
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "default",
+                        ),
+                    ),
+                ),
+            ),
+            assignment_kinds: AllInRootScope,
+        },
+    ),
+    (
+        "yy",
+        VarMeta {
+            value: Module(
                 ModuleValue {
-                    module: "x1",
+                    module: "x3",
                     annotations: ImportAnnotations {
                         map: {},
                     },
                 },
             ),
-            Constant(
-                Str(
-                    Atom(
-                        "default",
-                    ),
-                ),
-            ),
-        ),
-    ),
-    (
-        "yy",
-        Module(
-            ModuleValue {
-                module: "x3",
-                annotations: ImportAnnotations {
-                    map: {},
-                },
-            },
-        ),
+            assignment_kinds: AllInRootScope,
+        },
     ),
 ]
