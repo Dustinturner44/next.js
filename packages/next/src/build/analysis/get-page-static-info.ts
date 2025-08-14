@@ -2,7 +2,7 @@ import type { NextConfig } from '../../server/config-shared'
 import type { RouteHas } from '../../lib/load-custom-routes'
 
 import { promises as fs } from 'fs'
-import { LRUCache } from '../../server/lib/lru-cache'
+import { LRUCache } from '../../shared/lib/lru-cache'
 import {
   extractExportedConstValue,
   UnsupportedValueError,

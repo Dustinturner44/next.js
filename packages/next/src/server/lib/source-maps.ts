@@ -1,5 +1,5 @@
 import type { SourceMap } from 'module'
-import { LRUCache } from './lru-cache'
+import { LRUCache } from '../../shared/lib/lru-cache'
 
 function noSourceMap(): SourceMap | undefined {
   return undefined

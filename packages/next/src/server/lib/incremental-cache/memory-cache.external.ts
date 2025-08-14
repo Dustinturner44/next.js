@@ -1,6 +1,6 @@
 import type { CacheHandlerValue } from '.'
 import { CachedRouteKind } from '../../response-cache/types'
-import { LRUCache } from '../lru-cache'
+import { LRUCache } from '../../../shared/lib/lru-cache'
 
 let memoryCache: LRUCache<CacheHandlerValue> | undefined
 

@@ -6,7 +6,7 @@ import { INTERCEPTION_ROUTE_MARKERS } from './interception-routes'
 import { escapeStringRegexp } from '../../escape-regexp'
 import { removeTrailingSlash } from './remove-trailing-slash'
 import { PARAMETER_PATTERN, parseMatchedParameter } from './get-dynamic-param'
-import { LRUCache } from '../../../../server/lib/lru-cache'
+import { LRUCache } from '../../lru-cache'
 
 /**
  * A group is a part of a regular expression that is captured and used to

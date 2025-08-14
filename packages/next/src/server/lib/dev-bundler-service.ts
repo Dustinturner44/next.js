@@ -2,7 +2,7 @@ import type { IncomingMessage } from 'http'
 import type { DevBundler } from './router-utils/setup-dev-bundler'
 import type { WorkerRequestHandler } from './types'
 
-import { LRUCache } from './lru-cache'
+import { LRUCache } from '../../shared/lib/lru-cache'
 import { createRequestResponseMocks } from './mock-request'
 import { HMR_ACTIONS_SENT_TO_BROWSER } from '../dev/hot-reloader-types'
 

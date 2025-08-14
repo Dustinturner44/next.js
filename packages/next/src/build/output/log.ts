@@ -1,5 +1,5 @@
 import { bold, green, magenta, red, yellow, white } from '../../lib/picocolors'
-import { LRUCache } from '../../server/lib/lru-cache'
+import { LRUCache } from '../../shared/lib/lru-cache'
 
 export const prefixes = {
   wait: white(bold('○')),

@@ -4,7 +4,7 @@ import type { Project } from '../../../build/swc/types'
 import { dim } from '../../../lib/picocolors'
 import { parseStack, type StackFrame } from '../../lib/parse-stack'
 import path from 'path'
-import { LRUCache } from '../../lib/lru-cache'
+import { LRUCache } from '../../../shared/lib/lru-cache'
 
 type WebpackMappingContext = {
   bundler: 'webpack'

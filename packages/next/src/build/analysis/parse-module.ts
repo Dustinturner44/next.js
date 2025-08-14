@@ -1,4 +1,4 @@
-import { LRUCache } from '../../server/lib/lru-cache'
+import { LRUCache } from '../../shared/lib/lru-cache'
 import { withPromiseCache } from '../../lib/with-promise-cache'
 import { createHash } from 'crypto'
 import { parse } from '../swc'

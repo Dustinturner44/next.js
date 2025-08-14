@@ -10,7 +10,7 @@ import {
   type SetIncrementalResponseCacheContext,
 } from '../../response-cache'
 
-import type { LRUCache } from '../lru-cache'
+import type { LRUCache } from '../../../shared/lib/lru-cache'
 import path from '../../../shared/lib/isomorphic/path'
 import {
   NEXT_CACHE_TAGS_HEADER,

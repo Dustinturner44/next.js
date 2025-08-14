@@ -7,7 +7,7 @@
  * considered expired/missing in such cache handlers.
  */
 
-import { LRUCache } from '../lru-cache'
+import { LRUCache } from '../../../shared/lib/lru-cache'
 import type { CacheEntry, CacheHandlerV2 } from './types'
 import {
   isStale,
