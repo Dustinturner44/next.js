@@ -30,7 +30,6 @@ use turbopack_core::{
     reference_type::{EcmaScriptModulesReferenceSubType, ImportWithType},
     resolve::{
         ExportUsage, ExternalType, ModulePart, ModuleResolveResult, ModuleResolveResultItem,
-        RequestKey,
         origin::{ResolveOrigin, ResolveOriginExt},
         parse::Request,
     },
@@ -39,11 +38,9 @@ use turbopack_resolve::ecmascript::esm_resolve;
 
 use super::export::{all_known_export_names, is_export_missing};
 use crate::{
-    ScopeHoistingContext, TreeShakingMode,
+    ScopeHoistingContext,
     analyzer::imports::ImportAnnotations,
-    chunk::{
-        EcmascriptChunkPlaceable, EcmascriptExportsType, placeable::EcmascriptChunkPlaceableExt,
-    },
+    chunk::{EcmascriptChunkPlaceable, EcmascriptExportsType},
     code_gen::{CodeGeneration, CodeGenerationHoistedStmt},
     export::Liveness,
     magic_identifier,
@@ -435,26 +432,6 @@ impl EsmAssetReference {
 impl ModuleReference for EsmAssetReference {
     #[turbo_tasks::function]
     async fn resolve_reference(&self) -> Result<Vc<ModuleResolveResult>> {
-        if let EsmPart::Evaluation = &self.esm_part {
-            let module: ResolvedVc<crate::EcmascriptModuleAsset> =
-                ResolvedVc::try_downcast_type(self.origin)
-                    .expect("EsmAssetReference origin should be a EcmascriptModuleAsset");
-
-            let tree_shaking_mode = module.options().await?.tree_shaking_mode;
-
-            if let Some(TreeShakingMode::ModuleFragments) = tree_shaking_mode {
-                if module.is_marked_as_side_effect_free().await? {
-                    return Ok(ModuleResolveResult {
-                        primary: Box::new([(
-                            RequestKey::default(),
-                            ModuleResolveResultItem::Ignore,
-                        )]),
-                        affecting_sources: Default::default(),
-                    }
-                    .cell());
-                }
-            }
-        }
         let request = Request::parse(self.request.clone().into());
 
         if let Request::Module { module, .. } = &*request.await?
