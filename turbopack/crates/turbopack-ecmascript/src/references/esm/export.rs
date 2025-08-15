@@ -387,7 +387,7 @@ async fn get_all_export_names(
             star_export_names
                 .esm_exports
                 .iter()
-                .map(|(k, &v)| (k.clone(), v)),
+                .map(|(k, (_liveness, v))| (k.clone(), *v)),
         );
         dynamic_exporting_modules
             .extend(star_export_names.dynamic_exporting_modules.iter().copied());
@@ -402,7 +402,7 @@ async fn get_all_export_names(
 
 #[turbo_tasks::value]
 pub struct ExpandStarResult {
-    pub esm_exports: FxIndexMap<RcStr, ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>>,
+    pub esm_exports: FxIndexMap<RcStr, (Liveness, ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>)>,
     pub dynamic_exporting_modules: Vec<ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>>,
 }
 
@@ -419,11 +419,13 @@ pub async fn expand_star_exports(
         match &*exports.await? {
             EcmascriptExports::EsmExports(exports) => {
                 let exports = exports.await?;
-                for key in exports.exports.keys() {
+                for (key, export) in exports.exports.iter() {
                     if key == "default" {
                         continue;
                     }
-                    esm_exports.entry(key.clone()).or_insert_with(|| asset);
+                    esm_exports
+                        .entry(key.clone())
+                        .or_insert_with(|| (export.liveness(), asset));
                 }
                 for esm_ref in exports.star_exports.iter() {
                     if let ReferencedAsset::Some(asset) =
