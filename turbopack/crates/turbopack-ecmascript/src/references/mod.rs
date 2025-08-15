@@ -120,7 +120,6 @@ use super::{
     },
     errors,
     parse::ParseResult,
-    special_cases::special_cases,
     utils::js_value_to_pattern,
     webpack::{
         WebpackChunkAssetReference, WebpackEntryAssetReference, WebpackRuntimeAssetReference,
@@ -134,7 +133,7 @@ use crate::{
     analyzer::{
         ConstantNumber, ConstantString, JsValueUrlKind, RequireContextValue,
         builtin::early_replace_builtin,
-        graph::{ConditionalKind, EffectArg, EvalContext, VarGraph},
+        graph::{ConditionalKind, EffectArg, EvalContext, VarGraph, VarMeta},
         imports::{ImportAnnotations, ImportAttributes, ImportedSymbol, Reexport},
         parse_require_context,
         top_level_await::has_top_level_await,
@@ -515,7 +514,7 @@ pub(crate) async fn analyse_ecmascript_module_internal(
     let origin = ResolvedVc::upcast::<Box<dyn ResolveOrigin>>(module);
 
     let mut analysis = AnalyzeEcmascriptModuleResultBuilder::new();
-    let path = origin.origin_path().owned().await?;
+    let path = &*origin.origin_path().await?;
 
     // Is this a typescript file that requires analyzing type references?
     let analyze_types = match &ty {
@@ -524,6 +523,7 @@ pub(crate) async fn analyse_ecmascript_module_internal(
         EcmascriptModuleAssetType::Ecmascript => false,
     };
 
+    // Split out our module part if we have one.
     let parsed = if let Some(part) = part {
         let parsed = parse(*source, ty, *transforms);
         let split_data = split(source.ident(), *source, parsed);
@@ -569,8 +569,6 @@ pub(crate) async fn analyse_ecmascript_module_internal(
         .instrument(span)
         .await?;
     }
-
-    special_cases(&path.path, &mut analysis);
 
     let parsed = parsed.await?;
 
@@ -947,6 +945,7 @@ pub(crate) async fn analyse_ecmascript_module_internal(
         .instrument(span)
         .await?;
     }
+    // TODO: we can do this when constructing the var graph
     let span = tracing::info_span!("async module handling");
     async {
         let top_level_await_span =
@@ -3324,16 +3323,24 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
                                     EsmExport::ImportedNamespace(ResolvedVc::upcast(esm_ref))
                                 }
                             } else {
-                                EsmExport::LocalBinding(
-                                    binding_name,
-                                    if is_fake_esm {
-                                        Liveness::Mutable
-                                    } else {
-                                        // If this is `export {foo} from 'mod'` and `foo` is a const
-                                        // in mod then we could export as Const here.
-                                        Liveness::Live
-                                    },
-                                )
+                                let exported_name_is_live = match orig {
+                                    ModuleExportName::Ident(ident) => {
+                                        self.is_export_ident_live(ident)
+                                    }
+                                    ModuleExportName::Str(_) => {
+                                        unreachable!(
+                                            "original export names cannot be string literals"
+                                        )
+                                    }
+                                };
+                                let liveness = match (is_fake_esm, exported_name_is_live) {
+                                    // Can we downgrade mutable to live when the exported
+                                    // name isn't mutated after eval?
+                                    (true, _) => Liveness::Mutable,
+                                    (false, true) => Liveness::Live,
+                                    (false, false) => Liveness::Constant,
+                                };
+                                EsmExport::LocalBinding(binding_name, liveness)
                             }
                         };
                         self.esm_exports.insert(key, export);
@@ -3550,7 +3557,6 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
     }
 }
 
-
 impl<'a> ModuleReferencesVisitor<'a> {
     fn is_export_ident_live(&self, ident: &Ident) -> bool {
         match self.var_graph.values.get(&ident.to_id()) {
@@ -3571,7 +3577,6 @@ impl<'a> ModuleReferencesVisitor<'a> {
         }
     }
 }
-
 
 #[turbo_tasks::function]
 async fn resolve_as_webpack_runtime(

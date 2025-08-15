@@ -28,6 +28,8 @@ export const dogRef = {
 
 export let cat = 'cat'
 
+export const [a, b] = [1, 2]
+
 export const initialCat = cat
 
 export function getChimera() {
