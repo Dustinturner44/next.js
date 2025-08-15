@@ -316,6 +316,7 @@ impl VarMeta {
 pub struct VarGraph {
     pub values: FxHashMap<Id, VarMeta>,
     /// Map FreeVar names to their Id to facilitate lookups into [values]
+    /// Doesn't necessarily contain every FreeVar, just those who have non trivial values.
     pub free_var_ids: FxHashMap<Atom, Id>,
 
     pub effects: Vec<Effect>,
