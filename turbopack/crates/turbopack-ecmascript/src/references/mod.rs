@@ -3550,6 +3550,29 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
     }
 }
 
+
+impl<'a> ModuleReferencesVisitor<'a> {
+    fn is_export_ident_live(&self, ident: &Ident) -> bool {
+        match self.var_graph.values.get(&ident.to_id()) {
+            Some(VarMeta {
+                assignment_kinds, ..
+            }) => {
+                // If all assignments to the exported name are in the root scope
+                // then it is not live.
+                *assignment_kinds != crate::analyzer::graph::AssignmentKinds::AllInRootScope
+            }
+            None => {
+                // There are 2 cases where don't have a value
+                // names introduced by `import` statements
+                // free variables
+                // In both cases we need to treat the binding as live
+                true
+            }
+        }
+    }
+}
+
+
 #[turbo_tasks::function]
 async fn resolve_as_webpack_runtime(
     origin: Vc<Box<dyn ResolveOrigin>>,
