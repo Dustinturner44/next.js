@@ -630,6 +630,8 @@ impl EsmExports {
             Getter(Expr),
             GetterSetter(Expr, Expr),
             Value(Expr),
+            // The namespace expression and the export name
+            ReExport(Expr, bool, RcStr),
             None,
         }
 
@@ -718,34 +720,43 @@ impl EsmExports {
                                             ),
                                         ),
                                     }
+
                                 },
-                                ReferencedAssetIdent::Module { namespace_ident:_, ctxt:_, export:_ } => {
-                                    // Otherwise we need to bind as a getter to preserve the 'liveness' of the other modules bindings.
-                                    // TODO: If this becomes important it might be faster to use the runtime to copy PropertyDescriptors across modules
-                                    // since that would reduce allocations and optimize access. We could do this by passing the module-id up.
-                                    let getter = quote!(
-                                            "() => $expr" as Expr,
-                                            expr: Expr = read_expr,
-                                        );
-                                    if *mutable {
-                                        ExportBinding::GetterSetter(
-                                            getter,
-                                            quote!(
-                                                "($new) => $lhs = $new" as Expr,
-                                                lhs: AssignTarget = AssignTarget::Simple(
-                                                    ident.as_expr_individual(DUMMY_SP).map_either(|i| SimpleAssignTarget::Ident(i.into()), SimpleAssignTarget::Member).into_inner()),
-                                                new = Ident::new(
-                                                    format!("new_{name}").into(),
-                                                    DUMMY_SP,
-                                                    Default::default()
-                                                ),
-                                            ))
+                                ReferencedAssetIdent::Module { namespace_ident:_, ctxt:_, export } => {
+
+                                    if export_usage_info.is_circuit_breaker {
+                                        // Instead of a function we could pass a module-id up and have the runtime bind a getter that retrieves it from the modulecache
+                                        let getter = quote!(
+                                                "() => $expr" as Expr,
+                                                expr: Expr = read_expr,
+                                            );
+                                        if *mutable {
+                                            ExportBinding::GetterSetter(
+                                                getter,
+                                                quote!(
+                                                    "($new) => $lhs = $new" as Expr,
+                                                    lhs: AssignTarget = AssignTarget::Simple(
+                                                        ident.as_expr_individual(DUMMY_SP).map_either(|i| SimpleAssignTarget::Ident(i.into()), SimpleAssignTarget::Member).into_inner()),
+                                                    new = Ident::new(
+                                                        format!("new_{name}").into(),
+                                                        DUMMY_SP,
+                                                        Default::default()
+                                                    ),
+                                                ))
+                                        } else {
+                                            ExportBinding::Getter(getter)
+                                        }
                                     } else {
-                                        ExportBinding::Getter(getter)
+                                        let namespace_expr = ident.as_module_namespace_expr(DUMMY_SP).unwrap();
+                                        if let Some(export) = export {
+                                            ExportBinding::ReExport(namespace_expr, *mutable, export.clone())
+                                        } else {
+                                            ExportBinding::Value(namespace_expr)
+                                        }
                                     }
                                 }
-                            }
-                        }).unwrap_or(ExportBinding::None)
+                            }})
+                    .unwrap_or(ExportBinding::None)
                 }
                 EsmExport::ImportedNamespace(esm_ref) => {
                     let referenced_asset =
@@ -756,6 +767,10 @@ impl EsmExports {
                         .map(|ident| {
                             let imported = ident.as_expr(DUMMY_SP, false);
                             if export_usage_info.is_circuit_breaker {
+                                // In theory we could just pass the target module id up and the
+                                // runtime could do the import when binding the export.
+                                // This would almost work but could change evaluation order unless
+                                // we create some way to look-up a module without loading it.
                                 ExportBinding::Getter(quote!(
                                     "(() => $imported)" as Expr,
                                     imported: Expr = imported
@@ -791,6 +806,25 @@ impl EsmExports {
                         getters.push(Some(value.into()));
                     }
                     ExportBinding::None => {}
+                    ExportBinding::ReExport(namespace, mutable, export) => {
+                        let offset = if mutable { 2 } else { 0 };
+                        if &export == exported {
+                            getters
+                                .push(Some(Expr::Lit(Lit::Num(Number::from(1 + offset))).into()));
+                        } else {
+                            getters
+                                .push(Some(Expr::Lit(Lit::Num(Number::from(2 + offset))).into()));
+                            getters.push(Some(
+                                Expr::Lit(Lit::Str(Str {
+                                    span: DUMMY_SP,
+                                    value: export.as_str().into(),
+                                    raw: None,
+                                }))
+                                .into(),
+                            ))
+                        }
+                        getters.push(Some(namespace.into()));
+                    }
                 };
             }
         }

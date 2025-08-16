@@ -58,6 +58,10 @@ function getOverwrittenModule(moduleCache, id) {
     };
 }
 const BindingTag_Value = 0;
+const BindingTag_ReExport = 1;
+const BindingTag_RenamedReexport = 2;
+const BindingTag_Mutable_ReExport = 3;
+const BindingTag_Mutable_RenamedReexport = 4;
 /**
  * Adds the getters to the exports object.
  */ function esm(exports, bindings) {
@@ -72,15 +76,37 @@ const BindingTag_Value = 0;
         const propName = bindings[i++];
         const tagOrFunction = bindings[i++];
         if (typeof tagOrFunction === 'number') {
-            if (tagOrFunction === BindingTag_Value) {
-                defineProp(exports, propName, {
-                    value: bindings[i++],
-                    enumerable: true,
-                    writable: false
-                });
-            } else {
-                throw new Error(`unexpected tag: ${tagOrFunction}`);
+            let descriptor;
+            switch(tagOrFunction){
+                case BindingTag_Value:
+                    descriptor = {
+                        value: bindings[i++],
+                        enumerable: true,
+                        writable: false
+                    };
+                    break;
+                case BindingTag_ReExport:
+                case BindingTag_Mutable_ReExport:
+                    {
+                        const namespace = bindings[i++];
+                        // Note: in the common case we can just copy the descriptor this removes some indirection when
+                        // accesing reexports however the propery may not exist if there is a cycle between a CJS file
+                        // and an ESM module, in that case we just bind a getter and optional setter.
+                        descriptor = Object.getOwnPropertyDescriptor(namespace, propName) ?? makeReexportDescriptor(namespace, propName, tagOrFunction === BindingTag_Mutable_ReExport);
+                    }
+                    break;
+                case BindingTag_RenamedReexport:
+                case BindingTag_Mutable_RenamedReexport:
+                    {
+                        const sourceName = bindings[i++];
+                        const namespace = bindings[i++];
+                        descriptor = Object.getOwnPropertyDescriptor(namespace, sourceName) ?? makeReexportDescriptor(namespace, sourceName, tagOrFunction === BindingTag_Mutable_RenamedReexport);
+                    }
+                    break;
+                default:
+                    throw new Error(`unexpected tag: ${tagOrFunction}`);
             }
+            defineProp(exports, propName, descriptor);
         } else {
             const getterFn = tagOrFunction;
             if (typeof bindings[i] === 'function') {
@@ -99,6 +125,16 @@ const BindingTag_Value = 0;
         }
     }
     Object.seal(exports);
+}
+function makeReexportDescriptor(namespace, propName, mutable) {
+    const descriptor = {
+        enumerable: true,
+        get: createGetter(namespace, propName)
+    };
+    if (mutable) {
+        descriptor.set = createSetter(namespace, propName);
+    }
+    return descriptor;
 }
 /**
  * Makes the module an ESM with exports
@@ -184,6 +220,11 @@ function exportNamespace(namespace, id) {
 contextPrototype.n = exportNamespace;
 function createGetter(obj, key) {
     return ()=>obj[key];
+}
+function createSetter(obj, key) {
+    return (v)=>{
+        obj[key] = v;
+    };
 }
 /**
  * @returns prototype of the object

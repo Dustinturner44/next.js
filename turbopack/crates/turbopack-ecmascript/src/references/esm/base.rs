@@ -87,6 +87,20 @@ impl ReferencedAssetIdent {
             ReferencedAssetIdent::LocalBinding { .. } => None,
         }
     }
+    pub fn as_module_namespace_expr(&self, span: Span) -> Option<Expr> {
+        match self {
+            ReferencedAssetIdent::Module {
+                namespace_ident,
+                ctxt,
+                ..
+            } => Some(Expr::Ident(Ident::new(
+                namespace_ident.as_str().into(),
+                span,
+                ctxt.unwrap_or_default(),
+            ))),
+            ReferencedAssetIdent::LocalBinding { .. } => None,
+        }
+    }
 
     pub fn as_expr_individual(&self, span: Span) -> Either<Ident, MemberExpr> {
         match self {
@@ -99,6 +113,7 @@ impl ReferencedAssetIdent {
                 namespace_ident,
                 ctxt,
                 export,
+                ..
             } => {
                 if let Some(export) = export {
                     Either::Right(MemberExpr {

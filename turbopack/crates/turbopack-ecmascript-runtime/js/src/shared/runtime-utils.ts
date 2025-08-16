@@ -105,9 +105,12 @@ function createModuleObject(id: ModuleId): Module {
   }
 }
 
-type BindingTag = 0
+type BindingTag = 0 | 1 | 2 | 3 | 4
 const BindingTag_Value = 0 as BindingTag
-
+const BindingTag_ReExport = 1 as BindingTag
+const BindingTag_RenamedReexport = 2 as BindingTag
+const BindingTag_Mutable_ReExport = 3 as BindingTag
+const BindingTag_Mutable_RenamedReexport = 4 as BindingTag
 // an arbitrary sequence of bindings as
 // - a prop name
 // - BindingTag_Value, a value to be bound directly, or
@@ -127,15 +130,49 @@ function esm(exports: Exports, bindings: EsmBindings) {
     const propName = bindings[i++] as string
     const tagOrFunction = bindings[i++]
     if (typeof tagOrFunction === 'number') {
-      if (tagOrFunction === BindingTag_Value) {
-        defineProp(exports, propName, {
-          value: bindings[i++],
-          enumerable: true,
-          writable: false,
-        })
-      } else {
-        throw new Error(`unexpected tag: ${tagOrFunction}`)
+      let descriptor: PropertyDescriptor
+      switch (tagOrFunction) {
+        case BindingTag_Value:
+          descriptor = {
+            value: bindings[i++],
+            enumerable: true,
+            writable: false,
+          }
+          break
+        case BindingTag_ReExport:
+        case BindingTag_Mutable_ReExport:
+          {
+            const namespace = bindings[i++] as Record<string, any>
+            // Note: in the common case we can just copy the descriptor this removes some indirection when
+            // accesing reexports however the propery may not exist if there is a cycle between a CJS file
+            // and an ESM module, in that case we just bind a getter and optional setter.
+            descriptor =
+              Object.getOwnPropertyDescriptor(namespace, propName) ??
+              makeReexportDescriptor(
+                namespace,
+                propName,
+                tagOrFunction === BindingTag_Mutable_ReExport
+              )
+          }
+          break
+        case BindingTag_RenamedReexport:
+        case BindingTag_Mutable_RenamedReexport:
+          {
+            const sourceName = bindings[i++] as string
+            const namespace = bindings[i++] as Record<string, any>
+            descriptor =
+              Object.getOwnPropertyDescriptor(namespace, sourceName) ??
+              makeReexportDescriptor(
+                namespace,
+                sourceName,
+                tagOrFunction === BindingTag_Mutable_RenamedReexport
+              )
+          }
+          break
+        default:
+          throw new Error(`unexpected tag: ${tagOrFunction}`)
       }
+      defineProp(exports, propName, descriptor)
     } else {
       const getterFn = tagOrFunction as () => unknown
       if (typeof bindings[i] === 'function') {
@@ -154,6 +191,21 @@ function esm(exports: Exports, bindings: EsmBindings) {
     }
   }
   Object.seal(exports)
+}
+
+function makeReexportDescriptor(
+  namespace: Record<string, any>,
+  propName: string,
+  mutable: boolean
+): PropertyDescriptor {
+  const descriptor: PropertyDescriptor = {
+    enumerable: true,
+    get: createGetter(namespace, propName),
+  }
+  if (mutable) {
+    descriptor.set = createSetter(namespace, propName)
+  }
+  return descriptor
 }
 
 /**
@@ -275,7 +327,11 @@ contextPrototype.n = exportNamespace
 function createGetter(obj: Record<string | symbol, any>, key: string | symbol) {
   return () => obj[key]
 }
-
+function createSetter(obj: Record<string | symbol, any>, key: string | symbol) {
+  return (v) => {
+    obj[key] = v
+  }
+}
 /**
  * @returns prototype of the object
  */
