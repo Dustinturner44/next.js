@@ -10,6 +10,7 @@ import {
 import type { Request, Response } from 'playwright'
 import fs from 'node:fs/promises'
 import { join } from 'node:path'
+import { setTimeout } from 'node:timers/promises'
 
 const GENERIC_RSC_ERROR =
   'Error: An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.'
@@ -1529,10 +1530,14 @@ describe('app-dir action handling', () => {
           )
         })
 
-        await retry(async () => {
-          const another = await browser.elementByCss('#thankyounext').text()
-          expect(another).toEqual(original)
-        })
+        // Should be the same number although in serverless it might be
+        // eventually consistent.
+        if (!isNextDeploy) {
+          await retry(async () => {
+            const another = await browser.elementByCss('#thankyounext').text()
+            expect(another).toEqual(original)
+          })
+        }
 
         await browser.elementByCss('#back').click()
         await retry(async () => {
@@ -1548,6 +1553,11 @@ describe('app-dir action handling', () => {
             break
           default:
             throw new Error(`Invalid type: ${type}`)
+        }
+
+        // Give some time for it to be revalidated.
+        if (isNextDeploy) {
+          await setTimeout(5000)
         }
 
         // Should be different
