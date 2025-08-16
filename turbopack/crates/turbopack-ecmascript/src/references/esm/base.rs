@@ -41,6 +41,7 @@ use crate::{
     analyzer::imports::ImportAnnotations,
     chunk::{EcmascriptChunkPlaceable, EcmascriptExports},
     code_gen::{CodeGeneration, CodeGenerationHoistedStmt},
+    export::Liveness,
     magic_identifier,
     references::{
         esm::EsmExport,
@@ -62,7 +63,11 @@ pub enum ReferencedAsset {
 #[derive(Debug)]
 pub enum ReferencedAssetIdent {
     /// The given export (or namespace) is a local binding in the current scope hoisting group.
-    LocalBinding { ident: RcStr, ctxt: SyntaxContext },
+    LocalBinding {
+        ident: RcStr,
+        ctxt: SyntaxContext,
+        liveness: Liveness,
+    },
     /// The given export (or namespace) should be imported and will be assigned to a new variable.
     Module {
         namespace_ident: String,
@@ -82,16 +87,33 @@ impl ReferencedAssetIdent {
             ReferencedAssetIdent::LocalBinding { .. } => None,
         }
     }
+    pub fn as_module_namespace_expr(&self, span: Span) -> Option<Expr> {
+        match self {
+            ReferencedAssetIdent::Module {
+                namespace_ident,
+                ctxt,
+                ..
+            } => Some(Expr::Ident(Ident::new(
+                namespace_ident.as_str().into(),
+                span,
+                ctxt.unwrap_or_default(),
+            ))),
+            ReferencedAssetIdent::LocalBinding { .. } => None,
+        }
+    }
 
     pub fn as_expr_individual(&self, span: Span) -> Either<Ident, MemberExpr> {
         match self {
-            ReferencedAssetIdent::LocalBinding { ident, ctxt } => {
-                Either::Left(Ident::new(ident.as_str().into(), span, *ctxt))
-            }
+            ReferencedAssetIdent::LocalBinding {
+                ident,
+                ctxt,
+                liveness: _,
+            } => Either::Left(Ident::new(ident.as_str().into(), span, *ctxt)),
             ReferencedAssetIdent::Module {
                 namespace_ident,
                 ctxt,
                 export,
+                ..
             } => {
                 if let Some(export) = export {
                     Either::Right(MemberExpr {
@@ -172,13 +194,14 @@ impl ReferencedAsset {
                     let exports = exports.expand_exports(ModuleExportUsageInfo::all()).await?;
                     let esm_export = exports.exports.get(export);
                     match esm_export {
-                        Some(EsmExport::LocalBinding(_, _)) => {
+                        Some(EsmExport::LocalBinding(_, liveness)) => {
                             // A local binding in a module that is merged in the same group. Use the
                             // export name as identifier, it will be replaced with the actual
                             // variable name during AST merging.
                             return Ok(Some(ReferencedAssetIdent::LocalBinding {
                                 ident: export.clone(),
                                 ctxt,
+                                liveness: *liveness,
                             }));
                         }
                         Some(b @ EsmExport::ImportedBinding(esm_ref, _, _))
