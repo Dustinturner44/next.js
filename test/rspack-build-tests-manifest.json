@@ -197,6 +197,7 @@
       "app-dir action handling should not expose action content in sourcemaps",
       "app-dir action handling should not log errors for non-action form POSTs",
       "app-dir action handling should only submit action once when resubmitting an action after navigation",
+      "app-dir action handling should output exportName and filename info in manifest",
       "app-dir action handling should propagate errors from a `text/plain` response to an error boundary",
       "app-dir action handling should push new route when redirecting",
       "app-dir action handling should replace current route when redirecting with type set to replace",
@@ -329,6 +330,7 @@
       "app-dir action handling should not expose action content in sourcemaps",
       "app-dir action handling should not log errors for non-action form POSTs",
       "app-dir action handling should only submit action once when resubmitting an action after navigation",
+      "app-dir action handling should output exportName and filename info in manifest",
       "app-dir action handling should propagate errors from a `text/plain` response to an error boundary",
       "app-dir action handling should push new route when redirecting",
       "app-dir action handling should replace current route when redirecting with type set to replace",
@@ -1567,10 +1569,10 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/app/standalone-gsp.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "output: standalone with getStaticProps should work correctly with output standalone"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -7793,6 +7795,72 @@
     "passed": [
       "instrumentation-hook - register-once should not error when concurrent requests are made",
       "instrumentation-hook - register-once should only register once"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/invalid-static-asset-404-app/invalid-static-asset-404-app-asset-prefix.test.ts": {
+    "passed": [
+      "invalid-static-asset-404-app-asset-prefix should return 404 with plain text when fetching invalid asset path",
+      "invalid-static-asset-404-app-asset-prefix should return correct output with status 200 on valid asset path",
+      "invalid-static-asset-404-app-asset-prefix should return custom 404 page when fetching invalid non-asset path"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/invalid-static-asset-404-app/invalid-static-asset-404-app-base-path.test.ts": {
+    "passed": [
+      "invalid-static-asset-404-app-base-path should return 404 with plain text when fetching invalid asset path",
+      "invalid-static-asset-404-app-base-path should return correct output with status 200 on valid asset path",
+      "invalid-static-asset-404-app-base-path should return custom 404 page when fetching invalid non-asset path"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/invalid-static-asset-404-app/invalid-static-asset-404-app.test.ts": {
+    "passed": [
+      "invalid-static-asset-404-app should return 404 with plain text when fetching invalid asset path",
+      "invalid-static-asset-404-app should return correct output with status 200 on valid asset path",
+      "invalid-static-asset-404-app should return custom 404 page when fetching invalid non-asset path"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/invalid-static-asset-404-pages/invalid-static-asset-404-pages-asset-prefix.test.ts": {
+    "passed": [
+      "invalid-static-asset-404-pages-asset-prefix should return 404 with plain text when fetching invalid asset path",
+      "invalid-static-asset-404-pages-asset-prefix should return correct output with status 200 on valid asset path",
+      "invalid-static-asset-404-pages-asset-prefix should return custom 404 page when fetching invalid non-asset path"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/invalid-static-asset-404-pages/invalid-static-asset-404-pages-base-path.test.ts": {
+    "passed": [
+      "invalid-static-asset-404-pages-base-path should return 404 with plain text when fetching invalid asset path",
+      "invalid-static-asset-404-pages-base-path should return correct output with status 200 on valid asset path",
+      "invalid-static-asset-404-pages-base-path should return custom 404 page when fetching invalid non-asset path"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/invalid-static-asset-404-pages/invalid-static-asset-404-pages.test.ts": {
+    "passed": [
+      "invalid-static-asset-404-pages should return 404 with plain text when fetching invalid asset path",
+      "invalid-static-asset-404-pages should return correct output with status 200 on valid asset path",
+      "invalid-static-asset-404-pages should return custom 404 page when fetching invalid non-asset path"
     ],
     "failed": [],
     "pending": [],
@@ -20212,11 +20280,10 @@
   },
   "test/production/pnpm-support/index.test.ts": {
     "passed": [
-      "pnpm support should build with dependencies installed via pnpm"
-    ],
-    "failed": [
+      "pnpm support should build with dependencies installed via pnpm",
       "pnpm support should execute client-side JS on each page in output: \"standalone\""
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -20318,7 +20385,8 @@
     "runtimeError": false
   },
   "test/production/standalone-mode/required-server-files/required-server-files-app.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "required server files app router should handle optional catchall",
       "required server files app router should not fail caching",
       "required server files app router should not override params with query params",
@@ -20330,7 +20398,6 @@
       "required server files app router should send the right cache headers for an app page",
       "required server files app router should send the right cache headers for an app route"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
