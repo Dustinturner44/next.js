@@ -1,5 +1,6 @@
 use anyhow::{Result, anyhow, bail};
 use either::Either;
+use serde::{Deserialize, Serialize};
 use strsim::jaro;
 use swc_core::{
     common::{BytePos, DUMMY_SP, Span, SyntaxContext, source_map::PURE_SP},
@@ -10,7 +11,9 @@ use swc_core::{
     quote,
 };
 use turbo_rcstr::{RcStr, rcstr};
-use turbo_tasks::{ResolvedVc, ValueToString, Vc};
+use turbo_tasks::{
+    NonLocalValue, ResolvedVc, ValueToString, Vc, debug::ValueDebugFormat, trace::TraceRawVcs,
+};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     chunk::{
@@ -316,6 +319,47 @@ impl EsmAssetReferences {
     }
 }
 
+#[derive(
+    Hash,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    ValueDebugFormat,
+    TraceRawVcs,
+    Serialize,
+    Deserialize,
+    NonLocalValue,
+)]
+pub enum EsmPart {
+    Namespace,
+    Evaluation,
+    Export(RcStr),
+    Internal(u32),
+}
+
+impl Into<Option<ModulePart>> for EsmPart {
+    fn into(self) -> Option<ModulePart> {
+        match self {
+            EsmPart::Evaluation => Some(ModulePart::evaluation()),
+            EsmPart::Namespace => None,
+            EsmPart::Export(name) => Some(ModulePart::export(name)),
+            EsmPart::Internal(id) => Some(ModulePart::internal(id)),
+        }
+    }
+}
+
+impl Into<Vc<ExportUsage>> for EsmPart {
+    fn into(self) -> Vc<ExportUsage> {
+        match self {
+            EsmPart::Export(name) => ExportUsage::named(name),
+            EsmPart::Namespace => ExportUsage::all(),
+            EsmPart::Internal(_) => ExportUsage::all(),
+            EsmPart::Evaluation => ExportUsage::evaluation(),
+        }
+    }
+}
+
 #[turbo_tasks::value(shared)]
 #[derive(Hash, Debug)]
 pub struct EsmAssetReference {
@@ -324,7 +368,7 @@ pub struct EsmAssetReference {
     pub request: RcStr,
     pub annotations: ImportAnnotations,
     pub issue_source: IssueSource,
-    pub export_name: Option<ModulePart>,
+    pub esm_part: EsmPart,
     pub import_externals: bool,
     pub is_pure_import: bool,
 }
@@ -345,7 +389,7 @@ impl EsmAssetReference {
         request: RcStr,
         issue_source: IssueSource,
         annotations: ImportAnnotations,
-        export_name: Option<ModulePart>,
+        export_name: EsmPart,
         import_externals: bool,
     ) -> Self {
         EsmAssetReference {
@@ -353,7 +397,7 @@ impl EsmAssetReference {
             request,
             issue_source,
             annotations,
-            export_name,
+            esm_part: export_name,
             import_externals,
             is_pure_import: false,
         }
@@ -364,7 +408,7 @@ impl EsmAssetReference {
         request: RcStr,
         issue_source: IssueSource,
         annotations: ImportAnnotations,
-        export_name: Option<ModulePart>,
+        export_name: EsmPart,
         import_externals: bool,
     ) -> Self {
         EsmAssetReference {
@@ -372,7 +416,7 @@ impl EsmAssetReference {
             request,
             issue_source,
             annotations,
-            export_name,
+            esm_part: export_name,
             import_externals,
             is_pure_import: true,
         }
@@ -391,17 +435,7 @@ impl EsmAssetReference {
 impl ModuleReference for EsmAssetReference {
     #[turbo_tasks::function]
     async fn resolve_reference(&self) -> Result<Vc<ModuleResolveResult>> {
-        let ty = if matches!(self.annotations.module_type(), Some("json")) {
-            EcmaScriptModulesReferenceSubType::ImportWithType(ImportWithType::Json)
-        } else if matches!(self.annotations.module_type(), Some("bytes")) {
-            EcmaScriptModulesReferenceSubType::ImportWithType(ImportWithType::Bytes)
-        } else if let Some(part) = &self.export_name {
-            EcmaScriptModulesReferenceSubType::ImportPart(part.clone())
-        } else {
-            EcmaScriptModulesReferenceSubType::Import
-        };
-
-        if let Some(ModulePart::Evaluation) = &self.export_name {
+        if let EsmPart::Evaluation = &self.esm_part {
             let module: ResolvedVc<crate::EcmascriptModuleAsset> =
                 ResolvedVc::try_downcast_type(self.origin)
                     .expect("EsmAssetReference origin should be a EcmascriptModuleAsset");
@@ -426,20 +460,28 @@ impl ModuleReference for EsmAssetReference {
         if let Request::Module { module, .. } = &*request.await?
             && module.is_match(TURBOPACK_PART_IMPORT_SOURCE)
         {
-            if let Some(part) = &self.export_name {
-                let module: ResolvedVc<crate::EcmascriptModuleAsset> =
-                    ResolvedVc::try_downcast_type(self.origin)
-                        .expect("EsmAssetReference origin should be a EcmascriptModuleAsset");
+            let module_part: Option<ModulePart> = self.esm_part.clone().into();
+            let module_part = module_part.unwrap_or(ModulePart::exports());
+            let module: ResolvedVc<crate::EcmascriptModuleAsset> =
+                ResolvedVc::try_downcast_type(self.origin)
+                    .expect("EsmAssetReference origin should be a EcmascriptModuleAsset");
 
-                return Ok(*ModuleResolveResult::module(ResolvedVc::upcast(
-                    EcmascriptModulePartAsset::select_part(*module, part.clone())
-                        .to_resolved()
-                        .await?,
-                )));
-            }
-
-            bail!("export_name is required for part import")
+            return Ok(*ModuleResolveResult::module(ResolvedVc::upcast(
+                EcmascriptModulePartAsset::select_part(*module, module_part)
+                    .to_resolved()
+                    .await?,
+            )));
         }
+
+        let ty = if matches!(self.annotations.module_type(), Some("json")) {
+            EcmaScriptModulesReferenceSubType::ImportWithType(ImportWithType::Json)
+        } else if matches!(self.annotations.module_type(), Some("bytes")) {
+            EcmaScriptModulesReferenceSubType::ImportWithType(ImportWithType::Bytes)
+        } else if let Some(part) = self.esm_part.clone().into() {
+            EcmaScriptModulesReferenceSubType::ImportPart(part)
+        } else {
+            EcmaScriptModulesReferenceSubType::Import
+        };
 
         let result = esm_resolve(
             self.get_origin().resolve().await?,
@@ -449,8 +491,7 @@ impl ModuleReference for EsmAssetReference {
             Some(self.issue_source),
         )
         .await?;
-
-        if let Some(ModulePart::Export(export_name)) = &self.export_name {
+        if let EsmPart::Export(export_name) = &self.esm_part {
             for &module in result.primary_modules().await? {
                 if let Some(module) = ResolvedVc::try_downcast(module)
                     && *is_export_missing(*module, export_name.clone()).await?
@@ -503,11 +544,7 @@ impl ChunkableModuleReference for EsmAssetReference {
 
     #[turbo_tasks::function]
     fn export_usage(&self) -> Vc<ExportUsage> {
-        match &self.export_name {
-            Some(ModulePart::Export(export_name)) => ExportUsage::named(export_name.clone()),
-            Some(ModulePart::Evaluation) => ExportUsage::evaluation(),
-            _ => ExportUsage::all(),
-        }
+        self.esm_part.clone().into()
     }
 }
 
@@ -570,10 +607,10 @@ impl EsmAssetReference {
                         let ident = referenced_asset
                             .get_ident(
                                 chunking_context,
-                                this.export_name.as_ref().and_then(|e| match e {
-                                    ModulePart::Export(export_name) => Some(export_name.clone()),
+                                match &this.esm_part {
+                                    EsmPart::Export(export_name) => Some(export_name.clone()),
                                     _ => None,
-                                }),
+                                },
                                 scope_hoisting_context,
                             )
                             .await?;

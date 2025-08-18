@@ -147,7 +147,8 @@ use crate::{
         cjs::{CjsRequireAssetReference, CjsRequireCacheAccess, CjsRequireResolveAssetReference},
         dynamic_expression::DynamicExpression,
         esm::{
-            EsmBinding, UrlRewriteBehavior, base::EsmAssetReferences,
+            EsmBinding, UrlRewriteBehavior,
+            base::{EsmAssetReferences, EsmPart},
             module_id::EsmModuleIdAssetReference,
         },
         ident::IdentReplacement,
@@ -719,9 +720,9 @@ pub async fn analyse_ecmascript_module_internal(
                 match &r.imported_symbol {
                     ImportedSymbol::ModuleEvaluation => {
                         should_add_evaluation = true;
-                        Some(ModulePart::evaluation())
+                        EsmPart::Evaluation
                     }
-                    ImportedSymbol::Symbol(name) => Some(ModulePart::export((&**name).into())),
+                    ImportedSymbol::Symbol(name) => EsmPart::Export((&**name).into()),
                     ImportedSymbol::PartEvaluation(part_id) | ImportedSymbol::Part(part_id) => {
                         if !matches!(
                             options.tree_shaking_mode,
@@ -737,13 +738,9 @@ pub async fn analyse_ecmascript_module_internal(
                         if matches!(&r.imported_symbol, ImportedSymbol::PartEvaluation(_)) {
                             should_add_evaluation = true;
                         }
-                        Some(ModulePart::internal(*part_id))
+                        EsmPart::Internal(*part_id)
                     }
-                    ImportedSymbol::Exports => matches!(
-                        options.tree_shaking_mode,
-                        Some(TreeShakingMode::ModuleFragments)
-                    )
-                    .then(ModulePart::exports),
+                    ImportedSymbol::Exports => EsmPart::Namespace,
                 },
                 import_externals,
             )
@@ -1372,8 +1369,7 @@ pub async fn analyse_ecmascript_module_internal(
                             Some(TreeShakingMode::ReexportsOnly)
                         ) {
                             let original_reference = r.await?;
-                            if original_reference.export_name.is_none()
-                                && export.is_some()
+                            if matches!(original_reference.esm_part, EsmPart::Namespace)
                                 && let Some(export) = export
                             {
                                 // Rewrite `import * as ns from 'foo'; foo.bar()` to behave like
@@ -1388,7 +1384,7 @@ pub async fn analyse_ecmascript_module_internal(
                                                 original_reference.request.clone(),
                                                 original_reference.issue_source,
                                                 original_reference.annotations.clone(),
-                                                Some(ModulePart::export(export.clone())),
+                                                EsmPart::Export(export.clone()),
                                                 original_reference.import_externals,
                                             )
                                             .resolved_cell()
@@ -2650,7 +2646,10 @@ async fn handle_free_var_reference(
                             span.hi.to_u32(),
                         ),
                         Default::default(),
-                        export.clone().map(ModulePart::export),
+                        match export {
+                            Some(name) => EsmPart::Export(name.clone()),
+                            None => EsmPart::Namespace,
+                        },
                         state.import_externals,
                     )
                     .resolved_cell())
