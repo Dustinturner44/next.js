@@ -175,14 +175,14 @@ ${errorOnBadHandler(resourcePath)}
 ${await createReExportsCode(resourcePath, loaderContext)}
 
 export async function GET(_, ctx) {
-  const params = await ctx.params
-  const { __metadata_id__, ...rest } = params || {}
-  const restParams = params ? rest : undefined
-  const targetId = __metadata_id__
   let id = undefined
   
   if (generateImageMetadata) {
-    const imageMetadata = await generateImageMetadata({ params: restParams })
+    const params = await ctx.params
+    const { __metadata_id__, ...rest } = params || {}
+    const restParams = params ? rest : undefined
+    const targetId = __metadata_id__
+    const imageMetadata = await generateImageMetadata({ params })
     id = imageMetadata.find((item) => {
       if (process.env.NODE_ENV !== 'production') {
         if (item?.id == null) {
@@ -198,7 +198,7 @@ export async function GET(_, ctx) {
     }
   }
 
-  return handler({ params: restParams, id })
+  return handler({ params: ctx.params, id })
 }
 `
 }
@@ -245,16 +245,15 @@ ${errorOnBadHandler(resourcePath)}
 ${await createReExportsCode(resourcePath, loaderContext)}
 
 export async function GET(_, ctx) {
-  const { __metadata_id__: id, ...params } = await ctx.params || {}
-  const hasXmlExtension = id ? id.endsWith('.xml') : false
-
-  if (id && !hasXmlExtension) {
-    return new NextResponse('Not Found', {
-      status: 404,
-    })
-  }
-
   if (process.env.NODE_ENV !== 'production' && sitemapModule.generateSitemaps) {
+    const { __metadata_id__: id, ...params } = await ctx.params || {}
+    const hasXmlExtension = id ? id.endsWith('.xml') : false
+    if (id && !hasXmlExtension) {
+      return new NextResponse('Not Found', {
+        status: 404,
+      })
+    }
+    const targetId = id && hasXmlExtension ? id.slice(0, -4) : undefined
     const sitemaps = await sitemapModule.generateSitemaps()
     for (const item of sitemaps) {
       if (item?.id == null) {
@@ -262,10 +261,8 @@ export async function GET(_, ctx) {
       }
     }
   }
-
-  const targetId = id && hasXmlExtension ? id.slice(0, -4) : undefined
-
-  const data = await handler({ id: targetId })
+  
+  const data = await handler()
   const content = resolveRouteData(data, fileType)
 
   return new NextResponse(content, {

@@ -46,7 +46,6 @@ pub async fn dynamic_image_metadata_source(
     asset_context: Vc<Box<dyn AssetContext>>,
     path: FileSystemPath,
     ty: RcStr,
-    page: AppPage,
 ) -> Result<Vc<Box<dyn Source>>> {
     let stem = path.file_stem();
     let stem = stem.unwrap_or_default();
@@ -92,13 +91,14 @@ pub async fn dynamic_image_metadata_source(
     let code = formatdoc! {
         r#"
             import {{ {exported_fields_excluding_default} }} from {resource_path}
-            import {{ fillMetadataSegment }} from 'next/dist/lib/metadata/get-metadata-route'
+            import path from 'next/dist/shared/lib/isomorphic/path'
 
             const imageModule = {{ {exported_fields_excluding_default} }}
 
-            export default async function (props) {{
+            export default async function (props, pathnamePromise) {{
+                const pathname = await pathnamePromise
                 const {{ __metadata_id__: _, ...params }} = await props.params
-                const imageUrl = fillMetadataSegment({pathname_prefix}, params, {page_segment})
+                const imageUrl = path.posix.join(pathname, {page_segment})
 
                 const {{ generateImageMetadata }} = imageModule
 
@@ -128,7 +128,6 @@ pub async fn dynamic_image_metadata_source(
         "#,
         exported_fields_excluding_default = exported_fields_excluding_default,
         resource_path = StringifyJs(&format!("./{stem}.{ext}")),
-        pathname_prefix = StringifyJs(&page.to_string()),
         page_segment = StringifyJs(stem),
         sizes = sizes,
         hash_query = StringifyJs(&hash_query),

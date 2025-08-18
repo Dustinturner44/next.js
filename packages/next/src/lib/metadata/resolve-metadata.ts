@@ -411,14 +411,19 @@ function getDefinedMetadata(
 
 async function collectStaticImagesFiles(
   metadata: AppDirModules['metadata'],
-  props: any,
+  props: LayoutProps,
+  pathnamePromise: Promise<string>,
   type: keyof NonNullable<AppDirModules['metadata']>
 ) {
   if (!metadata?.[type]) return undefined
 
   const iconPromises = metadata[type as 'icon' | 'apple'].map(
-    async (imageModule: (p: any) => Promise<MetadataImageModule[]>) =>
-      interopDefault(await imageModule(props))
+    async (
+      imageModule: (
+        p: any,
+        pathnamePromise: Promise<string>
+      ) => Promise<MetadataImageModule[]>
+    ) => interopDefault(await imageModule(props, pathnamePromise))
   )
 
   return iconPromises?.length > 0
@@ -428,16 +433,17 @@ async function collectStaticImagesFiles(
 
 async function resolveStaticMetadata(
   modules: AppDirModules,
-  props: any
+  props: LayoutProps,
+  pathnamePromise: Promise<string>
 ): Promise<StaticMetadata> {
   const { metadata } = modules
   if (!metadata) return null
 
   const [icon, apple, openGraph, twitter] = await Promise.all([
-    collectStaticImagesFiles(metadata, props, 'icon'),
-    collectStaticImagesFiles(metadata, props, 'apple'),
-    collectStaticImagesFiles(metadata, props, 'openGraph'),
-    collectStaticImagesFiles(metadata, props, 'twitter'),
+    collectStaticImagesFiles(metadata, props, pathnamePromise, 'icon'),
+    collectStaticImagesFiles(metadata, props, pathnamePromise, 'apple'),
+    collectStaticImagesFiles(metadata, props, pathnamePromise, 'openGraph'),
+    collectStaticImagesFiles(metadata, props, pathnamePromise, 'twitter'),
   ])
 
   const staticMetadata = {
@@ -459,6 +465,7 @@ async function collectMetadata({
   props,
   route,
   errorConvention,
+  pathnamePromise,
 }: {
   tree: LoaderTree
   metadataItems: MetadataItems
@@ -466,6 +473,7 @@ async function collectMetadata({
   props: any
   route: string
   errorConvention?: MetadataErrorType
+  pathnamePromise: Promise<string>
 }) {
   let mod
   let modType
@@ -486,7 +494,11 @@ async function collectMetadata({
     route += `/${modType}`
   }
 
-  const staticFilesMetadata = await resolveStaticMetadata(tree[2], props)
+  const staticFilesMetadata = await resolveStaticMetadata(
+    tree[2],
+    props,
+    pathnamePromise
+  )
   const metadataExport = mod ? getDefinedMetadata(mod, props, { route }) : null
 
   metadataItems.push([metadataExport, staticFilesMetadata])
@@ -556,7 +568,8 @@ const resolveMetadataItems = cache(async function (
   searchParams: Promise<ParsedUrlQuery>,
   errorConvention: MetadataErrorType | undefined,
   getDynamicParamFromSegment: GetDynamicParamFromSegment,
-  workStore: WorkStore
+  workStore: WorkStore,
+  pathnamePromise: Promise<string>
 ) {
   const parentParams = {}
   const metadataItems: MetadataItems = []
@@ -571,7 +584,8 @@ const resolveMetadataItems = cache(async function (
     errorConvention,
     errorMetadataItem,
     getDynamicParamFromSegment,
-    workStore
+    workStore,
+    pathnamePromise
   )
 })
 
@@ -585,7 +599,8 @@ async function resolveMetadataItemsImpl(
   errorConvention: MetadataErrorType | undefined,
   errorMetadataItem: MetadataItems[number],
   getDynamicParamFromSegment: GetDynamicParamFromSegment,
-  workStore: WorkStore
+  workStore: WorkStore,
+  pathnamePromise: Promise<string>
 ): Promise<MetadataItems> {
   const [segment, parallelRoutes, { page }] = tree
   const currentTreePrefix =
@@ -625,6 +640,7 @@ async function resolveMetadataItemsImpl(
     errorMetadataItem,
     errorConvention,
     props: layerProps,
+    pathnamePromise,
     route: currentTreePrefix
       // __PAGE__ shouldn't be shown in a route
       .filter((s) => s !== PAGE_SEGMENT_KEY)
@@ -642,7 +658,8 @@ async function resolveMetadataItemsImpl(
       errorConvention,
       errorMetadataItem,
       getDynamicParamFromSegment,
-      workStore
+      workStore,
+      pathnamePromise
     )
   }
 
@@ -1095,7 +1112,7 @@ export async function accumulateViewport(
 // Exposed API for metadata component, that directly resolve the loader tree and related context as resolved metadata.
 export async function resolveMetadata(
   tree: LoaderTree,
-  pathname: Promise<string>,
+  pathnamePromise: Promise<string>,
   searchParams: Promise<ParsedUrlQuery>,
   errorConvention: MetadataErrorType | undefined,
   getDynamicParamFromSegment: GetDynamicParamFromSegment,
@@ -1107,12 +1124,13 @@ export async function resolveMetadata(
     searchParams,
     errorConvention,
     getDynamicParamFromSegment,
-    workStore
+    workStore,
+    pathnamePromise
   )
   return accumulateMetadata(
     workStore.route,
     metadataItems,
-    pathname,
+    pathnamePromise,
     metadataContext
   )
 }

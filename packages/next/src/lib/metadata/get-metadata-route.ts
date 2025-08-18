@@ -1,10 +1,6 @@
 import { isMetadataPage } from './is-metadata-route'
 import path from '../../shared/lib/isomorphic/path'
-import { interpolateDynamicPath } from '../../server/server-utils'
-import { getNamedRouteRegex } from '../../shared/lib/router/utils/route-regex'
 import { djb2Hash } from '../../shared/lib/hash'
-import { normalizeAppPath } from '../../shared/lib/router/utils/app-paths'
-import { normalizePathSep } from '../../shared/lib/page-path/normalize-path-sep'
 import {
   isGroupSegment,
   isParallelRouteSegment,
@@ -46,31 +42,6 @@ function getMetadataRouteSuffix(page: string) {
     suffix = djb2Hash(parentPathname).toString(36).slice(0, 6)
   }
   return suffix
-}
-
-/**
- * Fill the dynamic segment in the metadata route
- *
- * Example:
- * fillMetadataSegment('/a/[slug]', { params: { slug: 'b' } }, 'open-graph') -> '/a/b/open-graph'
- *
- */
-export function fillMetadataSegment(
-  segment: string,
-  params: any,
-  lastSegment: string
-) {
-  const pathname = normalizeAppPath(segment)
-  const routeRegex = getNamedRouteRegex(pathname, {
-    prefixRouteKeys: false,
-  })
-  const route = interpolateDynamicPath(pathname, params, routeRegex)
-  const { name, ext } = path.parse(lastSegment)
-  const pagePath = path.posix.join(segment, name)
-  const suffix = getMetadataRouteSuffix(pagePath)
-  const routeSuffix = suffix ? `-${suffix}` : ''
-
-  return normalizePathSep(path.join(route, `${name}${routeSuffix}${ext}`))
 }
 
 /**

@@ -13,7 +13,6 @@ import loaderUtils from 'next/dist/compiled/loader-utils3'
 import { getImageSize } from '../../../server/image-optimizer'
 import { imageExtMimeTypeMap } from '../../../lib/mime-type'
 import { WEBPACK_RESOURCE_QUERIES } from '../../../lib/constants'
-import { normalizePathSep } from '../../../shared/lib/page-path/normalize-path-sep'
 import type { PageExtensions } from '../../page-extensions-type'
 import { getLoaderModuleNamedExports } from './utils'
 
@@ -55,12 +54,11 @@ async function nextMetadataImageLoader(
     opts
   )
 
-  const isDynamicResource = pageExtensions.includes(extension)
-  const pageSegment = isDynamicResource ? fileNameBase : interpolatedName
+  const isMetadataApiRoute = pageExtensions.includes(extension)
+  const pageSegment = isMetadataApiRoute ? fileNameBase : interpolatedName
   const hashQuery = contentHash ? '?' + contentHash : ''
-  const pathnamePrefix = normalizePathSep(path.join(basePath, segment))
 
-  if (isDynamicResource) {
+  if (isMetadataApiRoute) {
     const exportedFieldsExcludingDefault = (
       await getLoaderModuleNamedExports(resourcePath, this)
     ).filter((name) => name !== 'default')
@@ -79,7 +77,7 @@ async function nextMetadataImageLoader(
       // smaller.
       resourcePath + '?' + WEBPACK_RESOURCE_QUERIES.metadataImageMeta
     )}
-    import { fillMetadataSegment } from 'next/dist/lib/metadata/get-metadata-route'
+    import path from 'next/dist/shared/lib/isomorphic/path'
 
     const imageModule = {
       ${exportedFieldsExcludingDefault
@@ -87,11 +85,10 @@ async function nextMetadataImageLoader(
         .join(',')}
     }
 
-    export default async function (props) {
-      const { __metadata_id__: _, ...params } = await props.params
-      const imageUrl = fillMetadataSegment(${JSON.stringify(
-        pathnamePrefix
-      )}, params, ${JSON.stringify(pageSegment)})
+    export default async function (props, pathnamePromise) {
+      const pathname = await pathnamePromise
+      const { __metadata_id__: _, ...restParams } = await props.params
+      const imageUrl = path.posix.join(${JSON.stringify(basePath || '')}, pathname, ${JSON.stringify(pageSegment)})
 
       const { generateImageMetadata } = imageModule
 
@@ -115,7 +112,7 @@ async function nextMetadataImageLoader(
       }
 
       if (generateImageMetadata) {
-        const imageMetadataArray = await generateImageMetadata({ params })
+        const imageMetadataArray = await generateImageMetadata({ params: restParams })
         return imageMetadataArray.map((imageMetadata, index) => {
           const idParam = (imageMetadata.id || index) + ''
           return getImageMetadata(imageMetadata, idParam)
@@ -169,13 +166,13 @@ async function nextMetadataImageLoader(
   }
 
   return `\
-  import { fillMetadataSegment } from 'next/dist/lib/metadata/get-metadata-route'
+  import path from 'next/dist/shared/lib/isomorphic/path'
 
-  export default async (props) => {
+  export default async (props, pathnamePromise) => {
+    const pathname = await pathnamePromise
     const imageData = ${JSON.stringify(imageData)}
-    const imageUrl = fillMetadataSegment(${JSON.stringify(
-      pathnamePrefix
-    )}, await props.params, ${JSON.stringify(pageSegment)})
+    const imageUrl = path.posix.join(${JSON.stringify(basePath || '')}, pathname, ${JSON.stringify(pageSegment)})
+    
 
     return [{
       ...imageData,

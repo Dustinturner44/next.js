@@ -170,14 +170,8 @@ impl AppPageLoaderTreeBuilder {
     ) -> Result<()> {
         match item {
             MetadataWithAltItem::Static { path, alt_path } => {
-                self.write_static_metadata_item(
-                    app_page,
-                    name,
-                    item,
-                    path.clone(),
-                    alt_path.clone(),
-                )
-                .await?;
+                self.write_static_metadata_item(name, item, path.clone(), alt_path.clone())
+                    .await?;
             }
             MetadataWithAltItem::Dynamic { path, .. } => {
                 let i = self.base.unique_number();
@@ -192,7 +186,6 @@ impl AppPageLoaderTreeBuilder {
                     *ResolvedVc::upcast(self.base.module_asset_context),
                     path.clone(),
                     name.into(),
-                    app_page.clone(),
                 );
 
                 let module = self.base.process_source(source).to_resolved().await?;
@@ -209,7 +202,6 @@ impl AppPageLoaderTreeBuilder {
 
     async fn write_static_metadata_item(
         &mut self,
-        app_page: &AppPage,
         name: &str,
         item: &MetadataWithAltItem,
         path: FileSystemPath,
@@ -219,14 +211,6 @@ impl AppPageLoaderTreeBuilder {
 
         let identifier = magic_identifier::mangle(&format!("{name} #{i}"));
         let inner_module_id = format!("METADATA_{i}");
-        let helper_import: RcStr = "import { fillMetadataSegment } from \
-                                    'next/dist/lib/metadata/get-metadata-route' with { \
-                                    'turbopack-transition': 'next-server-utility' }"
-            .into();
-
-        if !self.base.imports.contains(&helper_import) {
-            self.base.imports.push(helper_import);
-        }
 
         self.base
             .imports
@@ -242,18 +226,25 @@ impl AppPageLoaderTreeBuilder {
             .insert(inner_module_id.into(), module);
 
         let s = "      ";
-        writeln!(self.loader_tree_code, "{s}(async (props) => [{{")?;
-        let pathname_prefix = if let Some(base_path) = &self.base_path {
-            format!("{base_path}/{app_page}")
-        } else {
-            app_page.to_string()
-        };
+        let path_import: RcStr = "import path from 'next/dist/shared/lib/isomorphic/path' with { \
+                                  'turbopack-transition': 'next-server-utility' }"
+            .into();
+
+        if !self.base.imports.contains(&path_import) {
+            self.base.imports.push(path_import);
+        }
+
+        writeln!(
+            self.loader_tree_code,
+            "{s}(async (props, pathnamePromise) => [{{"
+        )?;
+        let base_path_value = self.base_path.as_deref().unwrap_or("/");
         let metadata_route = &*get_metadata_route_name(item.clone().into()).await?;
         writeln!(
             self.loader_tree_code,
-            "{s}  url: fillMetadataSegment({}, await props.params, {}) + \
+            "{s}  url: path.posix.join({}, await pathnamePromise, {}) + \
              `?${{{identifier}.src.split(\"/\").splice(-1)[0]}}`,",
-            StringifyJs(&pathname_prefix),
+            StringifyJs(base_path_value),
             StringifyJs(metadata_route),
         )?;
 
