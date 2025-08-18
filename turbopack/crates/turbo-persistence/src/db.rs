@@ -650,7 +650,7 @@ impl TurboPersistence {
     /// files is above the given threshold. The coverage is the average number of SST files that
     /// need to be read to find a key. It also limits the maximum number of SST files that are
     /// merged at once, which is the main factor for the runtime of the compaction.
-    pub fn compact(&self, compact_config: &CompactConfig) -> Result<()> {
+    pub fn compact(&self, compact_config: &CompactConfig) -> Result<bool> {
         if self.read_only {
             bail!("Compaction is not allowed on a read only database");
         }
@@ -689,7 +689,8 @@ impl TurboPersistence {
             .context("Failed to compact database")?;
         }
 
-        if !new_meta_files.is_empty() {
+        let has_changes = !new_meta_files.is_empty();
+        if has_changes {
             self.commit(CommitOptions {
                 new_meta_files,
                 new_sst_files,
@@ -704,7 +705,7 @@ impl TurboPersistence {
 
         self.active_write_operation.store(false, Ordering::Release);
 
-        Ok(())
+        Ok(has_changes)
     }
 
     /// Internal function to perform a compaction.
@@ -794,8 +795,9 @@ impl TurboPersistence {
                 if compact_config.max_merge_segment_count == 0 {
                     return Vec::new();
                 }
-                let merge_jobs = get_merge_segments(ssts_with_ranges, &compact_config);
-                compact_config.max_merge_segment_count -= merge_jobs.len();
+                let (merge_jobs, real_merge_job_size) =
+                    get_merge_segments(ssts_with_ranges, &compact_config);
+                compact_config.max_merge_segment_count -= real_merge_job_size;
                 merge_jobs
             })
             .collect::<Vec<_>>();

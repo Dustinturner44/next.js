@@ -3093,6 +3093,15 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/metadata-image-files/metadata-image-files.test.ts": {
+    "passed": [
+      "app dir - metadata image files should handle imported metadata images"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/metadata-json-manifest/index.test.ts": {
     "passed": [
       "app-dir metadata-json-manifest should support metadata.json manifest"
@@ -6056,18 +6065,16 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/use-cache-segment-configs/use-cache-segment-configs.test.ts": {
-    "passed": [
-      "use-cache-segment-configs it should error when using segment configs that aren't supported by useCache"
-    ],
+  "test/e2e/app-dir/use-cache-search-params/use-cache-search-params.test.ts": {
+    "passed": ["use-cache-search-params should fail the build with errors"],
     "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/use-cache-standalone-search-params/use-cache-standalone-search-params.test.ts": {
+  "test/e2e/app-dir/use-cache-segment-configs/use-cache-segment-configs.test.ts": {
     "passed": [
-      "use-cache-standalone-search-params should fail the build with errors"
+      "use-cache-segment-configs it should error when using segment configs that aren't supported by useCache"
     ],
     "failed": [],
     "pending": [],

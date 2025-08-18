@@ -12,6 +12,7 @@ import {
   NEXT_URL,
   RSC_CONTENT_TYPE_HEADER,
 } from '../../app-router-headers'
+import { UnrecognizedActionError } from '../../unrecognized-action-error'
 
 // TODO: Explicitly import from client.browser
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -55,7 +56,6 @@ import {
   omitUnusedArgs,
 } from '../../../../shared/lib/server-reference-info'
 import { revalidateEntireCache } from '../../segment-cache'
-import { getRenderedPathname } from '../../../route-params'
 
 const createFromFetch =
   createFromFetchBrowser as (typeof import('react-server-dom-webpack/client.browser'))['createFromFetch']
@@ -114,7 +114,7 @@ async function fetchServerAction(
   // Handle server actions that the server didn't recognize.
   const unrecognizedActionHeader = res.headers.get(NEXT_ACTION_NOT_FOUND_HEADER)
   if (unrecognizedActionHeader === '1') {
-    throw new Error(
+    throw new UnrecognizedActionError(
       `Server Action "${actionId}" was not found on the server. \nRead more: https://nextjs.org/docs/messages/failed-to-find-server-action`
     )
   }
@@ -182,24 +182,9 @@ async function fetchServerAction(
       { callServer, findSourceMapURL, temporaryReferences }
     )
 
-    let renderedPathname
-    if (process.env.__NEXT_CLIENT_SEGMENT_CACHE) {
-      // Read the URL from the response object.
-      renderedPathname = getRenderedPathname(res)
-    } else {
-      // Before Segment Cache is enabled, we should not rely on the new
-      // rewrite headers (x-rewritten-path, x-rewritten-query) because that
-      // is a breaking change. Read the URL from the response body.
-      const canonicalUrlParts = response.c
-      renderedPathname = new URL(
-        canonicalUrlParts.join('/'),
-        'http://localhost'
-      ).pathname
-    }
-
     // An internal redirect can send an RSC response, but does not have a useful `actionResult`.
     actionResult = redirectLocation ? undefined : response.a
-    actionFlightData = normalizeFlightData(response.f, renderedPathname)
+    actionFlightData = normalizeFlightData(response.f)
   } else {
     // An external redirect doesn't contain RSC data.
     actionResult = undefined

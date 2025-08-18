@@ -2124,8 +2124,8 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
                 let last_snapshot = self.last_snapshot.load(Ordering::Relaxed);
                 let mut last_snapshot = self.start_time + Duration::from_millis(last_snapshot);
                 loop {
-                    const FIRST_SNAPSHOT_WAIT: Duration = Duration::from_secs(60);
-                    const SNAPSHOT_INTERVAL: Duration = Duration::from_secs(30);
+                    const FIRST_SNAPSHOT_WAIT: Duration = Duration::from_secs(300);
+                    const SNAPSHOT_INTERVAL: Duration = Duration::from_secs(120);
                     const IDLE_TIMEOUT: Duration = Duration::from_secs(2);
 
                     let time = if id == BACKEND_JOB_INITIAL_SNAPSHOT {
@@ -2137,42 +2137,43 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
                     let until = last_snapshot + time;
                     if until > Instant::now() {
                         let mut stop_listener = self.stopping_event.listen();
-                        if !self.stopping.load(Ordering::Acquire) {
-                            let mut idle_start_listener = self.idle_start_event.listen();
-                            let mut idle_end_listener = self.idle_end_event.listen();
-                            let mut idle_time = if turbo_tasks.is_idle() {
-                                Instant::now() + IDLE_TIMEOUT
-                            } else {
-                                far_future()
-                            };
-                            loop {
-                                tokio::select! {
-                                    _ = &mut stop_listener => {
+                        if self.stopping.load(Ordering::Acquire) {
+                            return;
+                        }
+                        let mut idle_start_listener = self.idle_start_event.listen();
+                        let mut idle_end_listener = self.idle_end_event.listen();
+                        let mut idle_time = if turbo_tasks.is_idle() {
+                            Instant::now() + IDLE_TIMEOUT
+                        } else {
+                            far_future()
+                        };
+                        loop {
+                            tokio::select! {
+                                _ = &mut stop_listener => {
+                                    return;
+                                },
+                                _ = &mut idle_start_listener => {
+                                    idle_time = Instant::now() + IDLE_TIMEOUT;
+                                    idle_start_listener = self.idle_start_event.listen()
+                                },
+                                _ = &mut idle_end_listener => {
+                                    idle_time = until + IDLE_TIMEOUT;
+                                    idle_end_listener = self.idle_end_event.listen()
+                                },
+                                _ = tokio::time::sleep_until(until) => {
+                                    break;
+                                },
+                                _ = tokio::time::sleep_until(idle_time) => {
+                                    if turbo_tasks.is_idle() {
                                         break;
-                                    },
-                                    _ = &mut idle_start_listener => {
-                                        idle_time = Instant::now() + IDLE_TIMEOUT;
-                                        idle_start_listener = self.idle_start_event.listen()
-                                    },
-                                    _ = &mut idle_end_listener => {
-                                        idle_time = until + IDLE_TIMEOUT;
-                                        idle_end_listener = self.idle_end_event.listen()
-                                    },
-                                    _ = tokio::time::sleep_until(until) => {
-                                        break;
-                                    },
-                                    _ = tokio::time::sleep_until(idle_time) => {
-                                        if turbo_tasks.is_idle() {
-                                            break;
-                                        }
-                                    },
-                                }
+                                    }
+                                },
                             }
                         }
                     }
 
                     let this = self.clone();
-                    let snapshot = turbo_tasks::spawn_blocking(move || this.snapshot()).await;
+                    let snapshot = this.snapshot();
                     if let Some((snapshot_start, new_data)) = snapshot {
                         last_snapshot = snapshot_start;
                         if new_data {
