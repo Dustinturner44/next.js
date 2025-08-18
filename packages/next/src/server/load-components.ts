@@ -34,6 +34,7 @@ import { createServerModuleMap } from './app-render/action-utils'
 import type { DeepReadonly } from '../shared/lib/deep-readonly'
 import { normalizePagePath } from '../shared/lib/page-path/normalize-page-path'
 import { isStaticMetadataRoute } from '../lib/metadata/is-metadata-route'
+import { RouteKind } from './route-kind'
 
 export type ManifestItem = {
   id: number | string
@@ -192,7 +193,6 @@ async function loadComponentsImpl<N = any>({
   // (a `PageNotFoundError`).
   const [
     buildManifest,
-    reactLoadableManifest,
     dynamicCssManifest,
     clientReferenceManifest,
     serverActionsManifest,
@@ -202,13 +202,7 @@ async function loadComponentsImpl<N = any>({
       join(distDir, BUILD_MANIFEST),
       manifestLoadAttempts
     ),
-    // We don't need to load the react-loadable-manifest for app paths.
-    isAppPath
-      ? undefined
-      : loadManifestWithRetries<ReactLoadableManifest>(
-          reactLoadableManifestPath,
-          manifestLoadAttempts
-        ),
+
     // This manifest will only exist in Pages dir && Production && Webpack.
     isAppPath || process.env.TURBOPACK
       ? undefined
@@ -261,8 +255,18 @@ async function loadComponentsImpl<N = any>({
   const Document = interopDefault(DocumentMod)
   const App = interopDefault(AppMod)
 
-  const { getServerSideProps, getStaticProps, getStaticPaths, routeModule } =
-    ComponentMod
+  const { getServerSideProps, getStaticProps, getStaticPaths } = ComponentMod
+
+  const routeModule = ComponentMod.routeModule as RouteModule
+
+  const reactLoadableManifest =
+    // APP_ROUTE does not have a react-loadable-manifest.
+    routeModule.definition.kind === RouteKind.APP_ROUTE
+      ? undefined
+      : await loadManifestWithRetries<ReactLoadableManifest>(
+          reactLoadableManifestPath,
+          manifestLoadAttempts
+        )
 
   return {
     App,
