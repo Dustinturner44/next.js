@@ -794,15 +794,17 @@ export class TurbopackManifestLoader {
     productionRewrites: CustomRoutes['rewrites'] | undefined
     entrypoints: Entrypoints
   }) {
-    await this.writeActionManifest()
-    await this.writeAppBuildManifest()
-    await this.writeAppPathsManifest()
-    await this.writeBuildManifest(entrypoints, devRewrites, productionRewrites)
-    await this.writeFallbackBuildManifest()
-    await this.writeMiddlewareManifest()
-    await this.writeClientMiddlewareManifest()
-    await this.writeNextFontManifest()
-    await this.writePagesManifest()
+    await Promise.all([
+      this.writeActionManifest(),
+      this.writeAppBuildManifest(),
+      this.writeAppPathsManifest(),
+      this.writeBuildManifest(entrypoints, devRewrites, productionRewrites),
+      this.writeFallbackBuildManifest(),
+      this.writeMiddlewareManifest(),
+      this.writeClientMiddlewareManifest(),
+      this.writeNextFontManifest(),
+      this.writePagesManifest(),
+    ])
 
     if (process.env.TURBOPACK_STATS != null) {
       await this.writeWebpackStats()

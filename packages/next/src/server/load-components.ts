@@ -100,20 +100,6 @@ export async function loadManifestWithRetries<T extends object>(
 }
 
 /**
- * Load manifest file with retries, defaults to 3 attempts, or return undefined.
- */
-export async function tryLoadManifestWithRetries<T extends object>(
-  manifestPath: string,
-  attempts = 3
-) {
-  try {
-    return await loadManifestWithRetries<T>(manifestPath, attempts)
-  } catch (err) {
-    return undefined
-  }
-}
-
-/**
  * Load manifest file with retries, defaults to 3 attempts.
  */
 export async function evalManifestWithRetries<T extends object>(
@@ -216,10 +202,13 @@ async function loadComponentsImpl<N = any>({
       join(distDir, BUILD_MANIFEST),
       manifestLoadAttempts
     ),
-    tryLoadManifestWithRetries<ReactLoadableManifest>(
-      reactLoadableManifestPath,
-      manifestLoadAttempts
-    ),
+    // We don't need to load the react-loadable-manifest for app paths.
+    isAppPath
+      ? undefined
+      : loadManifestWithRetries<ReactLoadableManifest>(
+          reactLoadableManifestPath,
+          manifestLoadAttempts
+        ),
     // This manifest will only exist in Pages dir && Production && Webpack.
     isAppPath || process.env.TURBOPACK
       ? undefined
