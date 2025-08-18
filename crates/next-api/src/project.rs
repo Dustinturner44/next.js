@@ -27,8 +27,9 @@ use serde::{Deserialize, Serialize};
 use tracing::Instrument;
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
-    Completion, Completions, FxIndexMap, IntoTraitRef, NonLocalValue, OperationValue, OperationVc,
-    ReadRef, ResolvedVc, State, TaskInput, TransientInstance, TryFlatJoinIterExt, Vc,
+    Completion, Completions, FxIndexMap, FxIndexSet, IntoTraitRef, NonLocalValue, OperationValue,
+    OperationVc, ReadRef, ResolvedVc, State, TaskInput, TransientInstance, TryFlatJoinIterExt,
+    TryJoinIterExt, Vc,
     debug::ValueDebugFormat,
     fxindexmap,
     graph::{AdjacencyMap, GraphTraversal},
@@ -982,6 +983,32 @@ impl Project {
             } else {
                 turbopack_node::evaluate::scale_zero();
             }
+
+            let modules = module_graphs_vc
+                .await?
+                .full
+                .await?
+                .get_graphs()
+                .await?
+                .iter()
+                .flat_map(|g| g.iter_nodes())
+                .map(|n| n.module)
+                .collect::<Vec<_>>();
+            let source_files = modules
+                .iter()
+                .map(async |m| {
+                    let ident = m.ident().await?;
+                    Ok(ident.path.clone())
+                })
+                .try_join()
+                .await?
+                .into_iter()
+                .collect::<FxIndexSet<_>>();
+            println!(
+                "module count {:?}, source file count {:?}",
+                modules.len(),
+                source_files.len()
+            );
 
             Ok(*module_graphs_vc)
         }
