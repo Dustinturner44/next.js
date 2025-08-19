@@ -194,9 +194,9 @@ async function loadComponentsImpl<N = any>({
   // Make sure to avoid loading the manifest for static metadata routes for better performance.
   // TODO: We should not rely on the `page` in order to determine route type. `definition.kind` has this information for each bundle. The problem with ClientReferenceManifest is that it's used in `setReferenceManifestsSingleton` which has to run before the route itself is required.
   const hasClientManifest =
-    !isStaticMetadataRoute(page) ||
+    !isStaticMetadataRoute(page) &&
     // Temporary hack to exclude loading the clientReferenceManifest for Route Handlers.
-    page.endsWith('/route')
+    !page.endsWith('/route')
 
   // Load the manifest files first
   //
