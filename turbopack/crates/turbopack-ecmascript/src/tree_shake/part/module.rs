@@ -20,7 +20,7 @@ use crate::{
     references::{
         FollowExportsResult, analyse_ecmascript_module, esm::FoundExportType, follow_reexports,
     },
-    side_effect_optimization::facade::module::EcmascriptModuleFacadeModule,
+    rename::module::EcmascriptModuleRenameModule,
     tree_shake::{
         Key, SplitResult, get_part_id, part::chunk_item::EcmascriptModulePartChunkItem,
         part_of_module, side_effects::module::SideEffectsModule, split_module,
@@ -188,7 +188,7 @@ impl EcmascriptModulePartAsset {
                         *final_module
                     } else {
                         ResolvedVc::upcast(
-                            EcmascriptModuleFacadeModule::new(
+                            EcmascriptModuleRenameModule::new(
                                 **final_module,
                                 ModulePart::renamed_export(new_export.clone(), export.clone()),
                             )
@@ -198,7 +198,7 @@ impl EcmascriptModulePartAsset {
                     }
                 } else {
                     ResolvedVc::upcast(
-                        EcmascriptModuleFacadeModule::new(
+                        EcmascriptModuleRenameModule::new(
                             **final_module,
                             ModulePart::renamed_namespace(export.clone()),
                         )
