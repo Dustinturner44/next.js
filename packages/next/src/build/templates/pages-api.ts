@@ -21,7 +21,7 @@ export default hoist(userland, 'default')
 export const config = hoist(userland, 'config')
 
 // Create and export the route module that will be consumed.
-const routeModule = new PagesAPIRouteModule({
+export const routeModule = new PagesAPIRouteModule({
   definition: {
     kind: RouteKind.PAGES_API,
     page: 'VAR_DEFINITION_PAGE',
