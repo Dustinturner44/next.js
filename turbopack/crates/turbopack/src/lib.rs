@@ -59,7 +59,7 @@ use turbopack_ecmascript::{
         CachedExternalModule, CachedExternalTracingMode, CachedExternalType,
     },
     side_effect_optimization::locals::module::EcmascriptModuleLocalsModule,
-    tree_shake::asset::EcmascriptModulePartAsset,
+    tree_shake::part::module::EcmascriptModulePartAsset,
 };
 use turbopack_json::JsonModuleAsset;
 pub use turbopack_resolve::{resolve::resolve_options, resolve_options_context};
