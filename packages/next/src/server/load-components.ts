@@ -262,6 +262,9 @@ async function loadComponentsImpl<N = any>({
   }
 
   const ComponentMod = await getComponentMod(page, distDir, isAppPath)
+
+  const isStaticHTML = typeof ComponentMod === 'string'
+
   const Component = interopDefault(ComponentMod)
   const Document = interopDefault(DocumentMod)
   const App = interopDefault(AppMod)
@@ -272,7 +275,7 @@ async function loadComponentsImpl<N = any>({
 
   const reactLoadableManifest =
     // APP_ROUTE does not have a react-loadable-manifest.
-    routeModule.definition.kind === RouteKind.APP_ROUTE
+    !isStaticHTML && routeModule.definition.kind === RouteKind.APP_ROUTE
       ? undefined
       : await loadManifestWithRetries<ReactLoadableManifest>(
           reactLoadableManifestPath,
