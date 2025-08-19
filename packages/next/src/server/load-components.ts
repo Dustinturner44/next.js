@@ -134,6 +134,18 @@ async function tryLoadClientReferenceManifest(
   }
 }
 
+/**
+ * This function returns either the module or a static html string.
+ */
+export async function getComponentMod(
+  page: string,
+  distDir: string,
+  isAppPath: boolean
+) {
+  const ComponentMod = await requirePage(page, distDir, isAppPath)
+  return ComponentMod
+}
+
 async function loadComponentsImpl<N = any>({
   distDir,
   page,
@@ -249,8 +261,7 @@ async function loadComponentsImpl<N = any>({
     })
   }
 
-  const ComponentMod = await requirePage(page, distDir, isAppPath)
-
+  const ComponentMod = await getComponentMod(page, distDir, isAppPath)
   const Component = interopDefault(ComponentMod)
   const Document = interopDefault(DocumentMod)
   const App = interopDefault(AppMod)

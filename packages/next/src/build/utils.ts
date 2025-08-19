@@ -56,7 +56,7 @@ import { isDynamicRoute } from '../shared/lib/router/utils/is-dynamic'
 import { findPageFile } from '../server/lib/find-page-file'
 import { isEdgeRuntime } from '../lib/is-edge-runtime'
 import * as Log from './output/log'
-import { loadComponents } from '../server/load-components'
+import { getComponentMod, loadComponents } from '../server/load-components'
 import type { LoadComponentsReturnType } from '../server/load-components'
 import { trace } from '../trace'
 import { setHttpClientAndAgentOptions } from '../server/setup-http-agent-env'
@@ -1383,26 +1383,18 @@ export async function hasCustomGetInitialProps({
   distDir,
   runtimeEnvConfig,
   checkingApp,
-  sriEnabled,
 }: {
   page: string
   distDir: string
   runtimeEnvConfig: any
   checkingApp: boolean
-  sriEnabled: boolean
 }): Promise<boolean> {
   ;(
     require('../shared/lib/runtime-config.external') as typeof import('../shared/lib/runtime-config.external')
   ).setConfig(runtimeEnvConfig)
+  const ComponentMod = await getComponentMod(page, distDir, false)
 
-  const components = await loadComponents({
-    distDir,
-    page: page,
-    isAppPath: false,
-    isDev: false,
-    sriEnabled,
-  })
-  let mod = components.ComponentMod
+  let mod = ComponentMod
 
   if (checkingApp) {
     mod = (await mod._app) || mod.default || mod
@@ -1417,26 +1409,18 @@ export async function getDefinedNamedExports({
   page,
   distDir,
   runtimeEnvConfig,
-  sriEnabled,
 }: {
   page: string
   distDir: string
   runtimeEnvConfig: any
-  sriEnabled: boolean
 }): Promise<ReadonlyArray<string>> {
   ;(
     require('../shared/lib/runtime-config.external') as typeof import('../shared/lib/runtime-config.external')
   ).setConfig(runtimeEnvConfig)
-  const components = await loadComponents({
-    distDir,
-    page: page,
-    isAppPath: false,
-    isDev: false,
-    sriEnabled,
-  })
+  const ComponentMod = await getComponentMod(page, distDir, false)
 
-  return Object.keys(components.ComponentMod).filter((key) => {
-    return typeof components.ComponentMod[key] !== 'undefined'
+  return Object.keys(ComponentMod).filter((key) => {
+    return typeof ComponentMod[key] !== 'undefined'
   })
 }
 

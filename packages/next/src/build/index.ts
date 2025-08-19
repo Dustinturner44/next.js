@@ -1868,7 +1868,6 @@ export default async function build(
                 distDir,
                 runtimeEnvConfig,
                 checkingApp: false,
-                sriEnabled,
               }))
           )
 
@@ -1902,7 +1901,6 @@ export default async function build(
             distDir,
             runtimeEnvConfig,
             checkingApp: true,
-            sriEnabled,
           }
         )
 
@@ -1910,7 +1908,6 @@ export default async function build(
           page: appPageToCheck,
           distDir,
           runtimeEnvConfig,
-          sriEnabled,
         })
 
         // eslint-disable-next-line @typescript-eslint/no-shadow
