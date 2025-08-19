@@ -1,4 +1,5 @@
 import type { FallbackRouteParams } from '../../server/request/fallback-params'
+import { InvariantError } from '../../shared/lib/invariant-error'
 import type { Params } from '../request/params'
 import {
   createPrerenderResumeDataCache,
@@ -7,6 +8,7 @@ import {
   type RenderResumeDataCache,
 } from '../resume-data-cache/resume-data-cache'
 import { stringifyResumeDataCache } from '../resume-data-cache/resume-data-cache'
+import { lengthDecodeTuple, lengthEncodeTuple } from './length-encoding'
 
 export enum DynamicState {
   /**
@@ -71,6 +73,19 @@ export type PostponedState =
   | DynamicDataPostponedState
   | DynamicHTMLPostponedState
 
+type SerializedStateParts =
+  | SerializedDynamicData
+  | SerializedDynamicHTML
+  | SerializedDynamicHTMLWithReplacements
+
+type SerializedDynamicData = [resumeDataCache: string]
+type SerializedDynamicHTML = [postponed: string, resumeDataCache: string]
+type SerializedDynamicHTMLWithReplacements = [
+  replacements: string,
+  postponed: string,
+  resumeDataCache: string,
+]
+
 export async function getDynamicHTMLPostponedState(
   postponed: ReactPostponed,
   preludeState: DynamicHTMLPreludeState,
@@ -81,26 +96,32 @@ export async function getDynamicHTMLPostponedState(
   const dataString = JSON.stringify(data)
 
   if (!fallbackRouteParams || fallbackRouteParams.size === 0) {
-    // Serialized as `<postponedString.length>:<postponedString><renderResumeDataCache>`
-    return `${dataString.length}:${dataString}${await stringifyResumeDataCache(
-      createRenderResumeDataCache(resumeDataCache)
-    )}`
+    return lengthEncodeTuple([
+      dataString,
+      await stringifyResumeDataCache(
+        createRenderResumeDataCache(resumeDataCache)
+      ),
+    ] satisfies SerializedDynamicHTML)
   }
 
   const replacements: Array<[string, string]> = Array.from(fallbackRouteParams)
   const replacementsString = JSON.stringify(replacements)
 
-  // Serialized as `<replacements.length><replacements><data>`
-  const postponedString = `${replacementsString.length}${replacementsString}${dataString}`
-
-  // Serialized as `<postponedString.length>:<postponedString><renderResumeDataCache>`
-  return `${postponedString.length}:${postponedString}${await stringifyResumeDataCache(resumeDataCache)}`
+  return lengthEncodeTuple([
+    replacementsString,
+    dataString,
+    await stringifyResumeDataCache(resumeDataCache),
+  ] satisfies SerializedDynamicHTMLWithReplacements)
 }
 
 export async function getDynamicDataPostponedState(
   resumeDataCache: PrerenderResumeDataCache | RenderResumeDataCache
 ): Promise<string> {
-  return `4:null${await stringifyResumeDataCache(createRenderResumeDataCache(resumeDataCache))}`
+  return lengthEncodeTuple([
+    await stringifyResumeDataCache(
+      createRenderResumeDataCache(resumeDataCache)
+    ),
+  ] satisfies SerializedDynamicData)
 }
 
 export function parsePostponedState(
@@ -108,69 +129,61 @@ export function parsePostponedState(
   params: Params | undefined
 ): PostponedState {
   try {
-    const postponedStringLengthMatch = state.match(/^([0-9]*):/)?.[1]
-    if (!postponedStringLengthMatch) {
-      throw new Error(`Invariant: invalid postponed state ${state}`)
-    }
+    const parts = lengthDecodeTuple(state) as SerializedStateParts
+    if (parts.length === 1) {
+      parts satisfies SerializedDynamicData
+      const [resumeDataCacheString] = parts
+      const renderResumeDataCache = createRenderResumeDataCache(
+        resumeDataCacheString
+      )
+      return {
+        type: DynamicState.DATA,
+        renderResumeDataCache,
+      }
+    } else if (parts.length === 2 || parts.length === 3) {
+      let replacementsString: string | null = null,
+        postponedString: string,
+        resumeDataCacheString: string
 
-    const postponedStringLength = parseInt(postponedStringLengthMatch)
-
-    // We add a `:` to the end of the length as the first character of the
-    // postponed string is the length of the replacement entries.
-    const postponedString = state.slice(
-      postponedStringLengthMatch.length + 1,
-      postponedStringLengthMatch.length + postponedStringLength + 1
-    )
-
-    const renderResumeDataCache = createRenderResumeDataCache(
-      state.slice(postponedStringLengthMatch.length + postponedStringLength + 1)
-    )
-
-    try {
-      if (postponedString === 'null') {
-        return { type: DynamicState.DATA, renderResumeDataCache }
+      if (parts.length === 2) {
+        parts satisfies SerializedDynamicHTML
+        ;[postponedString, resumeDataCacheString] = parts
+      } else {
+        parts satisfies SerializedDynamicHTMLWithReplacements
+        ;[replacementsString, postponedString, resumeDataCacheString] = parts
       }
 
-      if (/^[0-9]/.test(postponedString)) {
-        const match = postponedString.match(/^([0-9]*)/)?.[1]
-        if (!match) {
-          throw new Error(
-            `Invariant: invalid postponed state ${JSON.stringify(postponedString)}`
-          )
-        }
+      const renderResumeDataCache = createRenderResumeDataCache(
+        resumeDataCacheString
+      )
 
-        // This is the length of the replacements entries.
-        const length = parseInt(match)
-        const replacements = JSON.parse(
-          postponedString.slice(
-            match.length,
-            // We then go to the end of the string.
-            match.length + length
-          )
-        ) as ReadonlyArray<[string, string]>
-
-        let postponed = postponedString.slice(match.length + length)
-        for (const [key, searchValue] of replacements) {
-          const value = params?.[key] ?? ''
-          const replaceValue = Array.isArray(value) ? value.join('/') : value
-          postponed = postponed.replaceAll(searchValue, replaceValue)
+      try {
+        if (replacementsString !== null) {
+          const replacements = JSON.parse(replacementsString) as ReadonlyArray<
+            [string, string]
+          >
+          for (const [key, searchValue] of replacements) {
+            const value = params?.[key] ?? ''
+            const replaceValue = Array.isArray(value) ? value.join('/') : value
+            postponedString = postponedString.replaceAll(
+              searchValue,
+              replaceValue
+            )
+          }
         }
 
         return {
           type: DynamicState.HTML,
-          data: JSON.parse(postponed),
+          data: JSON.parse(postponedString),
           renderResumeDataCache,
         }
+      } catch (err) {
+        console.error('Failed to parse postponed state', err)
+        return { type: DynamicState.DATA, renderResumeDataCache }
       }
-
-      return {
-        type: DynamicState.HTML,
-        data: JSON.parse(postponedString),
-        renderResumeDataCache,
-      }
-    } catch (err) {
-      console.error('Failed to parse postponed state', err)
-      return { type: DynamicState.DATA, renderResumeDataCache }
+    } else {
+      parts satisfies never
+      throw new InvariantError('Postponed state tuple has invalid length')
     }
   } catch (err) {
     console.error('Failed to parse postponed state', err)
