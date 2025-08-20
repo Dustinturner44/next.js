@@ -84,15 +84,11 @@ function deserializeStateParts(serialized: string) {
   return lengthDecodeTupleWithTag(serialized) as SerializedStateParts
 }
 
-type SerializedStateParts =
-  | SerializedDynamicData
-  | SerializedDynamicHTML
-  | SerializedDynamicHTMLWithReplacements
+type SerializedStateParts = SerializedDynamicData | SerializedDynamicHTML
 
 enum SerializedStateTag {
   DynamicData = 0,
   DynamicHTML = 1,
-  DynamicHTMLWithReplacements = 2,
 }
 
 type SerializedDynamicData = [
@@ -102,14 +98,13 @@ type SerializedDynamicData = [
 type SerializedDynamicHTML = [
   tag: SerializedStateTag.DynamicHTML,
   resumeDataCache: string,
+  /** JSON, but might need to have `replacements` applied before decoding */
   postponed: string,
-]
-type SerializedDynamicHTMLWithReplacements = [
-  tag: SerializedStateTag.DynamicHTMLWithReplacements,
-  resumeDataCache: string,
-  postponed: string,
+  /** JSON */
   replacements: string,
 ]
+
+type ParamReplacements = Array<[string, string]> | null
 
 export async function getDynamicHTMLPostponedState(
   postponed: ReactPostponed,
@@ -120,21 +115,16 @@ export async function getDynamicHTMLPostponedState(
   const data: DynamicHTMLPostponedState['data'] = [preludeState, postponed]
   const dataString = JSON.stringify(data)
 
+  let replacements: ParamReplacements = null
   if (!fallbackRouteParams || fallbackRouteParams.size === 0) {
-    return serializeStateParts([
-      SerializedStateTag.DynamicHTML,
-      await stringifyResumeDataCache(
-        createRenderResumeDataCache(resumeDataCache)
-      ),
-      dataString,
-    ])
+    replacements = null
+  } else {
+    replacements = Array.from(fallbackRouteParams)
   }
-
-  const replacements: Array<[string, string]> = Array.from(fallbackRouteParams)
   const replacementsString = JSON.stringify(replacements)
 
   return serializeStateParts([
-    SerializedStateTag.DynamicHTMLWithReplacements,
+    SerializedStateTag.DynamicHTML,
     await stringifyResumeDataCache(resumeDataCache),
     dataString,
     replacementsString,
@@ -170,20 +160,18 @@ export function parsePostponedState(
           renderResumeDataCache,
         }
       }
-      case SerializedStateTag.DynamicHTML:
-      case SerializedStateTag.DynamicHTMLWithReplacements: {
-        // These two variants mostly overlap, except for the last element
-        let [, resumeDataCacheString, postponedString] = parts
+      case SerializedStateTag.DynamicHTML: {
+        let [, resumeDataCacheString, postponedString, replacementsString] =
+          parts
 
         const renderResumeDataCache = createRenderResumeDataCache(
           resumeDataCacheString
         )
         try {
-          if (tag === SerializedStateTag.DynamicHTMLWithReplacements) {
-            const replacementsString = parts[3]
-            const replacements = JSON.parse(
-              replacementsString
-            ) as ReadonlyArray<[string, string]>
+          const replacements = JSON.parse(
+            replacementsString
+          ) as ParamReplacements
+          if (replacements) {
             for (const [key, searchValue] of replacements) {
               const value = params?.[key] ?? ''
               const replaceValue = Array.isArray(value)
