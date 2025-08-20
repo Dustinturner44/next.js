@@ -86,17 +86,10 @@ function deserializeStateParts(serialized: string) {
 
 type SerializedStateParts = SerializedDynamicData | SerializedDynamicHTML
 
-enum SerializedStateTag {
-  DynamicData = 0,
-  DynamicHTML = 1,
-}
+type SerializedDynamicData = [tag: DynamicState.DATA, resumeDataCache: string]
 
-type SerializedDynamicData = [
-  tag: SerializedStateTag.DynamicData,
-  resumeDataCache: string,
-]
 type SerializedDynamicHTML = [
-  tag: SerializedStateTag.DynamicHTML,
+  tag: DynamicState.HTML,
   resumeDataCache: string,
   /** JSON, but might need to have `replacements` applied before decoding */
   postponed: string,
@@ -124,7 +117,7 @@ export async function getDynamicHTMLPostponedState(
   const replacementsString = JSON.stringify(replacements)
 
   return serializeStateParts([
-    SerializedStateTag.DynamicHTML,
+    DynamicState.HTML,
     await stringifyResumeDataCache(resumeDataCache),
     dataString,
     replacementsString,
@@ -135,7 +128,7 @@ export async function getDynamicDataPostponedState(
   resumeDataCache: PrerenderResumeDataCache | RenderResumeDataCache
 ): Promise<string> {
   return serializeStateParts([
-    SerializedStateTag.DynamicData,
+    DynamicState.DATA,
     await stringifyResumeDataCache(
       createRenderResumeDataCache(resumeDataCache)
     ),
@@ -150,7 +143,7 @@ export function parsePostponedState(
     const parts = deserializeStateParts(state)
     const tag = parts[0]
     switch (tag) {
-      case SerializedStateTag.DynamicData: {
+      case DynamicState.DATA: {
         const [, resumeDataCacheString] = parts
         const renderResumeDataCache = createRenderResumeDataCache(
           resumeDataCacheString
@@ -160,7 +153,7 @@ export function parsePostponedState(
           renderResumeDataCache,
         }
       }
-      case SerializedStateTag.DynamicHTML: {
+      case DynamicState.HTML: {
         let [, resumeDataCacheString, postponedString, replacementsString] =
           parts
 
