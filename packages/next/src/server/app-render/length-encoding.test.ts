@@ -1,4 +1,10 @@
-import { lengthEncodeTuple, lengthDecodeTuple } from './length-encoding'
+import {
+  lengthEncodeTuple,
+  lengthDecodeTuple,
+  lengthEncodeTupleWithTag,
+  lengthDecodeTupleWithTag,
+  type TaggedStringTuple,
+} from './length-encoding'
 
 const cases: { description: string; input: string[] }[] = [
   [],
@@ -32,3 +38,23 @@ it.each(cases)(
     expect(decoded).toEqual(input)
   }
 )
+
+enum MyTag {
+  A = 0,
+  B = 1,
+  C = 9,
+}
+
+describe('tags', () => {
+  describe.each([MyTag.A, MyTag.B, MyTag.C])('tag value - %d', (tag) => {
+    it.each(cases)(
+      'can encode and decode tuples with a tag without changes - $description',
+      ({ input: inputWithoutTag }) => {
+        const input: TaggedStringTuple = [tag, ...inputWithoutTag]
+        const encoded: string = lengthEncodeTupleWithTag(input)
+        const decoded: TaggedStringTuple = lengthDecodeTupleWithTag(encoded)
+        expect(decoded).toEqual(input)
+      }
+    )
+  })
+})

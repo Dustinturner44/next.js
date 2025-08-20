@@ -93,3 +93,41 @@ export function lengthDecodeTuple(encoded: string): string[] {
 
   return parts
 }
+
+export type TaggedStringTuple = [tag: number, ...rest: string[]]
+
+/**
+ * Encodes a tuple of strings into a single string,
+ * where each part except the last is prefixed with its length.
+ * */
+export function lengthEncodeTupleWithTag([tag, ...rest]: TaggedStringTuple) {
+  // Technically, we could allow more by using letters, but we don't need that now.
+  if (tag < 0 || tag > 9) {
+    throw new InvariantError(
+      'Tags that cannot be encoded as a single digit are not supported'
+    )
+  }
+  return tag + lengthEncodeTuple(rest)
+}
+
+const ASCII_0 = '0'.charCodeAt(0)
+const ASCII_9 = '9'.charCodeAt(0)
+
+export function lengthDecodeTupleWithTag(encoded: string): TaggedStringTuple {
+  if (!encoded) {
+    throw new InvariantError('Expected tag but got empty input')
+  }
+
+  // The tag is a single ASCII digit.
+  const tagCharCode = encoded.charCodeAt(0)
+  if (tagCharCode < ASCII_0 || tagCharCode > ASCII_9) {
+    throw new InvariantError(
+      `Expected tag to be a numeric digit, but got '${encoded[0]}'`
+    )
+  }
+  const tag = tagCharCode - ASCII_0
+
+  const parts = lengthDecodeTuple(encoded.slice(1)) as (string | number)[]
+  parts.unshift(tag)
+  return parts as TaggedStringTuple
+}
