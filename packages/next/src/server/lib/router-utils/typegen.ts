@@ -448,7 +448,7 @@ export function generateValidatorFile(
 
   if (appPageValidations) {
     typeDefinitions += `type AppPageConfig<Route extends AppRoutes = AppRoutes> = {
-  default: React.ComponentType<{ params: Promise<ParamMap[Route]> } & any> | ((props: { params: Promise<ParamMap[Route]> } & any) => React.ReactNode | Promise<React.ReactNode> | never | void | Promise<void>)
+  default: React.ComponentType<{ params: Promise<ParamMap[Route]> } & any> | ((props: { params: Promise<ParamMap[Route]> } & any) => void)
   generateStaticParams?: (props: { params: ParamMap[Route] }) => Promise<any[]> | any[]
   generateMetadata?: (
     props: { params: Promise<ParamMap[Route]> } & any,
@@ -467,7 +467,7 @@ export function generateValidatorFile(
 
   if (pagesRouterPageValidations) {
     typeDefinitions += `type PagesPageConfig = {
-  default: React.ComponentType<any> | ((props: any) => React.ReactNode | Promise<React.ReactNode> | never | void)
+  default: React.ComponentType<any>
   getStaticProps?: (context: any) => Promise<any> | any
   getStaticPaths?: (context: any) => Promise<any> | any
   getServerSideProps?: (context: any) => Promise<any> | any
@@ -489,7 +489,7 @@ export function generateValidatorFile(
 
   if (layoutValidations) {
     typeDefinitions += `type LayoutConfig<Route extends LayoutRoutes = LayoutRoutes> = {
-  default: React.ComponentType<LayoutProps<Route>> | ((props: LayoutProps<Route>) => React.ReactNode | Promise<React.ReactNode> | never | void | Promise<void>)
+  default: React.ComponentType<LayoutProps<Route>> | ((props: LayoutProps<Route>) => void)
   generateStaticParams?: (props: { params: ParamMap[Route] }) => Promise<any[]> | any[]
   generateMetadata?: (
     props: { params: Promise<ParamMap[Route]> } & any,
