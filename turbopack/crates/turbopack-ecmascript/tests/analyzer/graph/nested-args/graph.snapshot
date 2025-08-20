@@ -37,50 +37,68 @@
     (
         "inner",
         Function(
-            4,
+            6,
             219,
-            Add(
-                3,
-                [
-                    Variable(
-                        (
-                            "a",
-                            #9,
-                        ),
+            Alternatives {
+                total_nodes: 5,
+                values: [
+                    Add(
+                        3,
+                        [
+                            Variable(
+                                (
+                                    "a",
+                                    #9,
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "b",
+                                    #10,
+                                ),
+                            ),
+                        ],
                     ),
-                    Variable(
-                        (
-                            "b",
-                            #10,
-                        ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
     (
         "outer",
         Function(
-            4,
+            6,
             197,
-            Call(
-                3,
-                Variable(
-                    (
-                        "inner",
-                        #9,
-                    ),
-                ),
-                [
-                    Constant(
-                        Str(
-                            Atom(
-                                "b",
+            Alternatives {
+                total_nodes: 5,
+                values: [
+                    Call(
+                        3,
+                        Variable(
+                            (
+                                "inner",
+                                #9,
                             ),
                         ),
+                        [
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "b",
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -91,9 +109,6 @@
             Alternatives {
                 total_nodes: 10,
                 values: [
-                    Constant(
-                        Undefined,
-                    ),
                     Variable(
                         (
                             "a",
@@ -140,6 +155,9 @@
                                 ),
                             ),
                         ],
+                    ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
                 logical_property: None,
@@ -224,38 +242,56 @@
     (
         "x",
         Function(
-            2,
+            4,
             1,
-            Variable(
-                (
-                    "y",
-                    #4,
-                ),
-            ),
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "y",
+                            #4,
+                        ),
+                    ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
         "y",
         Function(
-            4,
+            6,
             26,
-            Add(
-                3,
-                [
-                    Variable(
-                        (
-                            "a",
-                            #3,
-                        ),
+            Alternatives {
+                total_nodes: 5,
+                values: [
+                    Add(
+                        3,
+                        [
+                            Variable(
+                                (
+                                    "a",
+                                    #3,
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "b",
+                                    #5,
+                                ),
+                            ),
+                        ],
                     ),
-                    Variable(
-                        (
-                            "b",
-                            #5,
-                        ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
 ]

@@ -12,10 +12,10 @@
     (
         "run",
         Function(
-            4,
+            5,
             48,
             Alternatives {
-                total_nodes: 3,
+                total_nodes: 4,
                 values: [
                     Constant(
                         Str(
@@ -30,6 +30,9 @@
                                 "should run",
                             ),
                         ),
+                    ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
                 logical_property: None,

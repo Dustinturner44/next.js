@@ -2,29 +2,47 @@
     (
         "*anonymous function 116*",
         Function(
-            2,
+            4,
             116,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        3.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
         "*anonymous function 339*",
         Function(
-            2,
+            4,
             339,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        3.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                3.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -72,29 +90,47 @@
     (
         "*arrow function 259*",
         Function(
-            2,
+            4,
             259,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
         "*arrow function 299*",
         Function(
-            2,
+            4,
             299,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                2.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -114,29 +150,47 @@
     (
         "*arrow function 50*",
         Function(
-            2,
+            4,
             50,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        1.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                1.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
         "*arrow function 83*",
         Function(
-            2,
+            4,
             83,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        2.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                2.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -187,15 +241,24 @@
     (
         "e#6",
         Function(
-            2,
+            4,
             155,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        4.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                4.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -256,15 +319,24 @@
     (
         "xe#12",
         Function(
-            2,
+            4,
             385,
-            Constant(
-                Num(
-                    ConstantNumber(
-                        4.0,
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Constant(
+                        Num(
+                            ConstantNumber(
+                                4.0,
+                            ),
+                        ),
                     ),
-                ),
-            ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (

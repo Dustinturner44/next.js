@@ -2,98 +2,107 @@
     (
         "*arrow function 24*",
         Function(
-            16,
+            18,
             24,
-            MemberCall(
-                15,
-                FreeVar(
-                    "JSON",
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "stringify",
+            Alternatives {
+                total_nodes: 17,
+                values: [
+                    MemberCall(
+                        15,
+                        FreeVar(
+                            "JSON",
                         ),
-                    ),
-                ),
-                [
-                    Object {
-                        total_nodes: 12,
-                        parts: [
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "condition",
-                                        ),
-                                    ),
-                                ),
-                                Binary(
-                                    3,
-                                    Variable(
-                                        (
-                                            "variable",
-                                            #3,
-                                        ),
-                                    ),
-                                    StrictEqual,
-                                    Constant(
-                                        Str(
-                                            Atom(
-                                                "true",
-                                            ),
-                                        ),
-                                    ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "stringify",
                                 ),
                             ),
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "buggedConditionalCheck",
-                                        ),
-                                    ),
-                                ),
-                                Tenary(
-                                    6,
-                                    Binary(
-                                        3,
-                                        Variable(
-                                            (
-                                                "variable",
-                                                #3,
-                                            ),
-                                        ),
-                                        StrictEqual,
+                        ),
+                        [
+                            Object {
+                                total_nodes: 12,
+                                parts: [
+                                    KeyValue(
                                         Constant(
                                             Str(
                                                 Atom(
-                                                    "true",
+                                                    "condition",
+                                                ),
+                                            ),
+                                        ),
+                                        Binary(
+                                            3,
+                                            Variable(
+                                                (
+                                                    "variable",
+                                                    #3,
+                                                ),
+                                            ),
+                                            StrictEqual,
+                                            Constant(
+                                                Str(
+                                                    Atom(
+                                                        "true",
+                                                    ),
                                                 ),
                                             ),
                                         ),
                                     ),
-                                    Constant(
-                                        Str(
-                                            Atom(
-                                                "true",
+                                    KeyValue(
+                                        Constant(
+                                            Str(
+                                                Atom(
+                                                    "buggedConditionalCheck",
+                                                ),
+                                            ),
+                                        ),
+                                        Tenary(
+                                            6,
+                                            Binary(
+                                                3,
+                                                Variable(
+                                                    (
+                                                        "variable",
+                                                        #3,
+                                                    ),
+                                                ),
+                                                StrictEqual,
+                                                Constant(
+                                                    Str(
+                                                        Atom(
+                                                            "true",
+                                                        ),
+                                                    ),
+                                                ),
+                                            ),
+                                            Constant(
+                                                Str(
+                                                    Atom(
+                                                        "true",
+                                                    ),
+                                                ),
+                                            ),
+                                            Constant(
+                                                Str(
+                                                    Atom(
+                                                        "false",
+                                                    ),
+                                                ),
                                             ),
                                         ),
                                     ),
-                                    Constant(
-                                        Str(
-                                            Atom(
-                                                "false",
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ),
+                                ],
+                                mutable: true,
+                            },
                         ],
-                        mutable: true,
-                    },
+                    ),
+                    Constant(
+                        Undefined,
+                    ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
     (

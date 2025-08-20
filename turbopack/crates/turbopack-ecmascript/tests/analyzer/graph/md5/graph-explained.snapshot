@@ -106,13 +106,13 @@ b#7 = (
 - *12* unsupported expression
   ⚠️  This value might have side effects
 
-bitRotateLeft = (...) => ???*0*
+bitRotateLeft = (...) => (???*0* | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
 bytes = (arguments[0] | new FreeVar(Array)(msg["length"]))
 
-bytesToWords = (...) => output
+bytesToWords = (...) => (output | undefined)
 
 c#15 = arguments[2]
 
@@ -272,30 +272,36 @@ lsw = (???*0* + ???*1*)
 - *1* unsupported expression
   ⚠️  This value might have side effects
 
-md5 = (...) => md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), ???*0*))
+md5 = (...) => (
+  | md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), ???*0*))
+  | undefined
+)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5ToHexEncodedArray = (...) => output
+md5ToHexEncodedArray = (...) => (output | undefined)
 
-md5cmn = (...) => safeAdd(
-    bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
-    b
+md5cmn = (...) => (
+  | safeAdd(
+        bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
+        b
+    )
+  | undefined
 )
 
-md5ff = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5ff = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5gg = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5gg = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5hh = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5hh = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5ii = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5ii = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
@@ -346,7 +352,7 @@ s#17 = arguments[5]
 
 s#18 = arguments[5]
 
-safeAdd = (...) => ???*0*
+safeAdd = (...) => (???*0* | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
@@ -360,7 +366,7 @@ t#17 = arguments[6]
 
 t#18 = arguments[6]
 
-wordsToMd5 = (...) => [a, b, c, d]
+wordsToMd5 = (...) => ([a, b, c, d] | undefined)
 
 x#12 = arguments[0]
 

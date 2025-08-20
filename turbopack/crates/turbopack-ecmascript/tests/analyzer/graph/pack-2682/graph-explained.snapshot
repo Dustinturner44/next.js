@@ -1,8 +1,11 @@
-*arrow function 24* = (...) => FreeVar(JSON)["stringify"](
-    {
-        "condition": (variable === "true"),
-        "buggedConditionalCheck": ((variable === "true") ? "true" : "false")
-    }
+*arrow function 24* = (...) => (
+  | FreeVar(JSON)["stringify"](
+        {
+            "condition": (variable === "true"),
+            "buggedConditionalCheck": ((variable === "true") ? "true" : "false")
+        }
+    )
+  | undefined
 )
 
 BuggyArguments = *arrow function 24*

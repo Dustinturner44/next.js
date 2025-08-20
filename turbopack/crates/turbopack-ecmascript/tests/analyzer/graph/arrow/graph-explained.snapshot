@@ -1,6 +1,6 @@
-*anonymous function 116* = (...) => 3
+*anonymous function 116* = (...) => (3 | undefined)
 
-*anonymous function 339* = (...) => 3
+*anonymous function 339* = (...) => (3 | undefined)
 
 *arrow function 11* = (...) => 1
 
@@ -8,15 +8,15 @@
 
 *arrow function 236* = (...) => 2
 
-*arrow function 259* = (...) => 1
+*arrow function 259* = (...) => (1 | undefined)
 
-*arrow function 299* = (...) => 2
+*arrow function 299* = (...) => (2 | undefined)
 
 *arrow function 30* = (...) => 2
 
-*arrow function 50* = (...) => 1
+*arrow function 50* = (...) => (1 | undefined)
 
-*arrow function 83* = (...) => 2
+*arrow function 83* = (...) => (2 | undefined)
 
 a = *arrow function 11*
 
@@ -28,7 +28,7 @@ d = *arrow function 83*
 
 e#2 = *anonymous function 116*
 
-e#6 = (...) => 4
+e#6 = (...) => (4 | undefined)
 
 f = e
 
@@ -42,7 +42,7 @@ xc = *arrow function 259*
 
 xd = *arrow function 299*
 
-xe#12 = (...) => 4
+xe#12 = (...) => (4 | undefined)
 
 xe#8 = *anonymous function 339*
 

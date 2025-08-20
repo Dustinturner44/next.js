@@ -1,4 +1,4 @@
-0 -> 1 call = (...) => binPath()
+0 -> 1 call = (...) => (binPath | undefined)()
 
 0 -> 2 free var = FreeVar(require)
 
@@ -16,12 +16,20 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 9 call = (...) => {"pkg": pkg, "subpath": subpath}()
+0 -> 9 call = (...) => ({"pkg": pkg, "subpath": subpath} | undefined)()
 
 0 -> 11 free var = FreeVar(require)
 
 0 -> 12 member call = require*0*["resolve"](
-    `${(???*1* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*2* | ???*4*)}/${(???*5* | "esbuild.exe" | ???*6*)}`
+    `${(
+          | ???*1*
+          | "esbuild-windows-arm64"
+          | "esbuild-windows-32"
+          | "esbuild-windows-64"
+          | ???*2*
+          | ???*4*
+          | undefined["pkg"]
+        )}/${(???*5* | "esbuild.exe" | ???*6* | undefined["subpath"])}`
 )
 - *0* require: The require method from CommonJS
 - *1* pkg

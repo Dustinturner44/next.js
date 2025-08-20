@@ -1,1 +1,1 @@
-runGetClassesOrUseCache = (...) => ("value a" | "value b")
+runGetClassesOrUseCache = (...) => ("value a" | "value b" | undefined)

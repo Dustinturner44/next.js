@@ -1,8 +1,8 @@
-*arrow function 105* = (...) => value2
+*arrow function 105* = (...) => (value2 | undefined)
 
-Fun = (...) => value
+Fun = (...) => (value | undefined)
 
-Fun2 = (...) => value2
+Fun2 = (...) => (value2 | undefined)
 
 value = (???*0* | module<./module.js, {}>["named"])
 - *0* ???*1*["value"]

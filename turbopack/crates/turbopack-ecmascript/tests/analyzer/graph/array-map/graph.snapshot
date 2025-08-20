@@ -2,61 +2,88 @@
     (
         "*anonymous function 170*",
         Function(
-            3,
+            5,
             170,
-            Array {
-                total_nodes: 2,
-                items: [
-                    Variable(
-                        (
-                            "file",
-                            #4,
-                        ),
+            Alternatives {
+                total_nodes: 4,
+                values: [
+                    Array {
+                        total_nodes: 2,
+                        items: [
+                            Variable(
+                                (
+                                    "file",
+                                    #4,
+                                ),
+                            ),
+                        ],
+                        mutable: true,
+                    },
+                    Constant(
+                        Undefined,
                     ),
                 ],
-                mutable: true,
+                logical_property: None,
             },
         ),
     ),
     (
         "*anonymous function 254*",
         Function(
-            5,
+            7,
             254,
-            MemberCall(
-                4,
-                FreeVar(
-                    "require",
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "resolve",
+            Alternatives {
+                total_nodes: 6,
+                values: [
+                    MemberCall(
+                        4,
+                        FreeVar(
+                            "require",
                         ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "resolve",
+                                ),
+                            ),
+                        ),
+                        [
+                            Variable(
+                                (
+                                    "file",
+                                    #5,
+                                ),
+                            ),
+                        ],
                     ),
-                ),
-                [
-                    Variable(
-                        (
-                            "file",
-                            #5,
-                        ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
     (
         "*anonymous function 88*",
         Function(
-            2,
+            4,
             88,
-            Variable(
-                (
-                    "file",
-                    #3,
-                ),
-            ),
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "file",
+                            #3,
+                        ),
+                    ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -236,29 +263,38 @@
     (
         "func",
         Function(
-            5,
+            7,
             308,
-            MemberCall(
-                4,
-                FreeVar(
-                    "require",
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "resolve",
+            Alternatives {
+                total_nodes: 6,
+                values: [
+                    MemberCall(
+                        4,
+                        FreeVar(
+                            "require",
                         ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "resolve",
+                                ),
+                            ),
+                        ),
+                        [
+                            Variable(
+                                (
+                                    "file",
+                                    #6,
+                                ),
+                            ),
+                        ],
                     ),
-                ),
-                [
-                    Variable(
-                        (
-                            "file",
-                            #6,
-                        ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
 ]

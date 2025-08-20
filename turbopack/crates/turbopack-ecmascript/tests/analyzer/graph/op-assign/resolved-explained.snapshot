@@ -1,4 +1,4 @@
-*arrow function 173* = (...) => (undefined | ???*0*)
+*arrow function 173* = (...) => (???*0* | undefined)
 - *0* spread in function calls is not supported
   ⚠️  This value might have side effects
 
@@ -16,7 +16,7 @@ clientComponentLoadTimes = (0 | (???*0* + ???*1*))
 - *1* unsupported expression
   ⚠️  This value might have side effects
 
-getClientComponentLoaderMetrics = (...) => metrics
+getClientComponentLoaderMetrics = (...) => (metrics | undefined)
 
 metrics = (???*0* ? undefined : {"clientComponentLoadTimes": (0 | ???*4*)})
 - *0* ((0 | ???*1*) === 0)
@@ -46,4 +46,4 @@ startTime = ???*0*()
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-wrapClientComponentLoader = (...) => {"loadChunk": *arrow function 173*}
+wrapClientComponentLoader = (...) => ({"loadChunk": *arrow function 173*} | undefined)

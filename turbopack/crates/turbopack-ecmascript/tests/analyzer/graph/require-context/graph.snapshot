@@ -66,43 +66,52 @@
     (
         "importAll",
         Function(
-            7,
+            9,
             1,
-            MemberCall(
-                6,
-                MemberCall(
-                    3,
-                    Variable(
-                        (
-                            "r",
-                            #3,
+            Alternatives {
+                total_nodes: 8,
+                values: [
+                    MemberCall(
+                        6,
+                        MemberCall(
+                            3,
+                            Variable(
+                                (
+                                    "r",
+                                    #3,
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "keys",
+                                    ),
+                                ),
+                            ),
+                            [],
                         ),
-                    ),
-                    Constant(
-                        Str(
-                            Atom(
-                                "keys",
+                        Constant(
+                            Str(
+                                Atom(
+                                    "map",
+                                ),
                             ),
                         ),
+                        [
+                            Variable(
+                                (
+                                    "r",
+                                    #3,
+                                ),
+                            ),
+                        ],
                     ),
-                    [],
-                ),
-                Constant(
-                    Str(
-                        Atom(
-                            "map",
-                        ),
-                    ),
-                ),
-                [
-                    Variable(
-                        (
-                            "r",
-                            #3,
-                        ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
-            ),
+                logical_property: None,
+            },
         ),
     ),
     (

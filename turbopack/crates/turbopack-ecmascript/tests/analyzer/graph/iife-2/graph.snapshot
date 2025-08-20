@@ -2,14 +2,23 @@
     (
         "_",
         Function(
-            2,
+            4,
             17,
-            Variable(
-                (
-                    "parent",
-                    #4,
-                ),
-            ),
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "parent",
+                            #4,
+                        ),
+                    ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (

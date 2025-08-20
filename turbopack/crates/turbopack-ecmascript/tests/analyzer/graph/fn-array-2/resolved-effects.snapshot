@@ -1,4 +1,4 @@
-0 -> 1 call = (...) => [`${a}${x}`, a]("1", "2")
+0 -> 1 call = (...) => ([`${a}${x}`, a] | undefined)("1", "2")
 
 0 -> 2 unreachable = ???*0*
 - *0* unreachable

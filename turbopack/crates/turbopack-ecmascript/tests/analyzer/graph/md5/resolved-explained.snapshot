@@ -46,7 +46,7 @@ b#7 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-bitRotateLeft = (...) => ???*0*
+bitRotateLeft = (...) => (???*0* | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
@@ -66,7 +66,7 @@ bytes = (???*0* | new ???*1*((???*2* | undefined["length"])))
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-bytesToWords = (...) => output
+bytesToWords = (...) => (output | undefined)
 
 c#15 = ???*0*
 - *0* arguments[2]
@@ -181,30 +181,36 @@ lsw = (???*0* + ???*1*)
 - *1* unsupported expression
   ⚠️  This value might have side effects
 
-md5 = (...) => md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), ???*0*))
+md5 = (...) => (
+  | md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), ???*0*))
+  | undefined
+)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5ToHexEncodedArray = (...) => output
+md5ToHexEncodedArray = (...) => (output | undefined)
 
-md5cmn = (...) => safeAdd(
-    bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
-    b
+md5cmn = (...) => (
+  | safeAdd(
+        bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
+        b
+    )
+  | undefined
 )
 
-md5ff = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5ff = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5gg = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5gg = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5hh = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5hh = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-md5ii = (...) => md5cmn(???*0*, a, b, x, s, t)
+md5ii = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
@@ -272,7 +278,7 @@ s#18 = ???*0*
 - *0* arguments[5]
   ⚠️  function calls are not analysed yet
 
-safeAdd = (...) => ???*0*
+safeAdd = (...) => (???*0* | undefined)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
@@ -296,7 +302,7 @@ t#18 = ???*0*
 - *0* arguments[6]
   ⚠️  function calls are not analysed yet
 
-wordsToMd5 = (...) => [a, b, c, d]
+wordsToMd5 = (...) => ([a, b, c, d] | undefined)
 
 x#12 = ???*0*
 - *0* arguments[0]

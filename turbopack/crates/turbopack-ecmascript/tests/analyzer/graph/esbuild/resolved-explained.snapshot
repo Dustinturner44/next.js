@@ -6,9 +6,10 @@
         ]
     ]
   | [generateBinPath(), []]
+  | undefined
 )
 
-args = (["bin/esbuild"] | ???*0* | [])
+args = (["bin/esbuild"] | ???*0* | [] | undefined[1])
 - *0* unknown mutation
   ⚠️  This value might have side effects
 
@@ -16,7 +17,7 @@ binPath = (???*0* | ???*1* | ???*7*)
 - *0* binPath
   ⚠️  pattern without value
 - *1* require.resolve*2*(
-        `${(???*3* | undefined | ???*4* | "esbuild-linux-64")}/${(???*5* | "esbuild.exe" | "bin/esbuild" | ???*6*)}`
+        `${(???*3* | undefined | ???*4* | "esbuild-linux-64" | undefined["pkg"])}/${(???*5* | "esbuild.exe" | "bin/esbuild" | ???*6* | undefined["subpath"])}`
     )
   ⚠️  require.resolve non constant
   ⚠️  This value might have side effects
@@ -36,12 +37,14 @@ binPath = (???*0* | ???*1* | ???*7*)
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-binTargetPath = `"esbuild"/resolved/lib${("/" | "")}pnpapi-${(???*0* | undefined | ???*1* | "esbuild-linux-64")}-${???*2*}`
+binTargetPath = `"esbuild"/resolved/lib${("/" | "")}pnpapi-${(???*0* | undefined | ???*1* | "esbuild-linux-64" | undefined["pkg"])}-${???*2*}`
 - *0* pkg
   ⚠️  pattern without value
 - *1* unknown mutation
   ⚠️  This value might have side effects
-- *2* ???*3*((???*5* | "esbuild.exe" | "bin/esbuild" | ???*6*))
+- *2* ???*3*(
+        (???*5* | "esbuild.exe" | "bin/esbuild" | ???*6* | undefined["subpath"])
+    )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
 - *3* path*4*["basename"]
@@ -53,56 +56,8 @@ binTargetPath = `"esbuild"/resolved/lib${("/" | "")}pnpapi-${(???*0* | undefined
 - *6* unknown mutation
   ⚠️  This value might have side effects
 
-command = (
-  | "node"
-  | ???*0*
-  | ???*1*
-  | `"esbuild"/resolved/lib${("/" | "")}pnpapi-${(???*2* | undefined | ???*3* | "esbuild-linux-64")}-${???*4*}`
-  | ???*9*
-  | ???*10*
-  | ???*16*
-)
-- *0* unknown mutation
-  ⚠️  This value might have side effects
-- *1* FreeVar(ESBUILD_BINARY_PATH)
-  ⚠️  unknown global
-  ⚠️  This value might have side effects
-- *2* pkg
-  ⚠️  pattern without value
-- *3* unknown mutation
-  ⚠️  This value might have side effects
-- *4* ???*5*((???*7* | "esbuild.exe" | "bin/esbuild" | ???*8*))
-  ⚠️  unknown callee
-  ⚠️  This value might have side effects
-- *5* path*6*["basename"]
-  ⚠️  unsupported property on Node.js path module
-  ⚠️  This value might have side effects
-- *6* path: The Node.js path module: https://nodejs.org/api/path.html
-- *7* subpath
-  ⚠️  pattern without value
-- *8* unknown mutation
-  ⚠️  This value might have side effects
-- *9* binPath
-  ⚠️  pattern without value
-- *10* require.resolve*11*(
-        `${(???*12* | undefined | ???*13* | "esbuild-linux-64")}/${(???*14* | "esbuild.exe" | "bin/esbuild" | ???*15*)}`
-    )
-  ⚠️  require.resolve non constant
-  ⚠️  This value might have side effects
-- *11* require.resolve: The require.resolve method from CommonJS
-- *12* pkg
-  ⚠️  pattern without value
-- *13* unknown mutation
-  ⚠️  This value might have side effects
-- *14* subpath
-  ⚠️  pattern without value
-- *15* unknown mutation
-  ⚠️  This value might have side effects
-- *16* ???*17*(pkg, subpath)
-  ⚠️  unknown callee
-  ⚠️  This value might have side effects
-- *17* FreeVar(downloadedBinPath)
-  ⚠️  unknown global
+command = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 e#10 = ???*0*
@@ -121,11 +76,12 @@ esbuildCommandAndArgs = (...) => (
         ]
     ]
   | [generateBinPath(), []]
+  | undefined
 )
 
 esbuildLibDir = "\"esbuild\"/resolved/lib"
 
-generateBinPath = (...) => (FreeVar(ESBUILD_BINARY_PATH) | binTargetPath | binPath)
+generateBinPath = (...) => (FreeVar(ESBUILD_BINARY_PATH) | binTargetPath | binPath | undefined)
 
 isYarnPnP = (false | true)
 
@@ -168,13 +124,13 @@ pkg#3 = (???*0* | undefined | ???*1* | "esbuild-linux-64")
 - *1* unknown mutation
   ⚠️  This value might have side effects
 
-pkg#7 = (???*0* | undefined | ???*1* | "esbuild-linux-64")
+pkg#7 = (???*0* | undefined | ???*1* | "esbuild-linux-64" | undefined["pkg"])
 - *0* pkg
   ⚠️  pattern without value
 - *1* unknown mutation
   ⚠️  This value might have side effects
 
-pkgAndSubpathForCurrentPlatform = (...) => {"pkg": pkg, "subpath": subpath}
+pkgAndSubpathForCurrentPlatform = (...) => ({"pkg": pkg, "subpath": subpath} | undefined)
 
 platformKey = "linux x64 LE"
 
@@ -182,15 +138,12 @@ subpath#3 = (???*0* | "esbuild.exe" | "bin/esbuild")
 - *0* subpath
   ⚠️  pattern without value
 
-subpath#7 = (???*0* | "esbuild.exe" | "bin/esbuild" | ???*1*)
+subpath#7 = (???*0* | "esbuild.exe" | "bin/esbuild" | ???*1* | undefined["subpath"])
 - *0* subpath
   ⚠️  pattern without value
 - *1* unknown mutation
   ⚠️  This value might have side effects
 
-x = (["bin/esbuild", "--service=0.14.12", "--ping"] | ???*0* | ["--service=0.14.12", "--ping"])
-- *0* ???*1*["concat"]("--service=0.14.12", "--ping")
-  ⚠️  unknown callee object
-  ⚠️  This value might have side effects
-- *1* unknown mutation
+x = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects

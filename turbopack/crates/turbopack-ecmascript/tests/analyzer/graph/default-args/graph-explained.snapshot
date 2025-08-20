@@ -1,6 +1,6 @@
-*arrow function 105* = (...) => value2
+*arrow function 105* = (...) => (value2 | undefined)
 
-Fun = (...) => value
+Fun = (...) => (value | undefined)
 
 Fun2 = *arrow function 105*
 

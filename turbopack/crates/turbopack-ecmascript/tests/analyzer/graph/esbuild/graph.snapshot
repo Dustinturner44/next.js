@@ -2,10 +2,10 @@
     (
         "*arrow function 2666*",
         Function(
-            16,
+            17,
             2666,
             Alternatives {
-                total_nodes: 15,
+                total_nodes: 16,
                 values: [
                     Array {
                         total_nodes: 10,
@@ -89,6 +89,9 @@
                         ],
                         mutable: true,
                     },
+                    Constant(
+                        Undefined,
+                    ),
                 ],
                 logical_property: None,
             },
@@ -381,10 +384,10 @@
     (
         "generateBinPath",
         Function(
-            5,
+            6,
             1409,
             Alternatives {
-                total_nodes: 4,
+                total_nodes: 5,
                 values: [
                     FreeVar(
                         "ESBUILD_BINARY_PATH",
@@ -400,6 +403,9 @@
                             "binPath",
                             #7,
                         ),
+                    ),
+                    Constant(
+                        Undefined,
                     ),
                 ],
                 logical_property: None,
@@ -858,43 +864,52 @@
     (
         "pkgAndSubpathForCurrentPlatform",
         Function(
-            6,
+            8,
             911,
-            Object {
-                total_nodes: 5,
-                parts: [
-                    KeyValue(
-                        Constant(
-                            Str(
-                                Atom(
-                                    "pkg",
+            Alternatives {
+                total_nodes: 7,
+                values: [
+                    Object {
+                        total_nodes: 5,
+                        parts: [
+                            KeyValue(
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "pkg",
+                                        ),
+                                    ),
+                                ),
+                                Variable(
+                                    (
+                                        "pkg",
+                                        #3,
+                                    ),
                                 ),
                             ),
-                        ),
-                        Variable(
-                            (
-                                "pkg",
-                                #3,
-                            ),
-                        ),
-                    ),
-                    KeyValue(
-                        Constant(
-                            Str(
-                                Atom(
-                                    "subpath",
+                            KeyValue(
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "subpath",
+                                        ),
+                                    ),
+                                ),
+                                Variable(
+                                    (
+                                        "subpath",
+                                        #3,
+                                    ),
                                 ),
                             ),
-                        ),
-                        Variable(
-                            (
-                                "subpath",
-                                #3,
-                            ),
-                        ),
+                        ],
+                        mutable: true,
+                    },
+                    Constant(
+                        Undefined,
                     ),
                 ],
-                mutable: true,
+                logical_property: None,
             },
         ),
     ),

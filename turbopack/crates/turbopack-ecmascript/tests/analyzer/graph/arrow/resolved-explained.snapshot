@@ -1,6 +1,6 @@
-*anonymous function 116* = (...) => 3
+*anonymous function 116* = (...) => (3 | undefined)
 
-*anonymous function 339* = (...) => 3
+*anonymous function 339* = (...) => (3 | undefined)
 
 *arrow function 11* = (...) => 1
 
@@ -8,29 +8,29 @@
 
 *arrow function 236* = (...) => 2
 
-*arrow function 259* = (...) => 1
+*arrow function 259* = (...) => (1 | undefined)
 
-*arrow function 299* = (...) => 2
+*arrow function 299* = (...) => (2 | undefined)
 
 *arrow function 30* = (...) => 2
 
-*arrow function 50* = (...) => 1
+*arrow function 50* = (...) => (1 | undefined)
 
-*arrow function 83* = (...) => 2
+*arrow function 83* = (...) => (2 | undefined)
 
 a = (...) => 1
 
 b = (...) => 2
 
-c = (...) => 1
+c = (...) => (1 | undefined)
 
-d = (...) => 2
+d = (...) => (2 | undefined)
 
-e#2 = (...) => 3
+e#2 = (...) => (3 | undefined)
 
-e#6 = (...) => 4
+e#6 = (...) => (4 | undefined)
 
-f = (...) => 4
+f = (...) => (4 | undefined)
 
 x = (...) => undefined
 
@@ -38,12 +38,12 @@ xa = (...) => 1
 
 xb = (...) => 2
 
-xc = (...) => 1
+xc = (...) => (1 | undefined)
 
-xd = (...) => 2
+xd = (...) => (2 | undefined)
 
-xe#12 = (...) => 4
+xe#12 = (...) => (4 | undefined)
 
-xe#8 = (...) => 3
+xe#8 = (...) => (3 | undefined)
 
-xf = (...) => 4
+xf = (...) => (4 | undefined)

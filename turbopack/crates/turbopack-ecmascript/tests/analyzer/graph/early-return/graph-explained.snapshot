@@ -14,9 +14,9 @@ g = (...) => undefined
 
 h = (...) => undefined
 
-i = (...) => (FreeVar(i1)() | FreeVar(i2)())
+i = (...) => (FreeVar(i1)() | FreeVar(i2)() | undefined)
 
-j#2 = (...) => (FreeVar(i1)() | FreeVar(i2)())
+j#2 = (...) => (FreeVar(i1)() | FreeVar(i2)() | undefined)
 
 j#25 = arguments[0]
 

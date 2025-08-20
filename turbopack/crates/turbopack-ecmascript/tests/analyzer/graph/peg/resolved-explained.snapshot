@@ -1,189 +1,273 @@
-*anonymous function 10064* = (...) => "OR"
+*anonymous function 10064* = (...) => ("OR" | undefined)
 
-*anonymous function 10192* = (...) => "NOT"
+*anonymous function 10192* = (...) => ("NOT" | undefined)
 
-*anonymous function 10796* = (...) => {"type": "identifier", "name": name}
+*anonymous function 10796* = (...) => ({"type": "identifier", "name": name} | undefined)
 
-*anonymous function 11187* = (...) => (head + tail["join"](""))
+*anonymous function 11187* = (...) => ((head + tail["join"]("")) | undefined)
 
-*anonymous function 11339* = (...) => {"type": "parameter_name", "name": text()}
+*anonymous function 11339* = (...) => ({"type": "parameter_name", "name": text()} | undefined)
 
-*anonymous function 11668* = (...) => text()
+*anonymous function 11668* = (...) => (text() | undefined)
 
-*anonymous function 11725* = (...) => seq
+*anonymous function 11725* = (...) => (seq | undefined)
 
-*anonymous function 11890* = (...) => "\b"
+*anonymous function 11890* = (...) => ("\b" | undefined)
 
-*anonymous function 12016* = (...) => "\f"
+*anonymous function 12016* = (...) => ("\f" | undefined)
 
-*anonymous function 12142* = (...) => "\n"
+*anonymous function 12142* = (...) => ("\n" | undefined)
 
-*anonymous function 12268* = (...) => "\r"
+*anonymous function 12268* = (...) => ("\r" | undefined)
 
-*anonymous function 12394* = (...) => "\t"
+*anonymous function 12394* = (...) => ("\t" | undefined)
 
-*anonymous function 12449* = (...) => text()
+*anonymous function 12449* = (...) => (text() | undefined)
 
-*anonymous function 12577* = (...) => FreeVar(String)["fromCharCode"](FreeVar(parseInt)(digits, 16))
+*anonymous function 12577* = (...) => (
+  | FreeVar(String)["fromCharCode"](FreeVar(parseInt)(digits, 16))
+  | undefined
+)
 
-*anonymous function 1271* = (...) => "any character"
+*anonymous function 1271* = (...) => ("any character" | undefined)
 
-*anonymous function 12829* = (...) => v
+*anonymous function 12829* = (...) => (v | undefined)
 
-*anonymous function 12892* = (...) => {"property": property, "alias": alias}
+*anonymous function 12892* = (...) => ({"property": property, "alias": alias} | undefined)
 
-*anonymous function 12977* = (...) => expression
+*anonymous function 12977* = (...) => (expression | undefined)
 
-*anonymous function 13048* = (...) => {"type": "array_subquery_expression", "expression": expression}
+*anonymous function 13048* = (...) => (
+  | {"type": "array_subquery_expression", "expression": expression}
+  | undefined
+)
 
-*anonymous function 13181* = (...) => {"type": "exists_subquery_expression", "expression": expression}
+*anonymous function 13181* = (...) => (
+  | {"type": "exists_subquery_expression", "expression": expression}
+  | undefined
+)
 
-*anonymous function 13315* = (...) => {"type": "scalar_subquery_expression", "expression": expression}
+*anonymous function 13315* = (...) => (
+  | {"type": "scalar_subquery_expression", "expression": expression}
+  | undefined
+)
 
-*anonymous function 1343* = (...) => "end of input"
+*anonymous function 1343* = (...) => ("end of input" | undefined)
 
-*anonymous function 13449* = (...) => {"property": property, "computed": false}
+*anonymous function 13449* = (...) => ({"property": property, "computed": false} | undefined)
 
-*anonymous function 13543* = (...) => {"property": property, "computed": true}
+*anonymous function 13543* = (...) => ({"property": property, "computed": true} | undefined)
 
-*anonymous function 13636* = (...) => tail["reduce"](*arrow function 13694*, head)
+*anonymous function 13636* = (...) => (tail["reduce"](*arrow function 13694*, head) | undefined)
 
-*anonymous function 13891* = (...) => {"type": "scalar_unary_expression", "operator": operator, "argument": argument}
+*anonymous function 13891* = (...) => (
+  | {"type": "scalar_unary_expression", "operator": operator, "argument": argument}
+  | undefined
+)
 
-*anonymous function 1416* = (...) => expectation["description"]
+*anonymous function 1416* = (...) => (expectation["description"] | undefined)
 
-*anonymous function 14188* = (...) => {
-    "type": "scalar_conditional_expression",
-    "test": test,
-    "consequent": consequent,
-    "alternate": alternate
-}
+*anonymous function 14188* = (...) => (
+  | {
+        "type": "scalar_conditional_expression",
+        "test": test,
+        "consequent": consequent,
+        "alternate": alternate
+    }
+  | undefined
+)
 
-*anonymous function 14448* = (...) => buildBinaryExpression(head, tail)
+*anonymous function 14448* = (...) => (buildBinaryExpression(head, tail) | undefined)
 
-*anonymous function 15047* = (...) => {"type": "scalar_in_expression", "value": value, "list": list}
+*anonymous function 15047* = (...) => (
+  | {"type": "scalar_in_expression", "value": value, "list": list}
+  | undefined
+)
 
-*anonymous function 15185* = (...) => {"type": "scalar_between_expression", "value": value, "begin": begin, "end": end}
+*anonymous function 15185* = (...) => (
+  | {"type": "scalar_between_expression", "value": value, "begin": begin, "end": end}
+  | undefined
+)
 
-*anonymous function 15997* = (...) => {"key": key, "value": value}
+*anonymous function 15997* = (...) => ({"key": key, "value": value} | undefined)
 
-*anonymous function 16072* = (...) => {"type": "collection_expression", "expression": expression}
+*anonymous function 16072* = (...) => (
+  | {"type": "collection_expression", "expression": expression}
+  | undefined
+)
 
-*anonymous function 16201* = (...) => tail["reduce"](*arrow function 16259*, head)
+*anonymous function 16201* = (...) => (tail["reduce"](*arrow function 16259*, head) | undefined)
 
-*anonymous function 16460* = (...) => {"type": "collection_subquery_expression", "expression": expression}
+*anonymous function 16460* = (...) => (
+  | {"type": "collection_subquery_expression", "expression": expression}
+  | undefined
+)
 
-*anonymous function 16598* = (...) => {"type": "top_specification", "value": value}
+*anonymous function 16598* = (...) => ({"type": "top_specification", "value": value} | undefined)
 
-*anonymous function 16713* = (...) => {"type": "number_constant", "value": FreeVar(Number)(text())}
+*anonymous function 16713* = (...) => (
+  | {"type": "number_constant", "value": FreeVar(Number)(text())}
+  | undefined
+)
 
-*anonymous function 16837* = (...) => (head ? ???*0* : [])
+*anonymous function 16837* = (...) => ((head ? ???*0* : []) | undefined)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 16925* = (...) => subquery
+*anonymous function 16925* = (...) => (subquery | undefined)
 
-*anonymous function 1822* = (...) => `\x0${hex(ch)}`
+*anonymous function 1822* = (...) => (`\x0${hex(ch)}` | undefined)
 
-*anonymous function 1920* = (...) => `\x${hex(ch)}`
+*anonymous function 1920* = (...) => (`\x${hex(ch)}` | undefined)
 
-*anonymous function 2287* = (...) => `\x0${hex(ch)}`
+*anonymous function 2287* = (...) => (`\x0${hex(ch)}` | undefined)
 
-*anonymous function 2385* = (...) => `\x${hex(ch)}`
+*anonymous function 2385* = (...) => (`\x${hex(ch)}` | undefined)
 
-*anonymous function 3852* = (...) => {"type": "sql", "body": body}
+*anonymous function 3852* = (...) => ({"type": "sql", "body": body} | undefined)
 
-*anonymous function 3949* = (...) => v
+*anonymous function 3949* = (...) => (v | undefined)
 
-*anonymous function 4000* = (...) => v
+*anonymous function 4000* = (...) => (v | undefined)
 
-*anonymous function 4064* = (...) => v
+*anonymous function 4064* = (...) => (v | undefined)
 
-*anonymous function 4134* = (...) => v
+*anonymous function 4134* = (...) => (v | undefined)
 
-*anonymous function 4211* = (...) => {
-    "type": "select_query",
-    "top": top,
-    "select": select,
-    "from": from,
-    "where": where,
-    "orderBy": orderBy
-}
+*anonymous function 4211* = (...) => (
+  | {
+        "type": "select_query",
+        "top": top,
+        "select": select,
+        "from": from,
+        "where": where,
+        "orderBy": orderBy
+    }
+  | undefined
+)
 
-*anonymous function 4474* = (...) => {"type": "select_specification", "*": true}
+*anonymous function 4474* = (...) => ({"type": "select_specification", "*": true} | undefined)
 
-*anonymous function 4589* = (...) => {"type": "select_specification", "properties": properties}
+*anonymous function 4589* = (...) => (
+  | {"type": "select_specification", "properties": properties}
+  | undefined
+)
 
-*anonymous function 4716* = (...) => {"type": "select_specification", "value": value}
+*anonymous function 4716* = (...) => ({"type": "select_specification", "value": value} | undefined)
 
-*anonymous function 4902* = (...) => v
+*anonymous function 4902* = (...) => (v | undefined)
 
-*anonymous function 4960* = (...) => {"type": "object_property_list", "properties": ???*0*}
+*anonymous function 4960* = (...) => (
+  | {"type": "object_property_list", "properties": ???*0*}
+  | undefined
+)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 5104* = (...) => v
+*anonymous function 5104* = (...) => (v | undefined)
 
-*anonymous function 5164* = (...) => {"type": "from_specification", "source": source, "joins": joins}
+*anonymous function 5164* = (...) => (
+  | {"type": "from_specification", "source": source, "joins": joins}
+  | undefined
+)
 
-*anonymous function 5303* = (...) => {"type": "from_source", "expression": expression, "alias": alias, "iteration": true}
+*anonymous function 5303* = (...) => (
+  | {"type": "from_source", "expression": expression, "alias": alias, "iteration": true}
+  | undefined
+)
 
-*anonymous function 5468* = (...) => v
+*anonymous function 5468* = (...) => (v | undefined)
 
-*anonymous function 5532* = (...) => {"type": "from_source", "expression": expression, "alias": alias}
+*anonymous function 5532* = (...) => (
+  | {"type": "from_source", "expression": expression, "alias": alias}
+  | undefined
+)
 
-*anonymous function 5672* = (...) => {"type": "filter_condition", "condition": condition}
+*anonymous function 5672* = (...) => (
+  | {"type": "filter_condition", "condition": condition}
+  | undefined
+)
 
-*anonymous function 5793* = (...) => {"type": "sort_specification", "expressions": ???*0*}
+*anonymous function 5793* = (...) => (
+  | {"type": "sort_specification", "expressions": ???*0*}
+  | undefined
+)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 5936* = (...) => {"type": "sort_expression", "expression": expression, "order": order}
+*anonymous function 5936* = (...) => (
+  | {"type": "sort_expression", "expression": expression, "order": order}
+  | undefined
+)
 
-*anonymous function 625* = (...) => `Expected ${describeExpected(expected)} but ${describeFound(found)} found.`
+*anonymous function 625* = (...) => (
+  | `Expected ${describeExpected(expected)} but ${describeFound(found)} found.`
+  | undefined
+)
 
-*anonymous function 6287* = (...) => {"type": "scalar_function_expression", "name": name, "arguments": args, "udf": true}
+*anonymous function 6287* = (...) => (
+  | {"type": "scalar_function_expression", "name": name, "arguments": args, "udf": true}
+  | undefined
+)
 
-*anonymous function 6458* = (...) => {"type": "scalar_function_expression", "name": name, "arguments": args}
+*anonymous function 6458* = (...) => (
+  | {"type": "scalar_function_expression", "name": name, "arguments": args}
+  | undefined
+)
 
-*anonymous function 6748* = (...) => {"type": "scalar_object_expression", "properties": (head ? ???*0* : [])}
+*anonymous function 6748* = (...) => (
+  | {"type": "scalar_object_expression", "properties": (head ? ???*0* : [])}
+  | undefined
+)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 702* = (...) => `"${literalEscape(expectation["text"])}"`
+*anonymous function 702* = (...) => (`"${literalEscape(expectation["text"])}"` | undefined)
 
-*anonymous function 7046* = (...) => {"type": "scalar_array_expression", "elements": elements}
+*anonymous function 7046* = (...) => (
+  | {"type": "scalar_array_expression", "elements": elements}
+  | undefined
+)
 
-*anonymous function 7257* = (...) => {"type": "undefined_constant"}
+*anonymous function 7257* = (...) => ({"type": "undefined_constant"} | undefined)
 
-*anonymous function 7337* = (...) => {"type": "null_constant"}
+*anonymous function 7337* = (...) => ({"type": "null_constant"} | undefined)
 
-*anonymous function 7412* = (...) => {"type": "boolean_constant", "value": false}
+*anonymous function 7412* = (...) => ({"type": "boolean_constant", "value": false} | undefined)
 
-*anonymous function 7527* = (...) => {"type": "boolean_constant", "value": true}
+*anonymous function 7527* = (...) => ({"type": "boolean_constant", "value": true} | undefined)
 
-*anonymous function 7869* = (...) => {
-    "type": "number_constant",
-    "value": (hex ? FreeVar(parseInt)(text(), 16) : FreeVar(parseFloat)(text()))
-}
+*anonymous function 7869* = (...) => (
+  | {
+        "type": "number_constant",
+        "value": (hex ? FreeVar(parseInt)(text(), 16) : FreeVar(parseFloat)(text()))
+    }
+  | undefined
+)
 
-*anonymous function 804* = (...) => `[${(expectation["inverted"] ? "^" : "")}${escapedParts}]`
+*anonymous function 804* = (...) => (
+  | `[${(expectation["inverted"] ? "^" : "")}${escapedParts}]`
+  | undefined
+)
 
-*anonymous function 8139* = (...) => {"type": "string_constant", "value": chars["join"]("")}
+*anonymous function 8139* = (...) => (
+  | {"type": "string_constant", "value": chars["join"]("")}
+  | undefined
+)
 
-*anonymous function 8336* = (...) => {"type": "array_constant", "elements": ???*0*}
+*anonymous function 8336* = (...) => ({"type": "array_constant", "elements": ???*0*} | undefined)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 8472* = (...) => {"type": "object_constant", "properties": ???*0*}
+*anonymous function 8472* = (...) => ({"type": "object_constant", "properties": ???*0*} | undefined)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 9682* = (...) => "ASC"
+*anonymous function 9682* = (...) => ("ASC" | undefined)
 
-*anonymous function 9811* = (...) => "DESC"
+*anonymous function 9811* = (...) => ("DESC" | undefined)
 
-*anonymous function 9939* = (...) => "AND"
+*anonymous function 9939* = (...) => ("AND" | undefined)
 
 *arrow function 13694* = (...) => {"type": "scalar_member_expression", "object": object, "property": property, "computed": computed}
 
@@ -197,11 +281,14 @@
 *arrow function 169161* = (...) => {"type": "scalar_binary_expression", "left": left, "operator": operator, "right": right}
 
 DESCRIBE_EXPECTATION_FNS = {
-    "literal": (...) => `"${literalEscape(expectation["text"])}"`,
-    "class": (...) => `[${(expectation["inverted"] ? "^" : "")}${escapedParts}]`,
-    "any": (...) => "any character",
-    "end": (...) => "end of input",
-    "other": (...) => expectation["description"]
+    "literal": (...) => (`"${literalEscape(expectation["text"])}"` | undefined),
+    "class": (...) => (
+      | `[${(expectation["inverted"] ? "^" : "")}${escapedParts}]`
+      | undefined
+    ),
+    "any": (...) => ("any character" | undefined),
+    "end": (...) => ("end of input" | undefined),
+    "other": (...) => (expectation["description"] | undefined)
 }
 
 alias#42 = ???*0*
@@ -240,7 +327,7 @@ body = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analysed yet
 
-buildBinaryExpression = (...) => tail["reduce"](*arrow function 169161*, head)
+buildBinaryExpression = (...) => (tail["reduce"](*arrow function 169161*, head) | undefined)
 
 ch#14 = ???*0*
 - *0* arguments[0]
@@ -270,7 +357,10 @@ child = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analysed yet
 
-classEscape = (...) => ...[...](..., ...)["replace"](/\]/g, "\\]")["replace"](/\^/g, "\\^")["replace"](/-/g, "\\-")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 2287*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 2385*)
+classEscape = (...) => (
+  | ...[...](..., ...)["replace"](/\^/g, "\\^")["replace"](/-/g, "\\-")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 2287*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 2385*)
+  | undefined
+)
 
 computed#86 = ???*0*
 - *0* ???*1*["computed"]
@@ -294,20 +384,26 @@ consequent = ???*0*
 
 ctor = (...) => undefined
 
-describeExpectation = (...) => DESCRIBE_EXPECTATION_FNS[expectation["type"]](expectation)
+describeExpectation = (...) => (
+  | DESCRIBE_EXPECTATION_FNS[expectation["type"]](expectation)
+  | undefined
+)
 
 describeExpected = (...) => (
-  | undefined
   | descriptions[0]
   | `${descriptions[0]} or ${descriptions[1]}`
   | `${descriptions["slice"](0, ???*0*)["join"](", ")}, or ${descriptions[???*1*]}`
+  | undefined
 )
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
   ⚠️  This value might have side effects
 
-describeFound = (...) => (found ? `"${literalEscape(found)}"` : "end of input")
+describeFound = (...) => (
+  | (found ? `"${literalEscape(found)}"` : "end of input")
+  | undefined
+)
 
 description#105 = ???*0*
 - *0* arguments[0]
@@ -356,7 +452,7 @@ endPos = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analysed yet
 
-endPosDetails = (undefined | {"line": 1, "column": 1} | ???*0* | {"line": ???*2*, "column": ???*4*})
+endPosDetails = ({"line": 1, "column": 1} | ???*0* | {"line": ???*2*, "column": ???*4*} | undefined)
 - *0* [][???*1*]
   ⚠️  unknown array prototype methods or values
 - *1* arguments[1]
@@ -375,11 +471,11 @@ error = (...) => undefined
 escapedParts = ("" | (???*0* + ???*1*))
 - *0* escapedParts
   ⚠️  circular variable reference
-- *1* (???*2* ? ???*3* : ???*10*)
+- *1* (???*2* ? ???*3* : (???*10* | undefined))
   ⚠️  nested operation
 - *2* unsupported expression
   ⚠️  This value might have side effects
-- *3* `${???*4*}-${???*7*}`
+- *3* `${(???*4* | undefined)}-${(???*7* | undefined)}`
   ⚠️  nested operation
 - *4* ???*5*["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 2385*)
   ⚠️  unknown callee object
@@ -576,7 +672,10 @@ hex#56 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analysed yet
 
-hex#7 = (...) => ch["charCodeAt"](0)["toString"](16)["toUpperCase"]()
+hex#7 = (...) => (
+  | ch["charCodeAt"](0)["toString"](16)["toUpperCase"]()
+  | undefined
+)
 
 i#22 = (???*0* | 0 | ???*1* | 1)
 - *0* i
@@ -628,7 +727,10 @@ list = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analysed yet
 
-literalEscape = (...) => s["replace"](/\\/g, "\\\\")["replace"](/"/g, "\\\"")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 1822*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 1920*)
+literalEscape = (...) => (
+  | s["replace"](/\\/g, "\\\\")["replace"](/"/g, "\\\"")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 1822*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 1920*)
+  | undefined
+)
 
 location#105 = ???*0*
 - *0* max number of linking steps reached
@@ -646,7 +748,7 @@ location#124 = ???*0*
 - *0* arguments[2]
   ⚠️  function calls are not analysed yet
 
-location#28 = (...) => peg$computeLocation(peg$savedPos, peg$currPos)
+location#28 = (...) => (peg$computeLocation(peg$savedPos, peg$currPos) | undefined)
 
 location#5 = ???*0*
 - *0* arguments[3]
@@ -732,492 +834,798 @@ peg$FAILED = {}
 
 peg$SyntaxError = (...) => undefined
 
-peg$anyExpectation = (...) => {"type": "any"}
+peg$anyExpectation = (...) => ({"type": "any"} | undefined)
 
-peg$buildSimpleError = (...) => new peg$SyntaxError(message, null, null, location)
+peg$buildSimpleError = (...) => (new peg$SyntaxError(message, null, null, location) | undefined)
 
-peg$buildStructuredError = (...) => new peg$SyntaxError(peg$SyntaxError["buildMessage"](expected, found), expected, found, location)
+peg$buildStructuredError = (...) => (
+  | new peg$SyntaxError(peg$SyntaxError["buildMessage"](expected, found), expected, found, location)
+  | undefined
+)
 
-peg$c0 = (...) => {"type": "sql", "body": body}
+peg$c0 = (...) => ({"type": "sql", "body": body} | undefined)
 
-peg$c1 = (...) => v
+peg$c1 = (...) => (v | undefined)
 
-peg$c10 = (...) => {"type": "select_specification", "value": value}
+peg$c10 = (...) => ({"type": "select_specification", "value": value} | undefined)
 
-peg$c100 = {"type": "literal", "text": "NOT", "ignoreCase": true}
+peg$c100 = (
+  | {"type": "literal", "text": "NOT", "ignoreCase": true}
+  | undefined
+)
 
-peg$c101 = (...) => "NOT"
+peg$c101 = (...) => ("NOT" | undefined)
 
 peg$c102 = "between"
 
-peg$c103 = {"type": "literal", "text": "BETWEEN", "ignoreCase": true}
+peg$c103 = (
+  | {"type": "literal", "text": "BETWEEN", "ignoreCase": true}
+  | undefined
+)
 
 peg$c104 = "exists"
 
-peg$c105 = {"type": "literal", "text": "EXISTS", "ignoreCase": true}
+peg$c105 = (
+  | {"type": "literal", "text": "EXISTS", "ignoreCase": true}
+  | undefined
+)
 
 peg$c106 = "array"
 
-peg$c107 = {"type": "literal", "text": "ARRAY", "ignoreCase": true}
+peg$c107 = (
+  | {"type": "literal", "text": "ARRAY", "ignoreCase": true}
+  | undefined
+)
 
 peg$c108 = "null"
 
-peg$c109 = {"type": "literal", "text": "null", "ignoreCase": false}
+peg$c109 = (
+  | {"type": "literal", "text": "null", "ignoreCase": false}
+  | undefined
+)
 
 peg$c11 = ","
 
 peg$c110 = "true"
 
-peg$c111 = {"type": "literal", "text": "true", "ignoreCase": false}
+peg$c111 = (
+  | {"type": "literal", "text": "true", "ignoreCase": false}
+  | undefined
+)
 
 peg$c112 = "false"
 
-peg$c113 = {"type": "literal", "text": "false", "ignoreCase": false}
+peg$c113 = (
+  | {"type": "literal", "text": "false", "ignoreCase": false}
+  | undefined
+)
 
 peg$c114 = "udf"
 
-peg$c115 = {"type": "literal", "text": "udf", "ignoreCase": false}
+peg$c115 = (
+  | {"type": "literal", "text": "udf", "ignoreCase": false}
+  | undefined
+)
 
-peg$c116 = (...) => {"type": "identifier", "name": name}
+peg$c116 = (...) => ({"type": "identifier", "name": name} | undefined)
 
 peg$c117 = /^[a-zA-Z_]/
 
-peg$c118 = {"type": "class", "parts": [["a", "z"], ["A", "Z"], "_"], "inverted": false, "ignoreCase": false}
+peg$c118 = (
+  | {"type": "class", "parts": [["a", "z"], ["A", "Z"], "_"], "inverted": false, "ignoreCase": false}
+  | undefined
+)
 
 peg$c119 = /^[a-zA-Z0-9_]/
 
-peg$c12 = {"type": "literal", "text": ",", "ignoreCase": false}
+peg$c12 = (
+  | {"type": "literal", "text": ",", "ignoreCase": false}
+  | undefined
+)
 
-peg$c120 = {
-    "type": "class",
-    "parts": [["a", "z"], ["A", "Z"], ["0", "9"], "_"],
-    "inverted": false,
-    "ignoreCase": false
-}
+peg$c120 = (
+  | {
+        "type": "class",
+        "parts": [["a", "z"], ["A", "Z"], ["0", "9"], "_"],
+        "inverted": false,
+        "ignoreCase": false
+    }
+  | undefined
+)
 
-peg$c121 = (...) => (head + tail["join"](""))
+peg$c121 = (...) => ((head + tail["join"]("")) | undefined)
 
 peg$c122 = "@"
 
-peg$c123 = {"type": "literal", "text": "@", "ignoreCase": false}
+peg$c123 = (
+  | {"type": "literal", "text": "@", "ignoreCase": false}
+  | undefined
+)
 
-peg$c124 = (...) => {"type": "parameter_name", "name": text()}
+peg$c124 = (...) => ({"type": "parameter_name", "name": text()} | undefined)
 
 peg$c125 = "+"
 
-peg$c126 = {"type": "literal", "text": "+", "ignoreCase": false}
+peg$c126 = (
+  | {"type": "literal", "text": "+", "ignoreCase": false}
+  | undefined
+)
 
 peg$c127 = "~"
 
-peg$c128 = {"type": "literal", "text": "~", "ignoreCase": false}
+peg$c128 = (
+  | {"type": "literal", "text": "~", "ignoreCase": false}
+  | undefined
+)
 
 peg$c129 = "\\"
 
-peg$c13 = (...) => v
+peg$c13 = (...) => (v | undefined)
 
-peg$c130 = {"type": "literal", "text": "\\", "ignoreCase": false}
+peg$c130 = (
+  | {"type": "literal", "text": "\\", "ignoreCase": false}
+  | undefined
+)
 
-peg$c131 = (...) => text()
+peg$c131 = (...) => (text() | undefined)
 
-peg$c132 = (...) => seq
+peg$c132 = (...) => (seq | undefined)
 
-peg$c133 = {"type": "any"}
+peg$c133 = ({"type": "any"} | undefined)
 
 peg$c134 = "b"
 
-peg$c135 = {"type": "literal", "text": "b", "ignoreCase": false}
+peg$c135 = (
+  | {"type": "literal", "text": "b", "ignoreCase": false}
+  | undefined
+)
 
-peg$c136 = (...) => "\b"
+peg$c136 = (...) => ("\b" | undefined)
 
 peg$c137 = "f"
 
-peg$c138 = {"type": "literal", "text": "f", "ignoreCase": false}
+peg$c138 = (
+  | {"type": "literal", "text": "f", "ignoreCase": false}
+  | undefined
+)
 
-peg$c139 = (...) => "\f"
+peg$c139 = (...) => ("\f" | undefined)
 
-peg$c14 = (...) => {"type": "object_property_list", "properties": ???*0*}
+peg$c14 = (...) => (
+  | {"type": "object_property_list", "properties": ???*0*}
+  | undefined
+)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
 peg$c140 = "n"
 
-peg$c141 = {"type": "literal", "text": "n", "ignoreCase": false}
+peg$c141 = (
+  | {"type": "literal", "text": "n", "ignoreCase": false}
+  | undefined
+)
 
-peg$c142 = (...) => "\n"
+peg$c142 = (...) => ("\n" | undefined)
 
 peg$c143 = "r"
 
-peg$c144 = {"type": "literal", "text": "r", "ignoreCase": false}
+peg$c144 = (
+  | {"type": "literal", "text": "r", "ignoreCase": false}
+  | undefined
+)
 
-peg$c145 = (...) => "\r"
+peg$c145 = (...) => ("\r" | undefined)
 
 peg$c146 = "t"
 
-peg$c147 = {"type": "literal", "text": "t", "ignoreCase": false}
+peg$c147 = (
+  | {"type": "literal", "text": "t", "ignoreCase": false}
+  | undefined
+)
 
-peg$c148 = (...) => "\t"
+peg$c148 = (...) => ("\t" | undefined)
 
-peg$c149 = (...) => text()
+peg$c149 = (...) => (text() | undefined)
 
-peg$c15 = (...) => v
+peg$c15 = (...) => (v | undefined)
 
 peg$c150 = "u"
 
-peg$c151 = {"type": "literal", "text": "u", "ignoreCase": false}
+peg$c151 = (
+  | {"type": "literal", "text": "u", "ignoreCase": false}
+  | undefined
+)
 
-peg$c152 = (...) => FreeVar(String)["fromCharCode"](FreeVar(parseInt)(digits, 16))
+peg$c152 = (...) => (
+  | FreeVar(String)["fromCharCode"](FreeVar(parseInt)(digits, 16))
+  | undefined
+)
 
 peg$c153 = /^[0-9a-f]/i
 
-peg$c154 = {"type": "class", "parts": [["0", "9"], ["a", "f"]], "inverted": false, "ignoreCase": true}
+peg$c154 = (
+  | {"type": "class", "parts": [["0", "9"], ["a", "f"]], "inverted": false, "ignoreCase": true}
+  | undefined
+)
 
-peg$c155 = (...) => v
+peg$c155 = (...) => (v | undefined)
 
-peg$c156 = (...) => {"property": property, "alias": alias}
+peg$c156 = (...) => ({"property": property, "alias": alias} | undefined)
 
-peg$c157 = (...) => expression
+peg$c157 = (...) => (expression | undefined)
 
-peg$c158 = (...) => {"type": "array_subquery_expression", "expression": expression}
+peg$c158 = (...) => (
+  | {"type": "array_subquery_expression", "expression": expression}
+  | undefined
+)
 
-peg$c159 = (...) => {"type": "exists_subquery_expression", "expression": expression}
+peg$c159 = (...) => (
+  | {"type": "exists_subquery_expression", "expression": expression}
+  | undefined
+)
 
-peg$c16 = (...) => {"type": "from_specification", "source": source, "joins": joins}
+peg$c16 = (...) => (
+  | {"type": "from_specification", "source": source, "joins": joins}
+  | undefined
+)
 
-peg$c160 = (...) => {"type": "scalar_subquery_expression", "expression": expression}
+peg$c160 = (...) => (
+  | {"type": "scalar_subquery_expression", "expression": expression}
+  | undefined
+)
 
-peg$c161 = (...) => {"property": property, "computed": false}
+peg$c161 = (...) => ({"property": property, "computed": false} | undefined)
 
-peg$c162 = (...) => {"property": property, "computed": true}
+peg$c162 = (...) => ({"property": property, "computed": true} | undefined)
 
-peg$c163 = (...) => tail["reduce"](*arrow function 13694*, head)
+peg$c163 = (...) => (tail["reduce"](*arrow function 13694*, head) | undefined)
 
-peg$c164 = (...) => {"type": "scalar_unary_expression", "operator": operator, "argument": argument}
+peg$c164 = (...) => (
+  | {"type": "scalar_unary_expression", "operator": operator, "argument": argument}
+  | undefined
+)
 
 peg$c165 = "?"
 
-peg$c166 = {"type": "literal", "text": "?", "ignoreCase": false}
+peg$c166 = (
+  | {"type": "literal", "text": "?", "ignoreCase": false}
+  | undefined
+)
 
 peg$c167 = ":"
 
-peg$c168 = {"type": "literal", "text": ":", "ignoreCase": false}
+peg$c168 = (
+  | {"type": "literal", "text": ":", "ignoreCase": false}
+  | undefined
+)
 
-peg$c169 = (...) => {
-    "type": "scalar_conditional_expression",
-    "test": test,
-    "consequent": consequent,
-    "alternate": alternate
-}
+peg$c169 = (...) => (
+  | {
+        "type": "scalar_conditional_expression",
+        "test": test,
+        "consequent": consequent,
+        "alternate": alternate
+    }
+  | undefined
+)
 
-peg$c17 = (...) => {"type": "from_source", "expression": expression, "alias": alias, "iteration": true}
+peg$c17 = (...) => (
+  | {"type": "from_source", "expression": expression, "alias": alias, "iteration": true}
+  | undefined
+)
 
 peg$c170 = "??"
 
-peg$c171 = {"type": "literal", "text": "??", "ignoreCase": false}
+peg$c171 = (
+  | {"type": "literal", "text": "??", "ignoreCase": false}
+  | undefined
+)
 
-peg$c172 = (...) => buildBinaryExpression(head, tail)
+peg$c172 = (...) => (buildBinaryExpression(head, tail) | undefined)
 
 peg$c173 = "="
 
-peg$c174 = {"type": "literal", "text": "=", "ignoreCase": false}
+peg$c174 = (
+  | {"type": "literal", "text": "=", "ignoreCase": false}
+  | undefined
+)
 
 peg$c175 = "!="
 
-peg$c176 = {"type": "literal", "text": "!=", "ignoreCase": false}
+peg$c176 = (
+  | {"type": "literal", "text": "!=", "ignoreCase": false}
+  | undefined
+)
 
 peg$c177 = "<>"
 
-peg$c178 = {"type": "literal", "text": "<>", "ignoreCase": false}
+peg$c178 = (
+  | {"type": "literal", "text": "<>", "ignoreCase": false}
+  | undefined
+)
 
 peg$c179 = "<="
 
-peg$c18 = (...) => v
+peg$c18 = (...) => (v | undefined)
 
-peg$c180 = {"type": "literal", "text": "<=", "ignoreCase": false}
+peg$c180 = (
+  | {"type": "literal", "text": "<=", "ignoreCase": false}
+  | undefined
+)
 
 peg$c181 = ">="
 
-peg$c182 = {"type": "literal", "text": ">=", "ignoreCase": false}
+peg$c182 = (
+  | {"type": "literal", "text": ">=", "ignoreCase": false}
+  | undefined
+)
 
 peg$c183 = "<"
 
-peg$c184 = {"type": "literal", "text": "<", "ignoreCase": false}
+peg$c184 = (
+  | {"type": "literal", "text": "<", "ignoreCase": false}
+  | undefined
+)
 
 peg$c185 = ">"
 
-peg$c186 = {"type": "literal", "text": ">", "ignoreCase": false}
+peg$c186 = (
+  | {"type": "literal", "text": ">", "ignoreCase": false}
+  | undefined
+)
 
-peg$c187 = (...) => {"type": "scalar_in_expression", "value": value, "list": list}
+peg$c187 = (...) => (
+  | {"type": "scalar_in_expression", "value": value, "list": list}
+  | undefined
+)
 
-peg$c188 = (...) => {"type": "scalar_between_expression", "value": value, "begin": begin, "end": end}
+peg$c188 = (...) => (
+  | {"type": "scalar_between_expression", "value": value, "begin": begin, "end": end}
+  | undefined
+)
 
 peg$c189 = "|"
 
-peg$c19 = (...) => {"type": "from_source", "expression": expression, "alias": alias}
+peg$c19 = (...) => (
+  | {"type": "from_source", "expression": expression, "alias": alias}
+  | undefined
+)
 
-peg$c190 = {"type": "literal", "text": "|", "ignoreCase": false}
+peg$c190 = (
+  | {"type": "literal", "text": "|", "ignoreCase": false}
+  | undefined
+)
 
 peg$c191 = "^"
 
-peg$c192 = {"type": "literal", "text": "^", "ignoreCase": false}
+peg$c192 = (
+  | {"type": "literal", "text": "^", "ignoreCase": false}
+  | undefined
+)
 
 peg$c193 = "&"
 
-peg$c194 = {"type": "literal", "text": "&", "ignoreCase": false}
+peg$c194 = (
+  | {"type": "literal", "text": "&", "ignoreCase": false}
+  | undefined
+)
 
 peg$c195 = "<<"
 
-peg$c196 = {"type": "literal", "text": "<<", "ignoreCase": false}
+peg$c196 = (
+  | {"type": "literal", "text": "<<", "ignoreCase": false}
+  | undefined
+)
 
 peg$c197 = ">>>"
 
-peg$c198 = {"type": "literal", "text": ">>>", "ignoreCase": false}
+peg$c198 = (
+  | {"type": "literal", "text": ">>>", "ignoreCase": false}
+  | undefined
+)
 
 peg$c199 = ">>"
 
-peg$c2 = (...) => v
+peg$c2 = (...) => (v | undefined)
 
-peg$c20 = (...) => {"type": "filter_condition", "condition": condition}
+peg$c20 = (...) => (
+  | {"type": "filter_condition", "condition": condition}
+  | undefined
+)
 
-peg$c200 = {"type": "literal", "text": ">>", "ignoreCase": false}
+peg$c200 = (
+  | {"type": "literal", "text": ">>", "ignoreCase": false}
+  | undefined
+)
 
 peg$c201 = "||"
 
-peg$c202 = {"type": "literal", "text": "||", "ignoreCase": false}
+peg$c202 = (
+  | {"type": "literal", "text": "||", "ignoreCase": false}
+  | undefined
+)
 
 peg$c203 = "/"
 
-peg$c204 = {"type": "literal", "text": "/", "ignoreCase": false}
+peg$c204 = (
+  | {"type": "literal", "text": "/", "ignoreCase": false}
+  | undefined
+)
 
 peg$c205 = "%"
 
-peg$c206 = {"type": "literal", "text": "%", "ignoreCase": false}
+peg$c206 = (
+  | {"type": "literal", "text": "%", "ignoreCase": false}
+  | undefined
+)
 
-peg$c207 = (...) => {"key": key, "value": value}
+peg$c207 = (...) => ({"key": key, "value": value} | undefined)
 
-peg$c208 = (...) => {"type": "collection_expression", "expression": expression}
+peg$c208 = (...) => (
+  | {"type": "collection_expression", "expression": expression}
+  | undefined
+)
 
-peg$c209 = (...) => tail["reduce"](*arrow function 16259*, head)
+peg$c209 = (...) => (tail["reduce"](*arrow function 16259*, head) | undefined)
 
-peg$c21 = (...) => {"type": "sort_specification", "expressions": ???*0*}
+peg$c21 = (...) => (
+  | {"type": "sort_specification", "expressions": ???*0*}
+  | undefined
+)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-peg$c210 = (...) => {"type": "collection_subquery_expression", "expression": expression}
+peg$c210 = (...) => (
+  | {"type": "collection_subquery_expression", "expression": expression}
+  | undefined
+)
 
-peg$c211 = (...) => {"type": "top_specification", "value": value}
+peg$c211 = (...) => ({"type": "top_specification", "value": value} | undefined)
 
-peg$c212 = (...) => {"type": "number_constant", "value": FreeVar(Number)(text())}
+peg$c212 = (...) => (
+  | {"type": "number_constant", "value": FreeVar(Number)(text())}
+  | undefined
+)
 
-peg$c213 = (...) => (head ? ???*0* : [])
+peg$c213 = (...) => ((head ? ???*0* : []) | undefined)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-peg$c214 = (...) => subquery
+peg$c214 = (...) => (subquery | undefined)
 
-peg$c22 = (...) => {"type": "sort_expression", "expression": expression, "order": order}
+peg$c22 = (...) => (
+  | {"type": "sort_expression", "expression": expression, "order": order}
+  | undefined
+)
 
 peg$c23 = "."
 
-peg$c24 = {"type": "literal", "text": ".", "ignoreCase": false}
+peg$c24 = (
+  | {"type": "literal", "text": ".", "ignoreCase": false}
+  | undefined
+)
 
 peg$c25 = "("
 
-peg$c26 = {"type": "literal", "text": "(", "ignoreCase": false}
+peg$c26 = (
+  | {"type": "literal", "text": "(", "ignoreCase": false}
+  | undefined
+)
 
 peg$c27 = ")"
 
-peg$c28 = {"type": "literal", "text": ")", "ignoreCase": false}
+peg$c28 = (
+  | {"type": "literal", "text": ")", "ignoreCase": false}
+  | undefined
+)
 
-peg$c29 = (...) => {"type": "scalar_function_expression", "name": name, "arguments": args, "udf": true}
+peg$c29 = (...) => (
+  | {"type": "scalar_function_expression", "name": name, "arguments": args, "udf": true}
+  | undefined
+)
 
-peg$c3 = (...) => v
+peg$c3 = (...) => (v | undefined)
 
-peg$c30 = (...) => {"type": "scalar_function_expression", "name": name, "arguments": args}
+peg$c30 = (...) => (
+  | {"type": "scalar_function_expression", "name": name, "arguments": args}
+  | undefined
+)
 
 peg$c31 = "{"
 
-peg$c32 = {"type": "literal", "text": "{", "ignoreCase": false}
+peg$c32 = (
+  | {"type": "literal", "text": "{", "ignoreCase": false}
+  | undefined
+)
 
 peg$c33 = "}"
 
-peg$c34 = {"type": "literal", "text": "}", "ignoreCase": false}
+peg$c34 = (
+  | {"type": "literal", "text": "}", "ignoreCase": false}
+  | undefined
+)
 
-peg$c35 = (...) => {"type": "scalar_object_expression", "properties": (head ? ???*0* : [])}
+peg$c35 = (...) => (
+  | {"type": "scalar_object_expression", "properties": (head ? ???*0* : [])}
+  | undefined
+)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
 peg$c36 = "["
 
-peg$c37 = {"type": "literal", "text": "[", "ignoreCase": false}
+peg$c37 = (
+  | {"type": "literal", "text": "[", "ignoreCase": false}
+  | undefined
+)
 
 peg$c38 = "]"
 
-peg$c39 = {"type": "literal", "text": "]", "ignoreCase": false}
+peg$c39 = (
+  | {"type": "literal", "text": "]", "ignoreCase": false}
+  | undefined
+)
 
-peg$c4 = (...) => v
+peg$c4 = (...) => (v | undefined)
 
-peg$c40 = (...) => {"type": "scalar_array_expression", "elements": elements}
+peg$c40 = (...) => (
+  | {"type": "scalar_array_expression", "elements": elements}
+  | undefined
+)
 
 peg$c41 = "undefined"
 
-peg$c42 = {"type": "literal", "text": "undefined", "ignoreCase": false}
+peg$c42 = (
+  | {"type": "literal", "text": "undefined", "ignoreCase": false}
+  | undefined
+)
 
-peg$c43 = (...) => {"type": "undefined_constant"}
+peg$c43 = (...) => ({"type": "undefined_constant"} | undefined)
 
-peg$c44 = (...) => {"type": "null_constant"}
+peg$c44 = (...) => ({"type": "null_constant"} | undefined)
 
-peg$c45 = (...) => {"type": "boolean_constant", "value": false}
+peg$c45 = (...) => ({"type": "boolean_constant", "value": false} | undefined)
 
-peg$c46 = (...) => {"type": "boolean_constant", "value": true}
+peg$c46 = (...) => ({"type": "boolean_constant", "value": true} | undefined)
 
 peg$c47 = "-"
 
-peg$c48 = {"type": "literal", "text": "-", "ignoreCase": false}
+peg$c48 = (
+  | {"type": "literal", "text": "-", "ignoreCase": false}
+  | undefined
+)
 
 peg$c49 = "0x"
 
-peg$c5 = (...) => {
-    "type": "select_query",
-    "top": top,
-    "select": select,
-    "from": from,
-    "where": where,
-    "orderBy": orderBy
-}
+peg$c5 = (...) => (
+  | {
+        "type": "select_query",
+        "top": top,
+        "select": select,
+        "from": from,
+        "where": where,
+        "orderBy": orderBy
+    }
+  | undefined
+)
 
-peg$c50 = {"type": "literal", "text": "0x", "ignoreCase": false}
+peg$c50 = (
+  | {"type": "literal", "text": "0x", "ignoreCase": false}
+  | undefined
+)
 
 peg$c51 = /^[0-9]/
 
-peg$c52 = {"type": "class", "parts": [["0", "9"]], "inverted": false, "ignoreCase": false}
+peg$c52 = (
+  | {"type": "class", "parts": [["0", "9"]], "inverted": false, "ignoreCase": false}
+  | undefined
+)
 
-peg$c53 = (...) => {
-    "type": "number_constant",
-    "value": (hex ? FreeVar(parseInt)(text(), 16) : FreeVar(parseFloat)(text()))
-}
+peg$c53 = (...) => (
+  | {
+        "type": "number_constant",
+        "value": (hex ? FreeVar(parseInt)(text(), 16) : FreeVar(parseFloat)(text()))
+    }
+  | undefined
+)
 
 peg$c54 = "\""
 
-peg$c55 = {"type": "literal", "text": "\"", "ignoreCase": false}
+peg$c55 = (
+  | {"type": "literal", "text": "\"", "ignoreCase": false}
+  | undefined
+)
 
-peg$c56 = (...) => {"type": "string_constant", "value": chars["join"]("")}
+peg$c56 = (...) => (
+  | {"type": "string_constant", "value": chars["join"]("")}
+  | undefined
+)
 
 peg$c57 = "'"
 
-peg$c58 = {"type": "literal", "text": "'", "ignoreCase": false}
+peg$c58 = (
+  | {"type": "literal", "text": "'", "ignoreCase": false}
+  | undefined
+)
 
-peg$c59 = (...) => {"type": "array_constant", "elements": ???*0*}
+peg$c59 = (...) => ({"type": "array_constant", "elements": ???*0*} | undefined)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
 peg$c6 = "*"
 
-peg$c60 = (...) => {"type": "object_constant", "properties": ???*0*}
+peg$c60 = (...) => ({"type": "object_constant", "properties": ???*0*} | undefined)
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
 peg$c61 = /^[ \t\n\r]/
 
-peg$c62 = {"type": "class", "parts": [" ", "\t", "\n", "\r"], "inverted": false, "ignoreCase": false}
+peg$c62 = (
+  | {"type": "class", "parts": [" ", "\t", "\n", "\r"], "inverted": false, "ignoreCase": false}
+  | undefined
+)
 
 peg$c63 = "--"
 
-peg$c64 = {"type": "literal", "text": "--", "ignoreCase": false}
+peg$c64 = (
+  | {"type": "literal", "text": "--", "ignoreCase": false}
+  | undefined
+)
 
 peg$c65 = /^[\n\r]/
 
-peg$c66 = {"type": "class", "parts": ["\n", "\r"], "inverted": false, "ignoreCase": false}
+peg$c66 = (
+  | {"type": "class", "parts": ["\n", "\r"], "inverted": false, "ignoreCase": false}
+  | undefined
+)
 
 peg$c67 = "select"
 
-peg$c68 = {"type": "literal", "text": "SELECT", "ignoreCase": true}
+peg$c68 = (
+  | {"type": "literal", "text": "SELECT", "ignoreCase": true}
+  | undefined
+)
 
 peg$c69 = "top"
 
-peg$c7 = {"type": "literal", "text": "*", "ignoreCase": false}
+peg$c7 = (
+  | {"type": "literal", "text": "*", "ignoreCase": false}
+  | undefined
+)
 
-peg$c70 = {"type": "literal", "text": "TOP", "ignoreCase": true}
+peg$c70 = (
+  | {"type": "literal", "text": "TOP", "ignoreCase": true}
+  | undefined
+)
 
 peg$c71 = "from"
 
-peg$c72 = {"type": "literal", "text": "FROM", "ignoreCase": true}
+peg$c72 = (
+  | {"type": "literal", "text": "FROM", "ignoreCase": true}
+  | undefined
+)
 
 peg$c73 = "where"
 
-peg$c74 = {"type": "literal", "text": "WHERE", "ignoreCase": true}
+peg$c74 = (
+  | {"type": "literal", "text": "WHERE", "ignoreCase": true}
+  | undefined
+)
 
 peg$c75 = "order"
 
-peg$c76 = {"type": "literal", "text": "ORDER", "ignoreCase": true}
+peg$c76 = (
+  | {"type": "literal", "text": "ORDER", "ignoreCase": true}
+  | undefined
+)
 
 peg$c77 = "by"
 
-peg$c78 = {"type": "literal", "text": "BY", "ignoreCase": true}
+peg$c78 = (
+  | {"type": "literal", "text": "BY", "ignoreCase": true}
+  | undefined
+)
 
 peg$c79 = "as"
 
-peg$c8 = (...) => {"type": "select_specification", "*": true}
+peg$c8 = (...) => ({"type": "select_specification", "*": true} | undefined)
 
-peg$c80 = {"type": "literal", "text": "AS", "ignoreCase": true}
+peg$c80 = (
+  | {"type": "literal", "text": "AS", "ignoreCase": true}
+  | undefined
+)
 
 peg$c81 = "join"
 
-peg$c82 = {"type": "literal", "text": "JOIN", "ignoreCase": true}
+peg$c82 = (
+  | {"type": "literal", "text": "JOIN", "ignoreCase": true}
+  | undefined
+)
 
 peg$c83 = "in"
 
-peg$c84 = {"type": "literal", "text": "IN", "ignoreCase": true}
+peg$c84 = (
+  | {"type": "literal", "text": "IN", "ignoreCase": true}
+  | undefined
+)
 
 peg$c85 = "value"
 
-peg$c86 = {"type": "literal", "text": "VALUE", "ignoreCase": true}
+peg$c86 = (
+  | {"type": "literal", "text": "VALUE", "ignoreCase": true}
+  | undefined
+)
 
 peg$c87 = "asc"
 
-peg$c88 = {"type": "literal", "text": "ASC", "ignoreCase": true}
+peg$c88 = (
+  | {"type": "literal", "text": "ASC", "ignoreCase": true}
+  | undefined
+)
 
-peg$c89 = (...) => "ASC"
+peg$c89 = (...) => ("ASC" | undefined)
 
-peg$c9 = (...) => {"type": "select_specification", "properties": properties}
+peg$c9 = (...) => (
+  | {"type": "select_specification", "properties": properties}
+  | undefined
+)
 
 peg$c90 = "desc"
 
-peg$c91 = {"type": "literal", "text": "DESC", "ignoreCase": true}
+peg$c91 = (
+  | {"type": "literal", "text": "DESC", "ignoreCase": true}
+  | undefined
+)
 
-peg$c92 = (...) => "DESC"
+peg$c92 = (...) => ("DESC" | undefined)
 
 peg$c93 = "and"
 
-peg$c94 = {"type": "literal", "text": "AND", "ignoreCase": true}
+peg$c94 = (
+  | {"type": "literal", "text": "AND", "ignoreCase": true}
+  | undefined
+)
 
-peg$c95 = (...) => "AND"
+peg$c95 = (...) => ("AND" | undefined)
 
 peg$c96 = "or"
 
-peg$c97 = {"type": "literal", "text": "OR", "ignoreCase": true}
+peg$c97 = (
+  | {"type": "literal", "text": "OR", "ignoreCase": true}
+  | undefined
+)
 
-peg$c98 = (...) => "OR"
+peg$c98 = (...) => ("OR" | undefined)
 
 peg$c99 = "not"
 
-peg$classExpectation = (...) => {"type": "class", "parts": parts, "inverted": inverted, "ignoreCase": ignoreCase}
+peg$classExpectation = (...) => (
+  | {"type": "class", "parts": parts, "inverted": inverted, "ignoreCase": ignoreCase}
+  | undefined
+)
 
-peg$computeLocation = (...) => {
-    "start": {"offset": startPos, "line": startPosDetails["line"], "column": startPosDetails["column"]},
-    "end": {"offset": endPos, "line": endPosDetails["line"], "column": endPosDetails["column"]}
-}
+peg$computeLocation = (...) => (
+  | {
+        "start": {"offset": startPos, "line": startPosDetails["line"], "column": startPosDetails["column"]},
+        "end": {"offset": endPos, "line": endPosDetails["line"], "column": endPosDetails["column"]}
+    }
+  | undefined
+)
 
-peg$computePosDetails = (...) => (undefined | details)
+peg$computePosDetails = (...) => (details | undefined)
 
 peg$currPos = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-peg$endExpectation = (...) => {"type": "end"}
+peg$endExpectation = (...) => ({"type": "end"} | undefined)
 
 peg$fail = (...) => undefined
 
-peg$literalExpectation = (...) => {"type": "literal", "text": text, "ignoreCase": ignoreCase}
+peg$literalExpectation = (...) => (
+  | {"type": "literal", "text": text, "ignoreCase": ignoreCase}
+  | undefined
+)
 
 peg$maxFailExpected = []
 
@@ -1225,193 +1633,193 @@ peg$maxFailPos = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-peg$otherExpectation = (...) => {"type": "other", "description": description}
+peg$otherExpectation = (...) => ({"type": "other", "description": description} | undefined)
 
-peg$parse = (...) => (undefined | peg$result)
+peg$parse = (...) => (peg$result | undefined)
 
-peg$parse_ = (...) => s0
+peg$parse_ = (...) => (s0 | undefined)
 
-peg$parseand = (...) => s0
+peg$parseand = (...) => (s0 | undefined)
 
-peg$parsearray = (...) => s0
+peg$parsearray = (...) => (s0 | undefined)
 
-peg$parsearray_constant = (...) => s0
+peg$parsearray_constant = (...) => (s0 | undefined)
 
-peg$parsearray_subquery_expression = (...) => s0
+peg$parsearray_subquery_expression = (...) => (s0 | undefined)
 
-peg$parseas = (...) => s0
+peg$parseas = (...) => (s0 | undefined)
 
-peg$parseasc = (...) => s0
+peg$parseasc = (...) => (s0 | undefined)
 
-peg$parsebetween = (...) => s0
+peg$parsebetween = (...) => (s0 | undefined)
 
-peg$parseboolean_constant = (...) => s0
+peg$parseboolean_constant = (...) => (s0 | undefined)
 
-peg$parseby = (...) => s0
+peg$parseby = (...) => (s0 | undefined)
 
-peg$parsecharactor_escape_sequence = (...) => s0
+peg$parsecharactor_escape_sequence = (...) => (s0 | undefined)
 
-peg$parsecollection_expression = (...) => s0
+peg$parsecollection_expression = (...) => (s0 | undefined)
 
-peg$parsecollection_member_expression = (...) => s0
+peg$parsecollection_member_expression = (...) => (s0 | undefined)
 
-peg$parsecollection_primary_expression = (...) => s0
+peg$parsecollection_primary_expression = (...) => (s0 | undefined)
 
-peg$parsecollection_subquery_expression = (...) => s0
+peg$parsecollection_subquery_expression = (...) => (s0 | undefined)
 
-peg$parsecomment = (...) => s0
+peg$parsecomment = (...) => (s0 | undefined)
 
-peg$parseconstant = (...) => s0
+peg$parseconstant = (...) => (s0 | undefined)
 
-peg$parsedesc = (...) => s0
+peg$parsedesc = (...) => (s0 | undefined)
 
-peg$parsedouble_string_character = (...) => s0
+peg$parsedouble_string_character = (...) => (s0 | undefined)
 
-peg$parseescape_character = (...) => s0
+peg$parseescape_character = (...) => (s0 | undefined)
 
-peg$parseescape_sequence = (...) => s0
+peg$parseescape_sequence = (...) => (s0 | undefined)
 
-peg$parseexists = (...) => s0
+peg$parseexists = (...) => (s0 | undefined)
 
-peg$parseexists_subquery_expression = (...) => s0
+peg$parseexists_subquery_expression = (...) => (s0 | undefined)
 
-peg$parsefalse = (...) => s0
+peg$parsefalse = (...) => (s0 | undefined)
 
-peg$parsefilter_condition = (...) => s0
+peg$parsefilter_condition = (...) => (s0 | undefined)
 
-peg$parsefrom = (...) => s0
+peg$parsefrom = (...) => (s0 | undefined)
 
-peg$parsefrom_source = (...) => s0
+peg$parsefrom_source = (...) => (s0 | undefined)
 
-peg$parsefrom_specification = (...) => s0
+peg$parsefrom_specification = (...) => (s0 | undefined)
 
-peg$parsehex_digit = (...) => s0
+peg$parsehex_digit = (...) => (s0 | undefined)
 
-peg$parseidentifier = (...) => s0
+peg$parseidentifier = (...) => (s0 | undefined)
 
-peg$parseidentifier_name = (...) => s0
+peg$parseidentifier_name = (...) => (s0 | undefined)
 
-peg$parseidentifier_start = (...) => s0
+peg$parseidentifier_start = (...) => (s0 | undefined)
 
-peg$parsein = (...) => s0
+peg$parsein = (...) => (s0 | undefined)
 
-peg$parsejoin = (...) => s0
+peg$parsejoin = (...) => (s0 | undefined)
 
-peg$parsenon_escape_character = (...) => s0
+peg$parsenon_escape_character = (...) => (s0 | undefined)
 
-peg$parsenot = (...) => s0
+peg$parsenot = (...) => (s0 | undefined)
 
-peg$parsenull = (...) => s0
+peg$parsenull = (...) => (s0 | undefined)
 
-peg$parsenull_constant = (...) => s0
+peg$parsenull_constant = (...) => (s0 | undefined)
 
-peg$parsenumber_constant = (...) => s0
+peg$parsenumber_constant = (...) => (s0 | undefined)
 
-peg$parseobject_constant = (...) => s0
+peg$parseobject_constant = (...) => (s0 | undefined)
 
-peg$parseobject_constant_property = (...) => s0
+peg$parseobject_constant_property = (...) => (s0 | undefined)
 
-peg$parseobject_property = (...) => s0
+peg$parseobject_property = (...) => (s0 | undefined)
 
-peg$parseobject_property_list = (...) => s0
+peg$parseobject_property_list = (...) => (s0 | undefined)
 
-peg$parseor = (...) => s0
+peg$parseor = (...) => (s0 | undefined)
 
-peg$parseorder = (...) => s0
+peg$parseorder = (...) => (s0 | undefined)
 
-peg$parseparameter_name = (...) => s0
+peg$parseparameter_name = (...) => (s0 | undefined)
 
-peg$parsereserved = (...) => s0
+peg$parsereserved = (...) => (s0 | undefined)
 
-peg$parsescalar_array_expression = (...) => s0
+peg$parsescalar_array_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_between_expression = (...) => s0
+peg$parsescalar_between_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_additive_expression = (...) => s0
+peg$parsescalar_binary_additive_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_and_expression = (...) => s0
+peg$parsescalar_binary_and_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_bitwise_and_expression = (...) => s0
+peg$parsescalar_binary_bitwise_and_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_bitwise_or_expression = (...) => s0
+peg$parsescalar_binary_bitwise_or_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_bitwise_xor_expression = (...) => s0
+peg$parsescalar_binary_bitwise_xor_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_equality_expression = (...) => s0
+peg$parsescalar_binary_equality_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_multiplicative_expression = (...) => s0
+peg$parsescalar_binary_multiplicative_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_or_expression = (...) => s0
+peg$parsescalar_binary_or_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_relational_expression = (...) => s0
+peg$parsescalar_binary_relational_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_binary_shift_expression = (...) => s0
+peg$parsescalar_binary_shift_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_conditional_expression = (...) => s0
+peg$parsescalar_conditional_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_expression_list = (...) => s0
+peg$parsescalar_expression_list = (...) => (s0 | undefined)
 
-peg$parsescalar_function_expression = (...) => s0
+peg$parsescalar_function_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_in_expression = (...) => s0
+peg$parsescalar_in_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_member_expression = (...) => s0
+peg$parsescalar_member_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_object_element_property = (...) => s0
+peg$parsescalar_object_element_property = (...) => (s0 | undefined)
 
-peg$parsescalar_object_expression = (...) => s0
+peg$parsescalar_object_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_primary_expression = (...) => s0
+peg$parsescalar_primary_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_subquery_expression = (...) => s0
+peg$parsescalar_subquery_expression = (...) => (s0 | undefined)
 
-peg$parsescalar_unary_expression = (...) => s0
+peg$parsescalar_unary_expression = (...) => (s0 | undefined)
 
-peg$parseselect = (...) => s0
+peg$parseselect = (...) => (s0 | undefined)
 
-peg$parseselect_query = (...) => s0
+peg$parseselect_query = (...) => (s0 | undefined)
 
-peg$parseselect_specification = (...) => s0
+peg$parseselect_specification = (...) => (s0 | undefined)
 
-peg$parsesingle_escape_character = (...) => s0
+peg$parsesingle_escape_character = (...) => (s0 | undefined)
 
-peg$parsesingle_string_character = (...) => s0
+peg$parsesingle_string_character = (...) => (s0 | undefined)
 
-peg$parsesort_expression = (...) => s0
+peg$parsesort_expression = (...) => (s0 | undefined)
 
-peg$parsesort_specification = (...) => s0
+peg$parsesort_specification = (...) => (s0 | undefined)
 
-peg$parsesource_character = (...) => s0
+peg$parsesource_character = (...) => (s0 | undefined)
 
-peg$parsesql = (...) => s0
+peg$parsesql = (...) => (s0 | undefined)
 
-peg$parsestring_constant = (...) => s0
+peg$parsestring_constant = (...) => (s0 | undefined)
 
-peg$parsesubquery = (...) => s0
+peg$parsesubquery = (...) => (s0 | undefined)
 
-peg$parsesubquery_expression = (...) => s0
+peg$parsesubquery_expression = (...) => (s0 | undefined)
 
-peg$parsetop = (...) => s0
+peg$parsetop = (...) => (s0 | undefined)
 
-peg$parsetop_specification = (...) => s0
+peg$parsetop_specification = (...) => (s0 | undefined)
 
-peg$parsetrue = (...) => s0
+peg$parsetrue = (...) => (s0 | undefined)
 
-peg$parseudf = (...) => s0
+peg$parseudf = (...) => (s0 | undefined)
 
-peg$parseunary_operator = (...) => s0
+peg$parseunary_operator = (...) => (s0 | undefined)
 
-peg$parseundefined_constant = (...) => s0
+peg$parseundefined_constant = (...) => (s0 | undefined)
 
-peg$parseunicode_escape_sequence = (...) => s0
+peg$parseunicode_escape_sequence = (...) => (s0 | undefined)
 
-peg$parseunsigned_integer = (...) => s0
+peg$parseunsigned_integer = (...) => (s0 | undefined)
 
-peg$parsevalue = (...) => s0
+peg$parsevalue = (...) => (s0 | undefined)
 
-peg$parsewhere = (...) => s0
+peg$parsewhere = (...) => (s0 | undefined)
 
-peg$parsewhitespace = (...) => s0
+peg$parsewhitespace = (...) => (s0 | undefined)
 
 peg$posDetailsCache = [{"line": 1, "column": 1}]
 
@@ -1427,7 +1835,7 @@ peg$silentFails = (0 | ???*0*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
-peg$startRuleFunction = ((...) => s0 | ???*0*)
+peg$startRuleFunction = ((...) => (s0 | undefined) | ???*0*)
 - *0* {}[???*1*]
   ⚠️  unknown object prototype methods or values
   ⚠️  This value might have side effects
@@ -1436,7 +1844,7 @@ peg$startRuleFunction = ((...) => s0 | ???*0*)
 - *2* arguments[1]
   ⚠️  function calls are not analysed yet
 
-peg$startRuleFunctions = {"sql": (...) => s0}
+peg$startRuleFunctions = {"sql": (...) => (s0 | undefined)}
 
 peg$subclass = (...) => undefined
 
@@ -1994,7 +2402,7 @@ s1#1741 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s1#1744 = (???*0* | [] | {} | {"type": "number_constant", "value": ???*1*})
+s1#1744 = (???*0* | [] | {} | {"type": "number_constant", "value": ???*1*} | undefined)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*(text())
@@ -2052,7 +2460,7 @@ s1#419 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s1#443 = (???*0* | "undefined" | {} | {"type": "undefined_constant"})
+s1#443 = (???*0* | "undefined" | {} | {"type": "undefined_constant"} | undefined)
 - *0* s1
   ⚠️  pattern without value
 
@@ -2073,6 +2481,7 @@ s1#454 = (
         "type": "number_constant",
         "value": ((???*1* | "0x" | {} | null) ? ???*2* : ???*4*)
     }
+  | undefined
 )
 - *0* s1
   ⚠️  pattern without value
@@ -2096,6 +2505,7 @@ s1#497 = (
   | "\""
   | {}
   | {"type": "string_constant", "value": (???*1* | ???*3*)}
+  | undefined
   | "'"
 )
 - *0* s1
@@ -2169,7 +2579,7 @@ s1#734 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s1#744 = (???*0* | ???*1* | {} | "ASC")
+s1#744 = (???*0* | ???*1* | {} | "ASC" | undefined)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["substr"](peg$currPos, 3)
@@ -2177,7 +2587,7 @@ s1#744 = (???*0* | ???*1* | {} | "ASC")
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s1#754 = (???*0* | ???*1* | {} | "DESC")
+s1#754 = (???*0* | ???*1* | {} | "DESC" | undefined)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["substr"](peg$currPos, 4)
@@ -2185,7 +2595,7 @@ s1#754 = (???*0* | ???*1* | {} | "DESC")
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s1#764 = (???*0* | ???*1* | {} | "AND")
+s1#764 = (???*0* | ???*1* | {} | "AND" | undefined)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["substr"](peg$currPos, 3)
@@ -2193,7 +2603,7 @@ s1#764 = (???*0* | ???*1* | {} | "AND")
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s1#774 = (???*0* | ???*1* | {} | "OR")
+s1#774 = (???*0* | ???*1* | {} | "OR" | undefined)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["substr"](peg$currPos, 2)
@@ -2201,7 +2611,7 @@ s1#774 = (???*0* | ???*1* | {} | "OR")
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s1#784 = (???*0* | ???*1* | {} | "NOT")
+s1#784 = (???*0* | ???*1* | {} | "NOT" | undefined)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["substr"](peg$currPos, 3)
@@ -2241,7 +2651,7 @@ s1#886 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s1#897 = (???*0* | ???*1* | {} | (???*3* + (???*4* | ???*6*)))
+s1#897 = (???*0* | ???*1* | {} | undefined | (???*3* + (???*4* | ???*6*)))
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2259,7 +2669,13 @@ s1#897 = (???*0* | ???*1* | {} | (???*3* + (???*4* | ???*6*)))
 - *7* []["join"]
   ⚠️  non-num constant property on array
 
-s1#909 = (???*0* | "@" | {} | {"type": "parameter_name", "name": ???*1*})
+s1#909 = (
+  | ???*0*
+  | "@"
+  | {}
+  | {"type": "parameter_name", "name": (???*1* | undefined)}
+  | undefined
+)
 - *0* s1
   ⚠️  pattern without value
 - *1* ???*2*["substring"](peg$savedPos, peg$currPos)
@@ -2275,7 +2691,7 @@ s1#952 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s1#982 = (???*0* | "b" | {} | "\b" | "f" | "\f" | "n" | "\n" | "r" | "\r" | "t" | "\t")
+s1#982 = (???*0* | "b" | {} | "\b" | undefined | "f" | "\f" | "n" | "\n" | "r" | "\r" | "t" | "\t")
 - *0* s1
   ⚠️  pattern without value
 
@@ -2283,7 +2699,7 @@ s10#132 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s10#323 = (???*0* | [])
+s10#323 = (???*0* | [] | undefined)
 - *0* s10
   ⚠️  pattern without value
 
@@ -2299,7 +2715,7 @@ s12 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s13 = (???*0* | [])
+s13 = (???*0* | [] | undefined)
 - *0* s13
   ⚠️  pattern without value
 
@@ -2307,7 +2723,7 @@ s14 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s15 = (???*0* | [])
+s15 = (???*0* | [] | undefined)
 - *0* s15
   ⚠️  pattern without value
 
@@ -2327,15 +2743,15 @@ s2#1053 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s2#1070 = (???*0* | [])
+s2#1070 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#1096 = (???*0* | [])
+s2#1096 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#1103 = (???*0* | [])
+s2#1103 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2343,11 +2759,11 @@ s2#1112 = (???*0* | [])
 - *0* s2
   ⚠️  pattern without value
 
-s2#1186 = (???*0* | [])
+s2#1186 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#1195 = (???*0* | [])
+s2#1195 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2371,15 +2787,15 @@ s2#1317 = (???*0* | [])
 - *0* s2
   ⚠️  pattern without value
 
-s2#132 = (???*0* | [])
+s2#132 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#1369 = (???*0* | [])
+s2#1369 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#1395 = (???*0* | [])
+s2#1395 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2407,11 +2823,11 @@ s2#1587 = (???*0* | [])
 - *0* s2
   ⚠️  pattern without value
 
-s2#1631 = (???*0* | [])
+s2#1631 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#1646 = (???*0* | [])
+s2#1646 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2431,11 +2847,11 @@ s2#1755 = (???*0* | [])
 - *0* s2
   ⚠️  pattern without value
 
-s2#1784 = (???*0* | [])
+s2#1784 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#187 = (???*0* | [])
+s2#187 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2459,15 +2875,15 @@ s2#312 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s2#323 = (???*0* | [])
+s2#323 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#376 = (???*0* | [])
+s2#376 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#419 = (???*0* | [])
+s2#419 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2479,11 +2895,11 @@ s2#497 = (???*0* | [])
 - *0* s2
   ⚠️  pattern without value
 
-s2#525 = (???*0* | [])
+s2#525 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
-s2#567 = (???*0* | [])
+s2#567 = (???*0* | [] | undefined)
 - *0* s2
   ⚠️  pattern without value
 
@@ -2635,7 +3051,7 @@ s3#1221 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s3#125 = (???*0* | [])
+s3#125 = (???*0* | [] | undefined)
 - *0* s3
   ⚠️  pattern without value
 
@@ -2763,7 +3179,7 @@ s3#617 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s3#644 = (???*0* | ???*1* | {})
+s3#644 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2771,7 +3187,7 @@ s3#644 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#654 = (???*0* | ???*1* | {})
+s3#654 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2779,7 +3195,7 @@ s3#654 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#664 = (???*0* | ???*1* | {})
+s3#664 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2787,7 +3203,7 @@ s3#664 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#674 = (???*0* | ???*1* | {})
+s3#674 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2795,7 +3211,7 @@ s3#674 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#684 = (???*0* | ???*1* | {})
+s3#684 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2803,7 +3219,7 @@ s3#684 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#694 = (???*0* | ???*1* | {})
+s3#694 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2811,7 +3227,7 @@ s3#694 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#704 = (???*0* | ???*1* | {})
+s3#704 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2819,7 +3235,7 @@ s3#704 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#714 = (???*0* | ???*1* | {})
+s3#714 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2827,7 +3243,7 @@ s3#714 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#724 = (???*0* | ???*1* | {})
+s3#724 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2835,7 +3251,7 @@ s3#724 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#734 = (???*0* | ???*1* | {})
+s3#734 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2843,7 +3259,7 @@ s3#734 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#744 = (???*0* | ???*1* | {})
+s3#744 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2851,7 +3267,7 @@ s3#744 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#754 = (???*0* | ???*1* | {})
+s3#754 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2859,7 +3275,7 @@ s3#754 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#764 = (???*0* | ???*1* | {})
+s3#764 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2867,7 +3283,7 @@ s3#764 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#774 = (???*0* | ???*1* | {})
+s3#774 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2875,7 +3291,7 @@ s3#774 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#784 = (???*0* | ???*1* | {})
+s3#784 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2883,7 +3299,7 @@ s3#784 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#794 = (???*0* | ???*1* | {})
+s3#794 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2891,7 +3307,7 @@ s3#794 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#804 = (???*0* | ???*1* | {})
+s3#804 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2899,7 +3315,7 @@ s3#804 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#814 = (???*0* | ???*1* | {})
+s3#814 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2907,7 +3323,7 @@ s3#814 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#824 = (???*0* | ???*1* | {})
+s3#824 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2915,7 +3331,7 @@ s3#824 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#834 = (???*0* | ???*1* | {})
+s3#834 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2923,7 +3339,7 @@ s3#834 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#844 = (???*0* | ???*1* | {})
+s3#844 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2931,7 +3347,7 @@ s3#844 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s3#854 = (???*0* | ???*1* | {})
+s3#854 = (???*0* | ???*1* | {} | undefined)
 - *0* s3
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -2951,7 +3367,13 @@ s4#1031 = (
   | ???*0*
   | ???*1*
   | {}
-  | [???*3*, (???*4* | ???*5* | {}), (???*7* | ???*8* | {}), (???*10* | ???*11* | {})]
+  | undefined
+  | [
+        ???*3*,
+        (???*4* | ???*5* | {} | undefined),
+        (???*7* | ???*8* | {} | undefined),
+        (???*10* | ???*11* | {} | undefined)
+    ]
 )
 - *0* s4
   ⚠️  pattern without value
@@ -2984,7 +3406,7 @@ s4#1053 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s4#1070 = (???*0* | [])
+s4#1070 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -2992,7 +3414,7 @@ s4#1112 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s4#1195 = (???*0* | [])
+s4#1195 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -3016,11 +3438,11 @@ s4#132 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s4#1369 = (???*0* | [])
+s4#1369 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
-s4#1395 = (???*0* | [])
+s4#1395 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -3048,11 +3470,11 @@ s4#1587 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s4#1631 = (???*0* | [])
+s4#1631 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
-s4#1646 = (???*0* | [])
+s4#1646 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -3064,7 +3486,7 @@ s4#1755 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s4#1784 = (???*0* | [])
+s4#1784 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -3088,7 +3510,7 @@ s4#312 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s4#323 = (???*0* | [])
+s4#323 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -3096,7 +3518,7 @@ s4#376 = (???*0* | [])
 - *0* s4
   ⚠️  pattern without value
 
-s4#419 = (???*0* | [])
+s4#419 = (???*0* | [] | undefined)
 - *0* s4
   ⚠️  pattern without value
 
@@ -3116,7 +3538,7 @@ s4#617 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s5#1031 = (???*0* | ???*1* | {})
+s5#1031 = (???*0* | ???*1* | {} | undefined)
 - *0* s5
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -3256,7 +3678,7 @@ s5#567 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s5#617 = (???*0* | ???*1* | {})
+s5#617 = (???*0* | ???*1* | {} | undefined)
 - *0* s5
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -3264,7 +3686,7 @@ s5#617 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s6#1031 = (???*0* | ???*1* | {})
+s6#1031 = (???*0* | ???*1* | {} | undefined)
 - *0* s6
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -3272,27 +3694,27 @@ s6#1031 = (???*0* | ???*1* | {})
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-s6#1112 = (???*0* | [])
+s6#1112 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1195 = (???*0* | [])
+s6#1195 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1221 = (???*0* | [])
+s6#1221 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1251 = (???*0* | [])
+s6#1251 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1273 = (???*0* | [])
+s6#1273 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1317 = (???*0* | [])
+s6#1317 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
@@ -3300,59 +3722,59 @@ s6#132 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s6#1369 = (???*0* | [])
+s6#1369 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1395 = (???*0* | [])
+s6#1395 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1415 = (???*0* | [])
+s6#1415 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1443 = (???*0* | [])
+s6#1443 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1471 = (???*0* | [])
+s6#1471 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1499 = (???*0* | [])
+s6#1499 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1543 = (???*0* | [])
+s6#1543 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1587 = (???*0* | [])
+s6#1587 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1663 = (???*0* | [])
+s6#1663 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#1755 = (???*0* | [])
+s6#1755 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#201 = (???*0* | [])
+s6#201 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#229 = (???*0* | [])
+s6#229 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#284 = (???*0* | [])
+s6#284 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
-s6#323 = (???*0* | [])
+s6#323 = (???*0* | [] | undefined)
 - *0* s6
   ⚠️  pattern without value
 
@@ -3372,7 +3794,7 @@ s6#567 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s7#1031 = (???*0* | ???*1* | {})
+s7#1031 = (???*0* | ???*1* | {} | undefined)
 - *0* s7
   ⚠️  pattern without value
 - *1* ???*2*["charAt"](peg$currPos)
@@ -3484,11 +3906,11 @@ s7#567 = (???*0* | "," | {})
 - *0* s7
   ⚠️  pattern without value
 
-s8#1112 = (???*0* | [])
+s8#1112 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#1195 = (???*0* | [])
+s8#1195 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
@@ -3496,31 +3918,31 @@ s8#132 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-s8#1369 = (???*0* | [])
+s8#1369 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#1395 = (???*0* | [])
+s8#1395 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#1663 = (???*0* | [])
+s8#1663 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#323 = (???*0* | [])
+s8#323 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#376 = (???*0* | [])
+s8#376 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#525 = (???*0* | [])
+s8#525 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
-s8#567 = (???*0* | [])
+s8#567 = (???*0* | [] | undefined)
 - *0* s8
   ⚠️  pattern without value
 
@@ -3596,7 +4018,7 @@ startPos = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analysed yet
 
-startPosDetails = (undefined | {"line": 1, "column": 1} | ???*0* | {"line": ???*2*, "column": ???*4*})
+startPosDetails = ({"line": 1, "column": 1} | ???*0* | {"line": ???*2*, "column": ???*4*} | undefined)
 - *0* [][???*1*]
   ⚠️  unknown array prototype methods or values
 - *1* arguments[0]
@@ -3666,7 +4088,7 @@ text#107 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analysed yet
 
-text#28 = (...) => input["substring"](peg$savedPos, peg$currPos)
+text#28 = (...) => (input["substring"](peg$savedPos, peg$currPos) | undefined)
 
 top#31 = ???*0*
 - *0* arguments[0]

@@ -98,7 +98,7 @@
 - *2* updated with update expression
   ⚠️  This value might have side effects
 
-0 -> 16 call = (...) => output(
+0 -> 16 call = (...) => (output | undefined)(
     (???*0* | new ???*1*((???*2* | undefined["length"])))
 )
 - *0* arguments[0]
@@ -116,11 +116,11 @@
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-0 -> 18 call = (...) => [a, b, c, d]([], ???*0*)
+0 -> 18 call = (...) => ([a, b, c, d] | undefined)(([] | undefined), ???*0*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 19 call = (...) => output(???*0*)
+0 -> 19 call = (...) => (output | undefined)(???*0*)
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
@@ -172,7 +172,7 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 36 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, ???*7*)
+0 -> 36 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -190,7 +190,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 38 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, ???*7*)
+0 -> 38 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -208,7 +208,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 40 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, 606105819)
+0 -> 40 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, 606105819)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -224,7 +224,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 42 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, ???*7*)
+0 -> 42 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -242,7 +242,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 44 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, ???*7*)
+0 -> 44 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -260,7 +260,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 46 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, 1200080426)
+0 -> 46 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, 1200080426)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -276,7 +276,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 48 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, ???*7*)
+0 -> 48 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -294,7 +294,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 50 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, ???*7*)
+0 -> 50 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -312,7 +312,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 52 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, 1770035416)
+0 -> 52 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, 1770035416)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -328,7 +328,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 54 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, ???*7*)
+0 -> 54 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -346,7 +346,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 56 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, ???*7*)
+0 -> 56 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -364,7 +364,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 58 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, ???*7*)
+0 -> 58 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -382,7 +382,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 60 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, 1804603682)
+0 -> 60 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 7, 1804603682)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -398,7 +398,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 62 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, ???*7*)
+0 -> 62 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 12, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -416,7 +416,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 64 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, ???*7*)
+0 -> 64 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 17, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -434,7 +434,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 66 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, 1236535329)
+0 -> 66 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 22, 1236535329)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -450,7 +450,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 68 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, ???*7*)
+0 -> 68 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -468,7 +468,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 70 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, ???*7*)
+0 -> 70 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -486,7 +486,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 72 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, 643717713)
+0 -> 72 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, 643717713)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -502,7 +502,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 74 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, ???*7*)
+0 -> 74 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -520,7 +520,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 76 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, ???*7*)
+0 -> 76 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -538,7 +538,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 78 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, 38016083)
+0 -> 78 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, 38016083)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -554,7 +554,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 80 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, ???*7*)
+0 -> 80 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -572,7 +572,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 82 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, ???*7*)
+0 -> 82 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -590,7 +590,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 84 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, 568446438)
+0 -> 84 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, 568446438)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -606,7 +606,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 86 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, ???*7*)
+0 -> 86 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -624,7 +624,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 88 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, ???*7*)
+0 -> 88 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -642,7 +642,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 90 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, 1163531501)
+0 -> 90 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, 1163531501)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -658,7 +658,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 92 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, ???*7*)
+0 -> 92 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 5, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -676,7 +676,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 94 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, ???*7*)
+0 -> 94 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 9, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -694,7 +694,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 96 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, 1735328473)
+0 -> 96 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 14, 1735328473)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -710,7 +710,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 98 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, ???*7*)
+0 -> 98 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 20, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -728,7 +728,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 100 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, ???*7*)
+0 -> 100 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -746,7 +746,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 102 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, ???*7*)
+0 -> 102 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -764,7 +764,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 104 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, 1839030562)
+0 -> 104 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, 1839030562)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -780,7 +780,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 106 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, ???*7*)
+0 -> 106 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -798,7 +798,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 108 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, ???*7*)
+0 -> 108 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -816,7 +816,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 110 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, 1272893353)
+0 -> 110 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, 1272893353)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -832,7 +832,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 112 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, ???*7*)
+0 -> 112 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -850,7 +850,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 114 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, ???*7*)
+0 -> 114 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -868,7 +868,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 116 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, 681279174)
+0 -> 116 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, 681279174)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -884,7 +884,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 118 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, ???*7*)
+0 -> 118 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -902,7 +902,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 120 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, ???*7*)
+0 -> 120 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -920,7 +920,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 122 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, 76029189)
+0 -> 122 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, 76029189)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -936,7 +936,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 124 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, ???*7*)
+0 -> 124 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 4, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -954,7 +954,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 126 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, ???*7*)
+0 -> 126 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 11, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -972,7 +972,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 128 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, 530742520)
+0 -> 128 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 16, 530742520)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -988,7 +988,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 130 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, ???*7*)
+0 -> 130 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 23, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1006,7 +1006,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 132 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, ???*7*)
+0 -> 132 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1024,7 +1024,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 134 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, 1126891415)
+0 -> 134 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, 1126891415)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1040,7 +1040,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 136 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, ???*7*)
+0 -> 136 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1058,7 +1058,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 138 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, ???*7*)
+0 -> 138 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1076,7 +1076,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 140 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, 1700485571)
+0 -> 140 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, 1700485571)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1092,7 +1092,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 142 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, ???*7*)
+0 -> 142 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1110,7 +1110,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 144 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, ???*7*)
+0 -> 144 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1128,7 +1128,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 146 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, ???*7*)
+0 -> 146 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1146,7 +1146,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 148 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, 1873313359)
+0 -> 148 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, 1873313359)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1162,7 +1162,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 150 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, ???*7*)
+0 -> 150 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1180,7 +1180,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 152 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, ???*7*)
+0 -> 152 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1198,7 +1198,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 154 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, 1309151649)
+0 -> 154 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, 1309151649)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1214,7 +1214,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 156 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, ???*7*)
+0 -> 156 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 6, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1232,7 +1232,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 158 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, ???*7*)
+0 -> 158 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 10, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1250,7 +1250,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 160 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, 718787259)
+0 -> 160 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 15, 718787259)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1266,7 +1266,7 @@
 - *6* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 162 call = (...) => md5cmn(???*0*, a, b, x, s, t)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, ???*7*)
+0 -> 162 call = (...) => (md5cmn(???*0*, a, b, x, s, t) | undefined)(???*1*, ???*2*, ???*3*, ???*4*, ???*5*, 21, ???*7*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1284,7 +1284,7 @@
 - *7* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 163 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 163 call = (...) => (???*0* | undefined)(???*1*, ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1292,7 +1292,7 @@
 - *2* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 164 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 164 call = (...) => (???*0* | undefined)(???*1*, ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1300,7 +1300,7 @@
 - *2* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 165 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 165 call = (...) => (???*0* | undefined)(???*1*, ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1308,7 +1308,7 @@
 - *2* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 166 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 166 call = (...) => (???*0* | undefined)(???*1*, ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -1332,7 +1332,7 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 178 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 178 call = (...) => (???*0* | undefined)(???*1*, ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* arguments[1]
@@ -1340,7 +1340,7 @@
 - *2* arguments[0]
   ⚠️  function calls are not analysed yet
 
-0 -> 179 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 179 call = (...) => (???*0* | undefined)(???*1*, ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* arguments[3]
@@ -1348,7 +1348,7 @@
 - *2* arguments[5]
   ⚠️  function calls are not analysed yet
 
-0 -> 180 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 180 call = (...) => (???*0* | undefined)((???*1* | undefined), (???*2* | undefined))
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -1356,7 +1356,7 @@
 - *2* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 181 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 181 call = (...) => (???*0* | undefined)((???*1* | undefined), ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -1364,7 +1364,7 @@
 - *2* arguments[4]
   ⚠️  function calls are not analysed yet
 
-0 -> 182 call = (...) => ???*0*(???*1*, ???*2*)
+0 -> 182 call = (...) => (???*0* | undefined)((???*1* | undefined), ???*2*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -1376,9 +1376,12 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 184 call = (...) => safeAdd(
-    bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
-    b
+0 -> 184 call = (...) => (
+  | safeAdd(
+        bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
+        b
+    )
+  | undefined
 )(???*0*, ???*1*, ???*2*, ???*3*, ???*4*, ???*5*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -1397,9 +1400,12 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 186 call = (...) => safeAdd(
-    bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
-    b
+0 -> 186 call = (...) => (
+  | safeAdd(
+        bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
+        b
+    )
+  | undefined
 )(???*0*, ???*1*, ???*2*, ???*3*, ???*4*, ???*5*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -1418,9 +1424,12 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 188 call = (...) => safeAdd(
-    bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
-    b
+0 -> 188 call = (...) => (
+  | safeAdd(
+        bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
+        b
+    )
+  | undefined
 )(???*0*, ???*1*, ???*2*, ???*3*, ???*4*, ???*5*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -1439,9 +1448,12 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 190 call = (...) => safeAdd(
-    bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
-    b
+0 -> 190 call = (...) => (
+  | safeAdd(
+        bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s),
+        b
+    )
+  | undefined
 )(???*0*, ???*1*, ???*2*, ???*3*, ???*4*, ???*5*)
 - *0* unsupported expression
   ⚠️  This value might have side effects

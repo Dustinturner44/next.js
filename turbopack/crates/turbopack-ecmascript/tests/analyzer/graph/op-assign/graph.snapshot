@@ -7,14 +7,14 @@
             Alternatives {
                 total_nodes: 3,
                 values: [
-                    Constant(
-                        Undefined,
-                    ),
                     Unknown {
                         original_value: None,
                         reason: "spread in function calls is not supported",
                         has_side_effects: true,
                     },
+                    Constant(
+                        Undefined,
+                    ),
                 ],
                 logical_property: None,
             },
@@ -77,14 +77,23 @@
     (
         "getClientComponentLoaderMetrics",
         Function(
-            2,
+            4,
             415,
-            Variable(
-                (
-                    "metrics",
-                    #7,
-                ),
-            ),
+            Alternatives {
+                total_nodes: 3,
+                values: [
+                    Variable(
+                        (
+                            "metrics",
+                            #7,
+                        ),
+                    ),
+                    Constant(
+                        Undefined,
+                    ),
+                ],
+                logical_property: None,
+            },
         ),
     ),
     (
@@ -169,28 +178,37 @@
     (
         "wrapClientComponentLoader",
         Function(
-            4,
+            6,
             95,
-            Object {
-                total_nodes: 3,
-                parts: [
-                    KeyValue(
-                        Constant(
-                            Str(
-                                Atom(
-                                    "loadChunk",
+            Alternatives {
+                total_nodes: 5,
+                values: [
+                    Object {
+                        total_nodes: 3,
+                        parts: [
+                            KeyValue(
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "loadChunk",
+                                        ),
+                                    ),
+                                ),
+                                Variable(
+                                    (
+                                        "*arrow function 173*",
+                                        #0,
+                                    ),
                                 ),
                             ),
-                        ),
-                        Variable(
-                            (
-                                "*arrow function 173*",
-                                #0,
-                            ),
-                        ),
+                        ],
+                        mutable: true,
+                    },
+                    Constant(
+                        Undefined,
                     ),
                 ],
-                mutable: true,
+                logical_property: None,
             },
         ),
     ),

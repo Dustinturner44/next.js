@@ -37,9 +37,12 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 9 call = (...) => FreeVar(JSON)["stringify"](
-    {
-        "condition": (variable === "true"),
-        "buggedConditionalCheck": ((variable === "true") ? "true" : "false")
-    }
+0 -> 9 call = (...) => (
+  | FreeVar(JSON)["stringify"](
+        {
+            "condition": (variable === "true"),
+            "buggedConditionalCheck": ((variable === "true") ? "true" : "false")
+        }
+    )
+  | undefined
 )({"variable": "false"})
