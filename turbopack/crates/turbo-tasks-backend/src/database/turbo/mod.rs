@@ -9,8 +9,11 @@ use turbo_tasks::{JoinHandle, message_queue::TimingEvent, spawn, turbo_tasks};
 
 use crate::database::{
     key_value_database::{KeySpace, KeyValueDatabase},
+    turbo::parallel_scheduler::TurboTasksParallelScheduler,
     write_batch::{BaseWriteBatch, ConcurrentWriteBatch, WriteBatch, WriteBuffer},
 };
+
+mod parallel_scheduler;
 
 const MB: u64 = 1024 * 1024;
 const COMPACT_CONFIG: CompactConfig = CompactConfig {
@@ -24,7 +27,7 @@ const COMPACT_CONFIG: CompactConfig = CompactConfig {
 };
 
 pub struct TurboKeyValueDatabase {
-    db: Arc<TurboPersistence>,
+    db: Arc<TurboPersistence<TurboTasksParallelScheduler>>,
     compact_join_handle: Mutex<Option<JoinHandle<Result<()>>>>,
     is_ci: bool,
     is_short_session: bool,
@@ -116,7 +119,7 @@ impl KeyValueDatabase for TurboKeyValueDatabase {
 }
 
 fn do_compact(
-    db: &TurboPersistence,
+    db: &TurboPersistence<TurboTasksParallelScheduler>,
     message: &'static str,
     max_merge_segment_count: usize,
 ) -> Result<()> {
@@ -135,8 +138,8 @@ fn do_compact(
 }
 
 pub struct TurboWriteBatch<'a> {
-    batch: turbo_persistence::WriteBatch<WriteBuffer<'static>, 5>,
-    db: &'a Arc<TurboPersistence>,
+    batch: turbo_persistence::WriteBatch<WriteBuffer<'static>, TurboTasksParallelScheduler, 5>,
+    db: &'a Arc<TurboPersistence<TurboTasksParallelScheduler>>,
     compact_join_handle: Option<&'a Mutex<Option<JoinHandle<Result<()>>>>>,
 }
 
