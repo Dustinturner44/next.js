@@ -25,6 +25,9 @@ import { findSourceMap, type SourceMap } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 
+// Cache for converting ignoreList arrays to Sets to avoid O(n) creation cost on every lookup
+const ignoreListSetCache = new WeakMap<number[], Set<number>>()
+
 function shouldIgnorePath(modulePath: string): boolean {
   return (
     modulePath.includes('node_modules') ||
@@ -244,16 +247,18 @@ async function nativeTraceSource(
           frame
         )
       } else {
-        // Optimize ignore list lookup from O(n^2) to O(1) using Set
+        // Optimize ignore list lookup from O(n^2) to O(1) using cached Set
         const sourceIndex = originalPosition.source
           ? applicableSourceMap.sources.indexOf(originalPosition.source)
           : -1
         
         if (sourceIndex !== -1 && applicableSourceMap.ignoreList) {
-          // For large ignore lists, Set lookup is more efficient than Array.includes
-          // For very small lists (< 10 items), Array.includes might be faster due to Set creation overhead
-          // But source maps can have hundreds or thousands of sources, making Set worthwhile
-          const ignoreSet = new Set(applicableSourceMap.ignoreList)
+          // Use WeakMap cache to avoid O(n) Set creation on every lookup
+          let ignoreSet = ignoreListSetCache.get(applicableSourceMap.ignoreList)
+          if (!ignoreSet) {
+            ignoreSet = new Set(applicableSourceMap.ignoreList)
+            ignoreListSetCache.set(applicableSourceMap.ignoreList, ignoreSet)
+          }
           ignored = ignoreSet.has(sourceIndex)
         } else {
           // When sourcemap is not available, fallback to checking `frame.file`.

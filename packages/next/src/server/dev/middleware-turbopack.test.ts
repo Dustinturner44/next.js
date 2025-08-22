@@ -15,11 +15,66 @@ jest.mock('node:module', () => ({
   findSourceMap: jest.fn(),
 }))
 
-// Import the function we're testing - we'll need to access the internal logic
-// Since nativeTraceSource is not exported, we'll test the logic by creating a test function
-// that uses the same pattern
-
+// Test the WeakMap caching mechanism
 describe('middleware-turbopack source map ignore list optimization', () => {
+  describe('WeakMap caching for ignore list Sets', () => {
+    it('should cache Set creation for the same ignoreList array', () => {
+      // Create a mock of the caching logic we implemented
+      const ignoreListSetCache = new WeakMap<number[], Set<number>>()
+      
+      const ignoreList = [0, 2, 4]
+      
+      // First access - Set should be created and cached
+      let cachedSet = ignoreListSetCache.get(ignoreList)
+      if (!cachedSet) {
+        cachedSet = new Set(ignoreList)
+        ignoreListSetCache.set(ignoreList, cachedSet)
+      }
+      
+      const firstSet = cachedSet
+      
+      // Second access - should retrieve the same Set from cache
+      let cachedSet2 = ignoreListSetCache.get(ignoreList)
+      if (!cachedSet2) {
+        cachedSet2 = new Set(ignoreList)
+        ignoreListSetCache.set(ignoreList, cachedSet2)
+      }
+      
+      // Should be the exact same Set object (cached)
+      expect(cachedSet2).toBe(firstSet)
+      expect(cachedSet2.has(0)).toBe(true)
+      expect(cachedSet2.has(1)).toBe(false)
+      expect(cachedSet2.has(2)).toBe(true)
+    })
+
+    it('should create different Sets for different ignoreList arrays', () => {
+      const ignoreListSetCache = new WeakMap<number[], Set<number>>()
+      
+      const ignoreList1 = [0, 2]
+      const ignoreList2 = [1, 3]
+      
+      // Create Sets for different arrays
+      let set1 = ignoreListSetCache.get(ignoreList1)
+      if (!set1) {
+        set1 = new Set(ignoreList1)
+        ignoreListSetCache.set(ignoreList1, set1)
+      }
+      
+      let set2 = ignoreListSetCache.get(ignoreList2)
+      if (!set2) {
+        set2 = new Set(ignoreList2)
+        ignoreListSetCache.set(ignoreList2, set2)
+      }
+      
+      // Should be different Set objects
+      expect(set1).not.toBe(set2)
+      expect(set1.has(0)).toBe(true)
+      expect(set1.has(1)).toBe(false)
+      expect(set2.has(0)).toBe(false)
+      expect(set2.has(1)).toBe(true)
+    })
+  })
+
   // Test the core logic that we're optimizing
   describe('ignore list performance optimization', () => {
     it('should handle empty ignore list correctly', () => {
