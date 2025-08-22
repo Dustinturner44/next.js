@@ -1,0 +1,13 @@
+error - [analysis] /turbopack/crates/turbopack-tests/tests/snapshot/dynamic-require/input/deps/README:1:5  Parsing ecmascript source code failed
+         +      v-v
+       1 + This was a triumph
+         +      ^-^
+       2 | I'm making a note here, "Great Success"
+       3 | 
+  
+  Expected ';', '}' or <eof>
+  
+  Import trace:
+    test:
+      ./turbopack/crates/turbopack-tests/tests/snapshot/dynamic-require/input/deps/README
+      ./turbopack/crates/turbopack-tests/tests/snapshot/dynamic-require/input/index.js

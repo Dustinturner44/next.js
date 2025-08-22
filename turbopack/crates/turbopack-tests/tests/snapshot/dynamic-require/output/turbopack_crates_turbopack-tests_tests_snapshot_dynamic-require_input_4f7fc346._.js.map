@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 9, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/turbopack/crates/turbopack-tests/tests/snapshot/dynamic-require/input/deps/cake.js"],"sourcesContent":["exports.cake = \"The cake is a like\""],"names":[],"mappings":"AAAA,QAAQ,IAAI,GAAG"}},
+    {"offset": {"line": 13, "column": 0}, "map": {"version":3,"sources":["turbopack:///[project]/turbopack/crates/turbopack-tests/tests/snapshot/dynamic-require/input/index.js"],"sourcesContent":["function get(name) {\n  return require(`./deps/${name}`)\n}\n\nconsole.log(get('cake').cake)\n"],"names":[],"mappings":"AAAA,SAAS,IAAI,IAAI;IACf;;;;;;;;;;;;;OAAe,CAAC,OAAO,EAAE,MAAM;AACjC;AAEA,QAAQ,GAAG,CAAC,IAAI,QAAQ,IAAI"}}]
+}
