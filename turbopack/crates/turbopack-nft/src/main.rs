@@ -1,13 +1,15 @@
 #![feature(future_join)]
 #![feature(min_specialization)]
 
-use std::{cell::RefCell, path::Path, time::Instant};
+use std::env::current_dir;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use clap::Parser;
 use tracing_subscriber::{Registry, layer::SubscriberExt, util::SubscriberInitExt};
+use turbo_tasks::{ReadConsistency, TurboTasks};
+use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
 use turbo_tasks_malloc::TurboMalloc;
-use turbopack_cli::{arguments::Arguments, register};
+use turbopack_nft::{nft::node_file_trace, register};
 use turbopack_trace_utils::{
     exit::ExitHandler,
     filter_layer::FilterLayer,
@@ -18,32 +20,25 @@ use turbopack_trace_utils::{
     },
 };
 
+#[derive(Debug, Parser)]
+#[clap(author, version, about, long_about = None)]
+pub struct Arguments {
+    #[clap(value_parser)]
+    pub entry: String,
+
+    #[clap(long)]
+    pub graph: bool,
+
+    #[clap(long)]
+    pub show_issues: bool,
+}
+
 #[global_allocator]
 static ALLOC: TurboMalloc = TurboMalloc;
 
 fn main() {
-    thread_local! {
-        static LAST_SWC_ATOM_GC_TIME: RefCell<Option<Instant>> = const { RefCell::new(None) };
-    }
-
     let mut rt = tokio::runtime::Builder::new_multi_thread();
-    rt.enable_all()
-        .on_thread_stop(|| {
-            TurboMalloc::thread_stop();
-        })
-        .on_thread_park(|| {
-            LAST_SWC_ATOM_GC_TIME.with_borrow_mut(|cell| {
-                use std::time::Duration;
-
-                if cell.is_none_or(|t| t.elapsed() > Duration::from_secs(2)) {
-                    swc_core::ecma::atoms::hstr::global_atom_store_gc();
-                    *cell = Some(Instant::now());
-                }
-            });
-        });
-
-    #[cfg(not(codspeed))]
-    rt.disable_lifo_slot();
+    rt.enable_all().disable_lifo_slot();
 
     let args = Arguments::parse();
     rt.build().unwrap().block_on(main_inner(args)).unwrap();
@@ -72,14 +67,7 @@ async fn main_inner(args: Arguments) -> Result<()> {
 
         let subscriber = subscriber.with(FilterLayer::try_new(&trace).unwrap());
 
-        let internal_dir = args
-            .dir()
-            .unwrap_or_else(|| Path::new("."))
-            .join(".turbopack");
-        std::fs::create_dir_all(&internal_dir)
-            .context("Unable to create .turbopack directory")
-            .unwrap();
-        let trace_file = internal_dir.join("trace.log");
+        let trace_file = current_dir()?.join("turbopack.log");
         let trace_writer = std::fs::File::create(trace_file).unwrap();
         let (trace_writer, guard) = TraceWriter::new(trace_writer);
         let subscriber = subscriber.with(RawTraceLayer::new(trace_writer));
@@ -92,8 +80,32 @@ async fn main_inner(args: Arguments) -> Result<()> {
 
     register();
 
-    match args {
-        Arguments::Build(args) => turbopack_cli::build::build(&args).await,
-        Arguments::Dev(args) => turbopack_cli::dev::start_server(&args).await,
-    }
+    let tt = TurboTasks::new(TurboTasksBackend::new(
+        BackendOptions {
+            dependency_tracking: false,
+            storage_mode: None,
+            ..Default::default()
+        },
+        noop_backing_storage(),
+    ));
+
+    let task = tt.spawn_once_task::<(), _>(async move {
+        node_file_trace(
+            current_dir()?.to_str().unwrap().into(),
+            args.entry.into(),
+            args.graph,
+            args.show_issues,
+        )
+        .await?;
+        Ok(Default::default())
+    });
+
+    tt.wait_task_completion(task, ReadConsistency::Strong)
+        .await?;
+
+    // Intentionally leak this `Arc`. Otherwise we'll waste time during process exit performing a
+    // ton of drop calls.
+    std::mem::forget(tt);
+
+    Ok(())
 }
