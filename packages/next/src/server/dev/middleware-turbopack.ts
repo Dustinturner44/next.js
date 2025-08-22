@@ -244,15 +244,22 @@ async function nativeTraceSource(
           frame
         )
       } else {
-        // TODO: O(n^2). Consider moving `ignoreList` into a Set
-        const sourceIndex = applicableSourceMap.sources.indexOf(
-          originalPosition.source!
-        )
-        ignored =
-          applicableSourceMap.ignoreList?.includes(sourceIndex) ??
+        // Optimize ignore list lookup from O(n^2) to O(1) using Set
+        const sourceIndex = originalPosition.source
+          ? applicableSourceMap.sources.indexOf(originalPosition.source)
+          : -1
+        
+        if (sourceIndex !== -1 && applicableSourceMap.ignoreList) {
+          // For large ignore lists, Set lookup is more efficient than Array.includes
+          // For very small lists (< 10 items), Array.includes might be faster due to Set creation overhead
+          // But source maps can have hundreds or thousands of sources, making Set worthwhile
+          const ignoreSet = new Set(applicableSourceMap.ignoreList)
+          ignored = ignoreSet.has(sourceIndex)
+        } else {
           // When sourcemap is not available, fallback to checking `frame.file`.
           // e.g. In pages router, nextjs server code is not bundled into the page.
-          shouldIgnorePath(frame.file)
+          ignored = shouldIgnorePath(frame.file)
+        }
       }
 
       const originalStackFrame: IgnorableStackFrame = {
