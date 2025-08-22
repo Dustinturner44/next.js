@@ -6,7 +6,10 @@
 
 use std::{sync::LazyLock, thread::available_parallelism};
 
-use crate::{scope::scope_and_block, util::into_chunks};
+use crate::{
+    scope::{future_scope, scope_and_block},
+    util::{Chunk, into_chunks},
+};
 
 /// Calculates a good chunk size for parallel processing based on the number of available threads.
 /// This is used to ensure that the workload is evenly distributed across the threads.
@@ -58,13 +61,35 @@ where
     let _results = scope_and_block(len.div_ceil(chunk_size), |scope| {
         for chunk in into_chunks(items, chunk_size) {
             scope.spawn(async move {
-                // SAFETY: Even when f() panics we drop all items in the chunk.
                 for item in chunk {
                     f(item);
                 }
             })
         }
     });
+}
+
+pub async fn for_each_chunk_owned_async<T>(items: Vec<T>, f: impl Fn(Chunk<T>) + Send + Sync)
+where
+    T: Send + Sync,
+{
+    let len = items.len();
+    if len <= 1 {
+        for chunk in into_chunks(items, 1) {
+            f(chunk);
+        }
+        return;
+    }
+    let chunk_size = good_chunk_size(len);
+    let f = &f;
+    let _results = future_scope(len.div_ceil(chunk_size), |scope| {
+        for chunk in into_chunks(items, chunk_size) {
+            scope.spawn(async move {
+                f(chunk);
+            })
+        }
+    })
+    .await;
 }
 
 pub fn try_for_each<'l, T, E>(
@@ -285,6 +310,15 @@ mod tests {
         let input = vec![1; 1000];
         let result: Vec<_> = map_collect_owned(input, |x| x * 2);
         assert_eq!(result, vec![2; 1000]);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_parallel_different_counts() {
+        for len in 0..1000 {
+            let input = vec![1; len];
+            let result: Vec<_> = map_collect_owned(input, |x| x * 2);
+            assert_eq!(result, vec![2; len]);
+        }
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

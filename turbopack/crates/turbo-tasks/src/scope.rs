@@ -14,7 +14,7 @@ use std::{
 
 use futures::FutureExt;
 use parking_lot::Mutex;
-use tokio::{runtime::Handle, task::block_in_place};
+use tokio::{runtime::Handle, sync::Notify, task::block_in_place};
 use tracing::{Instrument, Span, info_span};
 
 use crate::{
@@ -22,8 +22,13 @@ use crate::{
     manager::{try_turbo_tasks, turbo_tasks_future_scope},
 };
 
+enum ScopeInnerType {
+    Blocking { main_thread: Thread },
+    Future { notify: Notify },
+}
+
 struct ScopeInner {
-    main_thread: Thread,
+    ty: ScopeInnerType,
     remaining_tasks: AtomicUsize,
     /// The first panic that occurred in the tasks, by task index.
     /// The usize value is the index of the task.
@@ -39,13 +44,30 @@ impl ScopeInner {
             }
         }
         if self.remaining_tasks.fetch_sub(1, Ordering::Release) == 1 {
-            self.main_thread.unpark();
+            match &self.ty {
+                ScopeInnerType::Blocking { main_thread } => {
+                    main_thread.unpark();
+                }
+                ScopeInnerType::Future { notify } => {
+                    notify.notify_one();
+                }
+            }
         }
     }
 
-    fn wait(&self) {
+    async fn future_wait(&self) {
+        let ScopeInnerType::Future { notify } = &self.ty else {
+            panic!("Cannot call future() on a blocking scope");
+        };
+        while self.remaining_tasks.load(Ordering::Acquire) != 0 {
+            notify.notified().await;
+        }
+    }
+
+    fn blocking_wait(&self) {
         let _span = info_span!("blocking").entered();
         while self.remaining_tasks.load(Ordering::Acquire) != 0 {
+            assert!(matches!(self.ty, ScopeInnerType::Blocking { .. }));
             thread::park();
         }
         if let Some((err, _)) = self.panic.lock().take() {
@@ -77,12 +99,20 @@ impl<'scope, 'env: 'scope, R: Send + 'env> Scope<'scope, 'env, R> {
     /// # Safety
     ///
     /// The caller must ensure `Scope` is dropped and not forgotten.
-    unsafe fn new(results: &'scope [Mutex<Option<R>>]) -> Self {
+    unsafe fn new(results: &'scope [Mutex<Option<R>>], blocking: bool) -> Self {
         Self {
             results,
             index: AtomicUsize::new(0),
             inner: Arc::new(ScopeInner {
-                main_thread: thread::current(),
+                ty: if blocking {
+                    ScopeInnerType::Blocking {
+                        main_thread: thread::current(),
+                    }
+                } else {
+                    ScopeInnerType::Future {
+                        notify: Notify::new(),
+                    }
+                },
                 remaining_tasks: AtomicUsize::new(0),
                 panic: Mutex::new(None),
             }),
@@ -143,11 +173,15 @@ impl<'scope, 'env: 'scope, R: Send + 'env> Scope<'scope, 'env, R> {
             inner.on_task_finished(panic);
         });
     }
+
+    pub async fn future_wait(&self) {
+        self.inner.future_wait().await;
+    }
 }
 
 impl<'scope, 'env: 'scope, R: Send + 'env> Drop for Scope<'scope, 'env, R> {
     fn drop(&mut self) {
-        self.inner.wait();
+        self.inner.blocking_wait();
     }
 }
 
@@ -171,7 +205,7 @@ where
         let results = results.into_boxed_slice();
         let result = {
             // SAFETY: We drop the Scope later.
-            let scope = unsafe { Scope::new(&results) };
+            let scope = unsafe { Scope::new(&results, true) };
             catch_unwind(AssertUnwindSafe(|| f(&scope)))
         };
         if let Err(panic) = result {
@@ -185,11 +219,47 @@ where
     })
 }
 
+pub async fn future_scope<'env, F, R>(
+    number_of_tasks: usize,
+    f: F,
+) -> impl Iterator<Item = R> + 'env
+where
+    R: Send + 'env,
+    F: for<'scope> FnOnce(&'scope Scope<'scope, 'env, R>) + 'env,
+{
+    let mut results = Vec::with_capacity(number_of_tasks);
+    for _ in 0..number_of_tasks {
+        results.push(Mutex::new(None));
+    }
+    let results = results.into_boxed_slice();
+    let result = {
+        // SAFETY: We drop the Scope later.
+        let scope = unsafe { Scope::new(&results, false) };
+        let result = catch_unwind(AssertUnwindSafe(|| f(&scope)));
+        scope.future_wait().await;
+        result
+    };
+    if let Err(panic) = result {
+        panic::resume_unwind(panic);
+    }
+    results.into_iter().map(|mutex| {
+        mutex
+            .into_inner()
+            .expect("All values are set when the scope returns without panic")
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use std::panic::{AssertUnwindSafe, catch_unwind};
 
     use super::*;
+
+    #[test]
+    fn scope_is_send() {
+        fn is_send<T: Send + Sync>() {}
+        is_send::<Scope<'static, 'static, ()>>();
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_scope() {
@@ -285,5 +355,19 @@ mod tests {
             result.unwrap_err().downcast_ref::<&str>(),
             Some(&"Intentional panic")
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_future_scope() {
+        let results = future_scope(1000, |scope| {
+            for i in 0..1000 {
+                scope.spawn(async move { i });
+            }
+        })
+        .await
+        .collect::<Vec<_>>();
+        results.iter().enumerate().for_each(|(i, &result)| {
+            assert_eq!(result, i);
+        });
     }
 }
