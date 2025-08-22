@@ -230,7 +230,7 @@ import { Suspense } from 'react'
 export default function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ sort: string }>
+  searchParams: Promise<{ sort?: string }>
 }) {
   return (
     <section>
@@ -265,7 +265,7 @@ Inside of the table component, accessing the value from `searchParams` will make
 export async function Table({
   searchParams,
 }: {
-  searchParams: Promise<{ sort: string }>
+  searchParams: Promise<{ sort?: string }>
 }) {
   const sort = (await searchParams).sort === 'true'
   return '...'

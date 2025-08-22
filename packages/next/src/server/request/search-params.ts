@@ -50,7 +50,7 @@ export type SearchParams = { [key: string]: string | string[] | undefined }
  * If refactoring is not possible but you still want to be able to access params directly without typescript errors you can cast the params Promise to this type
  *
  * ```tsx
- * type Props = { searchParams: Promise<{ foo: string }> }
+ * type Props = { searchParams: Promise<{ foo?: string }> }
  *
  * export default async function Page(props: Props) {
  *  const { searchParams } = (props.searchParams as unknown as UnsafeUnwrappedSearchParams<typeof props.searchParams>)

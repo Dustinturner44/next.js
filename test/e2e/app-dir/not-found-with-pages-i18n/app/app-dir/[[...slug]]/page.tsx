@@ -4,7 +4,11 @@ export async function generateStaticParams() {
   return []
 }
 
-async function validateSlug(slug: string[]) {
+async function validateSlug(slug: string[] | undefined) {
+  if (typeof slug === 'undefined') {
+    return false
+  }
+
   try {
     const isValidPath =
       slug.length === 1 && (slug[0] === 'about' || slug[0] === 'contact')
@@ -22,13 +26,12 @@ async function validateSlug(slug: string[]) {
 export default async function CatchAll({
   params,
 }: {
-  params: Promise<{ slug: string[] }>
+  params: Promise<{ slug?: string[] }>
 }) {
   const { slug } = await params
-  const slugArray = Array.isArray(slug) ? slug : [slug]
 
   // Validate the slug
-  const isValid = await validateSlug(slugArray)
+  const isValid = await validateSlug(slug)
 
   // If not valid, show 404
   if (!isValid) {

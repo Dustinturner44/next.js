@@ -6,7 +6,7 @@ import { unstable_expireTag } from 'next/cache'
 const RevalidateViaPage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ tag: string }>
+  searchParams: Promise<{ tag?: string }>
 }) => {
   const { tag } = await searchParams
   unstable_expireTag(tag)
