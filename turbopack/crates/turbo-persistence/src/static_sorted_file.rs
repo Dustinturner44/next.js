@@ -2,15 +2,12 @@ use std::{
     cmp::Ordering,
     fs::File,
     hash::BuildHasherDefault,
-    mem::{MaybeUninit, transmute},
     ops::Range,
     path::{Path, PathBuf},
-    sync::Arc,
 };
 
 use anyhow::{Context, Result, bail};
 use byteorder::{BE, ReadBytesExt};
-use lzzzz::lz4::decompress_with_dict;
 use memmap2::Mmap;
 use quick_cache::sync::GuardResult;
 use rustc_hash::FxHasher;
@@ -18,7 +15,8 @@ use rustc_hash::FxHasher;
 use crate::{
     QueryKey,
     arc_slice::ArcSlice,
-    lookup_entry::{LookupEntry, LookupValue},
+    compression::decompress_into_arc,
+    lookup_entry::{LazyLookupValue, LookupEntry, LookupValue},
 };
 
 /// The block header for an index block.
@@ -326,6 +324,7 @@ impl StaticSortedFile {
         self.read_block(
             block_index,
             &self.mmap[self.meta.key_compression_dictionary_range()],
+            false,
         )
     }
 
@@ -334,11 +333,30 @@ impl StaticSortedFile {
         self.read_block(
             block_index,
             &self.mmap[self.meta.value_compression_dictionary_range()],
+            false,
         )
     }
 
     /// Reads a block from the file.
-    fn read_block(&self, block_index: u16, compression_dictionary: &[u8]) -> Result<ArcSlice<u8>> {
+    fn read_block(
+        &self,
+        block_index: u16,
+        compression_dictionary: &[u8],
+        long_term: bool,
+    ) -> Result<ArcSlice<u8>> {
+        let (uncompressed_length, block) = self.get_compressed_block(block_index)?;
+
+        let buffer = decompress_into_arc(
+            uncompressed_length,
+            block,
+            Some(compression_dictionary),
+            long_term,
+        )?;
+        Ok(ArcSlice::from(buffer))
+    }
+
+    /// Gets the slice of the compressed block from the memory mapped file.
+    fn get_compressed_block(&self, block_index: u16) -> Result<(u32, &[u8])> {
         #[cfg(feature = "strict_checks")]
         if block_index >= self.meta.block_count {
             bail!(
@@ -386,17 +404,9 @@ impl StaticSortedFile {
                 self.meta.blocks_start()
             );
         }
-        let uncompressed_length =
-            (&self.mmap[block_start..block_start + 4]).read_u32::<BE>()? as usize;
-        let block = self.mmap[block_start + 4..block_end].to_vec();
-
-        let buffer = Arc::new_zeroed_slice(uncompressed_length);
-        // Safety: MaybeUninit<u8> can be safely transmuted to u8.
-        let mut buffer = unsafe { transmute::<Arc<[MaybeUninit<u8>]>, Arc<[u8]>>(buffer) };
-        // Safety: We know that the buffer is not shared yet.
-        let decompressed = unsafe { Arc::get_mut_unchecked(&mut buffer) };
-        decompress_with_dict(&block, decompressed, compression_dictionary)?;
-        Ok(ArcSlice::from(buffer))
+        let uncompressed_length = (&self.mmap[block_start..block_start + 4]).read_u32::<BE>()?;
+        let block = &self.mmap[block_start + 4..block_end];
+        Ok((uncompressed_length, block))
     }
 }
 
@@ -423,15 +433,15 @@ struct CurrentIndexBlock {
     index: usize,
 }
 
-impl Iterator for StaticSortedFileIter<'_> {
-    type Item = Result<LookupEntry>;
+impl<'l> Iterator for StaticSortedFileIter<'l> {
+    type Item = Result<LookupEntry<'l>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.next_internal().transpose()
     }
 }
 
-impl StaticSortedFileIter<'_> {
+impl<'l> StaticSortedFileIter<'l> {
     /// Enters a block at the given index.
     fn enter_block(&mut self, block_index: u16) -> Result<()> {
         let block_arc = self.this.get_key_block(block_index, self.key_block_cache)?;
@@ -468,7 +478,7 @@ impl StaticSortedFileIter<'_> {
     }
 
     /// Gets the next entry in the file and moves the cursor.
-    fn next_internal(&mut self) -> Result<Option<LookupEntry>> {
+    fn next_internal(&mut self) -> Result<Option<LookupEntry<'l>>> {
         loop {
             if let Some(CurrentKeyBlock {
                 offsets,
@@ -479,9 +489,22 @@ impl StaticSortedFileIter<'_> {
             {
                 let GetKeyEntryResult { hash, key, ty, val } =
                     get_key_entry(&offsets, &entries, entry_count, index)?;
-                let value = self
-                    .this
-                    .handle_key_match(ty, val, self.value_block_cache)?;
+                let value = if ty == KEY_BLOCK_ENTRY_TYPE_MEDIUM {
+                    let mut val = val;
+                    let block = val.read_u16::<BE>()?;
+                    let (uncompressed_size, block) = self.this.get_compressed_block(block)?;
+                    LazyLookupValue::Medium {
+                        uncompressed_size,
+                        block,
+                        dictionary: &self.this.mmap
+                            [self.this.meta.value_compression_dictionary_range()],
+                    }
+                } else {
+                    let value = self
+                        .this
+                        .handle_key_match(ty, val, self.value_block_cache)?;
+                    LazyLookupValue::Eager(value)
+                };
                 let entry = LookupEntry {
                     hash,
                     // Safety: The key is a valid slice of the entries.
