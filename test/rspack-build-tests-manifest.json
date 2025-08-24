@@ -234,13 +234,13 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/actions/app-action-progressive-enhancement.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "app-dir action progressive enhancement should support actions from client without JS",
       "app-dir action progressive enhancement should support formData and redirect without JS",
       "app-dir action progressive enhancement should support headers and cookies without JS (runtime: edge)",
       "app-dir action progressive enhancement should support headers and cookies without JS (runtime: node)"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
