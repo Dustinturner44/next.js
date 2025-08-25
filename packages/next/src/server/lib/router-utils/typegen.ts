@@ -567,7 +567,7 @@ export function generateValidatorFile(
   config?: {
     api?: {
       bodyParser?: boolean | { sizeLimit?: string }
-      responseLimit?: string | number
+      responseLimit?: string | number | boolean
       externalResolver?: boolean
     }
     runtime?: 'edge' | 'experimental-edge' | 'nodejs' | string // necessary unless config is exported as const
