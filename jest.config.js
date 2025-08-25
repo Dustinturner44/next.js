@@ -17,7 +17,13 @@ const customJestConfig = {
     '<rootDir>/../packages/eslint-plugin-internal/',
     '<rootDir>/../packages/font/src/',
   ],
-  modulePathIgnorePatterns: ['/\\.next/'],
+  modulePathIgnorePatterns: [
+    '/\\.next/',
+    '<rootDir>/../packages/next/src/compiled/',
+    '<rootDir>/../test/development/',
+    '<rootDir>/../test/e2e/',
+    '<rootDir>/../test/production/',
+  ],
   modulePaths: ['<rootDir>/lib'],
   transformIgnorePatterns: ['/next[/\\\\]dist/', '/\\.next/'],
   moduleNameMapper: {
