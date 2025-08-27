@@ -94,7 +94,6 @@ const nextBuild = (options: NextBuildOptions, directory?: string) => {
     profile,
     debug || Boolean(process.env.NEXT_DEBUG_BUILD),
     debugPrerender,
-    lint,
     !mangling,
     experimentalAppOnly,
     isTurbopack,

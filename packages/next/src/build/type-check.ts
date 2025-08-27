@@ -2,10 +2,8 @@ import type { NextConfigComplete } from '../server/config-shared'
 import type { Telemetry } from '../telemetry/storage'
 import type { Span } from '../trace'
 
-import path from 'path'
 import * as Log from './output/log'
 import { Worker } from '../lib/worker'
-import { verifyAndLint } from '../lib/verifyAndLint'
 import createSpinner from './spinner'
 import { eventTypeCheckCompleted } from '../telemetry/events'
 import isError from '../lib/is-error'
@@ -71,57 +69,36 @@ export async function startTypeChecking({
   cacheDir,
   config,
   dir,
-  ignoreESLint,
   nextBuildSpan,
   pagesDir,
-  runLint,
-  shouldLint,
   telemetry,
   appDir,
 }: {
   cacheDir: string
   config: NextConfigComplete
   dir: string
-  ignoreESLint: boolean
   nextBuildSpan: Span
   pagesDir?: string
-  runLint: boolean
-  shouldLint: boolean
   telemetry: Telemetry
   appDir?: string
 }) {
   const ignoreTypeScriptErrors = Boolean(config.typescript.ignoreBuildErrors)
 
-  const eslintCacheDir = path.join(cacheDir, 'eslint/')
-
   if (ignoreTypeScriptErrors) {
     Log.info('Skipping validation of types')
   }
-  if (runLint && ignoreESLint) {
-    // only print log when build require lint while ignoreESLint is enabled
-    Log.info('Skipping linting')
+
+  let typeCheckingSpinnerPrefixText: string | undefined
+  let typeCheckingSpinner: ReturnType<typeof createSpinner> | undefined
+
+  if (!ignoreTypeScriptErrors) {
+    typeCheckingSpinnerPrefixText = 'Checking validity of types'
   }
 
-  let typeCheckingAndLintingSpinnerPrefixText: string | undefined
-  let typeCheckingAndLintingSpinner:
-    | ReturnType<typeof createSpinner>
-    | undefined
-
-  if (!ignoreTypeScriptErrors && shouldLint) {
-    typeCheckingAndLintingSpinnerPrefixText =
-      'Linting and checking validity of types'
-  } else if (!ignoreTypeScriptErrors) {
-    typeCheckingAndLintingSpinnerPrefixText = 'Checking validity of types'
-  } else if (shouldLint) {
-    typeCheckingAndLintingSpinnerPrefixText = 'Linting'
-  }
-
-  // we will not create a spinner if both ignoreTypeScriptErrors and ignoreESLint are
-  // enabled, but we will still verifying project's tsconfig and dependencies.
-  if (typeCheckingAndLintingSpinnerPrefixText) {
-    typeCheckingAndLintingSpinner = createSpinner(
-      typeCheckingAndLintingSpinnerPrefixText
-    )
+  // we will not create a spinner if ignoreTypeScriptErrors is enabled,
+  // but we will still verify project's tsconfig and dependencies.
+  if (typeCheckingSpinnerPrefixText) {
+    typeCheckingSpinner = createSpinner(typeCheckingSpinnerPrefixText)
   }
 
   const typeCheckStart = process.hrtime()
@@ -145,18 +122,8 @@ export async function startTypeChecking({
           return [resolved, checkEnd] as const
         })
       ),
-      shouldLint &&
-        nextBuildSpan.traceChild('verify-and-lint').traceAsyncFn(async () => {
-          await verifyAndLint(
-            dir,
-            eslintCacheDir,
-            config.eslint?.dirs,
-            config.experimental.workerThreads,
-            telemetry
-          )
-        }),
     ])
-    typeCheckingAndLintingSpinner?.stopAndPersist()
+    typeCheckingSpinner?.stopAndPersist()
 
     if (!ignoreTypeScriptErrors && verifyResult) {
       telemetry.record(
