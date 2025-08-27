@@ -1,7 +1,7 @@
 import { nextTestSetup } from 'e2e-utils'
 
 describe('app-dir static-generation-status', () => {
-  const { next } = nextTestSetup({
+  const { isNextStart, next } = nextTestSetup({
     files: __dirname,
   })
 
