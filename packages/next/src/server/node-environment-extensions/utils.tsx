@@ -49,6 +49,14 @@ export function io(expression: string, type: ApiType) {
 
           if (process.env.NODE_ENV !== 'production') {
             const ownerStack = workUnitStore.captureOwnerStack!()
+            console.log(
+              'WORK UNIT STORE',
+              workUnitStore.type,
+              'STACK\n',
+              errorWithStack.stack,
+              'OWNER STACK\n',
+              ownerStack
+            )
 
             if (ownerStack) {
               // TODO: Instead of stitching the stacks here, we should log the

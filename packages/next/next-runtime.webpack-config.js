@@ -169,6 +169,19 @@ module.exports = ({ dev, turbo, bundleType, experimental, ...rest }) => {
         })
       : {}
 
+  const aliasReactServer = {
+    react$: `next/dist/compiled/react${bundledReactChannel}/react.react-server`,
+    [`next/dist/compiled/react${bundledReactChannel}$`]: `next/dist/compiled/react${bundledReactChannel}/react.react-server`,
+    'react/jsx-runtime$': `next/dist/compiled/react${bundledReactChannel}/jsx-runtime.react-server`,
+    [`next/dist/compiled/react${bundledReactChannel}/jsx-runtime$`]: `next/dist/compiled/react${bundledReactChannel}/jsx-runtime.react-server`,
+    'react/jsx-dev-runtime$': `next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime.react-server`,
+    [`next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime$`]: `next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime.react-server`,
+    'react/compiler-runtime$': `next/dist/compiled/react${bundledReactChannel}/compiler-runtime`,
+    [`next/dist/compiled/react${bundledReactChannel}/compiler-runtime$`]: `next/dist/compiled/react${bundledReactChannel}/compiler-runtime`,
+    'react-dom$': `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
+    [`next/dist/compiled/react-dom${bundledReactChannel}$`]: `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
+  }
+
   return {
     entry: bundleTypes[bundleType],
     target: 'node',
@@ -183,7 +196,7 @@ module.exports = ({ dev, turbo, bundleType, experimental, ...rest }) => {
     devtool: 'source-map',
     optimization: {
       moduleIds: 'named',
-      minimize: true,
+      minimize: false,
       concatenateModules: true,
       minimizer: [
         new webpack.SwcJsMinimizerRspackPlugin({
@@ -250,21 +263,13 @@ module.exports = ({ dev, turbo, bundleType, experimental, ...rest }) => {
           layer: 'react-server',
         },
         {
-          include: /vendored[\\/]rsc[\\/]entrypoints/,
+          include: [
+            /vendored[\\/]rsc[\\/]entrypoints/,
+            /server[\\/]app-render[\\/]app-render.react-server/,
+          ],
           resolve: {
             conditionNames: ['react-server', '...'],
-            alias: {
-              react$: `next/dist/compiled/react${bundledReactChannel}/react.react-server`,
-              [`next/dist/compiled/react${bundledReactChannel}$`]: `next/dist/compiled/react${bundledReactChannel}/react.react-server`,
-              'react/jsx-runtime$': `next/dist/compiled/react${bundledReactChannel}/jsx-runtime.react-server`,
-              [`next/dist/compiled/react${bundledReactChannel}/jsx-runtime$`]: `next/dist/compiled/react${bundledReactChannel}/jsx-runtime.react-server`,
-              'react/jsx-dev-runtime$': `next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime.react-server`,
-              [`next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime$`]: `next/dist/compiled/react${bundledReactChannel}/jsx-dev-runtime.react-server`,
-              'react/compiler-runtime$': `next/dist/compiled/react${bundledReactChannel}/compiler-runtime`,
-              [`next/dist/compiled/react${bundledReactChannel}/compiler-runtime$`]: `next/dist/compiled/react${bundledReactChannel}/compiler-runtime`,
-              'react-dom$': `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
-              [`next/dist/compiled/react-dom${bundledReactChannel}$`]: `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
-            },
+            alias: aliasReactServer,
           },
           layer: 'react-server',
         },
@@ -272,12 +277,7 @@ module.exports = ({ dev, turbo, bundleType, experimental, ...rest }) => {
           issuerLayer: 'react-server',
           resolve: {
             conditionNames: ['react-server', '...'],
-            alias: {
-              react$: `next/dist/compiled/react${bundledReactChannel}/react.react-server`,
-              [`next/dist/compiled/react${bundledReactChannel}$`]: `next/dist/compiled/react${bundledReactChannel}/react.react-server`,
-              'react-dom$': `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
-              [`next/dist/compiled/react-dom${bundledReactChannel}$`]: `next/dist/compiled/react-dom${bundledReactChannel}/react-dom.react-server`,
-            },
+            alias: aliasReactServer,
           },
         },
       ],

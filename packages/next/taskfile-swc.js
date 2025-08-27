@@ -111,7 +111,7 @@ module.exports = function (task) {
               runtime: 'automatic',
               pragmaFrag: 'React.Fragment',
               throwIfNamespace: true,
-              development: false,
+              development: true,
               useBuiltins: true,
             },
           },

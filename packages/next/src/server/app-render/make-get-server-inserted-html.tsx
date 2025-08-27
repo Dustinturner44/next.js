@@ -87,6 +87,7 @@ export function makeGetServerInsertedHTML({
       return ''
     }
 
+    // TODO: Use `prerender`?
     const stream = await renderToReadableStream(
       <>
         {
