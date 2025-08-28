@@ -83,6 +83,7 @@ export function installPackages(
     packageManager?: PackageManager
     silent?: boolean
     dev?: boolean
+    cwd?: string
   } = {}
 ) {
   if (packageToInstall.length === 0) return
@@ -91,6 +92,7 @@ export function installPackages(
     packageManager = getPkgManager(process.cwd()),
     silent = false,
     dev = false,
+    cwd = process.cwd(),
   } = options
 
   if (!packageManager) throw new Error('Failed to find package manager')
@@ -107,6 +109,7 @@ export function installPackages(
       // Keeping stderr since it'll likely be relevant later when it fails.
       stdio: silent ? ['ignore', 'ignore', 'inherit'] : 'inherit',
       shell: true,
+      cwd,
     })
   } catch (error) {
     throw new Error(

@@ -58,7 +58,7 @@ describe('next-lint-to-eslint-cli', () => {
     consoleErrorSpy.mockRestore()
   })
 
-  test('transforms correctly using existing-eslint data', () => {
+  test('migrates legacy .eslintrc.json to flat config', () => {
     // Read input fixture
     const inputPath = path.join(__dirname, '../__testfixtures__/next-lint-to-eslint-cli/existing-eslint.input.json')
     const expectedOutputPath = path.join(__dirname, '../__testfixtures__/next-lint-to-eslint-cli/existing-eslint.output.json')
@@ -83,12 +83,49 @@ describe('next-lint-to-eslint-cli', () => {
     const actualPackageJson = fs.readFileSync(packageJsonPath, 'utf8')
     expect(JSON.parse(actualPackageJson)).toEqual(JSON.parse(expectedOutput))
 
-    // Check that no new eslint.config.mjs was created (existing config should be preserved)
+    // Check that new eslint.config.mjs was created from legacy config
     const eslintConfigPath = path.join(tempDir, 'eslint.config.mjs')
-    expect(fs.existsSync(eslintConfigPath)).toBe(false)
+    expect(fs.existsSync(eslintConfigPath)).toBe(true)
+    const migratedConfig = fs.readFileSync(eslintConfigPath, 'utf8')
+    expect(migratedConfig).toContain('FlatCompat')
+    expect(migratedConfig).toContain('compat.extends("next/core-web-vitals"')
 
-    // Check that existing config still exists
-    expect(fs.existsSync(existingEslintPath)).toBe(true)
+    consoleSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+  })
+
+  test('migrates legacy .eslintrc (JSON) to flat config', () => {
+    const packageJson = {
+      name: 'app-with-legacy-eslintrc',
+      scripts: { lint: 'next lint' },
+      dependencies: { next: '15.0.0' },
+    }
+
+    const legacyEslintrc = {
+      env: { browser: true, es2021: true },
+      extends: ['eslint:recommended'],
+      rules: { semi: ['error', 'always'] },
+    }
+
+    const packageJsonPath = path.join(tempDir, 'package.json')
+    const legacyPath = path.join(tempDir, '.eslintrc')
+
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
+    fs.writeFileSync(legacyPath, JSON.stringify(legacyEslintrc, null, 2))
+
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    transformer([tempDir], { skipInstall: true })
+
+    const eslintConfigPath = path.join(tempDir, 'eslint.config.mjs')
+    expect(fs.existsSync(eslintConfigPath)).toBe(true)
+    const migratedConfig = fs.readFileSync(eslintConfigPath, 'utf8')
+    expect(migratedConfig).toContain('compat.config(legacy)')
+    expect(migratedConfig).toContain('next/core-web-vitals')
+    expect(migratedConfig).toContain('ignores')
 
     consoleSpy.mockRestore()
     consoleErrorSpy.mockRestore()
@@ -218,9 +255,9 @@ describe('next-lint-to-eslint-cli', () => {
     consoleErrorSpy.mockRestore()
   })
 
-  test('preserves existing eslint dependencies', () => {
+  test('upgrades ESLint to v9 when older version is present', () => {
     const packageJson = {
-      name: 'app-with-eslint',
+      name: 'app-with-eslint-old',
       scripts: {
         lint: 'next lint'
       },
@@ -243,11 +280,53 @@ describe('next-lint-to-eslint-cli', () => {
 
     const actualPackageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
     
-    // Should preserve existing eslint versions
-    expect(actualPackageJson.devDependencies.eslint).toBe('^8.57.0')
+    // Should upgrade ESLint to v9 to support flat config
+    expect(actualPackageJson.devDependencies.eslint).toBe('^9')
+    // Should preserve existing eslint-config-next
     expect(actualPackageJson.devDependencies['eslint-config-next']).toBe('14.2.0')
     // Should add missing @eslint/eslintrc
     expect(actualPackageJson.devDependencies['@eslint/eslintrc']).toBe('^3')
+
+    consoleSpy.mockRestore()
+    consoleErrorSpy.mockRestore()
+  })
+
+  test('updates existing CommonJS flat config exporting identifier', () => {
+    const inputPath = path.join(__dirname, '../__testfixtures__/next-lint-to-eslint-cli/existing-flat-config.input.json')
+    const expectedOutputPath = path.join(__dirname, '../__testfixtures__/next-lint-to-eslint-cli/existing-flat-config.output.json')
+
+    const inputContent = fs.readFileSync(inputPath, 'utf8')
+    const expectedOutput = fs.readFileSync(expectedOutputPath, 'utf8')
+
+    const packageJsonPath = path.join(tempDir, 'package.json')
+    const eslintConfigPath = path.join(tempDir, 'eslint.config.cjs')
+
+    fs.writeFileSync(packageJsonPath, inputContent)
+    const cjsIdentifierConfig = `const eslintConfig = [
+  {
+    rules: { quotes: ["error", "single"], semi: ["error", "always"] }
+  }
+]
+module.exports = eslintConfig
+`
+    fs.writeFileSync(eslintConfigPath, cjsIdentifierConfig)
+
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    transformer([tempDir], { skipInstall: true })
+
+    // Check package.json was updated
+    const actualPackageJson = fs.readFileSync(packageJsonPath, 'utf8')
+    expect(JSON.parse(actualPackageJson)).toEqual(JSON.parse(expectedOutput))
+
+    // Check that existing config was updated with Next.js configs and ignores
+    const updatedConfig = fs.readFileSync(eslintConfigPath, 'utf8')
+    expect(updatedConfig).toContain('FlatCompat')
+    expect(updatedConfig).toContain('next/core-web-vitals')
+    expect(updatedConfig).toContain('ignores')
+    expect(updatedConfig).toContain('node_modules/**')
+    expect(updatedConfig).toContain('semi') // Original rule should be preserved
 
     consoleSpy.mockRestore()
     consoleErrorSpy.mockRestore()

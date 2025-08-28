@@ -74,6 +74,42 @@ const eslintConfig = [
 export default eslintConfig;
 `
 
+function createFlatConfigFromLegacyJSON(
+  legacyJson: any,
+  isTypeScript: boolean
+): string {
+  const legacyLiteral = JSON.stringify(legacyJson, null, 2)
+  return `import { dirname } from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
+
+const legacy = ${legacyLiteral};
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals"${isTypeScript ? ', "next/typescript"' : ''}),
+  ...compat.config(legacy),
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+    ],
+  },
+];
+
+export default eslintConfig;
+`
+}
+
 function detectTypeScript(projectRoot: string): boolean {
   return existsSync(path.join(projectRoot, 'tsconfig.json'))
 }
@@ -122,7 +158,7 @@ function findExistingEslintConfig(projectRoot: string): {
 
 function updateExistingFlatConfig(
   configPath: string,
-  isTypeScript: boolean
+  isTypeScriptProject: boolean
 ): boolean {
   let configContent: string
   try {
@@ -132,17 +168,7 @@ function updateExistingFlatConfig(
     return false
   }
 
-  // Check if Next.js configs are already imported
-  const hasNextConfigs =
-    configContent.includes('next/core-web-vitals') ||
-    configContent.includes('next/typescript')
-
-  // TypeScript config files need special handling
-  if (
-    configPath.endsWith('.ts') ||
-    configPath.endsWith('.mts') ||
-    configPath.endsWith('.cts')
-  ) {
+  if (/(\.ts|\.mts|\.cts)$/.test(configPath)) {
     console.warn(
       prefixes.warn,
       '   TypeScript config files require manual migration'
@@ -151,49 +177,23 @@ function updateExistingFlatConfig(
     console.log('   - Import: import { FlatCompat } from "@eslint/eslintrc"')
     console.log(
       '   - Extend: ...compat.extends("next/core-web-vitals"' +
-        (isTypeScript ? ', "next/typescript"' : '') +
+        (isTypeScriptProject ? ', "next/typescript"' : '') +
         ')'
     )
     return false
   }
 
-  // Parse the file using jscodeshift
   const j = createParserFromPath(configPath)
   const root = j(configContent)
 
-  // Determine if it's CommonJS or ES modules
-  let isCommonJS = false
-
-  if (configPath.endsWith('.cjs')) {
-    isCommonJS = true
-  } else if (configPath.endsWith('.mjs')) {
-    isCommonJS = false
-  } else if (configPath.endsWith('.js')) {
-    // For .js files, check package.json type field
-    const projectRoot = path.dirname(configPath)
-    const packageJsonPath = path.join(projectRoot, 'package.json')
-
-    try {
-      if (existsSync(packageJsonPath)) {
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-        isCommonJS = packageJson.type !== 'module'
-      } else {
-        // Default to CommonJS if no package.json found
-        isCommonJS = true
-      }
-    } catch {
-      // Default to CommonJS if package.json can't be read
-      isCommonJS = true
-    }
-
-    // Always check file syntax to override package.json detection if needed
-    // This handles cases where package.json doesn't specify type but file uses ES modules
-    const hasESModuleSyntax =
+  const detectModuleKind = (): 'cjs' | 'esm' => {
+    if (configPath.endsWith('.cjs')) return 'cjs'
+    if (configPath.endsWith('.mjs')) return 'esm'
+    // Heuristic for .js files
+    const hasESM =
       root.find(j.ExportDefaultDeclaration).size() > 0 ||
-      root.find(j.ExportNamedDeclaration).size() > 0 ||
       root.find(j.ImportDeclaration).size() > 0
-
-    const hasCommonJSSyntax =
+    const hasCJS =
       root
         .find(j.AssignmentExpression, {
           left: {
@@ -203,71 +203,66 @@ function updateExistingFlatConfig(
           },
         })
         .size() > 0
-
-    // Override package.json detection based on actual syntax
-    if (hasESModuleSyntax && !hasCommonJSSyntax) {
-      isCommonJS = false
-    } else if (hasCommonJSSyntax && !hasESModuleSyntax) {
-      isCommonJS = true
-    }
-    // If both or neither are found, keep the package.json-based detection
-  } else {
-    // For other extensions (.ts, .mts, .cts), assume based on extension
-    isCommonJS = configPath.endsWith('.cts')
+    if (hasESM && !hasCJS) return 'esm'
+    if (hasCJS && !hasESM) return 'cjs'
+    return 'cjs'
   }
 
-  // Find the exported array
-  let exportedArray = null
-  let exportNode = null
+  const moduleKind = detectModuleKind()
 
-  if (isCommonJS) {
-    // Look for module.exports = [...]
-    const moduleExports = root.find(j.AssignmentExpression, {
-      left: {
-        type: 'MemberExpression',
-        object: { name: 'module' },
-        property: { name: 'exports' },
-      },
-      right: { type: 'ArrayExpression' },
-    })
-
-    if (moduleExports.size() > 0) {
-      exportNode = moduleExports.at(0)
-      exportedArray = exportNode.get('right')
-    }
-  } else {
-    // Look for export default [...]
-    const defaultExports = root.find(j.ExportDefaultDeclaration, {
-      declaration: { type: 'ArrayExpression' },
-    })
-
-    if (defaultExports.size() > 0) {
-      exportNode = defaultExports.at(0)
-      exportedArray = exportNode.get('declaration')
-    } else {
-      // Look for const variable = [...]; export default variable
-      const defaultExportIdentifier = root.find(j.ExportDefaultDeclaration, {
-        declaration: { type: 'Identifier' },
+  const getExportedArray = () => {
+    if (moduleKind === 'cjs') {
+      // Handle: module.exports = [ ... ]
+      const directArray = root.find(j.AssignmentExpression, {
+        left: {
+          type: 'MemberExpression',
+          object: { name: 'module' },
+          property: { name: 'exports' },
+        },
+        right: { type: 'ArrayExpression' },
       })
+      if (directArray.size() > 0) return directArray.at(0).get('right')
 
-      if (defaultExportIdentifier.size() > 0) {
-        const declarationNode = defaultExportIdentifier.at(0).get('declaration')
-        if (!declarationNode.value) {
-          return false
-        }
-        const varName = declarationNode.value.name
-        const varDeclaration = root.find(j.VariableDeclarator, {
-          id: { name: varName },
+      // Handle: const eslintConfig = [ ... ]; module.exports = eslintConfig
+      const exportedIdent = root.find(j.AssignmentExpression, {
+        left: {
+          type: 'MemberExpression',
+          object: { name: 'module' },
+          property: { name: 'exports' },
+        },
+        right: { type: 'Identifier' },
+      })
+      if (exportedIdent.size() > 0) {
+        const name = exportedIdent.at(0).get('right').value.name
+        const decl = root.find(j.VariableDeclarator, {
+          id: { name },
           init: { type: 'ArrayExpression' },
         })
-
-        if (varDeclaration.size() > 0) {
-          exportedArray = varDeclaration.at(0).get('init')
-        }
+        if (decl.size() > 0) return decl.at(0).get('init')
       }
+      return null
     }
+
+    const direct = root.find(j.ExportDefaultDeclaration, {
+      declaration: { type: 'ArrayExpression' },
+    })
+    if (direct.size() > 0) return direct.at(0).get('declaration')
+
+    const ident = root.find(j.ExportDefaultDeclaration, {
+      declaration: { type: 'Identifier' },
+    })
+    if (ident.size() > 0) {
+      const name = ident.at(0).get('declaration').value.name
+      const decl = root.find(j.VariableDeclarator, {
+        id: { name },
+        init: { type: 'ArrayExpression' },
+      })
+      if (decl.size() > 0) return decl.at(0).get('init')
+    }
+    return null
   }
 
+  const exportedArray: any = getExportedArray()
   if (!exportedArray) {
     console.warn(
       prefixes.warn,
@@ -280,24 +275,28 @@ function updateExistingFlatConfig(
     return false
   }
 
-  // Check if FlatCompat is already imported
-  const hasFlatCompat = isCommonJS
-    ? root
-        .find(j.CallExpression, {
-          callee: { name: 'require' },
-          arguments: [{ value: '@eslint/eslintrc' }],
-        })
-        .size() > 0
-    : root
-        .find(j.ImportDeclaration, {
-          source: { value: '@eslint/eslintrc' },
-        })
-        .size() > 0
+  const hasNextAlready =
+    configContent.includes('next/core-web-vitals') ||
+    configContent.includes('next/typescript')
 
-  // Add necessary imports if not present and if we're adding Next.js extends
-  if (!hasFlatCompat && !hasNextConfigs) {
-    if (isCommonJS) {
-      // Add CommonJS requires at the top
+  const ensureCompat = () => {
+    const hasCompat =
+      (moduleKind === 'cjs'
+        ? root
+            .find(j.CallExpression, {
+              callee: { name: 'require' },
+              arguments: [{ value: '@eslint/eslintrc' }],
+            })
+            .size() > 0
+        : root
+            .find(j.ImportDeclaration, {
+              source: { value: '@eslint/eslintrc' },
+            })
+            .size() > 0) || configContent.includes('new FlatCompat(')
+
+    if (hasCompat) return
+
+    if (moduleKind === 'cjs') {
       const firstNode = root.find(j.Program).get('body', 0)
       const compatRequire = j.variableDeclaration('const', [
         j.variableDeclarator(
@@ -311,12 +310,6 @@ function updateExistingFlatConfig(
           j.callExpression(j.identifier('require'), [
             j.literal('@eslint/eslintrc'),
           ])
-        ),
-      ])
-      const pathRequire = j.variableDeclaration('const', [
-        j.variableDeclarator(
-          j.identifier('path'),
-          j.callExpression(j.identifier('require'), [j.literal('path')])
         ),
       ])
       const compatNew = j.variableDeclaration('const', [
@@ -333,224 +326,173 @@ function updateExistingFlatConfig(
           ])
         ),
       ])
-
       j(firstNode).insertBefore(compatRequire)
-      j(firstNode).insertBefore(pathRequire)
       j(firstNode).insertBefore(compatNew)
-    } else {
-      // Add ES module imports
-      const firstImport = root.find(j.ImportDeclaration).at(0)
-      const insertPoint =
-        firstImport.size() > 0
-          ? firstImport
-          : root.find(j.Program).get('body', 0)
-
-      const imports = [
-        j.importDeclaration(
-          [j.importSpecifier(j.identifier('dirname'))],
-          j.literal('path')
-        ),
-        j.importDeclaration(
-          [j.importSpecifier(j.identifier('fileURLToPath'))],
-          j.literal('url')
-        ),
-        j.importDeclaration(
-          [j.importSpecifier(j.identifier('FlatCompat'))],
-          j.literal('@eslint/eslintrc')
-        ),
-      ]
-
-      const setupVars = [
-        j.variableDeclaration('const', [
-          j.variableDeclarator(
-            j.identifier('__filename'),
-            j.callExpression(j.identifier('fileURLToPath'), [
-              j.memberExpression(
-                j.memberExpression(
-                  j.identifier('import'),
-                  j.identifier('meta')
-                ),
-                j.identifier('url')
-              ),
-            ])
-          ),
-        ]),
-        j.variableDeclaration('const', [
-          j.variableDeclarator(
-            j.identifier('__dirname'),
-            j.callExpression(j.identifier('dirname'), [
-              j.identifier('__filename'),
-            ])
-          ),
-        ]),
-        j.variableDeclaration('const', [
-          j.variableDeclarator(
-            j.identifier('compat'),
-            j.newExpression(j.identifier('FlatCompat'), [
-              j.objectExpression([
-                j.property(
-                  'init',
-                  j.identifier('baseDirectory'),
-                  j.identifier('__dirname')
-                ),
-              ]),
-            ])
-          ),
-        ]),
-      ]
-
-      if (firstImport.size() > 0) {
-        // Insert after the last import
-        const lastImportPath = root.find(j.ImportDeclaration).at(-1).get()
-        if (!lastImportPath) {
-          // Fallback to inserting at the beginning
-          const fallbackInsertPoint = root.find(j.Program).get('body', 0)
-          imports.forEach((imp) => j(fallbackInsertPoint).insertBefore(imp))
-          setupVars.forEach((v) => j(fallbackInsertPoint).insertBefore(v))
-        } else {
-          imports.forEach((imp) => j(lastImportPath).insertAfter(imp))
-          setupVars.forEach((v) => j(lastImportPath).insertAfter(v))
-        }
-      } else {
-        // Insert at the beginning
-        imports.forEach((imp) => j(insertPoint).insertBefore(imp))
-        setupVars.forEach((v) => j(insertPoint).insertBefore(v))
-      }
+      return
     }
+
+    const firstImport = root.find(j.ImportDeclaration).at(0)
+    const insertPoint =
+      firstImport.size() > 0 ? firstImport : root.find(j.Program).get('body', 0)
+    const imports = [
+      j.importDeclaration(
+        [j.importSpecifier(j.identifier('dirname'))],
+        j.literal('path')
+      ),
+      j.importDeclaration(
+        [j.importSpecifier(j.identifier('fileURLToPath'))],
+        j.literal('url')
+      ),
+      j.importDeclaration(
+        [j.importSpecifier(j.identifier('FlatCompat'))],
+        j.literal('@eslint/eslintrc')
+      ),
+    ]
+    const setupVars = [
+      j.variableDeclaration('const', [
+        j.variableDeclarator(
+          j.identifier('__filename'),
+          j.callExpression(j.identifier('fileURLToPath'), [
+            j.memberExpression(
+              j.memberExpression(j.identifier('import'), j.identifier('meta')),
+              j.identifier('url')
+            ),
+          ])
+        ),
+      ]),
+      j.variableDeclaration('const', [
+        j.variableDeclarator(
+          j.identifier('__dirname'),
+          j.callExpression(j.identifier('dirname'), [
+            j.identifier('__filename'),
+          ])
+        ),
+      ]),
+      j.variableDeclaration('const', [
+        j.variableDeclarator(
+          j.identifier('compat'),
+          j.newExpression(j.identifier('FlatCompat'), [
+            j.objectExpression([
+              j.property(
+                'init',
+                j.identifier('baseDirectory'),
+                j.identifier('__dirname')
+              ),
+            ]),
+          ])
+        ),
+      ]),
+    ]
+    imports.forEach((imp) => j(insertPoint).insertBefore(imp))
+    setupVars.forEach((v) => j(insertPoint).insertBefore(v))
   }
 
-  // Create ignores configuration object
-  const ignoresConfig = j.objectExpression([
-    j.property(
-      'init',
-      j.identifier('ignores'),
-      j.arrayExpression([
-        j.literal('node_modules/**'),
-        j.literal('.next/**'),
-        j.literal('out/**'),
-        j.literal('build/**'),
-        j.literal('next-env.d.ts'),
-      ])
-    ),
-  ])
+  ensureCompat()
 
-  // Only add Next.js extends if they're not already present
-  if (!hasNextConfigs) {
-    // Add Next.js configs to the array
-    const nextExtends = isTypeScript
+  // Add Next extends if missing
+  if (!hasNextAlready) {
+    const nextExtends = isTypeScriptProject
       ? ['next/core-web-vitals', 'next/typescript']
       : ['next/core-web-vitals']
-
     const spreadElement = j.spreadElement(
       j.callExpression(
         j.memberExpression(j.identifier('compat'), j.identifier('extends')),
         nextExtends.map((ext) => j.literal(ext))
       )
     )
-
-    // Insert Next.js extends at the beginning of the array
-    if (!exportedArray.value.elements) {
-      exportedArray.value.elements = []
-    }
+    exportedArray.value.elements = exportedArray.value.elements || []
     exportedArray.value.elements.unshift(spreadElement)
   }
 
-  // Check if ignores already exist in the config and merge if needed
-  let existingIgnoresIndex = -1
-  if (exportedArray.value.elements) {
-    for (let i = 0; i < exportedArray.value.elements.length; i++) {
-      const element = exportedArray.value.elements[i]
+  // Ensure ignores
+  const nextIgnores = [
+    'node_modules/**',
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
+  ]
+
+  const findIgnoresObjectIndex = (): number => {
+    const elements: any[] = exportedArray.value.elements || []
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i]
       if (
-        element &&
-        element.type === 'ObjectExpression' &&
-        element.properties &&
-        element.properties.some(
-          (prop) =>
-            prop.type === 'Property' &&
-            prop.key &&
-            prop.key.type === 'Identifier' &&
-            prop.key.name === 'ignores'
+        el &&
+        el.type === 'ObjectExpression' &&
+        el.properties?.some(
+          (p: any) =>
+            p.type === 'Property' &&
+            p.key?.type === 'Identifier' &&
+            p.key.name === 'ignores'
         )
       ) {
-        existingIgnoresIndex = i
-        break
+        return i
       }
     }
+    return -1
   }
 
-  if (existingIgnoresIndex === -1) {
-    // No existing ignores, add our own at appropriate position
-    const insertIndex = hasNextConfigs ? 0 : 1
-    exportedArray.value.elements.splice(insertIndex, 0, ignoresConfig)
+  const createIgnoresObject = () =>
+    j.objectExpression([
+      j.property(
+        'init',
+        j.identifier('ignores'),
+        j.arrayExpression(nextIgnores.map((s) => j.literal(s)))
+      ),
+    ])
+
+  const idx = findIgnoresObjectIndex()
+  if (idx === -1) {
+    // Put ignores after extends if we added it, otherwise at start
+    const insertIndex = hasNextAlready ? 0 : 1
+    exportedArray.value.elements.splice(insertIndex, 0, createIgnoresObject())
   } else {
-    // Merge with existing ignores
-    const existingIgnoresArr =
-      exportedArray.value.elements[existingIgnoresIndex]?.properties ?? []
-
-    const ignoresProp = existingIgnoresArr.find(
-      (prop) =>
-        prop.type === 'Property' &&
-        prop.key &&
-        prop.key.type === 'Identifier' &&
-        prop.key.name === 'ignores'
+    const obj: any = exportedArray.value.elements[idx]
+    const ignoresProp: any = obj.properties.find(
+      (p: any) =>
+        p.type === 'Property' &&
+        p.key?.type === 'Identifier' &&
+        p.key.name === 'ignores'
     )
-
-    if (
-      ignoresProp &&
-      ignoresProp.value &&
-      ignoresProp.value.type === 'ArrayExpression'
-    ) {
-      // Add our ignores to the existing array if they're not already there
-      const nextIgnores = [
-        'node_modules/**',
-        '.next/**',
-        'out/**',
-        'build/**',
-        'next-env.d.ts',
-      ]
-
-      const existingIgnores = ignoresProp.value.elements
-        .map((el) => (el.type === 'Literal' ? el.value : null))
-        .filter(Boolean)
-
-      for (const ignore of nextIgnores) {
-        if (!existingIgnores.includes(ignore)) {
-          ignoresProp.value.elements.push(j.literal(ignore))
-        }
-      }
-    }
-  }
-
-  // Generate the updated code
-  const updatedContent = root.toSource()
-
-  if (updatedContent !== configContent) {
-    try {
-      writeFileSync(configPath, updatedContent)
-    } catch (error) {
-      console.error(`   Error writing config file: ${error}`)
-      return false
-    }
-
-    if (hasNextConfigs) {
-      console.log(
-        `   Updated ${path.basename(configPath)} with Next.js ignores configuration`
+    if (ignoresProp?.value?.type === 'ArrayExpression') {
+      const existing = new Set(
+        ignoresProp.value.elements
+          .map((el: any) => (el?.type === 'Literal' ? String(el.value) : null))
+          .filter(Boolean)
       )
-    } else {
-      console.log(
-        `   Updated ${path.basename(configPath)} with Next.js ESLint configs`
-      )
+      nextIgnores.forEach((s) => {
+        if (!existing.has(s)) ignoresProp.value.elements.push(j.literal(s))
+      })
     }
-    return true
   }
 
-  // If nothing changed but Next.js configs were already present, that's still success
-  if (hasNextConfigs) {
-    console.log('   Next.js ESLint configs already present in flat config')
-    return true
+  const updated = root.toSource()
+  if (updated === configContent) {
+    if (hasNextAlready) {
+      console.log('   Next.js ESLint configs already present in flat config')
+      return true
+    }
+    return false
   }
 
-  return false
+  try {
+    writeFileSync(configPath, updated)
+  } catch (error) {
+    console.error(`   Error writing config file: ${error}`)
+    return false
+  }
+
+  if (hasNextAlready) {
+    console.log(
+      `   Updated ${path.basename(configPath)} with Next.js ignores configuration`
+    )
+  } else {
+    console.log(
+      `   Updated ${path.basename(configPath)} with Next.js ESLint configs`
+    )
+  }
+  return true
 }
 
 function updatePackageJsonScripts(packageJsonContent: string): {
@@ -701,16 +643,35 @@ function updatePackageJsonScripts(packageJsonContent: string): {
       }
     }
 
-    // Ensure required devDependencies exist
+    // Ensure required devDependencies exist and upgrade if needed
     if (!packageJson.devDependencies) {
       packageJson.devDependencies = {}
     }
 
-    // Check if eslint exists in either dependencies or devDependencies
-    if (
-      !packageJson.devDependencies.eslint &&
-      !packageJson.dependencies?.eslint
-    ) {
+    const normalizeVersion = (
+      version: string | undefined
+    ): string | undefined => {
+      if (!version) return undefined
+      // Strip workspace, link, file references
+      if (/^(workspace:|link:|file:)/.test(version)) return undefined
+      // Extract first numeric version
+      const m = version.match(/(\d+)\.(\d+)\.(\d+)/)
+      return m ? m[0] : undefined
+    }
+
+    const majorOf = (version: string | undefined): number | undefined => {
+      if (!version) return undefined
+      const clean = normalizeVersion(version)
+      if (!clean) return undefined
+      const major = parseInt(clean.split('.')[0], 10)
+      return Number.isFinite(major) ? major : undefined
+    }
+
+    // ESLint v9 is required for flat config by default
+    const currentEslintVersion =
+      packageJson.devDependencies.eslint || packageJson.dependencies?.eslint
+    const currentMajor = majorOf(currentEslintVersion)
+    if (!currentMajor || currentMajor < 9) {
       packageJson.devDependencies.eslint = '^9'
       needsUpdate = true
     }
@@ -773,85 +734,113 @@ export default function transformer(
 
   console.log('Migrating from next lint to the ESLint CLI...')
 
-  // Check for existing ESLint config
-  const existingConfig = findExistingEslintConfig(projectRoot)
+  // Ensure flat config exists or gets updated/migrated
+  const ensureFlatConfig = (): void => {
+    const existingConfig = findExistingEslintConfig(projectRoot)
 
-  if (existingConfig.exists) {
-    if (existingConfig.isFlat) {
-      // Try to update existing flat config
-      if (existingConfig.path) {
-        console.log(
-          `   Found existing flat config: ${path.basename(existingConfig.path)}`
-        )
-        const updated = updateExistingFlatConfig(
-          existingConfig.path,
-          isTypeScript
-        )
-
-        if (!updated) {
-          console.log(
-            '   Could not automatically update the existing flat config.'
-          )
-          console.log(
-            '   Please manually ensure your ESLint config extends "next/core-web-vitals"'
-          )
-          if (isTypeScript) {
-            console.log('   and "next/typescript" for TypeScript projects.')
-          }
-        }
+    if (!existingConfig.exists) {
+      const eslintConfigPath = path.join(projectRoot, 'eslint.config.mjs')
+      const template = isTypeScript
+        ? ESLINT_CONFIG_TEMPLATE_TYPESCRIPT
+        : ESLINT_CONFIG_TEMPLATE_JAVASCRIPT
+      try {
+        writeFileSync(eslintConfigPath, template)
+        console.log(`   Created ${path.basename(eslintConfigPath)}`)
+      } catch (error) {
+        console.error('   Error creating ESLint config:', error)
       }
-    } else {
-      // Legacy config exists
-      if (existingConfig.path) {
-        console.log(
-          `   Found legacy ESLint config: ${path.basename(existingConfig.path)}`
-        )
-        console.log(
-          '   Legacy .eslintrc configs are not automatically migrated.'
-        )
-        console.log(
-          '   Please migrate to flat config format (eslint.config.js) and ensure it extends:'
-        )
-        console.log('   - "next/core-web-vitals"')
-        if (isTypeScript) {
-          console.log('   - "next/typescript"')
-        }
-        console.log(
-          '   Learn more: https://eslint.org/docs/latest/use/configure/migration-guide'
-        )
-      }
+      return
     }
-  } else {
-    // Create new ESLint flat config
-    const eslintConfigPath = path.join(projectRoot, 'eslint.config.mjs')
-    const template = isTypeScript
-      ? ESLINT_CONFIG_TEMPLATE_TYPESCRIPT
-      : ESLINT_CONFIG_TEMPLATE_JAVASCRIPT
 
-    try {
-      writeFileSync(eslintConfigPath, template)
-      console.log(`   Created ${path.basename(eslintConfigPath)}`)
-    } catch (error) {
-      console.error('   Error creating ESLint config:', error)
+    if (existingConfig.isFlat && existingConfig.path) {
+      console.log(
+        `   Found existing flat config: ${path.basename(existingConfig.path)}`
+      )
+      const updated = updateExistingFlatConfig(
+        existingConfig.path,
+        isTypeScript
+      )
+      if (!updated) {
+        console.log(
+          '   Could not automatically update the existing flat config.'
+        )
+        console.log(
+          '   Please manually ensure your ESLint config extends "next/core-web-vitals"'
+        )
+        if (isTypeScript) {
+          console.log('   and "next/typescript" for TypeScript projects.')
+        }
+      }
+      return
+    }
+
+    if (!existingConfig.isFlat && existingConfig.path) {
+      // Reuse the legacy migration logic inline to avoid duplication
+      try {
+        const raw = readFileSync(existingConfig.path, 'utf8')
+        let legacyJson: any | null = null
+        try {
+          legacyJson = JSON.parse(raw)
+        } catch {}
+        const eslintConfigPath = path.join(projectRoot, 'eslint.config.mjs')
+        if (legacyJson) {
+          const output = createFlatConfigFromLegacyJSON(
+            legacyJson,
+            isTypeScript
+          )
+          writeFileSync(eslintConfigPath, output)
+          console.log(
+            `   Created ${path.basename(eslintConfigPath)} from legacy config`
+          )
+        } else {
+          const template = isTypeScript
+            ? ESLINT_CONFIG_TEMPLATE_TYPESCRIPT
+            : ESLINT_CONFIG_TEMPLATE_JAVASCRIPT
+          writeFileSync(eslintConfigPath, template)
+          console.warn(
+            prefixes.warn,
+            '   Could not parse legacy config as JSON. Created default flat config.'
+          )
+          console.warn(
+            prefixes.warn,
+            '   Please manually merge your legacy rules into the new flat config.'
+          )
+        }
+      } catch (e) {
+        console.error('   Error migrating legacy ESLint config:', e)
+        try {
+          const eslintConfigPath = path.join(projectRoot, 'eslint.config.mjs')
+          const template = isTypeScript
+            ? ESLINT_CONFIG_TEMPLATE_TYPESCRIPT
+            : ESLINT_CONFIG_TEMPLATE_JAVASCRIPT
+          writeFileSync(eslintConfigPath, template)
+          console.warn(
+            prefixes.warn,
+            '   Wrote default flat config because migration failed. Please merge manually.'
+          )
+        } catch (writeErr) {
+          console.error('   Failed to write default flat config:', writeErr)
+        }
+      }
     }
   }
 
-  // Update package.json
-  const packageJsonContent = readFileSync(packageJsonPath, 'utf8')
-  const result = updatePackageJsonScripts(packageJsonContent)
+  // defer calling until after helpers are defined
 
-  if (result.updated) {
+  // Update package.json and install any new dev deps
+  const applyPackageUpdates = (): void => {
+    const packageJsonContent = readFileSync(packageJsonPath, 'utf8')
+    const result = updatePackageJsonScripts(packageJsonContent)
+
+    if (!result.updated) return
+
     try {
       writeFileSync(packageJsonPath, result.content)
       console.log('Updated package.json scripts and dependencies')
 
-      // Parse the updated package.json to find new dependencies
       const updatedPackageJson = JSON.parse(result.content)
       const originalPackageJson = JSON.parse(packageJsonContent)
-
       const newDependencies: string[] = []
-
-      // Check for new devDependencies
       if (updatedPackageJson.devDependencies) {
         for (const [pkg, version] of Object.entries(
           updatedPackageJson.devDependencies
@@ -865,37 +854,37 @@ export default function transformer(
         }
       }
 
-      // Install new dependencies if any were added
-      if (newDependencies.length > 0) {
-        if (skipInstall) {
-          console.log('\nNew dependencies added to package.json:')
-          newDependencies.forEach((dep) => console.log(`   - ${dep}`))
-          console.log(`Please run: ${getPkgManager(projectRoot)} install`)
-        } else {
-          console.log('\nInstalling new dependencies...')
-          try {
-            const packageManager = getPkgManager(projectRoot)
-            console.log(`   Using ${packageManager}...`)
+      if (newDependencies.length === 0) return
 
-            installPackages(newDependencies, {
-              packageManager,
-              dev: true,
-              silent: false,
-            })
+      if (skipInstall) {
+        console.log('\nNew dependencies added to package.json:')
+        newDependencies.forEach((dep) => console.log(`   - ${dep}`))
+        console.log(`Please run: ${getPkgManager(projectRoot)} install`)
+        return
+      }
 
-            console.log('   Dependencies installed successfully!')
-          } catch (_error) {
-            console.error('   Failed to install dependencies automatically.')
-            console.error(
-              `   Please run: ${getPkgManager(projectRoot)} install`
-            )
-          }
-        }
+      console.log('\nInstalling new dependencies...')
+      try {
+        const packageManager = getPkgManager(projectRoot)
+        console.log(`   Using ${packageManager}...`)
+        installPackages(newDependencies, {
+          packageManager,
+          dev: true,
+          silent: false,
+          cwd: projectRoot,
+        })
+        console.log('   Dependencies installed successfully!')
+      } catch (_error) {
+        console.error('   Failed to install dependencies automatically.')
+        console.error(`   Please run: ${getPkgManager(projectRoot)} install`)
       }
     } catch (error) {
       console.error('Error writing package.json:', error)
     }
   }
+
+  ensureFlatConfig()
+  applyPackageUpdates()
 
   console.log('\nMigration complete! Your project now uses the ESLint CLI.')
 }
