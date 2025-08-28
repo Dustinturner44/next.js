@@ -5,11 +5,13 @@ import type {
   ResolveHook,
 } from 'module'
 import type { Options as SWCOptions } from '@swc/core'
+import type { CompilerOptions } from 'typescript'
+
 import path from 'path'
-import { transform } from '../swc/index.js'
+import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
-import type { CompilerOptions } from 'typescript'
+import { transform } from '../swc/index.js'
 
 const tsExts = new Set(['.ts', '.mts', '.cts'])
 const localContext = new Map<string, any>()
@@ -37,6 +39,26 @@ export const resolve: ResolveHook = async (specifier, context, nextResolve) => {
   }
 
   const ext = path.extname(specifier)
+  // If the specifier has no extension, we try to resolve it as TS file.
+  // This is to mainly to prevent a breaking change for ESM projects that use
+  // "next.config.ts".
+  if (ext === '') {
+    const possibleTsFileURL = new URL(specifier + '.ts', context.parentURL)
+    if (existsSync(possibleTsFileURL)) {
+      return {
+        format: 'typescript' as ModuleFormat,
+        shortCircuit: true,
+        url: possibleTsFileURL.href,
+      }
+    }
+
+    if (existsSync(new URL(specifier + '.js', context.parentURL))) {
+      return nextResolve(specifier + '.js', context)
+    }
+
+    return nextResolve(specifier, context)
+  }
+
   // Node.js resolver can take care of the rest of the non-TS files.
   if (!tsExts.has(ext)) {
     return nextResolve(specifier, context)
