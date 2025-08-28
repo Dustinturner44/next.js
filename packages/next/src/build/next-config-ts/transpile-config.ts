@@ -189,19 +189,69 @@ async function handleESM(workerData: {
       },
     })
 
+    let isSettled = false
+    const timeout = setTimeout(() => {
+      if (!isSettled) {
+        isSettled = true
+        worker.terminate()
+        reject(
+          // TODO: Can we specifically identify why it timed out?
+          // If the reason is on user-side e.g., running a long running script inside a config,
+          // we should guide them to use "instrumentation.ts" instead.
+          new Error(
+            `Failed to load Next.js config from "${workerData.nextConfigPath}". The config worker process timed out after 30 seconds.`
+          )
+        )
+      }
+    }, 30_000)
+
+    const cleanup = () => {
+      if (!isSettled) {
+        isSettled = true
+        clearTimeout(timeout)
+        worker.terminate()
+      }
+    }
+
     worker.on('message', (result) => {
+      if (isSettled) return
+      cleanup()
+
       if (result.success) {
         resolve(result.config)
       } else {
-        reject(new Error(result.error || 'Unknown error in config worker'))
+        const error = new Error(
+          `Failed to load Next.js config from "${workerData.nextConfigPath}". An unknown error occurred while importing the configuration.`,
+          { cause: result.error }
+        )
+        if (result.stack) {
+          error.stack = result.stack
+        }
+        reject(error)
       }
     })
 
-    worker.on('error', reject)
+    worker.on('error', (err) => {
+      if (isSettled) return
+      cleanup()
+      reject(
+        new Error(
+          `Failed to load Next.js config from "${workerData.nextConfigPath}".`,
+          { cause: err }
+        )
+      )
+    })
 
     worker.on('exit', (code) => {
+      if (isSettled) return
+      cleanup()
+
       if (code !== 0) {
-        reject(new Error(`Worker stopped with exit code ${code}`))
+        reject(
+          new Error(
+            `Failed to load Next.js config from "${workerData.nextConfigPath}". The config worker process exited unexpectedly with code ${code}.`
+          )
+        )
       }
     })
   })

@@ -6,7 +6,7 @@ import { normalizeConfig } from '../../server/config-shared'
 
 async function importConfig() {
   try {
-    register(pathToFileURL(join(import.meta.dirname, 'loader.js')).href, {
+    register(pathToFileURL(join(__dirname, 'loader.js')).href, {
       parentURL: pathToFileURL(workerData.cwd).href,
       data: {
         cwd: workerData.cwd,
