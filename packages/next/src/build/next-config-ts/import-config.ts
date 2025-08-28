@@ -17,9 +17,14 @@ async function importConfig() {
       pathToFileURL(workerData.nextConfigPath).href
     )
 
+    // Need to be serialzable, so resolve function here.
+    const config = typeof configModule.default === 'function' 
+      ? await configModule.default()
+      : configModule.default
+
     parentPort?.postMessage({
       success: true,
-      config: configModule,
+      config,
     })
   } catch (error: any) {
     parentPort?.postMessage({

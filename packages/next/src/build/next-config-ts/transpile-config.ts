@@ -123,7 +123,7 @@ export async function transpileConfig({
       configFileName.endsWith('.mts') ||
       require(path.join(cwd, 'package.json')).type === 'module'
     ) {
-      return handleESM({ cwd, compilerOptions })
+      return handleESM({ cwd, compilerOptions, nextConfigPath })
     }
 
     return handleCJS({ cwd, nextConfigPath, compilerOptions })
@@ -172,6 +172,7 @@ async function handleCJS({
 async function handleESM(workerData: {
   cwd: string
   compilerOptions: CompilerOptions
+  nextConfigPath: string
 }) {
   return new Promise((resolve, reject) => {
     const worker = new Worker(path.join(__dirname, './import-config.js'), {
