@@ -57,11 +57,17 @@ export const load: LoadHook = async (url, context, nextLoad) => {
   const cwd = localContext.get('cwd')
   if (!cwd) {
     throw new Error(
-      'The "cwd" value was not passed to the loader from the registration. This is a bug in Next.js.'
+      'The "cwd" value was not passed to the config loader from the registration. This is a bug in Next.js.'
     )
   }
+  const compilerOptions: CompilerOptions = localContext.get('compilerOptions')
+  if (!compilerOptions) {
+    throw new Error(
+      'The "compilerOptions" value was not passed to the config loader from the registration. This is a bug in Next.js.'
+    )
+  }
+
   const rawSource = await readFile(fileURLToPath(url), 'utf-8')
-  const compilerOptions = localContext.get('compilerOptions') as CompilerOptions
   const { code } = await transform(rawSource, {
     jsc: {
       parser: {
