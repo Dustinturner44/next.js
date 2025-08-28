@@ -121,10 +121,14 @@ export async function transpileConfig({
     await verifyTypeScriptSetup(cwd, configFileName)
     const compilerOptions = await getTsConfig(cwd)
 
-    if (
-      configFileName.endsWith('.mts') ||
-      require(path.join(cwd, 'package.json')).type === 'module'
-    ) {
+    let pkgJson: Record<string, string> = {}
+    try {
+      pkgJson = JSON.parse(
+        await readFile(path.join(cwd, 'package.json'), 'utf8')
+      )
+    } catch {}
+
+    if (configFileName.endsWith('.mts') || pkgJson.type === 'module') {
       return handleESM({ cwd, compilerOptions, nextConfigPath, phase })
     }
 
