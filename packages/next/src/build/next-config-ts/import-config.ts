@@ -2,6 +2,7 @@ import { parentPort, workerData } from 'worker_threads'
 import { pathToFileURL } from 'url'
 import { register } from 'module'
 import { join } from 'path'
+import { normalizeConfig } from '../../server/config-shared'
 
 async function importConfig() {
   try {
@@ -17,10 +18,9 @@ async function importConfig() {
       pathToFileURL(workerData.nextConfigPath).href
     )
 
-    // Need to be serialzable, so resolve function here.
-    const config = typeof configModule.default === 'function' 
-      ? await configModule.default()
-      : configModule.default
+    // Config can be a function but postMessage data needs to be serialzable,
+    // so normalize the config here.
+    const config = await normalizeConfig(workerData.phase, configModule.default)
 
     parentPort?.postMessage({
       success: true,

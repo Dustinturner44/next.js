@@ -109,10 +109,12 @@ export async function transpileConfig({
   nextConfigPath,
   configFileName,
   cwd,
+  phase,
 }: {
   nextConfigPath: string
   configFileName: string
   cwd: string
+  phase: string
 }) {
   try {
     // Ensure TypeScript is installed to use the API.
@@ -123,7 +125,7 @@ export async function transpileConfig({
       configFileName.endsWith('.mts') ||
       require(path.join(cwd, 'package.json')).type === 'module'
     ) {
-      return handleESM({ cwd, compilerOptions, nextConfigPath })
+      return handleESM({ cwd, compilerOptions, nextConfigPath, phase })
     }
 
     return handleCJS({ cwd, nextConfigPath, compilerOptions })
@@ -173,6 +175,7 @@ async function handleESM(workerData: {
   cwd: string
   compilerOptions: CompilerOptions
   nextConfigPath: string
+  phase: string
 }) {
   return new Promise((resolve, reject) => {
     const worker = new Worker(path.join(__dirname, './import-config.js'), {
