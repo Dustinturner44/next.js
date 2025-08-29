@@ -1,7 +1,7 @@
 import type { Options as SWCOptions } from '@swc/core'
 import type { CompilerOptions } from 'typescript'
 
-import path from 'path'
+import { join, resolve } from 'path'
 import { readFile } from 'fs/promises'
 import { register } from 'module'
 import { pathToFileURL } from 'url'
@@ -10,10 +10,15 @@ import { deregisterHook, registerHook, requireFromString } from './require-hook'
 import { warn } from '../output/log'
 import { installDependencies } from '../../lib/install-dependencies'
 
-function resolveSWCOptions(
-  cwd: string,
+export function resolveSWCOptions({
+  cwd,
+  compilerOptions,
+  type,
+}: {
+  cwd: string
   compilerOptions: CompilerOptions
-): SWCOptions {
+  type: 'commonjs' | 'es6'
+}): SWCOptions {
   return {
     jsc: {
       parser: {
@@ -22,16 +27,15 @@ function resolveSWCOptions(
       ...(compilerOptions.paths ? { paths: compilerOptions.paths } : {}),
       ...(compilerOptions.baseUrl
         ? // Needs to be an absolute path.
-          { baseUrl: path.resolve(cwd, compilerOptions.baseUrl) }
+          { baseUrl: resolve(cwd, compilerOptions.baseUrl) }
         : compilerOptions.paths
           ? // If paths is given, baseUrl is required.
             { baseUrl: cwd }
           : {}),
     },
     module: {
-      type: 'commonjs',
+      type,
     },
-    isModule: 'unknown',
     env: {
       targets: {
         // Setting the Node.js version can reduce unnecessary code generation.
@@ -124,9 +128,7 @@ export async function transpileConfig({
 
     let pkgJson: Record<string, string> = {}
     try {
-      pkgJson = JSON.parse(
-        await readFile(path.join(cwd, 'package.json'), 'utf8')
-      )
+      pkgJson = JSON.parse(await readFile(join(cwd, 'package.json'), 'utf8'))
     } catch {}
 
     if (configFileName.endsWith('.mts') || pkgJson.type === 'module') {
@@ -150,7 +152,11 @@ async function handleCJS({
   nextConfigPath: string
   compilerOptions: CompilerOptions
 }) {
-  const swcOptions = resolveSWCOptions(cwd, compilerOptions)
+  const swcOptions = resolveSWCOptions({
+    cwd,
+    compilerOptions,
+    type: 'commonjs',
+  })
   let hasRequire = false
   try {
     const nextConfigString = await readFile(nextConfigPath, 'utf8')
@@ -166,7 +172,7 @@ async function handleCJS({
     }
 
     // filename & extension don't matter here
-    return requireFromString(code, path.resolve(cwd, 'next.config.compiled.js'))
+    return requireFromString(code, resolve(cwd, 'next.config.compiled.js'))
   } catch (error) {
     throw error
   } finally {
@@ -186,7 +192,7 @@ async function handleESM(workerData: {
 }) {
   try {
     if (!hasRegistered) {
-      register(pathToFileURL(path.join(__dirname, 'loader.js')).href, {
+      register(pathToFileURL(join(__dirname, 'loader.js')).href, {
         parentURL: pathToFileURL(workerData.cwd).href,
         data: {
           cwd: workerData.cwd,

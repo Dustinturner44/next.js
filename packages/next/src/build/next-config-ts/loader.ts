@@ -4,13 +4,13 @@ import type {
   ModuleFormat,
   ResolveHook,
 } from 'module'
-import type { Options as SWCOptions } from '@swc/core'
 import type { CompilerOptions } from 'typescript'
 
 import path from 'path'
 import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
+import { resolveSWCOptions } from './transpile-config.js'
 
 const tsExts = new Set(['.ts', '.mts', '.cts'])
 const localContext = new Map<string, any>()
@@ -127,34 +127,12 @@ export const load: LoadHook = async (url, context, nextLoad) => {
   const rawSource = await readFile(fileURLToPath(url), 'utf-8')
   // Lazy load swc to reduce the initial loader registration time.
   const { transform } = await import('../swc/index.js')
-  const { code } = await transform(rawSource, {
-    jsc: {
-      parser: {
-        syntax: 'typescript',
-      },
-      ...(compilerOptions.paths ? { paths: compilerOptions.paths } : {}),
-      ...(compilerOptions.baseUrl
-        ? // Needs to be an absolute path.
-          { baseUrl: path.resolve(cwd, compilerOptions.baseUrl) }
-        : compilerOptions.paths
-          ? // If paths is given, baseUrl is required.
-            { baseUrl: cwd }
-          : {}),
-      experimental: {
-        keepImportAttributes: true,
-        // Without this option, `assert` assertion also transpiles to `with` attribute,
-        // which will throw if in Node.js version that does not support `with`.
-        // Switch from Import Assertions to Import Attributes held at v21.0.0, v20.10.0, v18.20.0.
-        emitAssertForImportAttributes: true,
-      },
-    },
-    env: {
-      targets: {
-        // Setting the Node.js version can reduce unnecessary code generation.
-        node: process?.versions?.node ?? '20.19.0',
-      },
-    },
-  } satisfies SWCOptions)
+  const swcOptions = resolveSWCOptions({
+    cwd,
+    compilerOptions,
+    type: 'es6',
+  })
+  const { code } = await transform(rawSource, swcOptions)
 
   return {
     format: 'module',
