@@ -1,8 +1,14 @@
 import type { NextConfig } from 'next'
-import fooJson from './foo.json' with { type: 'json' }
+import jsonObjDefault from './object.json' with { type: 'json' }
+import jsonArray from './array.json' with { type: 'json' }
+// ESM doesn't support named imports from JSON files.
 
 export default {
   env: {
-    foo: fooJson.foo,
+    jsonObjDefault: jsonObjDefault.object,
+    jsonObjDefault123: String(jsonObjDefault['123number']),
+    jsonObjDefaultWithSpace: jsonObjDefault['with space'],
+    jsonObjDefaultWithHyphen: jsonObjDefault['with-hyphen'],
+    jsonArray: jsonArray[0].array,
   },
 } satisfies NextConfig
