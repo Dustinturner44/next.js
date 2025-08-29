@@ -466,6 +466,13 @@ export interface ExperimentalConfig {
   linkNoTouchStart?: boolean
   caseSensitiveRoutes?: boolean
   clientSegmentCache?: boolean | 'client-only'
+
+  /**
+   * Enables RDC for Dynamic Navigations. This is only supported for App Router
+   * when Partial Prerendering is also enabled. This is enabled by default when
+   * Partial Prerendering is enabled.
+   */
+  rdcForNavigations?: boolean
   clientParamParsing?: boolean
 
   /**
@@ -1573,6 +1580,7 @@ export const defaultConfig = Object.freeze({
     linkNoTouchStart: false,
     caseSensitiveRoutes: false,
     clientSegmentCache: false,
+    rdcForNavigations: false,
     clientParamParsing: false,
     clientParamParsingOrigins: undefined,
     dynamicOnHover: false,
