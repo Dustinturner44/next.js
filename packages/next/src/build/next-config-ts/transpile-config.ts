@@ -42,9 +42,10 @@ export function resolveSWCOptions({
               // attribute, which will throw if Node.js version does not support
               // "with" token. The switch from "assert" to "with" was held at
               // v21.0.0, v20.10.0, and v18.20.0.
-              emitAssertForImportAttributes: semver.gte(
-                '20.10.0',
-                process?.versions?.node ?? '20.9.0'
+              // Add this option if current Node.js version < 20.10.0
+              emitAssertForImportAttributes: semver.lt(
+                process?.versions?.node ?? '20.9.0',
+                '20.10.0'
               ),
             },
           }
