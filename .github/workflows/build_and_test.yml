@@ -892,6 +892,7 @@ jobs:
         export __NEXT_EXPERIMENTAL_PPR=true # for compatibility with the existing tests
         export __NEXT_EXPERIMENTAL_CACHE_COMPONENTS=true
         export NEXT_EXTERNAL_TESTS_FILTERS="test/experimental-tests-manifest.json"
+        export __NEXT_TYPED_ROUTES=true
 
         node run-tests.js \
           --timings \
@@ -915,6 +916,7 @@ jobs:
         export __NEXT_EXPERIMENTAL_CACHE_COMPONENTS=true
         export NEXT_EXTERNAL_TESTS_FILTERS="test/experimental-tests-manifest.json"
         export NEXT_TEST_MODE=dev
+        export __NEXT_TYPED_ROUTES=true
 
         node run-tests.js \
           --timings \
@@ -939,6 +941,7 @@ jobs:
         export __NEXT_EXPERIMENTAL_CACHE_COMPONENTS=true
         export NEXT_EXTERNAL_TESTS_FILTERS="test/experimental-tests-manifest.json"
         export NEXT_TEST_MODE=start
+        export __NEXT_TYPED_ROUTES=true
 
         node run-tests.js \
           --timings \
