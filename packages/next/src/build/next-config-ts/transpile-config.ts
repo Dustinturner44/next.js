@@ -3,7 +3,8 @@ import type { CompilerOptions } from 'typescript'
 
 import path from 'path'
 import { readFile } from 'fs/promises'
-import { Worker } from 'worker_threads'
+import { register } from 'module'
+import { pathToFileURL } from 'url'
 
 import { deregisterHook, registerHook, requireFromString } from './require-hook'
 import { warn } from '../output/log'
@@ -175,84 +176,28 @@ async function handleCJS({
   }
 }
 
+let hasRegistered = false
+
 async function handleESM(workerData: {
   cwd: string
   compilerOptions: CompilerOptions
   nextConfigPath: string
   phase: string
 }) {
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(path.join(__dirname, './import-config.js'), {
-      workerData,
-      env: {
-        ...process.env,
-      },
-    })
-
-    let isSettled = false
-    const timeout = setTimeout(() => {
-      if (!isSettled) {
-        isSettled = true
-        worker.terminate()
-        reject(
-          // TODO: Can we specifically identify why it timed out?
-          // If the reason is on user-side e.g., running a long running script inside a config,
-          // we should guide them to use "instrumentation.ts" instead.
-          new Error(
-            `Failed to load Next.js config from "${workerData.nextConfigPath}". The config worker process timed out after 30 seconds.`
-          )
-        )
-      }
-    }, 30_000)
-
-    const cleanup = () => {
-      if (!isSettled) {
-        isSettled = true
-        clearTimeout(timeout)
-        worker.terminate()
-      }
+  try {
+    if (!hasRegistered) {
+      register(pathToFileURL(path.join(__dirname, 'loader.js')).href, {
+        parentURL: pathToFileURL(workerData.cwd).href,
+        data: {
+          cwd: workerData.cwd,
+          compilerOptions: workerData.compilerOptions,
+        },
+      })
+      hasRegistered = true
     }
 
-    worker.on('message', (result) => {
-      if (isSettled) return
-      cleanup()
-
-      if (result.success) {
-        resolve(result.config)
-      } else {
-        const error = new Error(
-          `Failed to load Next.js config from "${workerData.nextConfigPath}". An unknown error occurred while importing the configuration.`,
-          { cause: result.error }
-        )
-        if (result.stack) {
-          error.stack = result.stack
-        }
-        reject(error)
-      }
-    })
-
-    worker.on('error', (err) => {
-      if (isSettled) return
-      cleanup()
-      reject(
-        new Error(
-          `Failed to load Next.js config from "${workerData.nextConfigPath}".`,
-          { cause: err }
-        )
-      )
-    })
-
-    worker.on('exit', (code) => {
-      if (isSettled) return
-      cleanup()
-
-      if (code !== 0) {
-        reject(
-          new Error(
-            `Failed to load Next.js config from "${workerData.nextConfigPath}". The config worker process exited unexpectedly with code ${code}.`
-          )
-        )
-      }
-    })
-  })
+    return (await import(pathToFileURL(workerData.nextConfigPath).href)).default
+  } catch (error) {
+    throw error
+  }
 }

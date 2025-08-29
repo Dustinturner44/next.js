@@ -11,7 +11,6 @@ import path from 'path'
 import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
-import { transform } from '../swc/index.js'
 
 const tsExts = new Set(['.ts', '.mts', '.cts'])
 const localContext = new Map<string, any>()
@@ -25,7 +24,7 @@ export const initialize: InitializeHook<{
 }
 
 export const resolve: ResolveHook = async (specifier, context, nextResolve) => {
-  // next.config.* is imported from internal "import-config.js" file,
+  // next.config.* should first be imported during the process of loadConfig(),
   // so we expect the parentURL is available.
   if (!context.parentURL) {
     return nextResolve(specifier, context)
@@ -90,6 +89,8 @@ export const load: LoadHook = async (url, context, nextLoad) => {
   }
 
   const rawSource = await readFile(fileURLToPath(url), 'utf-8')
+  // Lazy load swc to reduce the initial loader registration time.
+  const { transform } = await import('../swc/index.js')
   const { code } = await transform(rawSource, {
     jsc: {
       parser: {
