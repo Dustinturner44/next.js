@@ -1,3 +1,11 @@
 export default function Page() {
-  return <p>{process.env.foo}</p>
+  return (
+    <p>
+      {JSON.stringify([
+        process.env.jsonObjDefault,
+        process.env.jsonObjNamed,
+        process.env.jsonArray,
+      ])}
+    </p>
+  )
 }

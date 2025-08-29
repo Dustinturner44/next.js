@@ -1,8 +1,12 @@
 import type { NextConfig } from 'next'
-import { foo } from './foo.json'
+import { object as jsonObjNamed } from './object.json'
+import jsonObjDefault from './object.json'
+import jsonArray from './array.json'
 
 export default {
   env: {
-    foo,
+    jsonObjDefault: jsonObjDefault.object,
+    jsonObjNamed,
+    jsonArray: jsonArray[0].array,
   },
 } satisfies NextConfig
