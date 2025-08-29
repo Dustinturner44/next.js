@@ -799,5 +799,6 @@
   "798": "expected a result to be returned",
   "799": "expected a page response, got %s",
   "800": "`experimental.rdcForNavigations` is enabled, but `experimental.ppr` is not.",
-  "801": "The \"cwd\" value was not passed to the loader from the registration. This is a bug in Next.js."
+  "801": "The \"compilerOptions\" value was not passed to the config loader from the registration. This is a bug in Next.js.",
+  "802": "The \"cwd\" value was not passed to the config loader from the registration. This is a bug in Next.js."
 }
