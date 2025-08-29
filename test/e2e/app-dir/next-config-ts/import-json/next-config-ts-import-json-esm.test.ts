@@ -10,6 +10,15 @@ describe('next-config-ts-import-json-esm', () => {
 
   it('should support import json (ESM)', async () => {
     const $ = await next.render$('/')
-    expect($('p').text()).toBe(JSON.stringify(['object', 'object', 'array']))
+    expect($('p').text()).toBe(
+      JSON.stringify([
+        'object',
+        '123',
+        'with space',
+        'with-hyphen',
+        'object',
+        'array',
+      ])
+    )
   })
 })

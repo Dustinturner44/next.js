@@ -7,6 +7,15 @@ describe('next-config-ts-import-json-cjs', () => {
 
   it('should support import json (CJS)', async () => {
     const $ = await next.render$('/')
-    expect($('p').text()).toBe(JSON.stringify(['object', 'object', 'array']))
+    expect($('p').text()).toBe(
+      JSON.stringify([
+        'object',
+        '123',
+        'with space',
+        'with-hyphen',
+        'object',
+        'array',
+      ])
+    )
   })
 })
