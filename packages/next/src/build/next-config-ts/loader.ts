@@ -6,8 +6,7 @@ import type {
 } from 'module'
 import type { CompilerOptions } from 'typescript'
 
-import path from 'path'
-import { existsSync } from 'fs'
+import { extname } from 'path'
 import { readFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolveSWCOptions } from './transpile-config.js'
@@ -37,40 +36,7 @@ export const resolve: ResolveHook = async (specifier, context, nextResolve) => {
     return nextResolve(specifier, context)
   }
 
-  const ext = path.extname(specifier)
-  // If the specifier has no extension, try to resolve it as a TS file.
-  // This is mainly to prevent a breaking change for ESM projects that use
-  // "next.config.ts", and also to keep the TS file behavior consistent with
-  // the rest of the project files.
-  if (ext === '') {
-    const possibleTsFileURL = new URL(specifier + '.ts', context.parentURL)
-    if (existsSync(possibleTsFileURL)) {
-      return {
-        format: 'typescript' as ModuleFormat,
-        shortCircuit: true,
-        url: possibleTsFileURL.href,
-      }
-    }
-
-    if (existsSync(new URL(specifier + '.js', context.parentURL))) {
-      return nextResolve(specifier + '.js', context)
-    }
-
-    return nextResolve(specifier, context)
-  }
-
-  // This allows not to write type: "with" assertions for JSON imports.
-  // This is mainly to prevent a breaking change for ESM projects that use
-  // "next.config.ts", and also to keep the TS file behavior consistent with
-  // the rest of the project files.
-  if (ext === '.json') {
-    return {
-      format: 'json' as ModuleFormat,
-      shortCircuit: true,
-      url: new URL(specifier, context.parentURL).href,
-    }
-  }
-
+  const ext = extname(specifier)
   // Node.js resolver can take care of the rest of the non-TS files.
   if (!tsExts.has(ext)) {
     return nextResolve(specifier, context)
@@ -84,10 +50,7 @@ export const resolve: ResolveHook = async (specifier, context, nextResolve) => {
 }
 
 export const load: LoadHook = async (url, context, nextLoad) => {
-  if (
-    context.format !== ('typescript' as ModuleFormat) &&
-    context.format !== ('json' as ModuleFormat)
-  ) {
+  if (context.format !== ('typescript' as ModuleFormat)) {
     return nextLoad(url, context)
   }
 
@@ -102,26 +65,6 @@ export const load: LoadHook = async (url, context, nextLoad) => {
     throw new Error(
       'The "compilerOptions" value was not passed to the config loader from the registration. This is a bug in Next.js.'
     )
-  }
-
-  if (context.format === ('json' as ModuleFormat)) {
-    const rawSource = await readFile(fileURLToPath(url), 'utf-8')
-    const jsonData = JSON.parse(rawSource)
-    let source = `export default (${rawSource});`
-
-    // Add named exports for object properties
-    if (!Array.isArray(jsonData)) {
-      const namedExports = Object.keys(jsonData)
-        .map((key) => `export const ${key} = (${rawSource}).${key};`)
-        .join('\n')
-      source = `${namedExports}\n${source}`
-    }
-
-    return {
-      format: 'module',
-      shortCircuit: true,
-      source,
-    }
   }
 
   const rawSource = await readFile(fileURLToPath(url), 'utf-8')
