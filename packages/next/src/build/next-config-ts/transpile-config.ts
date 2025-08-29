@@ -1,6 +1,8 @@
 import type { Options as SWCOptions } from '@swc/core'
 import type { CompilerOptions } from 'typescript'
 
+import semver from 'next/dist/compiled/semver'
+
 import { join, resolve } from 'path'
 import { readFile } from 'fs/promises'
 import { register } from 'module'
@@ -32,6 +34,21 @@ export function resolveSWCOptions({
           ? // If paths is given, baseUrl is required.
             { baseUrl: cwd }
           : {}),
+      ...(type === 'es6'
+        ? {
+            experimental: {
+              keepImportAssertions: true,
+              // Without this option, "assert" assertion also transpiles to "with"
+              // attribute, which will throw if Node.js version does not support
+              // "with" token. The switch from "assert" to "with" was held at
+              // v21.0.0, v20.10.0, and v18.20.0.
+              emitAssertForImportAttributes: semver.gte(
+                '20.10.0',
+                process?.versions?.node ?? '20.9.0'
+              ),
+            },
+          }
+        : {}),
     },
     module: {
       type,
@@ -39,7 +56,7 @@ export function resolveSWCOptions({
     env: {
       targets: {
         // Setting the Node.js version can reduce unnecessary code generation.
-        node: process?.versions?.node ?? '20.19.0',
+        node: process?.versions?.node ?? '20.9.0',
       },
     },
   } satisfies SWCOptions
