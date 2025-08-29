@@ -131,12 +131,10 @@ export async function transpileConfig({
   nextConfigPath,
   configFileName,
   cwd,
-  phase,
 }: {
   nextConfigPath: string
   configFileName: string
   cwd: string
-  phase: string
 }) {
   try {
     // Ensure TypeScript is installed to use the API.
@@ -149,7 +147,7 @@ export async function transpileConfig({
     } catch {}
 
     if (pkgJson.type === 'module') {
-      return handleESM({ cwd, compilerOptions, nextConfigPath, phase })
+      return handleESM({ cwd, nextConfigPath, compilerOptions })
     }
 
     return handleCJS({ cwd, nextConfigPath, compilerOptions })
@@ -205,7 +203,6 @@ async function handleESM(workerData: {
   cwd: string
   compilerOptions: CompilerOptions
   nextConfigPath: string
-  phase: string
 }) {
   try {
     if (!hasRegistered) {
