@@ -1559,9 +1559,8 @@ export default abstract class Server<
         )
       }
 
-      // res.statusCode = 200
-      // return await this.run(req, res, parsedUrl)
-      throw new Error('Likely never hit, highlight if it is hit.')
+      await this.handleCatchallRenderRequest(req, res, parsedUrl)
+      return
     } catch (err: any) {
       if (err instanceof NoFallbackError) {
         throw err
