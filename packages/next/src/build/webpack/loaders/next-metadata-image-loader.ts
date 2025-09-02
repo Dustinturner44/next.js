@@ -90,32 +90,14 @@ async function nextMetadataImageLoader(
       )}, params, ${JSON.stringify(pageSegment)})
 
       const { generateImageMetadata } = imageModule
-
-      function getImageMetadata(imageMetadata, idParam) {
-        const data = {
-          alt: imageMetadata.alt,
-          type: imageMetadata.contentType || 'image/png',
-          url: imageUrl + (idParam ? ('/' + idParam) : '') + ${JSON.stringify(
-            hashQuery
-          )},
-        }
-        const { size } = imageMetadata
-        if (size) {
-          ${
-            type === 'twitter' || type === 'openGraph'
-              ? 'data.width = size.width; data.height = size.height;'
-              : 'data.sizes = size.width + "x" + size.height;'
-          }
-        }
-        return data
-      }
-
+      
+      const resolvedParams = await props.params
       if (generateImageMetadata) {
-        const imageMetadataArray = await generateImageMetadata({ params })
-        return imageMetadataArray.map((imageMetadata, index) => {
-          const idParam = (imageMetadata.id || index) + ''
-          return getImageMetadata(imageMetadata, idParam)
-        })
+        const imageMetadataArray = await generateImageMetadata({ params: props.params })
+        return Promise.all(imageMetadataArray.map((imageMetadata) => {
+          const idParam = imageMetadata.id + ''
+          return getImageMetadata(imageMetadata, idParam, resolvedParams)
+        }))
       } else {
         return [getImageMetadata(imageModule, '')]
       }
