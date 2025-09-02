@@ -26,9 +26,7 @@ const runTests = () => {
   })
 
   it('should provide router context in AppTree on CSR', async () => {
-    // [TODO] currently turbopack-generated output takes long time between
-    // navigation, we'll optimize it in the future
-    const waitTime = process.env.TURBOPACK_BUILD ? 5000 : 500
+    const waitTime = 500
 
     const browser = await webdriver(appPort, '/')
     let html = await browser.eval(`document.documentElement.innerHTML`)
@@ -52,27 +50,21 @@ const runTests = () => {
 }
 
 describe('AppTree', () => {
-  ;(process.env.TURBOPACK_BUILD ? describe.skip : describe)(
-    'development mode',
-    () => {
-      beforeAll(async () => {
-        appPort = await findPort()
-        app = await launchApp(appDir, appPort)
-      })
-      afterAll(() => killApp(app))
-      runTests()
-    }
-  )
-  ;(process.env.TURBOPACK_DEV ? describe.skip : describe)(
-    'production mode',
-    () => {
-      beforeAll(async () => {
-        await nextBuild(appDir)
-        appPort = await findPort()
-        app = await nextStart(appDir, appPort)
-      })
-      afterAll(() => killApp(app))
-      runTests()
-    }
-  )
+  describe('development mode', () => {
+    beforeAll(async () => {
+      appPort = await findPort()
+      app = await launchApp(appDir, appPort)
+    })
+    afterAll(() => killApp(app))
+    runTests()
+  })
+  describe('production mode', () => {
+    beforeAll(async () => {
+      await nextBuild(appDir)
+      appPort = await findPort()
+      app = await nextStart(appDir, appPort)
+    })
+    afterAll(() => killApp(app))
+    runTests()
+  })
 })
