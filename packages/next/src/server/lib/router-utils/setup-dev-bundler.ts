@@ -1,14 +1,13 @@
 import type { NextConfigComplete } from '../../config-shared'
 import type { FilesystemDynamicRoute } from './filesystem'
 import type { UnwrapPromise } from '../../../lib/coalesced-function'
-import {
-  getPageStaticInfo,
-  type MiddlewareMatcher,
-} from '../../../build/analysis/get-page-static-info'
 import type { RoutesManifest } from '../../../build'
 import type { MiddlewareRouteMatch } from '../../../shared/lib/router/utils/middleware-route-matcher'
 import type { PropagateToWorkersField } from './types'
 import type { NextJsHotReloaderInterface } from '../../dev/hot-reloader-types'
+import type { Telemetry } from '../../../telemetry/storage'
+import type { IncomingMessage, ServerResponse } from 'http'
+import type { MiddlewareMatcher } from '../../../build/analysis/get-page-static-info'
 
 import { createDefineEnv } from '../../../build/swc'
 import fs from 'fs'
@@ -20,11 +19,7 @@ import { loadEnvConfig } from '@next/env'
 import findUp from 'next/dist/compiled/find-up'
 import { buildCustomRoute } from './filesystem'
 import * as Log from '../../../build/output/log'
-import HotReloaderWebpack from '../../dev/hot-reloader-webpack'
 import { setGlobal } from '../../../trace/shared'
-import type { Telemetry } from '../../../telemetry/storage'
-import type { IncomingMessage, ServerResponse } from 'http'
-import loadJsConfig from '../../../build/load-jsconfig'
 import { createValidFileMatcher } from '../find-page-file'
 import {
   EVENT_BUILD_FEATURE_USAGE,
@@ -69,7 +64,6 @@ import { devPageFiles } from '../../../build/webpack/plugins/next-types-plugin/s
 import type { LazyRenderServerInstance } from '../router-server'
 import { HMR_ACTIONS_SENT_TO_BROWSER } from '../../dev/hot-reloader-types'
 import { PAGE_TYPES } from '../../../lib/page-types'
-import { createHotReloaderTurbopack } from '../../dev/hot-reloader-turbopack'
 import { generateEncryptionKeyBase64 } from '../../app-render/encryption-utils-server'
 import { isMetadataRouteFile } from '../../../lib/metadata/is-metadata-route'
 import { normalizeMetadataPageToRoute } from '../../../lib/metadata/get-metadata-route'
@@ -192,23 +186,39 @@ async function startWatcher(
   })
 
   const hotReloader: NextJsHotReloaderInterface = opts.turbo
-    ? await createHotReloaderTurbopack(opts, serverFields, distDir, resetFetch)
-    : new HotReloaderWebpack(opts.dir, {
-        isSrcDir: opts.isSrcDir,
-        appDir,
-        pagesDir,
-        distDir,
-        config: opts.nextConfig,
-        buildId: 'development',
-        encryptionKey: await generateEncryptionKeyBase64({
-          isBuild: false,
+    ? await (() => {
+        // Only require Turbopack when it is used.
+        const { createHotReloaderTurbopack } =
+          require('../../dev/hot-reloader-turbopack') as typeof import('../../dev/hot-reloader-turbopack')
+        return createHotReloaderTurbopack(
+          opts,
+          serverFields,
           distDir,
-        }),
-        telemetry: opts.telemetry,
-        rewrites: opts.fsChecker.rewrites,
-        previewProps: opts.fsChecker.prerenderManifest.preview,
-        resetFetch,
-      })
+          resetFetch
+        )
+      })()
+    : await (async () => {
+        // Only require webpack when it is used.
+        const HotReloaderWebpack = (
+          require('../../dev/hot-reloader-webpack') as typeof import('../../dev/hot-reloader-webpack')
+        ).default
+        return new HotReloaderWebpack(opts.dir, {
+          isSrcDir: opts.isSrcDir,
+          appDir,
+          pagesDir,
+          distDir,
+          config: opts.nextConfig,
+          buildId: 'development',
+          encryptionKey: await generateEncryptionKeyBase64({
+            isBuild: false,
+            distDir,
+          }),
+          telemetry: opts.telemetry,
+          rewrites: opts.fsChecker.rewrites,
+          previewProps: opts.fsChecker.prerenderManifest.preview,
+          resetFetch,
+        })
+      })()
 
   await hotReloader.start()
 
@@ -501,6 +511,9 @@ async function startWatcher(
             true
           )
         ) {
+          const getPageStaticInfo = (
+            require('../../../build/analysis/get-page-static-info') as typeof import('../../../build/analysis/get-page-static-info')
+          ).getPageStaticInfo
           const staticInfo = await getPageStaticInfo({
             pageFilePath: fileName,
             nextConfig: {},
@@ -748,14 +761,21 @@ async function startWatcher(
           ])
         }
         let tsconfigResult:
-          | UnwrapPromise<ReturnType<typeof loadJsConfig>>
+          | UnwrapPromise<
+              ReturnType<typeof import('../../../build/load-jsconfig').default>
+            >
           | undefined
 
-        if (tsconfigChange) {
-          try {
-            tsconfigResult = await loadJsConfig(dir, nextConfig)
-          } catch (_) {
-            /* do we want to log if there are syntax errors in tsconfig while editing? */
+        if (!hotReloader.turbopackProject) {
+          if (tsconfigChange) {
+            try {
+              const loadJsConfig = (
+                require('../../../build/load-jsconfig') as typeof import('../../../build/load-jsconfig')
+              ).default
+              tsconfigResult = await loadJsConfig(dir, nextConfig)
+            } catch (_) {
+              /* do we want to log if there are syntax errors in tsconfig while editing? */
+            }
           }
         }
 

@@ -29,7 +29,7 @@ import * as Log from '../../build/output/log'
 import {
   getVersionInfo,
   matchNextPageBundleRequest,
-} from './hot-reloader-webpack'
+} from './hot-reloader-shared-utils'
 import { BLOCKED_PAGES } from '../../shared/lib/constants'
 import {
   getOverlayMiddleware,
@@ -84,7 +84,6 @@ import { setBundlerFindSourceMapImplementation } from '../patch-error-inspect'
 import { getNextErrorFeedbackMiddleware } from '../../next-devtools/server/get-next-error-feedback-middleware'
 import {
   formatIssue,
-  getTurbopackJsConfig,
   isPersistentCachingEnabled,
   isWellKnownError,
   processIssues,
@@ -224,7 +223,6 @@ export async function createHotReloaderTurbopack(
       projectPath: normalizePath(relative(rootPath, projectPath) || '.'),
       distDir,
       nextConfig: opts.nextConfig,
-      jsConfig: await getTurbopackJsConfig(projectPath, nextConfig),
       watch: {
         enable: dev,
         pollIntervalMs: nextConfig.watchOptions?.pollIntervalMs,

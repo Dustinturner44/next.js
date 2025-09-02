@@ -2,6 +2,8 @@
 import './cpu-profile'
 import { getNetworkHost } from '../../lib/get-network-host'
 
+debugger
+
 if (performance.getEntriesByName('next-start').length === 0) {
   performance.mark('next-start')
 }
