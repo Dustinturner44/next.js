@@ -1244,8 +1244,7 @@ export async function handler(
       )
     }
   } catch (err) {
-    // if we aren't wrapped by base-server handle here
-    if (!activeSpan && !(err instanceof NoFallbackError)) {
+    if (!(err instanceof NoFallbackError)) {
       await routeModule.onRequestError(
         req,
         err,
