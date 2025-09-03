@@ -5,7 +5,7 @@
 
 mod util;
 
-use std::{env, path::PathBuf, sync::Once};
+use std::{env, path::PathBuf};
 
 use anyhow::{Context, Result};
 use dunce::canonicalize;
@@ -82,18 +82,6 @@ struct JsResult {
 enum IssueSnapshotMode {
     Snapshots,
     NoSnapshots,
-}
-
-fn register() {
-    turbo_tasks::register();
-    turbo_tasks_env::register();
-    turbo_tasks_fs::register();
-    turbopack::register();
-    turbopack_nodejs::register();
-    turbopack_env::register();
-    turbopack_ecmascript_plugins::register();
-    turbopack_resolve::register();
-    include!(concat!(env!("OUT_DIR"), "/register_test_execution.rs"));
 }
 
 // To minimize test path length and consistency with snapshot tests,
@@ -175,9 +163,6 @@ fn get_messages(js_results: JsResult) -> Vec<String> {
 
 #[tokio::main(flavor = "current_thread")]
 async fn run(resource: PathBuf, snapshot_mode: IssueSnapshotMode) -> Result<JsResult> {
-    static REGISTER_ONCE: Once = Once::new();
-    REGISTER_ONCE.call_once(register);
-
     // Clean up old output files.
     let output_path = resource.join("output");
     if output_path.exists() {
