@@ -28,6 +28,7 @@ import { UserPreferencesBody } from '../components/errors/dev-tools-indicator/de
 import { useShortcuts } from '../hooks/use-shortcuts'
 import { useUpdateAllPanelPositions } from '../components/devtools-indicator/devtools-indicator'
 import { saveDevToolsConfig } from '../utils/save-devtools-config'
+import { Agent } from '../agent/agent'
 import './panel-router.css'
 
 const MenuPanel = () => {
@@ -91,6 +92,11 @@ const MenuPanel = () => {
           attributes: {
             'data-segment-explorer': true,
           },
+        },
+        {
+          label: 'Agent',
+          value: <ChevronRight />,
+          onClick: () => setPanel('agent'),
         },
         {
           label: 'Preferences',
@@ -238,6 +244,22 @@ export const PanelRouter = () => {
           <div className="panel-content">
             <TurbopackInfoBody />
             <InfoFooter href="https://nextjs.org/docs/app/api-reference/turbopack" />
+          </div>
+        </DynamicPanel>
+      </PanelRoute>
+
+      <PanelRoute name="agent">
+        <DynamicPanel
+          sharePanelSizeGlobally={false}
+          sizeConfig={{
+            kind: 'fixed',
+            height: 300 / state.scale,
+            width: 400 / state.scale,
+          }}
+          header={<DevToolsHeader title="Agent" />}
+        >
+          <div className="panel-content">
+            <Agent />
           </div>
         </DynamicPanel>
       </PanelRoute>
