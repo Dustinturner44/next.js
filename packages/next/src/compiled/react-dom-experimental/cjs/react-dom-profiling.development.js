@@ -280,6 +280,28 @@
       }
       return null;
     }
+    function findFragmentInstanceSiblings(result, self, child) {
+      for (
+        var foundSelf =
+          3 < arguments.length && void 0 !== arguments[3] ? arguments[3] : !1;
+        null !== child;
+
+      ) {
+        if (child === self)
+          if (((foundSelf = !0), child.sibling)) child = child.sibling;
+          else return !0;
+        if (5 === child.tag) {
+          if (foundSelf) return (result[1] = child), !0;
+          result[0] = child;
+        } else if (
+          (22 !== child.tag || null === child.memoizedState) &&
+          findFragmentInstanceSiblings(result, self, child.child, foundSelf)
+        )
+          return !0;
+        child = child.sibling;
+      }
+      return !1;
+    }
     function getInstanceFromHostFiber(fiber) {
       switch (fiber.tag) {
         case 5:
@@ -293,23 +315,6 @@
     function findNextSibling(child) {
       searchTarget = child;
       return !0;
-    }
-    function isFiberContainedBy(maybeChild, maybeParent) {
-      maybeParent = maybeParent.return;
-      if (maybeParent === maybeChild || maybeParent === maybeChild.alternate)
-        return !0;
-      for (; null !== maybeParent && maybeParent !== maybeChild; ) {
-        if (
-          !(
-            (5 !== maybeParent.tag && 3 !== maybeParent.tag) ||
-            (maybeParent.return !== maybeChild &&
-              maybeParent.return !== maybeChild.alternate)
-          )
-        )
-          return !0;
-        maybeParent = maybeParent.return;
-      }
-      return !1;
     }
     function isFiberPrecedingCheck(child, target, boundary) {
       return child === boundary
@@ -1078,7 +1083,7 @@
       try {
         (rendererID = hook.inject(internals)), (injectedHook = hook);
       } catch (err) {
-        console.error("React instrumentation encountered an error: %s.", err);
+        console.error("React instrumentation encountered an error: %o.", err);
       }
       return hook.checkDCE ? !0 : !1;
     }
@@ -1092,7 +1097,7 @@
           hasLoggedError ||
             ((hasLoggedError = !0),
             console.error(
-              "React instrumentation encountered an error: %s",
+              "React instrumentation encountered an error: %o",
               err
             ));
         }
@@ -1131,11 +1136,12 @@
         case 32768:
         case 65536:
         case 131072:
+          return lanes & 261888;
         case 262144:
         case 524288:
         case 1048576:
         case 2097152:
-          return lanes & 4194048;
+          return lanes & 3932160;
         case 4194304:
         case 8388608:
         case 16777216:
@@ -1255,12 +1261,6 @@
           );
       }
     }
-    function claimNextTransitionLane() {
-      var lane = nextTransitionLane;
-      nextTransitionLane <<= 1;
-      0 === (nextTransitionLane & 4194048) && (nextTransitionLane = 256);
-      return lane;
-    }
     function claimNextRetryLane() {
       var lane = nextRetryLane;
       nextRetryLane <<= 1;
@@ -1336,7 +1336,7 @@
       root.entanglements[spawnedLaneIndex] =
         root.entanglements[spawnedLaneIndex] |
         1073741824 |
-        (entangledLanes & 4194090);
+        (entangledLanes & 261930);
     }
     function markRootEntangled(root, entangledLanes) {
       var rootEntangledLanes = (root.entangledLanes |= entangledLanes);
@@ -4240,64 +4240,65 @@
                   ? "tertiary-dark"
                   : "primary-dark"
                 : "error";
-        if ((selfTime = fiber._debugTask)) {
-          var props = fiber.memoizedProps;
-          if (
-            null !== props &&
-            null !== alternate &&
-            alternate.memoizedProps !== props &&
-            ((child = [resuableChangedPropsEntry]),
+        var props = fiber.memoizedProps;
+        selfTime = fiber._debugTask;
+        null !== props &&
+        null !== alternate &&
+        alternate.memoizedProps !== props
+          ? ((child = [resuableChangedPropsEntry]),
             (props = addObjectDiffToProperties(
               alternate.memoizedProps,
               props,
               child,
               0
             )),
-            1 < child.length)
-          ) {
-            props &&
-            !alreadyWarnedForDeepEquality &&
-            0 === (alternate.lanes & committedLanes) &&
-            100 < fiber.actualDuration
-              ? ((alreadyWarnedForDeepEquality = !0),
-                (child[0] = reusableDeeplyEqualPropsEntry),
-                (reusableComponentDevToolDetails.color = "warning"),
-                (reusableComponentDevToolDetails.tooltipText =
-                  DEEP_EQUALITY_WARNING))
-              : ((reusableComponentDevToolDetails.color = wasHydrated),
-                (reusableComponentDevToolDetails.tooltipText = name));
-            reusableComponentDevToolDetails.properties = child;
-            reusableComponentOptions.start = startTime;
-            reusableComponentOptions.end = endTime;
-            selfTime.run(
-              performance.measure.bind(
-                performance,
-                "\u200b" + name,
-                reusableComponentOptions
+            1 < child.length &&
+              (props &&
+              !alreadyWarnedForDeepEquality &&
+              0 === (alternate.lanes & committedLanes) &&
+              100 < fiber.actualDuration
+                ? ((alreadyWarnedForDeepEquality = !0),
+                  (child[0] = reusableDeeplyEqualPropsEntry),
+                  (reusableComponentDevToolDetails.color = "warning"),
+                  (reusableComponentDevToolDetails.tooltipText =
+                    DEEP_EQUALITY_WARNING))
+                : ((reusableComponentDevToolDetails.color = wasHydrated),
+                  (reusableComponentDevToolDetails.tooltipText = name)),
+              (reusableComponentDevToolDetails.properties = child),
+              (reusableComponentOptions.start = startTime),
+              (reusableComponentOptions.end = endTime),
+              null != selfTime
+                ? selfTime.run(
+                    performance.measure.bind(
+                      performance,
+                      "\u200b" + name,
+                      reusableComponentOptions
+                    )
+                  )
+                : performance.measure(
+                    "\u200b" + name,
+                    reusableComponentOptions
+                  )))
+          : null != selfTime
+            ? selfTime.run(
+                console.timeStamp.bind(
+                  console,
+                  name,
+                  startTime,
+                  endTime,
+                  COMPONENTS_TRACK,
+                  void 0,
+                  wasHydrated
+                )
               )
-            );
-            return;
-          }
-          selfTime.run(
-            console.timeStamp.bind(
-              console,
-              name,
-              startTime,
-              endTime,
-              COMPONENTS_TRACK,
-              void 0,
-              wasHydrated
-            )
-          );
-        } else
-          console.timeStamp(
-            name,
-            startTime,
-            endTime,
-            COMPONENTS_TRACK,
-            void 0,
-            wasHydrated
-          );
+            : console.timeStamp(
+                name,
+                startTime,
+                endTime,
+                COMPONENTS_TRACK,
+                void 0,
+                wasHydrated
+              );
       }
     }
     function logComponentErrored(fiber, startTime, endTime, errors) {
@@ -9121,7 +9122,11 @@
           );
     }
     function mountDeferredValueImpl(hook, value, initialValue) {
-      if (void 0 === initialValue || 0 !== (renderLanes & 1073741824))
+      if (
+        void 0 === initialValue ||
+        (0 !== (renderLanes & 1073741824) &&
+          0 === (workInProgressRootRenderLanes & 261930))
+      )
         return (hook.memoizedState = value);
       hook.memoizedState = initialValue;
       hook = requestDeferredLane();
@@ -9137,7 +9142,11 @@
           objectIs(hook, prevValue) || (didReceiveUpdate = !0),
           hook
         );
-      if (0 === (renderLanes & 42) || 0 !== (renderLanes & 1073741824))
+      if (
+        0 === (renderLanes & 42) ||
+        (0 !== (renderLanes & 1073741824) &&
+          0 === (workInProgressRootRenderLanes & 261930))
+      )
         return (didReceiveUpdate = !0), (hook.memoizedState = value);
       hook = requestDeferredLane();
       currentlyRenderingFiber.lanes |= hook;
@@ -11157,25 +11166,25 @@
       return current;
     }
     function updateSuspenseComponent(current, workInProgress, renderLanes) {
-      var JSCompiler_object_inline_componentStack_3141;
-      var JSCompiler_object_inline_stack_3140 = workInProgress.pendingProps;
+      var JSCompiler_object_inline_componentStack_3181;
+      var JSCompiler_object_inline_stack_3180 = workInProgress.pendingProps;
       shouldSuspendImpl(workInProgress) && (workInProgress.flags |= 128);
-      var JSCompiler_object_inline_digest_3139 = !1;
+      var JSCompiler_object_inline_digest_3179 = !1;
       var didSuspend = 0 !== (workInProgress.flags & 128);
-      (JSCompiler_object_inline_componentStack_3141 = didSuspend) ||
-        (JSCompiler_object_inline_componentStack_3141 =
+      (JSCompiler_object_inline_componentStack_3181 = didSuspend) ||
+        (JSCompiler_object_inline_componentStack_3181 =
           null !== current && null === current.memoizedState
             ? !1
             : 0 !== (suspenseStackCursor.current & ForceSuspenseFallback));
-      JSCompiler_object_inline_componentStack_3141 &&
-        ((JSCompiler_object_inline_digest_3139 = !0),
+      JSCompiler_object_inline_componentStack_3181 &&
+        ((JSCompiler_object_inline_digest_3179 = !0),
         (workInProgress.flags &= -129));
-      JSCompiler_object_inline_componentStack_3141 =
+      JSCompiler_object_inline_componentStack_3181 =
         0 !== (workInProgress.flags & 32);
       workInProgress.flags &= -33;
       if (null === current) {
         if (isHydrating) {
-          JSCompiler_object_inline_digest_3139
+          JSCompiler_object_inline_digest_3179
             ? pushPrimaryTreeSuspenseHandler(workInProgress)
             : reuseSuspenseHandlerOnStack(workInProgress);
           (current = nextHydratableInstance)
@@ -11188,20 +11197,20 @@
                   ? renderLanes
                   : null),
               null !== renderLanes &&
-                ((JSCompiler_object_inline_componentStack_3141 = {
+                ((JSCompiler_object_inline_componentStack_3181 = {
                   dehydrated: renderLanes,
                   treeContext: getSuspendedTreeContext(),
                   retryLane: 536870912,
                   hydrationErrors: null
                 }),
                 (workInProgress.memoizedState =
-                  JSCompiler_object_inline_componentStack_3141),
-                (JSCompiler_object_inline_componentStack_3141 =
+                  JSCompiler_object_inline_componentStack_3181),
+                (JSCompiler_object_inline_componentStack_3181 =
                   createFiberFromDehydratedFragment(renderLanes)),
-                (JSCompiler_object_inline_componentStack_3141.return =
+                (JSCompiler_object_inline_componentStack_3181.return =
                   workInProgress),
                 (workInProgress.child =
-                  JSCompiler_object_inline_componentStack_3141),
+                  JSCompiler_object_inline_componentStack_3181),
                 (hydrationParentFiber = workInProgress),
                 (nextHydratableInstance = null)))
             : (renderLanes = null);
@@ -11215,9 +11224,9 @@
             : (workInProgress.lanes = 536870912);
           return null;
         }
-        var nextPrimaryChildren = JSCompiler_object_inline_stack_3140.children,
-          nextFallbackChildren = JSCompiler_object_inline_stack_3140.fallback;
-        if (JSCompiler_object_inline_digest_3139)
+        var nextPrimaryChildren = JSCompiler_object_inline_stack_3180.children,
+          nextFallbackChildren = JSCompiler_object_inline_stack_3180.fallback;
+        if (JSCompiler_object_inline_digest_3179)
           return (
             reuseSuspenseHandlerOnStack(workInProgress),
             mountSuspenseFallbackChildren(
@@ -11226,21 +11235,21 @@
               nextFallbackChildren,
               renderLanes
             ),
-            (JSCompiler_object_inline_stack_3140 = workInProgress.child),
-            (JSCompiler_object_inline_stack_3140.memoizedState =
+            (JSCompiler_object_inline_stack_3180 = workInProgress.child),
+            (JSCompiler_object_inline_stack_3180.memoizedState =
               mountSuspenseOffscreenState(renderLanes)),
-            (JSCompiler_object_inline_stack_3140.childLanes =
+            (JSCompiler_object_inline_stack_3180.childLanes =
               getRemainingWorkInPrimaryTree(
                 current,
-                JSCompiler_object_inline_componentStack_3141,
+                JSCompiler_object_inline_componentStack_3181,
                 renderLanes
               )),
             (workInProgress.memoizedState = SUSPENDED_MARKER),
-            bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3140)
+            bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3180)
           );
         if (
           "number" ===
-          typeof JSCompiler_object_inline_stack_3140.unstable_expectedLoadTime
+          typeof JSCompiler_object_inline_stack_3180.unstable_expectedLoadTime
         )
           return (
             reuseSuspenseHandlerOnStack(workInProgress),
@@ -11250,18 +11259,18 @@
               nextFallbackChildren,
               renderLanes
             ),
-            (JSCompiler_object_inline_stack_3140 = workInProgress.child),
-            (JSCompiler_object_inline_stack_3140.memoizedState =
+            (JSCompiler_object_inline_stack_3180 = workInProgress.child),
+            (JSCompiler_object_inline_stack_3180.memoizedState =
               mountSuspenseOffscreenState(renderLanes)),
-            (JSCompiler_object_inline_stack_3140.childLanes =
+            (JSCompiler_object_inline_stack_3180.childLanes =
               getRemainingWorkInPrimaryTree(
                 current,
-                JSCompiler_object_inline_componentStack_3141,
+                JSCompiler_object_inline_componentStack_3181,
                 renderLanes
               )),
             (workInProgress.memoizedState = SUSPENDED_MARKER),
             (workInProgress.lanes = 4194304),
-            bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3140)
+            bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3180)
           );
         pushPrimaryTreeSuspenseHandler(workInProgress);
         return mountSuspensePrimaryChildren(
@@ -11271,8 +11280,8 @@
       }
       var prevState = current.memoizedState;
       if (null !== prevState) {
-        var JSCompiler_object_inline_message_3138 = prevState.dehydrated;
-        if (null !== JSCompiler_object_inline_message_3138) {
+        var JSCompiler_object_inline_message_3178 = prevState.dehydrated;
+        if (null !== JSCompiler_object_inline_message_3178) {
           if (didSuspend)
             workInProgress.flags & 256
               ? (pushPrimaryTreeSuspenseHandler(workInProgress),
@@ -11289,13 +11298,13 @@
                   (workInProgress = null))
                 : (reuseSuspenseHandlerOnStack(workInProgress),
                   (nextPrimaryChildren =
-                    JSCompiler_object_inline_stack_3140.fallback),
+                    JSCompiler_object_inline_stack_3180.fallback),
                   (nextFallbackChildren = workInProgress.mode),
-                  (JSCompiler_object_inline_stack_3140 =
+                  (JSCompiler_object_inline_stack_3180 =
                     mountWorkInProgressOffscreenFiber(
                       {
                         mode: "visible",
-                        children: JSCompiler_object_inline_stack_3140.children
+                        children: JSCompiler_object_inline_stack_3180.children
                       },
                       nextFallbackChildren
                     )),
@@ -11306,78 +11315,78 @@
                     null
                   )),
                   (nextPrimaryChildren.flags |= 2),
-                  (JSCompiler_object_inline_stack_3140.return = workInProgress),
+                  (JSCompiler_object_inline_stack_3180.return = workInProgress),
                   (nextPrimaryChildren.return = workInProgress),
-                  (JSCompiler_object_inline_stack_3140.sibling =
+                  (JSCompiler_object_inline_stack_3180.sibling =
                     nextPrimaryChildren),
-                  (workInProgress.child = JSCompiler_object_inline_stack_3140),
+                  (workInProgress.child = JSCompiler_object_inline_stack_3180),
                   reconcileChildFibers(
                     workInProgress,
                     current.child,
                     null,
                     renderLanes
                   ),
-                  (JSCompiler_object_inline_stack_3140 = workInProgress.child),
-                  (JSCompiler_object_inline_stack_3140.memoizedState =
+                  (JSCompiler_object_inline_stack_3180 = workInProgress.child),
+                  (JSCompiler_object_inline_stack_3180.memoizedState =
                     mountSuspenseOffscreenState(renderLanes)),
-                  (JSCompiler_object_inline_stack_3140.childLanes =
+                  (JSCompiler_object_inline_stack_3180.childLanes =
                     getRemainingWorkInPrimaryTree(
                       current,
-                      JSCompiler_object_inline_componentStack_3141,
+                      JSCompiler_object_inline_componentStack_3181,
                       renderLanes
                     )),
                   (workInProgress.memoizedState = SUSPENDED_MARKER),
                   (workInProgress = bailoutOffscreenComponent(
                     null,
-                    JSCompiler_object_inline_stack_3140
+                    JSCompiler_object_inline_stack_3180
                   )));
           else if (
             (pushPrimaryTreeSuspenseHandler(workInProgress),
             warnIfHydrating(),
             0 !== (renderLanes & 536870912) &&
               markRenderDerivedCause(workInProgress),
-            isSuspenseInstanceFallback(JSCompiler_object_inline_message_3138))
+            isSuspenseInstanceFallback(JSCompiler_object_inline_message_3178))
           ) {
-            JSCompiler_object_inline_componentStack_3141 =
-              JSCompiler_object_inline_message_3138.nextSibling &&
-              JSCompiler_object_inline_message_3138.nextSibling.dataset;
-            if (JSCompiler_object_inline_componentStack_3141) {
+            JSCompiler_object_inline_componentStack_3181 =
+              JSCompiler_object_inline_message_3178.nextSibling &&
+              JSCompiler_object_inline_message_3178.nextSibling.dataset;
+            if (JSCompiler_object_inline_componentStack_3181) {
               nextPrimaryChildren =
-                JSCompiler_object_inline_componentStack_3141.dgst;
-              var message = JSCompiler_object_inline_componentStack_3141.msg;
+                JSCompiler_object_inline_componentStack_3181.dgst;
+              var message = JSCompiler_object_inline_componentStack_3181.msg;
               nextFallbackChildren =
-                JSCompiler_object_inline_componentStack_3141.stck;
+                JSCompiler_object_inline_componentStack_3181.stck;
               var componentStack =
-                JSCompiler_object_inline_componentStack_3141.cstck;
+                JSCompiler_object_inline_componentStack_3181.cstck;
             }
-            JSCompiler_object_inline_message_3138 = message;
-            JSCompiler_object_inline_digest_3139 = nextPrimaryChildren;
-            JSCompiler_object_inline_stack_3140 = nextFallbackChildren;
-            JSCompiler_object_inline_componentStack_3141 = componentStack;
-            nextPrimaryChildren = JSCompiler_object_inline_digest_3139;
-            nextFallbackChildren = JSCompiler_object_inline_message_3138;
-            componentStack = JSCompiler_object_inline_componentStack_3141;
+            JSCompiler_object_inline_message_3178 = message;
+            JSCompiler_object_inline_digest_3179 = nextPrimaryChildren;
+            JSCompiler_object_inline_stack_3180 = nextFallbackChildren;
+            JSCompiler_object_inline_componentStack_3181 = componentStack;
+            nextPrimaryChildren = JSCompiler_object_inline_digest_3179;
+            nextFallbackChildren = JSCompiler_object_inline_message_3178;
+            componentStack = JSCompiler_object_inline_componentStack_3181;
             "POSTPONE" !== nextPrimaryChildren &&
-              ((JSCompiler_object_inline_componentStack_3141 =
+              ((JSCompiler_object_inline_componentStack_3181 =
                 nextFallbackChildren
                   ? Error(nextFallbackChildren)
                   : Error(
                       "The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering."
                     )),
-              (JSCompiler_object_inline_componentStack_3141.stack =
-                JSCompiler_object_inline_stack_3140 || ""),
-              (JSCompiler_object_inline_componentStack_3141.digest =
+              (JSCompiler_object_inline_componentStack_3181.stack =
+                JSCompiler_object_inline_stack_3180 || ""),
+              (JSCompiler_object_inline_componentStack_3181.digest =
                 nextPrimaryChildren),
-              (JSCompiler_object_inline_stack_3140 =
+              (JSCompiler_object_inline_stack_3180 =
                 void 0 === componentStack ? null : componentStack),
               (nextPrimaryChildren = {
-                value: JSCompiler_object_inline_componentStack_3141,
+                value: JSCompiler_object_inline_componentStack_3181,
                 source: null,
-                stack: JSCompiler_object_inline_stack_3140
+                stack: JSCompiler_object_inline_stack_3180
               }),
-              "string" === typeof JSCompiler_object_inline_stack_3140 &&
+              "string" === typeof JSCompiler_object_inline_stack_3180 &&
                 CapturedStacks.set(
-                  JSCompiler_object_inline_componentStack_3141,
+                  JSCompiler_object_inline_componentStack_3181,
                   nextPrimaryChildren
                 ),
               queueHydrationError(nextPrimaryChildren));
@@ -11394,34 +11403,34 @@
                 renderLanes,
                 !1
               ),
-            (JSCompiler_object_inline_componentStack_3141 =
+            (JSCompiler_object_inline_componentStack_3181 =
               0 !== (renderLanes & current.childLanes)),
-            didReceiveUpdate || JSCompiler_object_inline_componentStack_3141)
+            didReceiveUpdate || JSCompiler_object_inline_componentStack_3181)
           ) {
-            JSCompiler_object_inline_componentStack_3141 = workInProgressRoot;
+            JSCompiler_object_inline_componentStack_3181 = workInProgressRoot;
             if (
-              null !== JSCompiler_object_inline_componentStack_3141 &&
-              ((JSCompiler_object_inline_stack_3140 = getBumpedLaneForHydration(
-                JSCompiler_object_inline_componentStack_3141,
+              null !== JSCompiler_object_inline_componentStack_3181 &&
+              ((JSCompiler_object_inline_stack_3180 = getBumpedLaneForHydration(
+                JSCompiler_object_inline_componentStack_3181,
                 renderLanes
               )),
-              0 !== JSCompiler_object_inline_stack_3140 &&
-                JSCompiler_object_inline_stack_3140 !== prevState.retryLane)
+              0 !== JSCompiler_object_inline_stack_3180 &&
+                JSCompiler_object_inline_stack_3180 !== prevState.retryLane)
             )
               throw (
-                ((prevState.retryLane = JSCompiler_object_inline_stack_3140),
+                ((prevState.retryLane = JSCompiler_object_inline_stack_3180),
                 enqueueConcurrentRenderForLane(
                   current,
-                  JSCompiler_object_inline_stack_3140
+                  JSCompiler_object_inline_stack_3180
                 ),
                 scheduleUpdateOnFiber(
-                  JSCompiler_object_inline_componentStack_3141,
+                  JSCompiler_object_inline_componentStack_3181,
                   current,
-                  JSCompiler_object_inline_stack_3140
+                  JSCompiler_object_inline_stack_3180
                 ),
                 SelectiveHydrationException)
               );
-            isSuspenseInstancePending(JSCompiler_object_inline_message_3138) ||
+            isSuspenseInstancePending(JSCompiler_object_inline_message_3178) ||
               renderDidSuspendDelayIfPossible();
             workInProgress = retrySuspenseComponentWithoutHydrating(
               current,
@@ -11429,13 +11438,13 @@
               renderLanes
             );
           } else
-            isSuspenseInstancePending(JSCompiler_object_inline_message_3138)
+            isSuspenseInstancePending(JSCompiler_object_inline_message_3178)
               ? ((workInProgress.flags |= 192),
                 (workInProgress.child = current.child),
                 (workInProgress = null))
               : ((current = prevState.treeContext),
                 (nextHydratableInstance = getNextHydratable(
-                  JSCompiler_object_inline_message_3138.nextSibling
+                  JSCompiler_object_inline_message_3178.nextSibling
                 )),
                 (hydrationParentFiber = workInProgress),
                 (isHydrating = !0),
@@ -11447,31 +11456,31 @@
                   restoreSuspendedTreeContext(workInProgress, current),
                 (workInProgress = mountSuspensePrimaryChildren(
                   workInProgress,
-                  JSCompiler_object_inline_stack_3140.children
+                  JSCompiler_object_inline_stack_3180.children
                 )),
                 (workInProgress.flags |= 4096));
           return workInProgress;
         }
       }
-      if (JSCompiler_object_inline_digest_3139)
+      if (JSCompiler_object_inline_digest_3179)
         return (
           reuseSuspenseHandlerOnStack(workInProgress),
-          (nextPrimaryChildren = JSCompiler_object_inline_stack_3140.fallback),
+          (nextPrimaryChildren = JSCompiler_object_inline_stack_3180.fallback),
           (nextFallbackChildren = workInProgress.mode),
           (componentStack = current.child),
-          (JSCompiler_object_inline_message_3138 = componentStack.sibling),
-          (JSCompiler_object_inline_stack_3140 = createWorkInProgress(
+          (JSCompiler_object_inline_message_3178 = componentStack.sibling),
+          (JSCompiler_object_inline_stack_3180 = createWorkInProgress(
             componentStack,
             {
               mode: "hidden",
-              children: JSCompiler_object_inline_stack_3140.children
+              children: JSCompiler_object_inline_stack_3180.children
             }
           )),
-          (JSCompiler_object_inline_stack_3140.subtreeFlags =
+          (JSCompiler_object_inline_stack_3180.subtreeFlags =
             componentStack.subtreeFlags & 65011712),
-          null !== JSCompiler_object_inline_message_3138
+          null !== JSCompiler_object_inline_message_3178
             ? (nextPrimaryChildren = createWorkInProgress(
-                JSCompiler_object_inline_message_3138,
+                JSCompiler_object_inline_message_3178,
                 nextPrimaryChildren
               ))
             : ((nextPrimaryChildren = createFiberFromFragment(
@@ -11482,11 +11491,11 @@
               )),
               (nextPrimaryChildren.flags |= 2)),
           (nextPrimaryChildren.return = workInProgress),
-          (JSCompiler_object_inline_stack_3140.return = workInProgress),
-          (JSCompiler_object_inline_stack_3140.sibling = nextPrimaryChildren),
-          (workInProgress.child = JSCompiler_object_inline_stack_3140),
-          bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3140),
-          (JSCompiler_object_inline_stack_3140 = workInProgress.child),
+          (JSCompiler_object_inline_stack_3180.return = workInProgress),
+          (JSCompiler_object_inline_stack_3180.sibling = nextPrimaryChildren),
+          (workInProgress.child = JSCompiler_object_inline_stack_3180),
+          bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3180),
+          (JSCompiler_object_inline_stack_3180 = workInProgress.child),
           (nextPrimaryChildren = current.child.memoizedState),
           null === nextPrimaryChildren
             ? (nextPrimaryChildren = mountSuspenseOffscreenState(renderLanes))
@@ -11502,18 +11511,18 @@
                 baseLanes: nextPrimaryChildren.baseLanes | renderLanes,
                 cachePool: nextFallbackChildren
               })),
-          (JSCompiler_object_inline_stack_3140.memoizedState =
+          (JSCompiler_object_inline_stack_3180.memoizedState =
             nextPrimaryChildren),
-          (JSCompiler_object_inline_stack_3140.childLanes =
+          (JSCompiler_object_inline_stack_3180.childLanes =
             getRemainingWorkInPrimaryTree(
               current,
-              JSCompiler_object_inline_componentStack_3141,
+              JSCompiler_object_inline_componentStack_3181,
               renderLanes
             )),
           (workInProgress.memoizedState = SUSPENDED_MARKER),
           bailoutOffscreenComponent(
             current.child,
-            JSCompiler_object_inline_stack_3140
+            JSCompiler_object_inline_stack_3180
           )
         );
       null !== prevState &&
@@ -11525,17 +11534,17 @@
       current = renderLanes.sibling;
       renderLanes = createWorkInProgress(renderLanes, {
         mode: "visible",
-        children: JSCompiler_object_inline_stack_3140.children
+        children: JSCompiler_object_inline_stack_3180.children
       });
       renderLanes.return = workInProgress;
       renderLanes.sibling = null;
       null !== current &&
-        ((JSCompiler_object_inline_componentStack_3141 =
+        ((JSCompiler_object_inline_componentStack_3181 =
           workInProgress.deletions),
-        null === JSCompiler_object_inline_componentStack_3141
+        null === JSCompiler_object_inline_componentStack_3181
           ? ((workInProgress.deletions = [current]),
             (workInProgress.flags |= 16))
-          : JSCompiler_object_inline_componentStack_3141.push(current));
+          : JSCompiler_object_inline_componentStack_3181.push(current));
       workInProgress.child = renderLanes;
       workInProgress.memoizedState = null;
       return renderLanes;
@@ -15319,7 +15328,7 @@
           hasLoggedError ||
             ((hasLoggedError = !0),
             console.error(
-              "React instrumentation encountered an error: %s",
+              "React instrumentation encountered an error: %o",
               err
             ));
         }
@@ -18176,13 +18185,16 @@
       return resolveUpdatePriority();
     }
     function requestDeferredLane() {
-      0 === workInProgressDeferredLane &&
-        (workInProgressDeferredLane =
-          0 === (workInProgressRootRenderLanes & 536870912) || isHydrating
-            ? claimNextTransitionLane()
-            : 536870912);
-      var suspenseHandler = suspenseHandlerStackCursor.current;
-      null !== suspenseHandler && (suspenseHandler.flags |= 32);
+      if (0 === workInProgressDeferredLane)
+        if (0 === (workInProgressRootRenderLanes & 536870912) || isHydrating) {
+          var lane = nextTransitionDeferredLane;
+          nextTransitionDeferredLane <<= 1;
+          0 === (nextTransitionDeferredLane & 3932160) &&
+            (nextTransitionDeferredLane = 262144);
+          workInProgressDeferredLane = lane;
+        } else workInProgressDeferredLane = 536870912;
+      lane = suspenseHandlerStackCursor.current;
+      null !== lane && (lane.flags |= 32);
       return workInProgressDeferredLane;
     }
     function scheduleViewTransitionEvent(fiber, callback) {
@@ -20096,7 +20108,7 @@
             hasLoggedError ||
               ((hasLoggedError = !0),
               console.error(
-                "React instrumentation encountered an error: %s",
+                "React instrumentation encountered an error: %o",
                 err
               ));
           }
@@ -20143,7 +20155,7 @@
         0 !== (pendingEffectsLanes & 3) && flushPendingEffects();
         ensureRootIsScheduled(root);
         suspendedCommitReason = root.pendingLanes;
-        0 !== (lanes & 4194090) && 0 !== (suspendedCommitReason & 42)
+        0 !== (lanes & 261930) && 0 !== (suspendedCommitReason & 42)
           ? ((nestedUpdateScheduled = !0),
             root === rootWithNestedUpdates
               ? nestedUpdateCount++
@@ -20586,7 +20598,7 @@
             hasLoggedError ||
               ((hasLoggedError = !0),
               console.error(
-                "React instrumentation encountered an error: %s",
+                "React instrumentation encountered an error: %o",
                 err
               ));
           }
@@ -21134,8 +21146,12 @@
     function requestTransitionLane() {
       if (0 === currentEventTransitionLane) {
         var actionScopeLane = currentEntangledLane;
-        currentEventTransitionLane =
-          0 !== actionScopeLane ? actionScopeLane : claimNextTransitionLane();
+        0 === actionScopeLane &&
+          ((actionScopeLane = nextTransitionUpdateLane),
+          (nextTransitionUpdateLane <<= 1),
+          0 === (nextTransitionUpdateLane & 261888) &&
+            (nextTransitionUpdateLane = 256));
+        currentEventTransitionLane = actionScopeLane;
       }
       return currentEventTransitionLane;
     }
@@ -25342,6 +25358,36 @@
       );
       return !1;
     }
+    function normalizeListenerOptions(opts) {
+      return null == opts
+        ? "0"
+        : "boolean" === typeof opts
+          ? "c=" + (opts ? "1" : "0")
+          : "c=" +
+            (opts.capture ? "1" : "0") +
+            "&o=" +
+            (opts.once ? "1" : "0") +
+            "&p=" +
+            (opts.passive ? "1" : "0");
+    }
+    function indexOfEventListener(
+      eventListeners,
+      type,
+      listener,
+      optionsOrUseCapture
+    ) {
+      for (var i = 0; i < eventListeners.length; i++) {
+        var item = eventListeners[i];
+        if (
+          item.type === type &&
+          item.listener === listener &&
+          normalizeListenerOptions(item.optionsOrUseCapture) ===
+            normalizeListenerOptions(optionsOrUseCapture)
+        )
+          return i;
+      }
+      return -1;
+    }
     function setFocusOnFiberIfFocusable(fiber, focusOptions) {
       fiber = getInstanceFromHostFiber(fiber);
       return setFocusIfFocusable(fiber, focusOptions);
@@ -25379,88 +25425,96 @@
       otherNode
     ) {
       var otherFiber = getClosestInstanceFromNode(otherNode);
-      return documentPosition & Node.DOCUMENT_POSITION_CONTAINED_BY
-        ? !!otherFiber && isFiberContainedBy(fragmentFiber, otherFiber)
-        : documentPosition & Node.DOCUMENT_POSITION_CONTAINS
-          ? null === otherFiber
-            ? ((otherFiber = otherNode.ownerDocument),
-              otherNode === otherFiber || otherNode === otherFiber.body)
-            : isFiberContainedBy(otherFiber, fragmentFiber)
-          : documentPosition & Node.DOCUMENT_POSITION_PRECEDING
-            ? ((followingBoundaryFiber = !!otherFiber) &&
-                !(followingBoundaryFiber =
-                  otherFiber === precedingBoundaryFiber) &&
-                ((followingBoundaryFiber = getLowestCommonAncestor(
-                  precedingBoundaryFiber,
-                  otherFiber,
-                  getParentForFragmentAncestors
-                )),
-                null === followingBoundaryFiber
-                  ? (followingBoundaryFiber = !1)
-                  : (traverseVisibleHostChildren(
-                      followingBoundaryFiber,
-                      !0,
-                      isFiberPrecedingCheck,
-                      otherFiber,
-                      precedingBoundaryFiber
-                    ),
-                    (otherFiber = searchTarget),
-                    (searchTarget = null),
-                    (followingBoundaryFiber = null !== otherFiber))),
-              followingBoundaryFiber)
-            : documentPosition & Node.DOCUMENT_POSITION_FOLLOWING
-              ? ((precedingBoundaryFiber = !!otherFiber) &&
-                  !(precedingBoundaryFiber =
-                    otherFiber === followingBoundaryFiber) &&
-                  ((precedingBoundaryFiber = getLowestCommonAncestor(
-                    followingBoundaryFiber,
-                    otherFiber,
-                    getParentForFragmentAncestors
-                  )),
-                  null === precedingBoundaryFiber
-                    ? (precedingBoundaryFiber = !1)
-                    : (traverseVisibleHostChildren(
-                        precedingBoundaryFiber,
-                        !0,
-                        isFiberFollowingCheck,
-                        otherFiber,
-                        followingBoundaryFiber
-                      ),
-                      (otherFiber = searchTarget),
-                      (searchBoundary = searchTarget = null),
-                      (precedingBoundaryFiber = null !== otherFiber))),
-                precedingBoundaryFiber)
-              : !1;
-    }
-    function normalizeListenerOptions(opts) {
-      return null == opts
-        ? "0"
-        : "boolean" === typeof opts
-          ? "c=" + (opts ? "1" : "0")
-          : "c=" +
-            (opts.capture ? "1" : "0") +
-            "&o=" +
-            (opts.once ? "1" : "0") +
-            "&p=" +
-            (opts.passive ? "1" : "0");
-    }
-    function indexOfEventListener(
-      eventListeners,
-      type,
-      listener,
-      optionsOrUseCapture
-    ) {
-      for (var i = 0; i < eventListeners.length; i++) {
-        var item = eventListeners[i];
-        if (
-          item.type === type &&
-          item.listener === listener &&
-          normalizeListenerOptions(item.optionsOrUseCapture) ===
-            normalizeListenerOptions(optionsOrUseCapture)
-        )
-          return i;
+      if (documentPosition & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+        if ((precedingBoundaryFiber = !!otherFiber))
+          a: {
+            for (; null !== otherFiber; ) {
+              if (
+                7 === otherFiber.tag &&
+                (otherFiber === fragmentFiber ||
+                  otherFiber.alternate === fragmentFiber)
+              ) {
+                precedingBoundaryFiber = !0;
+                break a;
+              }
+              otherFiber = otherFiber.return;
+            }
+            precedingBoundaryFiber = !1;
+          }
+        return precedingBoundaryFiber;
       }
-      return -1;
+      if (documentPosition & Node.DOCUMENT_POSITION_CONTAINS) {
+        if (null === otherFiber)
+          return (
+            (otherFiber = otherNode.ownerDocument),
+            otherNode === otherFiber || otherNode === otherFiber.body
+          );
+        a: {
+          otherFiber = fragmentFiber;
+          for (
+            fragmentFiber = getFragmentParentHostFiber(fragmentFiber);
+            null !== otherFiber;
+
+          ) {
+            if (
+              !(
+                (5 !== otherFiber.tag && 3 !== otherFiber.tag) ||
+                (otherFiber !== fragmentFiber &&
+                  otherFiber.alternate !== fragmentFiber)
+              )
+            ) {
+              otherFiber = !0;
+              break a;
+            }
+            otherFiber = otherFiber.return;
+          }
+          otherFiber = !1;
+        }
+        return otherFiber;
+      }
+      return documentPosition & Node.DOCUMENT_POSITION_PRECEDING
+        ? ((fragmentFiber = !!otherFiber) &&
+            !(fragmentFiber = otherFiber === precedingBoundaryFiber) &&
+            ((fragmentFiber = getLowestCommonAncestor(
+              precedingBoundaryFiber,
+              otherFiber,
+              getParentForFragmentAncestors
+            )),
+            null === fragmentFiber
+              ? (fragmentFiber = !1)
+              : (traverseVisibleHostChildren(
+                  fragmentFiber,
+                  !0,
+                  isFiberPrecedingCheck,
+                  otherFiber,
+                  precedingBoundaryFiber
+                ),
+                (otherFiber = searchTarget),
+                (searchTarget = null),
+                (fragmentFiber = null !== otherFiber))),
+          fragmentFiber)
+        : documentPosition & Node.DOCUMENT_POSITION_FOLLOWING
+          ? ((fragmentFiber = !!otherFiber) &&
+              !(fragmentFiber = otherFiber === followingBoundaryFiber) &&
+              ((fragmentFiber = getLowestCommonAncestor(
+                followingBoundaryFiber,
+                otherFiber,
+                getParentForFragmentAncestors
+              )),
+              null === fragmentFiber
+                ? (fragmentFiber = !1)
+                : (traverseVisibleHostChildren(
+                    fragmentFiber,
+                    !0,
+                    isFiberFollowingCheck,
+                    otherFiber,
+                    followingBoundaryFiber
+                  ),
+                  (otherFiber = searchTarget),
+                  (searchBoundary = searchTarget = null),
+                  (fragmentFiber = null !== otherFiber))),
+            fragmentFiber)
+          : !1;
     }
     function commitNewChildToFragmentInstance(childInstance, fragmentInstance) {
       var eventListeners = fragmentInstance._eventListeners;
@@ -25590,7 +25644,13 @@
     }
     function canHydrateHydrationBoundary(instance, inRootOrSingleton) {
       for (; 8 !== instance.nodeType; ) {
-        if (!inRootOrSingleton) return null;
+        if (
+          (1 !== instance.nodeType ||
+            "INPUT" !== instance.nodeName ||
+            "hidden" !== instance.type) &&
+          !inRootOrSingleton
+        )
+          return null;
         instance = getNextHydratable(instance.nextSibling);
         if (null === instance) return null;
       }
@@ -26681,7 +26741,7 @@
           hasLoggedError ||
             ((hasLoggedError = !0),
             console.error(
-              "React instrumentation encountered an error: %s",
+              "React instrumentation encountered an error: %o",
               err
             ));
         }
@@ -27488,7 +27548,8 @@
       clz32 = Math.clz32 ? Math.clz32 : clz32Fallback,
       log = Math.log,
       LN2 = Math.LN2,
-      nextTransitionLane = 256,
+      nextTransitionUpdateLane = 256,
+      nextTransitionDeferredLane = 262144,
       nextRetryLane = 4194304,
       DiscreteEventPriority = 2,
       ContinuousEventPriority = 8,
@@ -28331,7 +28392,11 @@
         "aria-rowcount": 0,
         "aria-rowindex": 0,
         "aria-rowspan": 0,
-        "aria-setsize": 0
+        "aria-setsize": 0,
+        "aria-braillelabel": 0,
+        "aria-brailleroledescription": 0,
+        "aria-colindextext": 0,
+        "aria-rowindextext": 0
       },
       warnedProperties$1 = {},
       rARIA$1 = RegExp(
@@ -30959,8 +31024,9 @@
       );
     };
     FragmentInstance.prototype.unobserveUsing = function (observer) {
-      null !== this._observers && this._observers.has(observer)
-        ? (this._observers.delete(observer),
+      var observers = this._observers;
+      null !== observers && observers.has(observer)
+        ? (observers.delete(observer),
           traverseVisibleHostChildren(
             this._fragmentFiber.child,
             !1,
@@ -31005,18 +31071,16 @@
         void 0,
         void 0
       );
+      var parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
       if (0 === children.length) {
-        children = getInstanceFromHostFiber(parentHostFiber);
-        var parentResult = children.compareDocumentPosition(otherNode);
+        children = this._fragmentFiber;
+        var parentResult =
+          parentHostInstance.compareDocumentPosition(otherNode);
         parentHostFiber = parentResult;
-        children === otherNode
+        parentHostInstance === otherNode
           ? (parentHostFiber = Node.DOCUMENT_POSITION_CONTAINS)
           : parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY &&
-            (traverseVisibleHostChildren(
-              this._fragmentFiber.sibling,
-              !1,
-              findNextSibling
-            ),
+            (traverseVisibleHostChildren(children.sibling, !1, findNextSibling),
             (children = searchTarget),
             (searchTarget = null),
             null === children
@@ -31035,15 +31099,47 @@
       }
       parentHostFiber = getInstanceFromHostFiber(children[0]);
       parentResult = getInstanceFromHostFiber(children[children.length - 1]);
-      var firstResult = parentHostFiber.compareDocumentPosition(otherNode),
-        lastResult = parentResult.compareDocumentPosition(otherNode);
+      for (
+        var firstInstance = getInstanceFromHostFiber(children[0]),
+          foundPortalParent = !1,
+          parent = this._fragmentFiber.return;
+        null !== parent;
+
+      ) {
+        4 === parent.tag && (foundPortalParent = !0);
+        if (3 === parent.tag || 5 === parent.tag) break;
+        parent = parent.return;
+      }
+      firstInstance = foundPortalParent
+        ? firstInstance.parentElement
+        : parentHostInstance;
+      if (null == firstInstance) return Node.DOCUMENT_POSITION_DISCONNECTED;
+      parentHostInstance =
+        firstInstance.compareDocumentPosition(parentHostFiber) &
+        Node.DOCUMENT_POSITION_CONTAINED_BY;
+      firstInstance =
+        firstInstance.compareDocumentPosition(parentResult) &
+        Node.DOCUMENT_POSITION_CONTAINED_BY;
+      foundPortalParent = parentHostFiber.compareDocumentPosition(otherNode);
+      var lastResult = parentResult.compareDocumentPosition(otherNode);
+      parent =
+        foundPortalParent & Node.DOCUMENT_POSITION_CONTAINED_BY ||
+        lastResult & Node.DOCUMENT_POSITION_CONTAINED_BY;
+      lastResult =
+        parentHostInstance &&
+        firstInstance &&
+        foundPortalParent & Node.DOCUMENT_POSITION_FOLLOWING &&
+        lastResult & Node.DOCUMENT_POSITION_PRECEDING;
       parentHostFiber =
-        (firstResult & Node.DOCUMENT_POSITION_FOLLOWING &&
-          lastResult & Node.DOCUMENT_POSITION_PRECEDING) ||
-        otherNode === parentHostFiber ||
-        otherNode === parentResult
+        (parentHostInstance && parentHostFiber === otherNode) ||
+        (firstInstance && parentResult === otherNode) ||
+        parent ||
+        lastResult
           ? Node.DOCUMENT_POSITION_CONTAINED_BY
-          : firstResult;
+          : (!parentHostInstance && parentHostFiber === otherNode) ||
+              (!firstInstance && parentResult === otherNode)
+            ? Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+            : foundPortalParent;
       return parentHostFiber & Node.DOCUMENT_POSITION_DISCONNECTED ||
         parentHostFiber & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC ||
         validateDocumentPositionWithFiberTree(
@@ -31055,6 +31151,50 @@
         )
         ? parentHostFiber
         : Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+    };
+    FragmentInstance.prototype.experimental_scrollIntoView = function (
+      alignToTop
+    ) {
+      if ("object" === typeof alignToTop)
+        throw Error(
+          "FragmentInstance.experimental_scrollIntoView() does not support scrollIntoViewOptions. Use the alignToTop boolean instead."
+        );
+      var children = [];
+      traverseVisibleHostChildren(
+        this._fragmentFiber.child,
+        !1,
+        collectChildren,
+        children,
+        void 0,
+        void 0
+      );
+      var resolvedAlignToTop = !1 !== alignToTop;
+      if (0 === children.length) {
+        children = this._fragmentFiber;
+        var result = [null, null],
+          parentHostFiber = getFragmentParentHostFiber(children);
+        null !== parentHostFiber &&
+          findFragmentInstanceSiblings(result, children, parentHostFiber.child);
+        resolvedAlignToTop = resolvedAlignToTop
+          ? result[1] ||
+            result[0] ||
+            getFragmentParentHostFiber(this._fragmentFiber)
+          : result[0] || result[1];
+        null === resolvedAlignToTop
+          ? console.warn(
+              "You are attempting to scroll a FragmentInstance that has no children, siblings, or parent. No scroll was performed."
+            )
+          : getInstanceFromHostFiber(resolvedAlignToTop).scrollIntoView(
+              alignToTop
+            );
+      } else
+        for (
+          result = resolvedAlignToTop ? children.length - 1 : 0;
+          result !== (resolvedAlignToTop ? -1 : children.length);
+
+        )
+          getInstanceFromHostFiber(children[result]).scrollIntoView(alignToTop),
+            (result += resolvedAlignToTop ? -1 : 1);
     };
     var previousHydratableOnEnteringScopedSingleton = null,
       NotLoaded = 0,
@@ -31474,11 +31614,11 @@
     };
     (function () {
       var isomorphicReactPackageVersion = React.version;
-      if ("19.2.0-experimental-f1222f76-20250812" !== isomorphicReactPackageVersion)
+      if ("19.2.0-experimental-3302d1f7-20250903" !== isomorphicReactPackageVersion)
         throw Error(
           'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
             (isomorphicReactPackageVersion +
-              "\n  - react-dom:  19.2.0-experimental-f1222f76-20250812\nLearn more: https://react.dev/warnings/version-mismatch")
+              "\n  - react-dom:  19.2.0-experimental-3302d1f7-20250903\nLearn more: https://react.dev/warnings/version-mismatch")
         );
     })();
     ("function" === typeof Map &&
@@ -31515,10 +31655,10 @@
       !(function () {
         var internals = {
           bundleType: 1,
-          version: "19.2.0-experimental-f1222f76-20250812",
+          version: "19.2.0-experimental-3302d1f7-20250903",
           rendererPackageName: "react-dom",
           currentDispatcherRef: ReactSharedInternals,
-          reconcilerVersion: "19.2.0-experimental-f1222f76-20250812"
+          reconcilerVersion: "19.2.0-experimental-3302d1f7-20250903"
         };
         internals.overrideHookState = overrideHookState;
         internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -31995,7 +32135,7 @@
     exports.useFormStatus = function () {
       return resolveDispatcher().useHostTransitionStatus();
     };
-    exports.version = "19.2.0-experimental-f1222f76-20250812";
+    exports.version = "19.2.0-experimental-3302d1f7-20250903";
     "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
       "function" ===
         typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&

@@ -197,11 +197,12 @@ async fn track_glob_internal(
                             reads.push(fs.read(path.clone()))
                         }
                     }
-                    DirectoryEntry::Symlink(symlink_path) => unreachable!(
+                    DirectoryEntry::Symlink(symlink_path) => bail!(
                         "resolve_symlink_safely() should have resolved all symlinks, but found \
                          unresolved symlink at path: '{}'. Found path: '{}'. Please report this \
                          as a bug.",
-                        entry_path, symlink_path
+                        entry_path,
+                        symlink_path
                     ),
                     DirectoryEntry::Other(path) => {
                         if glob_value.matches(&entry_path) {
@@ -237,12 +238,12 @@ pub mod tests {
     use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
 
     use crate::{
-        DirectoryEntry, DiskFileSystem, FileContent, FileSystem, FileSystemPath, glob::Glob,
+        DirectoryEntry, DiskFileSystem, FileContent, FileSystem, FileSystemPath,
+        glob::{Glob, GlobOptions},
     };
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn read_glob_basic() {
-        crate::register();
         let scratch = tempfile::tempdir().unwrap();
         {
             // Create a simple directory with 2 files, a subdirectory and a dotfile
@@ -265,7 +266,10 @@ pub mod tests {
         tt.run_once(async {
             let fs = DiskFileSystem::new(rcstr!("temp"), path);
             let root = fs.root().await?;
-            let read_dir = root.read_glob(Glob::new(rcstr!("**"))).await.unwrap();
+            let read_dir = root
+                .read_glob(Glob::new(rcstr!("**"), GlobOptions::default()))
+                .await
+                .unwrap();
             assert_eq!(read_dir.results.len(), 2);
             assert_eq!(
                 read_dir.results.get("foo"),
@@ -285,7 +289,10 @@ pub mod tests {
             assert_eq!(inner.inner.len(), 0);
 
             // Now with a more specific pattern
-            let read_dir = root.read_glob(Glob::new(rcstr!("**/bar"))).await.unwrap();
+            let read_dir = root
+                .read_glob(Glob::new(rcstr!("**/bar"), GlobOptions::default()))
+                .await
+                .unwrap();
             assert_eq!(read_dir.results.len(), 0);
             assert_eq!(read_dir.inner.len(), 1);
             let inner = &*read_dir.inner.get("sub").unwrap().await?;
@@ -304,9 +311,8 @@ pub mod tests {
     }
 
     #[cfg(unix)]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn read_glob_symlinks() {
-        crate::register();
         let scratch = tempfile::tempdir().unwrap();
         {
             // root.js
@@ -340,7 +346,10 @@ pub mod tests {
             let fs = DiskFileSystem::new(rcstr!("temp"), path);
             let root = fs.root().await?;
             // Symlinked files
-            let read_dir = root.read_glob(Glob::new(rcstr!("sub/*.js"))).await.unwrap();
+            let read_dir = root
+                .read_glob(Glob::new(rcstr!("sub/*.js"), GlobOptions::default()))
+                .await
+                .unwrap();
             assert_eq!(read_dir.results.len(), 0);
             let inner = &*read_dir.inner.get("sub").unwrap().await?;
             assert_eq!(
@@ -364,7 +373,7 @@ pub mod tests {
 
             // A symlinked folder
             let read_dir = root
-                .read_glob(Glob::new(rcstr!("sub/dir/*")))
+                .read_glob(Glob::new(rcstr!("sub/dir/*"), GlobOptions::default()))
                 .await
                 .unwrap();
             assert_eq!(read_dir.results.len(), 0);
@@ -403,14 +412,13 @@ pub mod tests {
 
     #[turbo_tasks::function(operation)]
     pub fn track_star_star_glob(path: FileSystemPath) -> Vc<Completion> {
-        path.track_glob(Glob::new(rcstr!("**")), false)
+        path.track_glob(Glob::new(rcstr!("**"), GlobOptions::default()), false)
     }
 
     #[cfg(unix)]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn track_glob_invalidations() {
         use std::os::unix::fs::symlink;
-        crate::register();
         let scratch = tempfile::tempdir().unwrap();
 
         // Create a simple directory with 2 files, a subdirectory and a dotfile
@@ -494,9 +502,8 @@ pub mod tests {
     }
 
     #[cfg(unix)]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn track_glob_symlinks_loop() {
-        crate::register();
         let scratch = tempfile::tempdir().unwrap();
         {
             use std::os::unix::fs::symlink;
@@ -523,7 +530,7 @@ pub mod tests {
             let err = fs
                 .root()
                 .await?
-                .track_glob(Glob::new(rcstr!("**")), false)
+                .track_glob(Glob::new(rcstr!("**"), GlobOptions::default()), false)
                 .await
                 .expect_err("Should have detected an infinite loop");
 
@@ -536,7 +543,7 @@ pub mod tests {
             let err = fs
                 .root()
                 .await?
-                .track_glob(Glob::new(rcstr!("**")), false)
+                .track_glob(Glob::new(rcstr!("**"), GlobOptions::default()), false)
                 .await
                 .expect_err("Should have detected an infinite loop");
 
@@ -552,9 +559,8 @@ pub mod tests {
     }
 
     #[cfg(unix)]
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn read_glob_symlinks_loop() {
-        crate::register();
         let scratch = tempfile::tempdir().unwrap();
         {
             use std::os::unix::fs::symlink;
@@ -579,7 +585,7 @@ pub mod tests {
             let err = fs
                 .root()
                 .await?
-                .read_glob(Glob::new(rcstr!("**")))
+                .read_glob(Glob::new(rcstr!("**"), GlobOptions::default()))
                 .await
                 .expect_err("Should have detected an infinite loop");
 
@@ -592,7 +598,7 @@ pub mod tests {
             let err = fs
                 .root()
                 .await?
-                .track_glob(Glob::new(rcstr!("**")), false)
+                .track_glob(Glob::new(rcstr!("**"), GlobOptions::default()), false)
                 .await
                 .expect_err("Should have detected an infinite loop");
 

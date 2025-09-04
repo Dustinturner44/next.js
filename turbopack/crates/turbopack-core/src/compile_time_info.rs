@@ -4,7 +4,7 @@ use turbo_rcstr::RcStr;
 use turbo_tasks::{FxIndexMap, NonLocalValue, ResolvedVc, Vc, trace::TraceRawVcs};
 use turbo_tasks_fs::FileSystemPath;
 
-use crate::environment::Environment;
+use crate::environment::{BrowserEnvironment, Environment};
 
 #[macro_export]
 macro_rules! definable_name_map_pattern_internal {
@@ -154,7 +154,7 @@ impl From<serde_json::Value> for CompileTimeDefineValue {
 }
 
 #[turbo_tasks::value]
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, PartialOrd, Ord)]
 pub enum DefinableNameSegment {
     Name(RcStr),
     TypeOf,
@@ -206,12 +206,16 @@ impl CompileTimeDefines {
 
     #[turbo_tasks::function]
     pub fn individual(&self) -> Vc<CompileTimeDefinesIndividual> {
-        Vc::cell(
+        let mut map: FxIndexMap<Vec<DefinableNameSegment>, ResolvedVc<CompileTimeDefineValue>> =
             self.0
                 .iter()
                 .map(|(key, value)| (key.clone(), value.clone().resolved_cell()))
-                .collect(),
-        )
+                .collect();
+
+        // Sort keys to make order as deterministic as possible
+        map.sort_keys();
+
+        Vc::cell(map)
     }
 }
 
@@ -303,6 +307,10 @@ impl FreeVarReferences {
                 .insert(key.to_vec(), value.clone().resolved_cell());
         }
 
+        // Sort keys to make order as deterministic as possible
+        result.sort_keys();
+        result.iter_mut().for_each(|(_, inner)| inner.sort_keys());
+
         Vc::cell(result)
     }
 }
@@ -340,6 +348,11 @@ impl CompileTimeInfo {
     #[turbo_tasks::function]
     pub fn environment(&self) -> Vc<Environment> {
         *self.environment
+    }
+
+    #[turbo_tasks::function]
+    pub async fn css_environment(&self) -> Result<Vc<BrowserEnvironment>> {
+        Ok(self.environment.css_environment())
     }
 }
 

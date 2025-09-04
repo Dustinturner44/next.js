@@ -1,4 +1,4 @@
-use std::iter::once;
+use std::collections::BTreeSet;
 
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
@@ -22,7 +22,7 @@ use turbopack_core::{
     compile_time_defines,
     compile_time_info::{CompileTimeDefines, CompileTimeInfo, FreeVarReferences},
     environment::{
-        Environment, ExecutionEnvironment, NodeJsEnvironment, NodeJsVersion, RuntimeVersions,
+        BrowserEnvironment, Environment, ExecutionEnvironment, NodeJsEnvironment, NodeJsVersion,
     },
     free_var_references,
     module_graph::export_usage::OptionExportUsageInfo,
@@ -66,7 +66,7 @@ use crate::{
             styled_jsx::get_styled_jsx_transform_rule,
             swc_ecma_transform_plugins::get_swc_ecma_transform_plugin_rule,
         },
-        webpack_rules::webpack_loader_options,
+        webpack_rules::{WebpackLoaderBuiltinCondition, webpack_loader_options},
     },
     transform_options::{
         get_decorators_transform_options, get_jsx_transform_options,
@@ -211,14 +211,8 @@ pub async fn get_server_resolve_options_context(
     .to_resolved()
     .await?;
 
-    let mut custom_conditions = vec![mode.await?.condition().to_string().into()];
-    custom_conditions.extend(
-        NextRuntime::NodeJs
-            .conditions()
-            .iter()
-            .map(ToString::to_string)
-            .map(RcStr::from),
-    );
+    let mut custom_conditions: Vec<_> = mode.await?.custom_resolve_conditions().collect();
+    custom_conditions.extend(NextRuntime::NodeJs.custom_resolve_conditions());
 
     if ty.should_use_react_server_condition() {
         custom_conditions.push(rcstr!("react-server"));
@@ -335,17 +329,19 @@ pub async fn get_server_resolve_options_context(
         ..Default::default()
     };
 
+    let tsconfig_path = next_config
+        .typescript_tsconfig_path()
+        .await?
+        .as_ref()
+        .map(|p| project_path.join(p))
+        .transpose()?;
+
     Ok(ResolveOptionsContext {
         enable_typescript: true,
         enable_react: true,
         enable_mjs_extension: true,
         custom_extensions: next_config.resolve_extension().owned().await?,
-        tsconfig_path: next_config
-            .typescript_tsconfig_path()
-            .await?
-            .as_ref()
-            .map(|p| project_path.join(p))
-            .transpose()?,
+        tsconfig_path,
         rules: vec![(
             foreign_code_context_condition,
             resolve_options_context.clone().resolved_cell(),
@@ -370,16 +366,28 @@ pub async fn get_server_compile_time_info(
     cwd: RcStr,
     define_env: Vc<OptionEnvMap>,
     node_version: ResolvedVc<NodeJsVersion>,
+    css_browserslist_query: RcStr,
 ) -> Result<Vc<CompileTimeInfo>> {
+    let css_environment = BrowserEnvironment {
+        dom: false,
+        web_worker: false,
+        service_worker: false,
+        browserslist_query: css_browserslist_query,
+    }
+    .resolved_cell();
+
     CompileTimeInfo::builder(
-        Environment::new(ExecutionEnvironment::NodeJsLambda(
-            NodeJsEnvironment {
-                compile_target: CompileTarget::current().to_resolved().await?,
-                node_version,
-                cwd: ResolvedVc::cell(Some(cwd)),
-            }
-            .resolved_cell(),
-        ))
+        Environment::new(
+            ExecutionEnvironment::NodeJsLambda(
+                NodeJsEnvironment {
+                    compile_target: CompileTarget::current().to_resolved().await?,
+                    node_version,
+                    cwd: ResolvedVc::cell(Some(cwd)),
+                }
+                .resolved_cell(),
+            ),
+            *css_environment,
+        )
         .to_resolved()
         .await?,
     )
@@ -392,9 +400,10 @@ pub async fn get_server_compile_time_info(
 #[turbo_tasks::function]
 pub async fn get_tracing_compile_time_info() -> Result<Vc<CompileTimeInfo>> {
     CompileTimeInfo::builder(
-        Environment::new(ExecutionEnvironment::NodeJsLambda(
-            NodeJsEnvironment::default().resolved_cell(),
-        ))
+        Environment::new(
+            ExecutionEnvironment::NodeJsLambda(NodeJsEnvironment::default().resolved_cell()),
+            BrowserEnvironment::default().cell(),
+        )
         .to_resolved()
         .await?,
     )
@@ -489,34 +498,21 @@ pub async fn get_server_module_options_context(
     let enable_postcss_transform = Some(postcss_transform_options.resolved_cell());
     let enable_foreign_postcss_transform = Some(postcss_foreign_transform_options.resolved_cell());
 
-    let mut conditions = vec![mode.await?.condition().into()];
-    conditions.extend(
-        next_runtime
-            .conditions()
-            .iter()
-            .map(ToString::to_string)
-            .map(RcStr::from),
-    );
+    let mut loader_conditions = BTreeSet::new();
+    loader_conditions.extend(mode.await?.webpack_loader_conditions());
+    loader_conditions.extend(next_runtime.webpack_loader_conditions());
 
-    // A separate webpack rules will be applied to codes matching
-    // foreign_code_context_condition. This allows to import codes from
-    // node_modules that requires webpack loaders, which next-dev implicitly
-    // does by default.
-    let foreign_enable_webpack_loaders = webpack_loader_options(
-        project_path.clone(),
-        next_config,
-        true,
-        conditions
-            .iter()
-            .cloned()
-            .chain(once(rcstr!("foreign")))
-            .collect(),
-    )
-    .await?;
+    // A separate webpack rules will be applied to codes matching foreign_code_context_condition.
+    // This allows to import codes from node_modules that requires webpack loaders, which next-dev
+    // implicitly does by default.
+    let mut foreign_conditions = loader_conditions.clone();
+    foreign_conditions.insert(WebpackLoaderBuiltinCondition::Foreign);
+    let foreign_enable_webpack_loaders =
+        *webpack_loader_options(project_path.clone(), next_config, foreign_conditions).await?;
 
-    // Now creates a webpack rules that applies to all codes.
+    // Now creates a webpack rules that applies to all code.
     let enable_webpack_loaders =
-        webpack_loader_options(project_path.clone(), next_config, false, conditions).await?;
+        *webpack_loader_options(project_path.clone(), next_config, loader_conditions).await?;
 
     let tree_shaking_mode_for_user_code = *next_config
         .tree_shaking_mode_for_user_code(next_mode.is_development())
@@ -524,13 +520,21 @@ pub async fn get_server_module_options_context(
     let tree_shaking_mode_for_foreign_code = *next_config
         .tree_shaking_mode_for_foreign_code(next_mode.is_development())
         .await?;
-    let versions = RuntimeVersions(Default::default()).cell();
+    let css_versions = environment.css_runtime_versions();
+
+    let tsconfig_path = next_config
+        .typescript_tsconfig_path()
+        .await?
+        .as_ref()
+        .map(|p| project_path.join(p))
+        .transpose()?;
 
     // ModuleOptionsContext related options
-    let tsconfig = get_typescript_transform_options(project_path.clone())
+    let tsconfig = get_typescript_transform_options(project_path.clone(), tsconfig_path.clone())
         .to_resolved()
         .await?;
-    let decorators_options = get_decorators_transform_options(project_path.clone());
+    let decorators_options =
+        get_decorators_transform_options(project_path.clone(), tsconfig_path.clone());
     let enable_mdx_rs = *next_config.mdx_rs().await?;
 
     // Get the jsx transform options for the `client` side.
@@ -540,14 +544,26 @@ pub async fn get_server_module_options_context(
     //
     // This enables correct emotion transform and other hydration between server and
     // client bundles. ref: https://github.com/vercel/next.js/blob/4bbf9b6c70d2aa4237defe2bebfa790cdb7e334e/packages/next/src/build/webpack-config.ts#L1421-L1426
-    let jsx_runtime_options =
-        get_jsx_transform_options(project_path.clone(), mode, None, false, next_config)
-            .to_resolved()
-            .await?;
-    let rsc_jsx_runtime_options =
-        get_jsx_transform_options(project_path.clone(), mode, None, true, next_config)
-            .to_resolved()
-            .await?;
+    let jsx_runtime_options = get_jsx_transform_options(
+        project_path.clone(),
+        mode,
+        None,
+        false,
+        next_config,
+        tsconfig_path.clone(),
+    )
+    .to_resolved()
+    .await?;
+    let rsc_jsx_runtime_options = get_jsx_transform_options(
+        project_path.clone(),
+        mode,
+        None,
+        true,
+        next_config,
+        tsconfig_path,
+    )
+    .to_resolved()
+    .await?;
 
     // A set of custom ecma transform rules being applied to server context.
     let source_transform_rules: Vec<ModuleRule> = vec![
@@ -565,7 +581,8 @@ pub async fn get_server_module_options_context(
     // context type.
     let styled_components_transform_rule =
         get_styled_components_transform_rule(next_config).await?;
-    let styled_jsx_transform_rule = get_styled_jsx_transform_rule(next_config, versions).await?;
+    let styled_jsx_transform_rule =
+        get_styled_jsx_transform_rule(next_config, css_versions).await?;
 
     let source_maps = if *next_config.server_source_maps().await? {
         SourceMapsType::Full

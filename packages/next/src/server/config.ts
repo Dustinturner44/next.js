@@ -25,7 +25,10 @@ import { imageConfigDefault } from '../shared/lib/image-config'
 import type { ImageConfig } from '../shared/lib/image-config'
 import { loadEnvConfig, updateInitialEnv } from '@next/env'
 import { flushAndExit } from '../telemetry/flush-and-exit'
-import { findRootDir } from '../lib/find-root'
+import {
+  findRootDirAndLockFiles,
+  warnDuplicatedLockFiles,
+} from '../lib/find-root'
 import { setHttpClientAndAgentOptions } from './setup-http-agent-env'
 import { pathHasPrefix } from '../shared/lib/router/utils/path-has-prefix'
 import { matchRemotePattern } from '../shared/lib/match-remote-pattern'
@@ -132,27 +135,6 @@ function checkDeprecations(
     silent
   )
 
-  warnOptionHasBeenDeprecated(
-    userConfig,
-    'devIndicators.appIsrStatus',
-    `\`devIndicators.appIsrStatus\` is deprecated and no longer configurable. Please remove it from ${configFileName}.`,
-    silent
-  )
-
-  warnOptionHasBeenDeprecated(
-    userConfig,
-    'devIndicators.buildActivity',
-    `\`devIndicators.buildActivity\` is deprecated and no longer configurable. Please remove it from ${configFileName}.`,
-    silent
-  )
-
-  warnOptionHasBeenDeprecated(
-    userConfig,
-    'devIndicators.buildActivityPosition',
-    `\`devIndicators.buildActivityPosition\` has been renamed to \`devIndicators.position\`. Please update your ${configFileName} file accordingly.`,
-    silent
-  )
-
   // i18n deprecation for App Router
   if (userConfig.i18n) {
     const hasAppDir = Boolean(findDir(dir, 'app'))
@@ -221,10 +203,19 @@ function warnCustomizedOption(
   }
 }
 
-function assignDefaults(
+/**
+ * Assigns defaults to the user config and validates the config.
+ *
+ * @param dir - The directory of the project.
+ * @param userConfig - The user config.
+ * @param silent - Whether to suppress warnings.
+ * @returns The complete config.
+ */
+function assignDefaultsAndValidate(
   dir: string,
   userConfig: NextConfig & { configFileName: string },
-  silent: boolean
+  silent: boolean,
+  configuredExperimentalFeatures: ConfiguredExperimentalFeature[]
 ): NextConfigComplete {
   const configFileName = userConfig.configFileName
   if (typeof userConfig.exportTrailingSlash !== 'undefined') {
@@ -583,20 +574,6 @@ function assignDefaults(
     silent
   )
 
-  // Handle buildActivityPosition migration (needs to be done after merging with defaults)
-  if (
-    result.devIndicators !== false &&
-    'buildActivityPosition' in result.devIndicators &&
-    result.devIndicators.buildActivityPosition !== result.devIndicators.position
-  ) {
-    if (!silent) {
-      Log.warnOnce(
-        `The \`devIndicators\` option \`buildActivityPosition\` ("${result.devIndicators.buildActivityPosition}") conflicts with \`position\` ("${result.devIndicators.position}"). Using \`buildActivityPosition\` ("${result.devIndicators.buildActivityPosition}") for backward compatibility.`
-      )
-    }
-    result.devIndicators.position = result.devIndicators.buildActivityPosition
-  }
-
   warnOptionHasBeenMovedOutOfExperimental(
     result,
     'bundlePagesExternals',
@@ -650,6 +627,13 @@ function assignDefaults(
     result,
     'swrDelta',
     'expireTime',
+    configFileName,
+    silent
+  )
+  warnOptionHasBeenMovedOutOfExperimental(
+    result,
+    'typedRoutes',
+    'typedRoutes',
     configFileName,
     silent
   )
@@ -745,19 +729,35 @@ function assignDefaults(
     result.deploymentId = process.env.NEXT_DEPLOYMENT_ID
   }
 
-  if (result?.outputFileTracingRoot && !result?.turbopack?.root) {
-    dset(result, ['turbopack', 'root'], result.outputFileTracingRoot)
+  const tracingRoot = result?.outputFileTracingRoot
+  const turbopackRoot = result?.turbopack?.root
+
+  // If both provided, validate they match. If not, use outputFileTracingRoot.
+  if (tracingRoot && turbopackRoot && tracingRoot !== turbopackRoot) {
+    Log.warn(
+      `Both \`outputFileTracingRoot\` and \`turbopack.root\` are set, but they must have the same value.\n` +
+        `Using \`outputFileTracingRoot\` value: ${tracingRoot}.`
+    )
   }
 
-  // use the highest level lockfile as tracing root
-  if (!result?.outputFileTracingRoot && !result?.turbopack?.root) {
-    let rootDir = findRootDir(dir)
-
-    if (rootDir) {
-      result.outputFileTracingRoot = rootDir
-      dset(result, ['turbopack', 'root'], rootDir)
+  let rootDir = tracingRoot || turbopackRoot
+  if (!rootDir) {
+    const { rootDir: foundRootDir, lockFiles } = findRootDirAndLockFiles(dir)
+    rootDir = foundRootDir
+    if (!silent) {
+      warnDuplicatedLockFiles(lockFiles)
     }
   }
+
+  if (!rootDir) {
+    throw new Error(
+      'Failed to find the root directory of the project. This is a bug in Next.js.'
+    )
+  }
+
+  // Ensure both properties are set to the same value
+  result.outputFileTracingRoot = rootDir
+  dset(result, ['turbopack', 'root'], rootDir)
 
   setHttpClientAndAgentOptions(result || defaultConfig)
 
@@ -1144,6 +1144,58 @@ function assignDefaults(
     }
 
     result.experimental.ppr = true
+
+    if (
+      configuredExperimentalFeatures &&
+      // If we've already noted that the `process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS`
+      // has enabled the feature, we don't need to note it again.
+      process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS !== 'true' &&
+      process.env.__NEXT_EXPERIMENTAL_PPR !== 'true'
+    ) {
+      addConfiguredExperimentalFeature(
+        configuredExperimentalFeatures,
+        'ppr',
+        true,
+        'enabled by `experimental.cacheComponents`'
+      )
+    }
+  }
+
+  // If ppr is enabled and the user hasn't configured rdcForNavigations, we
+  // enable it by default.
+  if (
+    result.experimental.ppr &&
+    userConfig.experimental?.rdcForNavigations === undefined
+  ) {
+    result.experimental.rdcForNavigations = true
+
+    if (configuredExperimentalFeatures) {
+      addConfiguredExperimentalFeature(
+        configuredExperimentalFeatures,
+        'rdcForNavigations',
+        true,
+        'enabled by `experimental.ppr`'
+      )
+    }
+  }
+
+  // If rdcForNavigations is enabled, but ppr is not, we throw an error.
+  if (result.experimental.rdcForNavigations && !result.experimental.ppr) {
+    throw new Error(
+      '`experimental.rdcForNavigations` is enabled, but `experimental.ppr` is not.'
+    )
+  }
+
+  // We require clientSegmentCache to be enabled if clientParamParsing is
+  // enabled. This is because clientParamParsing is only relevant when
+  // clientSegmentCache is enabled.
+  if (
+    result.experimental.clientParamParsing &&
+    !result.experimental.clientSegmentCache
+  ) {
+    throw new Error(
+      `\`experimental.clientParamParsing\` can not be \`true\` when \`experimental.clientSegmentCache\` is \`false\`. Client param parsing is only relevant when client segment cache is enabled.`
+    )
   }
 
   return result as NextConfigComplete
@@ -1302,14 +1354,15 @@ export default async function loadConfig(
     checkDeprecations(customConfig as NextConfig, configFileName, silent, dir)
 
     const config = await applyModifyConfig(
-      assignDefaults(
+      assignDefaultsAndValidate(
         dir,
         {
           configOrigin: 'server',
           configFileName,
           ...customConfig,
         },
-        silent
+        silent,
+        configuredExperimentalFeatures
       ) as NextConfigComplete,
       phase,
       silent
@@ -1415,43 +1468,9 @@ export default async function loadConfig(
     // Check deprecation warnings on the actual user config before merging with defaults
     checkDeprecations(userConfig, configFileName, silent, dir)
 
-    // Always validate the config against schema in non minimal mode.
-    // Only validate once in the root Next.js process, not in forked processes.
-    const isRootProcess = typeof process.send !== 'function'
-    if (!process.env.NEXT_MINIMAL && isRootProcess) {
-      // We only validate the config against schema in non minimal mode
-      const { configSchema } =
-        require('./config-schema') as typeof import('./config-schema')
-      const state = configSchema.safeParse(userConfig)
-
-      if (!state.success) {
-        // error message header
-        const messages = [`Invalid ${configFileName} options detected: `]
-
-        const [errorMessages, shouldExit] = normalizeNextConfigZodErrors(
-          state.error
-        )
-        // ident list item
-        for (const error of errorMessages) {
-          messages.push(`    ${error}`)
-        }
-
-        // error message footer
-        messages.push(
-          'See more info here: https://nextjs.org/docs/messages/invalid-next-config'
-        )
-
-        if (shouldExit) {
-          for (const message of messages) {
-            console.error(message)
-          }
-          await flushAndExit(1)
-        } else {
-          for (const message of messages) {
-            curLog.warn(message)
-          }
-        }
-      }
+    // Always validate the config against schema in non minimal mode
+    if (!process.env.NEXT_MINIMAL && !silent) {
+      validateConfigSchema(userConfig, configFileName, curLog.warn)
     }
 
     if (userConfig.target && userConfig.target !== 'server') {
@@ -1541,7 +1560,7 @@ export default async function loadConfig(
       phase,
     })
 
-    const completeConfig = assignDefaults(
+    const completeConfig = assignDefaultsAndValidate(
       dir,
       {
         configOrigin: relative(dir, path),
@@ -1549,7 +1568,8 @@ export default async function loadConfig(
         configFileName,
         ...userConfig,
       },
-      silent
+      silent,
+      configuredExperimentalFeatures
     ) as NextConfigComplete
 
     const finalConfig = await applyModifyConfig(completeConfig, phase, silent)
@@ -1599,10 +1619,11 @@ export default async function loadConfig(
 
   // always call assignDefaults to ensure settings like
   // reactRoot can be updated correctly even with no next.config.js
-  const completeConfig = assignDefaults(
+  const completeConfig = assignDefaultsAndValidate(
     dir,
     { ...clonedDefaultConfig, configFileName },
-    silent
+    silent,
+    configuredExperimentalFeatures
   ) as NextConfigComplete
 
   setHttpClientAndAgentOptions(completeConfig)
@@ -1775,6 +1796,44 @@ function enforceExperimentalFeatures(
     }
   }
 
+  // TODO: Remove this once we've made RDC for Navigations the default for PPR.
+  if (
+    process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true' &&
+    // We do respect an explicit value in the user config.
+    (config.experimental.rdcForNavigations === undefined ||
+      (isDefaultConfig && !config.experimental.rdcForNavigations))
+  ) {
+    config.experimental.rdcForNavigations = true
+
+    if (configuredExperimentalFeatures) {
+      addConfiguredExperimentalFeature(
+        configuredExperimentalFeatures,
+        'rdcForNavigations',
+        true,
+        'enabled by `__NEXT_EXPERIMENTAL_CACHE_COMPONENTS`'
+      )
+    }
+  }
+
+  // TODO: Remove this once we've made RDC for Navigations the default for PPR.
+  if (
+    process.env.__NEXT_EXPERIMENTAL_PPR === 'true' &&
+    // We do respect an explicit value in the user config.
+    (config.experimental.rdcForNavigations === undefined ||
+      (isDefaultConfig && !config.experimental.rdcForNavigations))
+  ) {
+    config.experimental.rdcForNavigations = true
+
+    if (configuredExperimentalFeatures) {
+      addConfiguredExperimentalFeature(
+        configuredExperimentalFeatures,
+        'rdcForNavigations',
+        true,
+        'enabled by `__NEXT_EXPERIMENTAL_PPR`'
+      )
+    }
+  }
+
   if (
     config.experimental.enablePrerenderSourceMaps === undefined &&
     config.experimental.cacheComponents === true
@@ -1879,4 +1938,44 @@ function cloneObject(obj: any): any {
   }
 
   return result
+}
+
+async function validateConfigSchema(
+  userConfig: NextConfig,
+  configFileName: string,
+  warn: (message: string) => void
+) {
+  // We only validate the config against schema in non minimal mode
+  const { configSchema } =
+    require('./config-schema') as typeof import('./config-schema')
+  const state = configSchema.safeParse(userConfig)
+
+  if (!state.success) {
+    // error message header
+    const messages = [`Invalid ${configFileName} options detected: `]
+
+    const [errorMessages, shouldExit] = normalizeNextConfigZodErrors(
+      state.error
+    )
+    // ident list item
+    for (const error of errorMessages) {
+      messages.push(`    ${error}`)
+    }
+
+    // error message footer
+    messages.push(
+      'See more info here: https://nextjs.org/docs/messages/invalid-next-config'
+    )
+
+    if (shouldExit) {
+      for (const message of messages) {
+        console.error(message)
+      }
+      await flushAndExit(1)
+    } else {
+      for (const message of messages) {
+        warn(message)
+      }
+    }
+  }
 }

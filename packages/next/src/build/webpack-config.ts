@@ -2128,7 +2128,7 @@ export default async function getBaseWebpackConfig(
             minimized: true,
           },
         }),
-      hasAppDir && isClient && new AppBuildManifestPlugin({ dev }),
+      hasAppDir && isClient && new AppBuildManifestPlugin(),
       hasAppDir &&
         (isClient
           ? new ClientReferenceManifestPlugin({
@@ -2244,6 +2244,15 @@ export default async function getBaseWebpackConfig(
         : undefined,
   }
 
+  if (isRspack) {
+    // @ts-ignore
+    // Disable Rspack's incremental buildChunkGraph due to Next.js compatibility issues
+    // TODO: Remove this workaround after Rspack 1.5.1 release
+    webpack5Config.experiments.incremental = {
+      buildChunkGraph: false,
+    }
+  }
+
   webpack5Config.module!.parser = {
     javascript: {
       url: 'relative',
@@ -2301,7 +2310,7 @@ export default async function getBaseWebpackConfig(
     crossOrigin: config.crossOrigin,
     pageExtensions: pageExtensions,
     trailingSlash: config.trailingSlash,
-    buildActivityPosition:
+    devIndicatorsPosition:
       config.devIndicators === false
         ? undefined
         : config.devIndicators.position,
@@ -2310,7 +2319,6 @@ export default async function getBaseWebpackConfig(
     optimizeCss: config.experimental.optimizeCss,
     nextScriptWorkers: config.experimental.nextScriptWorkers,
     scrollRestoration: config.experimental.scrollRestoration,
-    typedRoutes: config.experimental.typedRoutes,
     basePath: config.basePath,
     excludeDefaultMomentLocales: config.excludeDefaultMomentLocales,
     assetPrefix: config.assetPrefix,
@@ -2452,7 +2460,6 @@ export default async function getBaseWebpackConfig(
     isEdgeRuntime: isEdgeServer,
     targetWeb: isClient || isEdgeServer,
     assetPrefix: config.assetPrefix || '',
-    deploymentId: config.deploymentId,
     sassOptions: config.sassOptions,
     productionBrowserSourceMaps: config.productionBrowserSourceMaps,
     future: config.future,

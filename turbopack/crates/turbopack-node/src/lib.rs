@@ -31,6 +31,7 @@ pub mod debug;
 pub mod embed_js;
 pub mod evaluate;
 pub mod execution_context;
+mod heap_queue;
 mod node_entry;
 mod pool;
 pub mod render;
@@ -292,13 +293,4 @@ pub async fn get_intermediate_asset(
 pub struct ResponseHeaders {
     pub status: u16,
     pub headers: Vec<(RcStr, RcStr)>,
-}
-
-pub fn register() {
-    turbo_tasks::register();
-    turbo_tasks_bytes::register();
-    turbo_tasks_fs::register();
-    turbopack_dev_server::register();
-    turbopack_ecmascript::register();
-    include!(concat!(env!("OUT_DIR"), "/register.rs"));
 }

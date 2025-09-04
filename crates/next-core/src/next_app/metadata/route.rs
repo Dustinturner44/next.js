@@ -5,12 +5,16 @@
 use anyhow::{Ok, Result, bail};
 use base64::{display::Base64Display, engine::general_purpose::STANDARD};
 use indoc::{formatdoc, indoc};
-use turbo_rcstr::rcstr;
+use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::Vc;
 use turbo_tasks_fs::{self, File, FileContent, FileSystemPath};
 use turbopack::ModuleAssetContext;
 use turbopack_core::{
-    asset::AssetContent, file_source::FileSource, source::Source, virtual_source::VirtualSource,
+    asset::AssetContent,
+    file_source::FileSource,
+    issue::{Issue, IssueExt, IssueSeverity, IssueStage, OptionStyledString, StyledString},
+    source::Source,
+    virtual_source::VirtualSource,
 };
 use turbopack_ecmascript::utils::StringifyJs;
 
@@ -23,6 +27,7 @@ use crate::{
     },
     next_config::NextConfig,
     parse_segment_config_from_source,
+    segment_config::ParseSegmentMode,
 };
 
 /// Computes the route source for a Next.js metadata file.
@@ -43,7 +48,7 @@ pub async fn get_app_metadata_route_source(
             } else if stem == "sitemap" {
                 dynamic_site_map_route_source(mode, path, is_multi_dynamic)
             } else {
-                dynamic_image_route_source(path)
+                dynamic_image_route_source(mode, path, is_multi_dynamic)
             }
         }
     })
@@ -64,7 +69,7 @@ pub async fn get_app_metadata_route_entry(
     let original_path = metadata.clone().into_path();
 
     let source = Vc::upcast(FileSource::new(original_path));
-    let segment_config = parse_segment_config_from_source(source);
+    let segment_config = parse_segment_config_from_source(source, ParseSegmentMode::App);
     let is_dynamic_metadata = matches!(metadata, MetadataItem::Dynamic { .. });
     let is_multi_dynamic: bool = if Some(segment_config).is_some() {
         // is_multi_dynamic is true when config.generateSitemaps or
@@ -108,7 +113,6 @@ pub async fn get_app_metadata_route_entry(
 }
 
 const CACHE_HEADER_NONE: &str = "no-cache, no-store";
-const CACHE_HEADER_LONG_CACHE: &str = "public, immutable, no-transform, max-age=31536000";
 const CACHE_HEADER_REVALIDATE: &str = "public, max-age=0, must-revalidate";
 
 async fn get_base64_file_content(path: FileSystemPath) -> Result<String> {
@@ -133,26 +137,46 @@ async fn static_route_source(mode: NextMode, path: FileSystemPath) -> Result<Vc<
     let stem = path.file_stem();
     let stem = stem.unwrap_or_default();
 
-    let content_type = get_content_type(path.clone()).await?;
-
-    let cache_control = if stem == "favicon" {
+    let cache_control = if mode.is_production() {
         CACHE_HEADER_REVALIDATE
-    } else if mode.is_production() {
-        CACHE_HEADER_LONG_CACHE
     } else {
         CACHE_HEADER_NONE
     };
 
-    let original_file_content_b64 = get_base64_file_content(path.clone()).await?;
-
     let is_twitter = stem == "twitter-image";
     let is_open_graph = stem == "opengraph-image";
+
+    let content_type = get_content_type(path.clone()).await?;
+    let original_file_content_b64;
+
     // Twitter image file size limit is 5MB.
     // General Open Graph image file size limit is 8MB.
     // x-ref: https://developer.x.com/en/docs/x-for-websites/cards/overview/summary
     // x-ref(facebook): https://developers.facebook.com/docs/sharing/webmasters/images
-    let file_size_limit = if is_twitter { 5 } else { 8 };
-    let img_name = if is_twitter { "Twitter" } else { "Open Graph" };
+    let file_size_limit_mb = if is_twitter { 5 } else { 8 };
+    if (is_twitter || is_open_graph)
+        && let Some(content) = path.read().await?.as_content()
+        && let file_size = content.content().to_bytes().len()
+        && file_size > (file_size_limit_mb * 1024 * 1024)
+    {
+        StaticMetadataFileSizeIssue {
+            img_name: if is_twitter {
+                rcstr!("Twitter")
+            } else {
+                rcstr!("Open Graph")
+            },
+            path: path.clone(),
+            file_size_limit_mb,
+            file_size,
+        }
+        .resolved_cell()
+        .emit();
+
+        // Don't inline huge string, just insert placeholder
+        original_file_content_b64 = "".to_string();
+    } else {
+        original_file_content_b64 = get_base64_file_content(path.clone()).await?
+    }
 
     let code = formatdoc! {
         r#"
@@ -161,16 +185,6 @@ async fn static_route_source(mode: NextMode, path: FileSystemPath) -> Result<Vc<
             const contentType = {content_type}
             const cacheControl = {cache_control}
             const buffer = Buffer.from({original_file_content_b64}, 'base64')
-
-            if ({is_twitter} || {is_open_graph}) {{
-                const fileSizeInMB = buffer.byteLength / 1024 / 1024
-                if (fileSizeInMB > {file_size_limit}) {{
-                    throw new Error('File size for {img_name} image {path} exceeds {file_size_limit}MB. ' +
-                    `(Current: ${{fileSizeInMB.toFixed(2)}}MB)\n` +
-                    'Read more: https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image#image-files-jpg-png-gif'
-                    )
-                }}
-            }}
 
             export function GET() {{
                 return new NextResponse(buffer, {{
@@ -186,11 +200,6 @@ async fn static_route_source(mode: NextMode, path: FileSystemPath) -> Result<Vc<
         content_type = StringifyJs(&content_type),
         cache_control = StringifyJs(cache_control),
         original_file_content_b64 = StringifyJs(&original_file_content_b64),
-        is_twitter = is_twitter,
-        is_open_graph = is_open_graph,
-        file_size_limit = file_size_limit,
-        img_name = img_name,
-        path = StringifyJs(&path.value_to_string().await?),
     };
 
     let file = File::from(code);
@@ -267,21 +276,37 @@ async fn dynamic_site_map_route_source(
     let ext = path.extension();
     let content_type = get_content_type(path.clone()).await?;
     let mut static_generation_code = "";
+    let mut validation_code = "";
 
-    if mode.is_production() && is_multi_dynamic {
-        static_generation_code = indoc! {
-            r#"
-                export async function generateStaticParams() {
-                    const sitemaps = await generateSitemaps()
-                    const params = []
+    if is_multi_dynamic {
+        if mode.is_production() {
+            static_generation_code = indoc! {
+                r#"
+                    export async function generateStaticParams() {
+                        const sitemaps = await generateSitemaps()
+                        const params = []
 
-                    for (const item of sitemaps) {{
-                        params.push({ __metadata_id__: item.id.toString() + '.xml' })
-                    }}
-                    return params
-                }
-            "#,
-        };
+                        for (const item of sitemaps) {{
+                            params.push({ __metadata_id__: item.id.toString() + '.xml' })
+                        }}
+                        return params
+                    }
+                "#,
+            };
+        } else {
+            validation_code = indoc! {
+                r#"
+                    if (process.env.NODE_ENV !== 'production' && sitemapModule.generateSitemaps) {
+                        const sitemaps = await sitemapModule.generateSitemaps()
+                        for (const item of sitemaps) {
+                            if (item?.id == null) {
+                                throw new Error('id property is required for every item returned from generateSitemaps')
+                            }
+                        }
+                    }
+                "#,
+            };
+        }
     }
 
     let code = formatdoc! {
@@ -310,14 +335,7 @@ async fn dynamic_site_map_route_source(
                     }})
                 }}
 
-                if (process.env.NODE_ENV !== 'production' && sitemapModule.generateSitemaps) {{
-                    const sitemaps = await sitemapModule.generateSitemaps()
-                    for (const item of sitemaps) {{
-                        if (item?.id == null) {{
-                            throw new Error('id property is required for every item returned from generateSitemaps')
-                        }}
-                    }}
-                }}
+                {validation_code}
                 
                 const targetId = id && hasXmlExtension ? id.slice(0, -4) : undefined
                 const data = await handler({{ id: targetId }})
@@ -339,6 +357,7 @@ async fn dynamic_site_map_route_source(
         content_type = StringifyJs(&content_type),
         file_type = StringifyJs(&stem),
         cache_control = StringifyJs(CACHE_HEADER_REVALIDATE),
+        validation_code = validation_code,
         static_generation_code = static_generation_code,
     };
 
@@ -351,11 +370,31 @@ async fn dynamic_site_map_route_source(
     Ok(Vc::upcast(source))
 }
 
-#[turbo_tasks::function]
-async fn dynamic_image_route_source(path: FileSystemPath) -> Result<Vc<Box<dyn Source>>> {
+async fn dynamic_image_route_with_metadata_source(
+    mode: NextMode,
+    path: FileSystemPath,
+) -> Result<Vc<Box<dyn Source>>> {
     let stem = path.file_stem();
     let stem = stem.unwrap_or_default();
     let ext = path.extension();
+
+    let mut static_generation_code = "";
+
+    if mode.is_production() {
+        static_generation_code = indoc! {
+            r#"
+                export async function generateStaticParams({ params }) {
+                    const imageMetadata = await generateImageMetadata({ params })
+                    const staticParams = []
+
+                    for (const item of imageMetadata) {
+                        staticParams.push({ __metadata_id__: item.id.toString() })
+                    }
+                    return staticParams
+                }
+            "#,
+        };
+    }
 
     let code = formatdoc! {
         r#"
@@ -376,27 +415,61 @@ async fn dynamic_image_route_source(path: FileSystemPath) -> Result<Vc<Box<dyn S
                 const {{ __metadata_id__, ...rest }} = params || {{}}
                 const restParams = params ? rest : undefined
                 const targetId = __metadata_id__
-                let id = undefined
 
-                if (generateImageMetadata) {{
-                    const imageMetadata = await generateImageMetadata({{ params: restParams }})
-                    id = imageMetadata.find((item) => {{
-                        if (process.env.NODE_ENV !== 'production') {{
-                            if (item?.id == null) {{
-                                throw new Error('id property is required for every item returned from generateImageMetadata')
-                            }}
+                const imageMetadata = await generateImageMetadata({{ params: restParams }})
+                const id = imageMetadata.find((item) => {{
+                    if (process.env.NODE_ENV !== 'production') {{
+                        if (item?.id == null) {{
+                            throw new Error('id property is required for every item returned from generateImageMetadata')
                         }}
-                        return item.id.toString() === targetId
-                    }})?.id
-
-                    if (id == null) {{
-                        return new NextResponse('Not Found', {{
-                            status: 404,
-                        }})
                     }}
+                    return item.id.toString() === targetId
+                }})?.id
+
+                if (id == null) {{
+                    return new NextResponse('Not Found', {{
+                        status: 404,
+                    }})
                 }}
 
                 return handler({{ params: restParams, id }})
+            }}
+
+            export * from {resource_path}
+
+            {static_generation_code}
+        "#,
+        resource_path = StringifyJs(&format!("./{stem}.{ext}")),
+        static_generation_code = static_generation_code,
+    };
+
+    let file = File::from(code);
+    let source = VirtualSource::new(
+        path.parent().join(&format!("{stem}--route-entry.js"))?,
+        AssetContent::file(file.into()),
+    );
+
+    Ok(Vc::upcast(source))
+}
+
+async fn dynamic_image_route_without_metadata_source(
+    path: FileSystemPath,
+) -> Result<Vc<Box<dyn Source>>> {
+    let stem = path.file_stem();
+    let stem = stem.unwrap_or_default();
+    let ext = path.extension();
+
+    let code = formatdoc! {
+        r#"
+            import {{ NextResponse }} from 'next/server'
+            import {{ default as handler }} from {resource_path}
+
+            if (typeof handler !== 'function') {{
+                throw new Error('Default export is missing in {resource_path}')
+            }}
+
+            export async function GET(_, ctx) {{
+                return handler({{ params: await ctx.params }})
             }}
 
             export * from {resource_path}
@@ -411,4 +484,71 @@ async fn dynamic_image_route_source(path: FileSystemPath) -> Result<Vc<Box<dyn S
     );
 
     Ok(Vc::upcast(source))
+}
+
+#[turbo_tasks::function]
+async fn dynamic_image_route_source(
+    mode: NextMode,
+    path: FileSystemPath,
+    is_multi_dynamic: bool,
+) -> Result<Vc<Box<dyn Source>>> {
+    if is_multi_dynamic {
+        dynamic_image_route_with_metadata_source(mode, path).await
+    } else {
+        dynamic_image_route_without_metadata_source(path).await
+    }
+}
+
+#[turbo_tasks::value(shared)]
+struct StaticMetadataFileSizeIssue {
+    img_name: RcStr,
+    path: FileSystemPath,
+    file_size: usize,
+    file_size_limit_mb: usize,
+}
+
+#[turbo_tasks::value_impl]
+impl Issue for StaticMetadataFileSizeIssue {
+    fn severity(&self) -> IssueSeverity {
+        IssueSeverity::Error
+    }
+
+    #[turbo_tasks::function]
+    fn title(&self) -> Vc<StyledString> {
+        StyledString::Text(rcstr!("Static metadata file size exceeded")).cell()
+    }
+
+    #[turbo_tasks::function]
+    fn stage(&self) -> Vc<IssueStage> {
+        IssueStage::ProcessModule.into()
+    }
+
+    #[turbo_tasks::function]
+    fn file_path(&self) -> Vc<FileSystemPath> {
+        self.path.clone().cell()
+    }
+
+    #[turbo_tasks::function]
+    async fn description(&self) -> Result<Vc<OptionStyledString>> {
+        Ok(Vc::cell(Some(
+            StyledString::Text(
+                format!(
+                    "File size for {} image \"{}\" exceeds {}MB. (Current: {:.1}MB)",
+                    self.img_name,
+                    self.path.value_to_string().await?,
+                    self.file_size_limit_mb,
+                    (self.file_size as f32) / 1024.0 / 1024.0
+                )
+                .into(),
+            )
+            .resolved_cell(),
+        )))
+    }
+
+    #[turbo_tasks::function]
+    fn documentation_link(&self) -> Vc<RcStr> {
+        Vc::cell(rcstr!(
+            "https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image#image-files-jpg-png-gif"
+        ))
+    }
 }
