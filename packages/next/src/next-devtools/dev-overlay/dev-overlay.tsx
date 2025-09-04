@@ -9,6 +9,7 @@ import { DevToolsIndicator } from './components/devtools-indicator/devtools-indi
 import { PanelRouter } from './menu/panel-router'
 import { PanelRouterContext, type PanelStateKind } from './menu/context'
 import { useDevOverlayContext } from '../dev-overlay.browser'
+import { VercelVector } from './components/devtools-indicator/vercel-vector'
 
 export const RenderErrorContext = createContext<{
   runtimeErrors: ReadyRuntimeError[]
@@ -58,6 +59,7 @@ export function DevOverlay() {
                       />
                       <PanelRouter />
                       <DevToolsIndicator />
+                      <VercelVector />
                     </PanelRouterContext>
                   </RenderErrorContext>
                 </>
