@@ -93,6 +93,7 @@ import {
 import { getDevOverlayFontMiddleware } from '../../next-devtools/server/font/get-dev-overlay-font-middleware'
 import { devIndicatorServerState } from './dev-indicator-server-state'
 import { getDisableDevIndicatorMiddleware } from '../../next-devtools/server/dev-indicator-middleware'
+import { getSourceCodeMiddleware } from '../../next-devtools/server/source-code-middleware'
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
 import { backgroundLogCompilationEvents } from '../../shared/lib/turbopack/compilation-events'
 import { getSupportedBrowsers } from '../../build/utils'
@@ -717,6 +718,7 @@ export async function createHotReloaderTurbopack(
     getNextErrorFeedbackMiddleware(opts.telemetry),
     getDevOverlayFontMiddleware(),
     getDisableDevIndicatorMiddleware(),
+    getSourceCodeMiddleware(opts.dir),
     getRestartDevServerMiddleware({
       telemetry: opts.telemetry,
       turbopackProject: project,

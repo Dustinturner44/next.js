@@ -4,12 +4,16 @@ interface ChatHeaderProps {
   onClose: () => void
   onToggleMinimize: () => void
   isMinimized: boolean
+  onToggleInspect?: () => void
+  isInspecting?: boolean
 }
 
 export function ChatHeader({
   onClose,
   onToggleMinimize,
   isMinimized,
+  onToggleInspect,
+  isInspecting = false,
 }: ChatHeaderProps) {
   return (
     <div className="chatHeader">
@@ -25,6 +29,26 @@ export function ChatHeader({
         Vercel Vector™
       </h2>
       <div className="headerActions">
+        {onToggleInspect && (
+          <button
+            type="button"
+            onClick={onToggleInspect}
+            className={`actionButton ${isInspecting ? 'inspecting' : ''}`}
+            aria-label={
+              isInspecting ? 'Exit inspect mode' : 'Enter inspect mode'
+            }
+            title={isInspecting ? 'Exit inspect mode' : 'Enter inspect mode'}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16">
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M6.5 1C3.46243 1 1 3.46243 1 6.5C1 9.53757 3.46243 12 6.5 12C7.74527 12 8.88574 11.5717 9.77734 10.8555L13.4609 14.5391C13.7539 14.832 14.2461 14.832 14.5391 14.5391C14.832 14.2461 14.832 13.7539 14.5391 13.4609L10.8555 9.77734C11.5717 8.88574 12 7.74527 12 6.5C12 3.46243 9.53757 1 6.5 1ZM2.5 6.5C2.5 4.29086 4.29086 2.5 6.5 2.5C8.70914 2.5 10.5 4.29086 10.5 6.5C10.5 8.70914 8.70914 10.5 6.5 10.5C4.29086 10.5 2.5 8.70914 2.5 6.5Z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        )}
         <button
           type="button"
           onClick={onToggleMinimize}

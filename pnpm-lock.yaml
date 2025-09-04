@@ -934,6 +934,9 @@ importers:
       caniuse-lite:
         specifier: 1.0.30001579
         version: 1.0.30001579
+      codice:
+        specifier: 1.5.2
+        version: 1.5.2(react@19.2.0-canary-2805f0ed-20250903)
       postcss:
         specifier: 8.4.31
         version: 8.4.31
@@ -7284,6 +7287,11 @@ packages:
   code-point-at@1.1.0:
     resolution: {integrity: sha512-RpAVKQA5T63xEj6/giIbUEtZwJ4UFIc3ZtvEkiaUERylqe8xb5IvqcgOurZLahv93CLKfxcw5YI+DZcUBRyLXA==}
     engines: {node: '>=0.10.0'}
+
+  codice@1.5.2:
+    resolution: {integrity: sha512-JZRiFAQoE6M3nPFK62esI7qR26UIlcnlAfXPwMyG/yuJlvMcRT84Bds9ZCHD/NrYCXD0khOCcMAwo32gbgfxEQ==}
+    peerDependencies:
+      react: 19.2.0-canary-2805f0ed-20250903
 
   collapse-white-space@1.0.6:
     resolution: {integrity: sha512-jEovNnrhMuqyCcjfEJA56v0Xq8SkIoPKDyaHahwo3POf4qcSXqMYuwNcOTzp74vTsR9Tn08z4MxWqAhcekogkQ==}
@@ -15458,10 +15466,13 @@ packages:
   stylis@4.2.0:
     resolution: {integrity: sha512-Orov6g6BB1sDfYgzWfTHDOxamtX1bE/zo104Dh9e6fqJ3PooipYyfJ0pUmrZO2wAvO8YbEyeFrkV91XTsGMSrw==}
 
+  sugar-high@0.9.3:
+    resolution: {integrity: sha512-sjJH8J76D1dRMU3QINnsYr1wfQyXbyEVQQvdgzJvIer6mkgM8ahB9fNrb+FDWzRKsLuITiBOR0ZbbhDZDUbqjg==}
+
   superagent@3.8.3:
     resolution: {integrity: sha512-GLQtLMCoEIK4eDv6OGtkOoSMt3D+oq0y3dsxMuYuDvaNUvuT8eFBuLmfR0iYYzHC1e8hpzC6ZsxbuP6DIalMFA==}
     engines: {node: '>= 4.0'}
-    deprecated: Please upgrade to superagent v10.2.2+, see release notes at https://github.com/forwardemail/superagent/releases/tag/v10.2.2 - maintenance is supported by Forward Email @ https://forwardemail.net
+    deprecated: Please upgrade to v9.0.0+ as we have fixed a public vulnerability with formidable dependency. Note that v9.0.0+ requires Node.js v14.18.0+. See https://github.com/ladjs/superagent/pull/1800 for insight. This project is supported and maintained by the team at Forward Email @ https://forwardemail.net
 
   superstruct@1.0.3:
     resolution: {integrity: sha512-8iTn3oSS8nRGn+C2pgXSKPI3jmpm6FExNazNpjvqS6ZUJQCej3PUXEKM8NjHBOs54ExM+LPW/FBRhymrdcCiSg==}
@@ -23590,6 +23601,11 @@ snapshots:
   code-error-fragment@0.0.230: {}
 
   code-point-at@1.1.0: {}
+
+  codice@1.5.2(react@19.2.0-canary-2805f0ed-20250903):
+    dependencies:
+      react: 19.2.0-canary-2805f0ed-20250903
+      sugar-high: 0.9.3
 
   collapse-white-space@1.0.6: {}
 
@@ -34068,6 +34084,8 @@ snapshots:
       postcss-selector-parser: 6.1.2
 
   stylis@4.2.0: {}
+
+  sugar-high@0.9.3: {}
 
   superagent@3.8.3:
     dependencies:

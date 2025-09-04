@@ -85,6 +85,7 @@ import { getNodeDebugType } from '../lib/utils'
 import { getNextErrorFeedbackMiddleware } from '../../next-devtools/server/get-next-error-feedback-middleware'
 import { getDevOverlayFontMiddleware } from '../../next-devtools/server/font/get-dev-overlay-font-middleware'
 import { getDisableDevIndicatorMiddleware } from '../../next-devtools/server/dev-indicator-middleware'
+import { getSourceCodeMiddleware } from '../../next-devtools/server/source-code-middleware'
 import getWebpackBundler from '../../shared/lib/get-webpack-bundler'
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
 import { checkPersistentCacheInvalidationAndCleanup } from '../../build/webpack/cache-invalidation'
@@ -1600,6 +1601,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       getNextErrorFeedbackMiddleware(this.telemetry),
       getDevOverlayFontMiddleware(),
       getDisableDevIndicatorMiddleware(),
+      getSourceCodeMiddleware(this.dir),
       getRestartDevServerMiddleware({
         telemetry: this.telemetry,
         webpackCacheDirectories:
