@@ -70,6 +70,15 @@
   background: #f3f4f6;
 }
 
+.actionButton.inspecting {
+  background: #3b82f6;
+  color: white;
+}
+
+.actionButton.inspecting:hover {
+  background: #2563eb;
+}
+
 .chatContent {
   flex: 1;
   min-height: 0;
