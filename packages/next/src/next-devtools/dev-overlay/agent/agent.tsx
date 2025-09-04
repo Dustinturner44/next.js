@@ -1,6 +1,76 @@
 import { useState, useEffect, useCallback, use, Suspense } from 'react'
 import { parseStack } from '../../../server/lib/parse-stack'
 import { getOriginalStackFrames } from '../../shared/stack-frame'
+import { useSegmentTree, type SegmentTrieNode } from '../segment-explorer-trie'
+
+function RouteInfoTree() {
+  const tree = useSegmentTree()
+
+  const renderTreeNode = (
+    node: SegmentTrieNode,
+    segment: string,
+    level: number
+  ): React.ReactNode => {
+    const children = Object.keys(node.children)
+
+    if (children.length === 0 && !node.value) {
+      return null
+    }
+
+    return (
+      <div key={segment} style={{ marginLeft: `${level * 12}px` }}>
+        {node.value && (
+          <div
+            style={{
+              fontSize: '12px',
+              color: 'var(--color-gray-700)',
+              fontFamily: 'monospace',
+              margin: '2px 0',
+            }}
+          >
+            {node.value.pagePath}
+          </div>
+        )}
+        {children.map((childSegment) => {
+          const childNode = node.children[childSegment]
+          return childNode
+            ? renderTreeNode(childNode, childSegment, level + 1)
+            : null
+        })}
+      </div>
+    )
+  }
+
+  if (!tree || Object.keys(tree.children).length === 0) {
+    return (
+      <div style={{ fontSize: '12px', color: 'var(--color-gray-600)' }}>
+        No route info available
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '500' }}>
+        Route Tree
+      </h4>
+      <div
+        style={{
+          fontSize: '12px',
+          color: 'var(--color-gray-700)',
+          fontFamily: 'monospace',
+        }}
+      >
+        {Object.keys(tree.children)
+          .map((segment) => {
+            const childNode = tree.children[segment]
+            return childNode ? renderTreeNode(childNode, segment, 0) : null
+          })
+          .filter(Boolean)}
+      </div>
+    </div>
+  )
+}
 
 export function Agent() {
   const [isLocatorActive, setIsLocatorActive] = useState(false)
@@ -56,7 +126,9 @@ export function Agent() {
 
   return (
     <div style={{ padding: '16px', color: 'var(--color-gray-1000)' }}>
-      <div style={{ marginBottom: '16px' }}>
+      <RouteInfoTree />
+
+      <div style={{ marginTop: '16px', marginBottom: '16px' }}>
         <button
           onClick={() => {
             setIsLocatorActive(!isLocatorActive)
