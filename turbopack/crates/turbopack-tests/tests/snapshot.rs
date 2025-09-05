@@ -3,7 +3,7 @@
 
 mod util;
 
-use std::{collections::VecDeque, fs, io, path::PathBuf, sync::Once};
+use std::{collections::VecDeque, fs, io, path::PathBuf};
 
 use anyhow::{Context, Result, bail};
 use dunce::canonicalize;
@@ -16,8 +16,8 @@ use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storag
 use turbo_tasks_env::DotenvProcessEnv;
 use turbo_tasks_fs::{
     DiskFileSystem, FileSystem, FileSystemPath, json::parse_json_with_source_context,
-    util::sys_to_unix,
 };
+use turbo_unix_path::sys_to_unix;
 use turbopack::{
     ModuleAssetContext,
     ecmascript::{EcmascriptInputTransform, TreeShakingMode, chunk::EcmascriptChunkType},
@@ -34,7 +34,7 @@ use turbopack_core::{
         EvaluatableAssets, MinifyType, availability_info::AvailabilityInfo,
     },
     compile_time_defines,
-    compile_time_info::CompileTimeInfo,
+    compile_time_info::{CompileTimeDefineValue, CompileTimeInfo, DefinableNameSegment},
     condition::ContextCondition,
     context::AssetContext,
     environment::{BrowserEnvironment, Environment, ExecutionEnvironment, NodeJsEnvironment},
@@ -63,20 +63,6 @@ use turbopack_resolve::resolve_options_context::ResolveOptionsContext;
 use turbopack_test_utils::snapshot::{UPDATE, diff, expected, matches_expected, snapshot_issues};
 
 use crate::util::REPO_ROOT;
-
-fn register() {
-    turbo_tasks::register();
-    turbo_tasks_env::register();
-    turbo_tasks_fs::register();
-    turbopack::register();
-    turbopack_nodejs::register();
-    turbopack_browser::register();
-    turbopack_env::register();
-    turbopack_ecmascript_plugins::register();
-    turbopack_ecmascript_runtime::register();
-    turbopack_resolve::register();
-    include!(concat!(env!("OUT_DIR"), "/register_test_snapshot.rs"));
-}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -126,7 +112,7 @@ impl Default for SnapshotOptions {
             runtime: Default::default(),
             runtime_type: default_runtime_type(),
             environment: Default::default(),
-            tree_shaking_mode: Default::default(),
+            tree_shaking_mode: None,
             remove_unused_exports: false,
             scope_hoisting: false,
             production_chunking: false,
@@ -168,8 +154,9 @@ fn is_empty_dir_tree(dir_entries: impl IntoIterator<Item = io::Result<fs::DirEnt
     true
 }
 
-#[testing::fixture("tests/snapshot/*/*/", exclude("node_modules"))]
+#[testing::fixture("tests/snapshot/*/*/input/index.js", exclude("node_modules"))]
 fn test(resource: PathBuf) {
+    let resource = resource.parent().unwrap().parent().unwrap().to_path_buf();
     let resource = canonicalize(resource).unwrap();
 
     let mut has_output_dir = false;
@@ -204,9 +191,6 @@ fn test(resource: PathBuf) {
 
 #[tokio::main(flavor = "current_thread")]
 async fn run(resource: PathBuf) -> Result<()> {
-    static REGISTER_ONCE: Once = Once::new();
-    REGISTER_ONCE.call_once(register);
-
     let tt = TurboTasks::new(TurboTasksBackend::new(
         BackendOptions {
             storage_mode: None,
@@ -264,7 +248,7 @@ async fn run_test_operation(resource: RcStr) -> Result<Vc<FileSystemPath>> {
     let project_root = project_fs.root().owned().await?;
 
     let relative_path = test_path.strip_prefix(&*REPO_ROOT)?;
-    let relative_path: RcStr = sys_to_unix(relative_path.to_str().unwrap()).into();
+    let relative_path = RcStr::from(sys_to_unix(relative_path.to_str().unwrap()));
     let project_path = project_root.join(&relative_path)?;
 
     let project_path_to_project_root = project_path
@@ -273,36 +257,59 @@ async fn run_test_operation(resource: RcStr) -> Result<Vc<FileSystemPath>> {
 
     let entry_asset = project_path.join(&options.entry)?;
 
-    let env = Environment::new(match options.environment {
+    let env = match options.environment {
         SnapshotEnvironment::Browser => {
-            ExecutionEnvironment::Browser(
-                // TODO: load more from options.json
-                BrowserEnvironment {
-                    dom: true,
-                    web_worker: false,
-                    service_worker: false,
-                    browserslist_query: options.browserslist.into(),
-                }
-                .resolved_cell(),
-            )
+            let environment=// TODO: load more from options.json
+            BrowserEnvironment {
+                dom: true,
+                web_worker: false,
+                service_worker: false,
+                browserslist_query: options.browserslist.into(),
+            }
+            .resolved_cell();
+
+            Environment::new(ExecutionEnvironment::Browser(environment), *environment)
+                .to_resolved()
+                .await?
         }
         SnapshotEnvironment::NodeJs => {
-            ExecutionEnvironment::NodeJsBuildTime(
-                // TODO: load more from options.json
-                NodeJsEnvironment::default().resolved_cell(),
+            Environment::new(
+                ExecutionEnvironment::NodeJsBuildTime(
+                    // TODO: load more from options.json
+                    NodeJsEnvironment::default().resolved_cell(),
+                ),
+                BrowserEnvironment::default().cell(),
             )
+            .to_resolved()
+            .await?
         }
-    })
-    .to_resolved()
-    .await?;
+    };
 
-    let defines = compile_time_defines!(
+    let mut defines = compile_time_defines!(
         process.turbopack = true,
         process.env.TURBOPACK = true,
         process.env.NODE_ENV = "development",
         DEFINED_VALUE = "value",
         DEFINED_TRUE = true,
+        DEFINED_NULL = json!(null),
+        DEFINED_INT = json!(1),
+        DEFINED_FLOAT = json!(0.01),
+        DEFINED_ARRAY = json!([ false, 0, "1", { "v": "v" }, null ]),
         A.VERY.LONG.DEFINED.VALUE = json!({ "test": true }),
+    );
+
+    defines.0.insert(
+        vec![DefinableNameSegment::from("DEFINED_EVALUATE")],
+        CompileTimeDefineValue::Evaluate("1 + 1".into()),
+    );
+
+    defines.0.insert(
+        vec![DefinableNameSegment::from("DEFINED_EVALUATE_NESTED")],
+        CompileTimeDefineValue::Array(vec![
+            CompileTimeDefineValue::Bool(true),
+            CompileTimeDefineValue::Undefined,
+            CompileTimeDefineValue::Evaluate("() => 1".into()),
+        ]),
     );
 
     let compile_time_info = CompileTimeInfo::builder(env)
@@ -321,7 +328,8 @@ async fn run_test_operation(resource: RcStr) -> Result<Vc<FileSystemPath>> {
     let module_rules = ModuleRule::new(
         conditions,
         vec![ModuleRuleEffect::ExtendEcmascriptTransforms {
-            prepend: ResolvedVc::cell(vec![
+            preprocess: ResolvedVc::cell(vec![]),
+            main: ResolvedVc::cell(vec![
                 EcmascriptInputTransform::Plugin(ResolvedVc::cell(Box::new(
                     EmotionTransformer::new(&EmotionTransformConfig::default())
                         .expect("Should be able to create emotion transformer"),
@@ -330,7 +338,7 @@ async fn run_test_operation(resource: RcStr) -> Result<Vc<FileSystemPath>> {
                     StyledComponentsTransformer::new(&StyledComponentsTransformConfig::default()),
                 ) as _)),
             ]),
-            append: ResolvedVc::cell(vec![]),
+            postprocess: ResolvedVc::cell(vec![]),
         }],
     );
     let asset_context: Vc<Box<dyn AssetContext>> = Vc::upcast(ModuleAssetContext::new(
@@ -559,14 +567,7 @@ async fn walk_asset(
         diff(path.clone(), asset.content()).await?;
     }
 
-    queue.extend(
-        asset
-            .references()
-            .await?
-            .iter()
-            .copied()
-            .flat_map(ResolvedVc::try_downcast::<Box<dyn OutputAsset>>),
-    );
+    queue.extend(asset.references().await?.iter().copied());
 
     Ok(())
 }

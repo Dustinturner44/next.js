@@ -14,7 +14,7 @@ use petgraph::{
 };
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
-use tracing::{Instrument, Span};
+use tracing::{Instrument, Level, Span};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
     CollectiblesSource, FxIndexMap, NonLocalValue, ReadRef, ResolvedVc, TryJoinIterExt,
@@ -223,12 +223,13 @@ impl SingleModuleGraph {
         visited_modules: &FxIndexMap<ResolvedVc<Box<dyn Module>>, GraphNodeIndex>,
         include_traced: bool,
     ) -> Result<Vc<Self>> {
+        let emit_spans = tracing::enabled!(Level::INFO);
         let root_edges = entries
             .iter()
             .flat_map(|e| e.entries())
             .map(|e| async move {
                 Ok(SingleModuleGraphBuilderEdge {
-                    to: SingleModuleGraphBuilderNode::new_module(e).await?,
+                    to: SingleModuleGraphBuilderNode::new_module(emit_spans, e).await?,
                     export: ExportUsage::All,
                 })
             })
@@ -241,6 +242,7 @@ impl SingleModuleGraph {
                 root_edges,
                 SingleModuleGraphBuilder {
                     visited_modules,
+                    emit_spans,
                     include_traced,
                 },
             )
@@ -348,8 +350,6 @@ impl SingleModuleGraph {
         #[cfg(debug_assertions)]
         {
             use once_cell::sync::Lazy;
-
-            // TODO(PACK-4578): This is temporary while the last issues are being addressed.
             static CHECK_FOR_DUPLICATE_MODULES: Lazy<bool> = Lazy::new(|| {
                 match std::env::var_os("TURBOPACK_TEMP_DISABLE_DUPLICATE_MODULES_CHECK") {
                     Some(v) => v != "1" && v != "true",
@@ -1669,14 +1669,14 @@ enum SingleModuleGraphBuilderNode {
         target: ResolvedVc<Box<dyn Module>>,
         // These two fields are only used for tracing. Derived from `source.ident()` and
         // `target.ident()`
-        source_ident: ReadRef<RcStr>,
-        target_ident: ReadRef<RcStr>,
+        source_ident: Option<ReadRef<RcStr>>,
+        target_ident: Option<ReadRef<RcStr>>,
     },
     /// A regular module
     Module {
         module: ResolvedVc<Box<dyn Module>>,
         // module.ident().to_string(), eagerly computed for tracing
-        ident: ReadRef<RcStr>,
+        ident: Option<ReadRef<RcStr>>,
     },
     /// A reference to a module that is already listed in visited_modules
     VisitedModule {
@@ -1686,14 +1686,19 @@ enum SingleModuleGraphBuilderNode {
 }
 
 impl SingleModuleGraphBuilderNode {
-    async fn new_module(module: ResolvedVc<Box<dyn Module>>) -> Result<Self> {
+    async fn new_module(emit_spans: bool, module: ResolvedVc<Box<dyn Module>>) -> Result<Self> {
         let ident = module.ident();
         Ok(Self::Module {
             module,
-            ident: ident.to_string().await?,
+            ident: if emit_spans {
+                Some(ident.to_string().await?)
+            } else {
+                None
+            },
         })
     }
     async fn new_chunkable_ref(
+        emit_spans: bool,
         source: ResolvedVc<Box<dyn Module>>,
         target: ResolvedVc<Box<dyn Module>>,
         ref_data: RefData,
@@ -1701,9 +1706,17 @@ impl SingleModuleGraphBuilderNode {
         Ok(Self::ChunkableReference {
             ref_data,
             source,
-            source_ident: source.ident().to_string().await?,
+            source_ident: if emit_spans {
+                Some(source.ident().to_string().await?)
+            } else {
+                None
+            },
             target,
-            target_ident: target.ident().to_string().await?,
+            target_ident: if emit_spans {
+                Some(target.ident().to_string().await?)
+            } else {
+                None
+            },
         })
     }
     fn new_visited_module(module: ResolvedVc<Box<dyn Module>>, idx: GraphNodeIndex) -> Self {
@@ -1724,6 +1737,9 @@ const COMMON_CHUNKING_TYPE: ChunkingType = ChunkingType::Parallel {
 
 struct SingleModuleGraphBuilder<'a> {
     visited_modules: &'a FxIndexMap<ResolvedVc<Box<dyn Module>>, GraphNodeIndex>,
+
+    emit_spans: bool,
+
     /// Whether to walk ChunkingType::Traced references
     include_traced: bool,
 }
@@ -1769,6 +1785,7 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
             SingleModuleGraphBuilderNode::VisitedModule { .. } => unreachable!(),
         };
         let visited_modules = self.visited_modules;
+        let emit_spans = self.emit_spans;
         let include_traced = self.include_traced;
         async move {
             Ok(match (module, chunkable_ref_target) {
@@ -1790,10 +1807,12 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
                                 if let Some(idx) = visited_modules.get(&target) {
                                     SingleModuleGraphBuilderNode::new_visited_module(target, *idx)
                                 } else {
-                                    SingleModuleGraphBuilderNode::new_module(target).await?
+                                    SingleModuleGraphBuilderNode::new_module(emit_spans, target)
+                                        .await?
                                 }
                             } else {
                                 SingleModuleGraphBuilderNode::new_chunkable_ref(
+                                    emit_spans,
                                     module,
                                     target,
                                     RefData {
@@ -1816,7 +1835,11 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
                                 *idx,
                             )
                         } else {
-                            SingleModuleGraphBuilderNode::new_module(chunkable_ref_target).await?
+                            SingleModuleGraphBuilderNode::new_module(
+                                emit_spans,
+                                chunkable_ref_target,
+                            )
+                            .await?
                         },
                         export,
                     }]
@@ -1827,15 +1850,20 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
     }
 
     fn span(&mut self, (node, _): &(SingleModuleGraphBuilderNode, ExportUsage)) -> tracing::Span {
+        if !self.emit_spans {
+            return Span::current();
+        }
+
         match node {
-            SingleModuleGraphBuilderNode::Module { ident, .. } => {
+            SingleModuleGraphBuilderNode::Module {
+                ident: Some(ident), ..
+            } => {
                 tracing::info_span!("module", name = display(ident))
             }
-
             SingleModuleGraphBuilderNode::ChunkableReference {
                 ref_data,
-                source_ident,
-                target_ident,
+                source_ident: Some(source_ident),
+                target_ident: Some(target_ident),
                 ..
             } => match &ref_data.chunking_type {
                 ChunkingType::Parallel {
@@ -1854,6 +1882,7 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
             SingleModuleGraphBuilderNode::VisitedModule { .. } => {
                 tracing::info_span!("visited module")
             }
+            _ => Span::current(),
         }
     }
 }
@@ -1879,7 +1908,7 @@ pub mod tests {
         resolve::ExportUsage,
     };
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn traverse_dfs_from_entries_diamond() {
         run_graph_test(
             vec![rcstr!("a.js")],
@@ -1941,7 +1970,7 @@ pub mod tests {
         .await;
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn traverse_dfs_from_entries_cycle() {
         run_graph_test(
             vec![rcstr!("a.js")],
@@ -2001,7 +2030,7 @@ pub mod tests {
         .await;
     }
 
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn traverse_edges_from_entries_fixed_point_cycle() {
         run_graph_test(
             vec![rcstr!("a.js")],
@@ -2074,7 +2103,7 @@ pub mod tests {
     impl Asset for MockModule {
         #[turbo_tasks::function]
         fn content(&self) -> Vc<AssetContent> {
-            todo!()
+            panic!("MockModule::content shouldn't be called")
         }
     }
 
@@ -2135,8 +2164,6 @@ pub mod tests {
         + Send
         + 'static,
     ) {
-        crate::register();
-
         let tt = turbo_tasks::TurboTasks::new(TurboTasksBackend::new(
             BackendOptions::default(),
             noop_backing_storage(),

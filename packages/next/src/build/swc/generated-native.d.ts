@@ -120,8 +120,6 @@ export interface NapiProjectOptions {
   watch: NapiWatchOptions
   /** The contents of next.config.js, serialized to JSON. */
   nextConfig: RcStr
-  /** The contents of ts/config read by load-jsconfig, serialized to JSON. */
-  jsConfig: RcStr
   /** A map of environment variables to use when compiling code. */
   env: Array<NapiEnvVar>
   /**
@@ -172,8 +170,6 @@ export interface NapiPartialProjectOptions {
   watch?: NapiWatchOptions
   /** The contents of next.config.js, serialized to JSON. */
   nextConfig?: RcStr
-  /** The contents of ts/config read by load-jsconfig, serialized to JSON. */
-  jsConfig?: RcStr
   /** A map of environment variables to use when compiling code. */
   env?: Array<NapiEnvVar>
   /**
@@ -212,6 +208,8 @@ export interface NapiTurboEngineOptions {
   dependencyTracking?: boolean
   /** Whether the project is running in a CI environment. */
   isCi?: boolean
+  /** Whether the project is running in a short session. */
+  isShortSession?: boolean
 }
 export declare function projectNew(
   options: NapiProjectOptions,
@@ -422,6 +420,14 @@ export interface NapiDiagnostic {
   name: string
   payload: Record<string, string>
 }
+export declare function expandNextJsTemplate(
+  content: Buffer,
+  templatePath: string,
+  nextPackageDirPath: string,
+  replacements: Record<string, string>,
+  injections: Record<string, string>,
+  imports: Record<string, string | null>
+): string
 export declare function parse(
   src: string,
   options: Buffer,

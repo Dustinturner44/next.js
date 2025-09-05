@@ -12,7 +12,6 @@ import type { NextJsHotReloaderInterface } from '../../dev/hot-reloader-types'
 
 import { createDefineEnv } from '../../../build/swc'
 import fs from 'fs'
-import { mkdir } from 'fs/promises'
 import url from 'url'
 import path from 'path'
 import qs from 'querystring'
@@ -68,7 +67,7 @@ import {
 } from '../../../build/utils'
 import { devPageFiles } from '../../../build/webpack/plugins/next-types-plugin/shared'
 import type { LazyRenderServerInstance } from '../router-server'
-import { HMR_ACTIONS_SENT_TO_BROWSER } from '../../dev/hot-reloader-types'
+import { HMR_MESSAGE_SENT_TO_BROWSER } from '../../dev/hot-reloader-types'
 import { PAGE_TYPES } from '../../../lib/page-types'
 import { createHotReloaderTurbopack } from '../../dev/hot-reloader-turbopack'
 import { generateEncryptionKeyBase64 } from '../../app-render/encryption-utils-server'
@@ -85,6 +84,13 @@ import { getDefineEnv } from '../../../build/define-env'
 import { TurbopackInternalError } from '../../../shared/lib/turbopack/internal-error'
 import { normalizePath } from '../../../lib/normalize-path'
 import { JSON_CONTENT_TYPE_HEADER } from '../../../lib/constants'
+import {
+  createRouteTypesManifest,
+  writeRouteTypesManifest,
+  writeValidatorFile,
+} from './route-types-utils'
+import { isParallelRouteSegment } from '../../../shared/lib/segment'
+import { ensureLeadingSlash } from '../../../shared/lib/page-path/ensure-leading-slash'
 
 export type SetupOpts = {
   renderServer: LazyRenderServerInstance
@@ -167,17 +173,8 @@ async function startWatcher(
 ) {
   const { nextConfig, appDir, pagesDir, dir, resetFetch } = opts
   const { useFileSystemPublicRoutes } = nextConfig
-  const usingTypeScript = await verifyTypeScript(opts)
 
   const distDir = path.join(opts.dir, opts.nextConfig.distDir)
-
-  // we ensure the types directory exists here
-  if (usingTypeScript) {
-    const distTypesDir = path.join(distDir, 'types')
-    if (!fs.existsSync(distTypesDir)) {
-      await mkdir(distTypesDir, { recursive: true })
-    }
-  }
 
   setGlobal('distDir', distDir)
   setGlobal('phase', PHASE_DEVELOPMENT_SERVER)
@@ -217,6 +214,28 @@ async function startWatcher(
 
   // have to write this after starting hot-reloader since that
   // cleans the dist dir
+  const distTypesDir = path.join(distDir, 'types')
+  await writeRouteTypesManifest(
+    {
+      appRoutes: {},
+      pageRoutes: {},
+      layoutRoutes: {},
+      appRouteHandlerRoutes: {},
+      redirectRoutes: {},
+      rewriteRoutes: {},
+      appPagePaths: new Set(),
+      pagesRouterPagePaths: new Set(),
+      layoutPaths: new Set(),
+      appRouteHandlers: new Set(),
+      pageApiRoutes: new Set(),
+      filePathToRoute: new Map(),
+    },
+    path.join(distTypesDir, 'routes.d.ts'),
+    opts.nextConfig
+  )
+
+  const usingTypeScript = await verifyTypeScript(opts)
+
   const routesManifestPath = path.join(distDir, ROUTES_MANIFEST)
   const routesManifest: DevRoutesManifest = {
     version: 3,
@@ -323,6 +342,9 @@ async function startWatcher(
     let previousClientRouterFilters: any
     let previousConflictingPagePaths: Set<string> = new Set()
 
+    const routeTypesFilePath = path.join(distDir, 'types', 'routes.d.ts')
+    const validatorFilePath = path.join(distDir, 'types', 'validator.ts')
+
     wp.on('aggregated', async () => {
       let middlewareMatchers: MiddlewareMatcher[] | undefined
       const routedPages: string[] = []
@@ -332,6 +354,13 @@ async function startWatcher(
       const conflictingAppPagePaths = new Set<string>()
       const appPageFilePaths = new Map<string, string>()
       const pagesPageFilePaths = new Map<string, string>()
+      const appRouteHandlers: Array<{ route: string; filePath: string }> = []
+      const pageApiRoutes: Array<{ route: string; filePath: string }> = []
+
+      const pageRoutes: Array<{ route: string; filePath: string }> = []
+      const appRoutes: Array<{ route: string; filePath: string }> = []
+      const layoutRoutes: Array<{ route: string; filePath: string }> = []
+      const slots: Array<{ name: string; parent: string }> = []
 
       let envChange = false
       let tsconfigChange = false
@@ -504,11 +533,54 @@ async function startWatcher(
           if (isRootNotFound) {
             continue
           }
-          if (!isRootNotFound && !validFileMatcher.isAppRouterPage(fileName)) {
-            continue
-          }
+
           // Ignore files/directories starting with `_` in the app directory
           if (normalizePathSep(pageName).includes('/_')) {
+            continue
+          }
+
+          // Record parallel route slots for layout typing
+          // May run multiple times (e.g. if a parallel route
+          // has both a layout and a page, and children) but that's fine
+          const segments = normalizePathSep(pageName).split('/')
+          for (let i = segments.length - 1; i >= 0; i--) {
+            const segment = segments[i]
+            if (isParallelRouteSegment(segment)) {
+              const parentPath = normalizeAppPath(
+                segments.slice(0, i).join('/')
+              )
+
+              const slotName = segment.slice(1)
+              // check if the slot already exists
+              if (
+                slots.some(
+                  (s) => s.name === slotName && s.parent === parentPath
+                )
+              )
+                continue
+
+              slots.push({
+                name: slotName,
+                parent: parentPath,
+              })
+              break
+            }
+          }
+
+          // Record layouts
+          if (validFileMatcher.isAppLayoutPage(fileName)) {
+            layoutRoutes.push({
+              route: ensureLeadingSlash(
+                normalizeAppPath(normalizePathSep(pageName)).replace(
+                  /\/layout$/,
+                  ''
+                )
+              ),
+              filePath: fileName,
+            })
+          }
+
+          if (!validFileMatcher.isAppRouterPage(fileName)) {
             continue
           }
 
@@ -528,6 +600,18 @@ async function startWatcher(
             appFiles.add(pageName)
           }
 
+          if (validFileMatcher.isAppRouterRoute(fileName)) {
+            appRouteHandlers.push({
+              route: normalizePathSep(pageName),
+              filePath: fileName,
+            })
+          } else {
+            appRoutes.push({
+              route: normalizePathSep(pageName),
+              filePath: fileName,
+            })
+          }
+
           if (routedPages.includes(pageName)) {
             continue
           }
@@ -538,11 +622,26 @@ async function startWatcher(
             // entries that actually use getStaticProps/getServerSideProps
             opts.fsChecker.nextDataRoutes.add(pageName)
           }
+
+          if (pageName.startsWith('/api/')) {
+            pageApiRoutes.push({
+              route: normalizePathSep(pageName),
+              filePath: fileName,
+            })
+          } else {
+            pageRoutes.push({
+              route: normalizePathSep(pageName),
+              filePath: fileName,
+            })
+          }
         }
-        ;(isAppPath ? appPageFilePaths : pagesPageFilePaths).set(
-          pageName,
-          fileName
-        )
+
+        // Record pages
+        if (isAppPath) {
+          appPageFilePaths.set(pageName, fileName)
+        } else {
+          pagesPageFilePaths.set(pageName, fileName)
+        }
 
         if (appDir && pageNameSet.has(pageName)) {
           conflictingAppPagePaths.add(pageName)
@@ -915,7 +1014,7 @@ async function startWatcher(
 
           // emit the change so clients fetch the update
           hotReloader.send({
-            action: HMR_ACTIONS_SENT_TO_BROWSER.DEV_PAGES_MANIFEST_UPDATE,
+            type: HMR_MESSAGE_SENT_TO_BROWSER.DEV_PAGES_MANIFEST_UPDATE,
             data: [
               {
                 devPagesManifest: true,
@@ -925,19 +1024,43 @@ async function startWatcher(
 
           addedRoutes.forEach((route) => {
             hotReloader.send({
-              action: HMR_ACTIONS_SENT_TO_BROWSER.ADDED_PAGE,
+              type: HMR_MESSAGE_SENT_TO_BROWSER.ADDED_PAGE,
               data: [route],
             })
           })
 
           removedRoutes.forEach((route) => {
             hotReloader.send({
-              action: HMR_ACTIONS_SENT_TO_BROWSER.REMOVED_PAGE,
+              type: HMR_MESSAGE_SENT_TO_BROWSER.REMOVED_PAGE,
               data: [route],
             })
           })
         }
         prevSortedRoutes = sortedRoutes
+
+        if (usingTypeScript) {
+          const routeTypesManifest = await createRouteTypesManifest({
+            dir,
+            pageRoutes,
+            appRoutes,
+            layoutRoutes,
+            slots,
+            redirects: opts.nextConfig.redirects,
+            rewrites: opts.nextConfig.rewrites,
+            // Ensure relative paths in validator.ts are computed from validatorFilePath,
+            // matching behavior of build and CLI typegen.
+            validatorFilePath,
+            appRouteHandlers,
+            pageApiRoutes,
+          })
+
+          await writeRouteTypesManifest(
+            routeTypesManifest,
+            routeTypesFilePath,
+            opts.nextConfig
+          )
+          await writeValidatorFile(routeTypesManifest, validatorFilePath)
+        }
 
         if (!resolved) {
           resolve()
