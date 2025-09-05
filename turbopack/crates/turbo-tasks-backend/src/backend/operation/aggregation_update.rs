@@ -732,7 +732,7 @@ impl AggregationUpdateQueue {
 
     /// Runs the job and all dependent jobs until it's done. It can persist the operation, so
     /// following code might not be executed when persisted.
-    pub fn run(job: AggregationUpdateJob, ctx: &mut impl ExecuteContext) {
+    pub fn run(job: AggregationUpdateJob, ctx: &mut impl ExecuteContext<'_>) {
         debug_assert!(ctx.should_track_children());
         let mut queue = Self::new();
         queue.push(job);
@@ -740,7 +740,7 @@ impl AggregationUpdateQueue {
     }
 
     /// Executes a single step of the queue. Returns true, when the queue is empty.
-    pub fn process(&mut self, ctx: &mut impl ExecuteContext) -> bool {
+    pub fn process(&mut self, ctx: &mut impl ExecuteContext<'_>) -> bool {
         if let Some(job) = self.jobs.pop_front() {
             let job: AggregationUpdateJobGuard = job.entered();
             match job.job {
@@ -1000,7 +1000,12 @@ impl AggregationUpdateQueue {
     /// triggers more changes to the structure.
     ///
     /// It locks both tasks simultaneously to atomically change the edges.
-    fn balance_edge(&mut self, ctx: &mut impl ExecuteContext, upper_id: TaskId, task_id: TaskId) {
+    fn balance_edge(
+        &mut self,
+        ctx: &mut impl ExecuteContext<'_>,
+        upper_id: TaskId,
+        task_id: TaskId,
+    ) {
         #[cfg(feature = "trace_aggregation_update")]
         let _span = trace_span!("process balance edge").entered();
 
@@ -1186,7 +1191,7 @@ impl AggregationUpdateQueue {
     /// Schedules the task if it's dirty.
     ///
     /// Only used when activeness is tracked.
-    fn find_and_schedule_dirty(&mut self, task_id: TaskId, ctx: &mut impl ExecuteContext) {
+    fn find_and_schedule_dirty(&mut self, task_id: TaskId, ctx: &mut impl ExecuteContext<'_>) {
         #[cfg(feature = "trace_find_and_schedule")]
         let _span = trace_span!(
             "find and schedule",
@@ -1245,7 +1250,7 @@ impl AggregationUpdateQueue {
     fn aggregated_data_update(
         &mut self,
         upper_ids: TaskIdVec,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         update: AggregatedDataUpdate,
     ) {
         for upper_id in upper_ids {
@@ -1277,7 +1282,7 @@ impl AggregationUpdateQueue {
 
     fn inner_of_uppers_lost_follower(
         &mut self,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         lost_follower_id: TaskId,
         mut upper_ids: TaskIdVec,
         mut retry: u16,
@@ -1434,7 +1439,7 @@ impl AggregationUpdateQueue {
 
     fn inner_of_upper_lost_followers(
         &mut self,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         mut lost_follower_ids: TaskIdVec,
         upper_id: TaskId,
         mut retry: u16,
@@ -1587,7 +1592,7 @@ impl AggregationUpdateQueue {
 
     fn inner_of_uppers_has_new_follower(
         &mut self,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         new_follower_id: TaskId,
         mut upper_ids: TaskIdVec,
     ) {
@@ -1774,7 +1779,7 @@ impl AggregationUpdateQueue {
 
     fn inner_of_upper_has_new_followers(
         &mut self,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         new_follower_ids: TaskIdVec,
         upper_id: TaskId,
     ) {
@@ -1995,7 +2000,7 @@ impl AggregationUpdateQueue {
 
     fn inner_of_upper_has_new_follower(
         &mut self,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         new_follower_id: TaskId,
         upper_id: TaskId,
     ) {
@@ -2136,7 +2141,7 @@ impl AggregationUpdateQueue {
     /// Decreases the active count of a task.
     ///
     /// Only used when activeness is tracked.
-    fn decrease_active_count(&mut self, ctx: &mut impl ExecuteContext, task_id: TaskId) {
+    fn decrease_active_count(&mut self, ctx: &mut impl ExecuteContext<'_>, task_id: TaskId) {
         #[cfg(feature = "trace_aggregation_update")]
         let _span = trace_span!("decrease active count").entered();
 
@@ -2180,7 +2185,7 @@ impl AggregationUpdateQueue {
     /// Increases the active count of a task.
     ///
     /// Only used when activeness is tracked.
-    fn increase_active_count(&mut self, ctx: &mut impl ExecuteContext, task_id: TaskId) {
+    fn increase_active_count(&mut self, ctx: &mut impl ExecuteContext<'_>, task_id: TaskId) {
         #[cfg(feature = "trace_aggregation_update")]
         let _span = trace_span!("increase active count").entered();
 
@@ -2222,7 +2227,7 @@ impl AggregationUpdateQueue {
 
     fn update_aggregation_number(
         &mut self,
-        ctx: &mut impl ExecuteContext,
+        ctx: &mut impl ExecuteContext<'_>,
         task_id: TaskId,
         base_effective_distance: Option<std::num::NonZero<u32>>,
         base_aggregation_number: u32,
@@ -2453,7 +2458,7 @@ impl AggregationUpdateQueue {
 }
 
 impl Operation for AggregationUpdateQueue {
-    fn execute(mut self, ctx: &mut impl ExecuteContext) {
+    fn execute(mut self, ctx: &mut impl ExecuteContext<'_>) {
         loop {
             ctx.operation_suspend_point(&self);
             if self.process(ctx) {
