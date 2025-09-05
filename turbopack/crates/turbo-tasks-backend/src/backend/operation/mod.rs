@@ -37,7 +37,7 @@ pub trait Operation:
     + TryFrom<AnyOperation, Error = ()>
     + Into<AnyOperation>
 {
-    fn execute(self, ctx: &mut impl ExecuteContext);
+    fn execute(self, ctx: &mut impl ExecuteContext<'_>);
 }
 
 #[derive(Copy, Clone)]
@@ -579,7 +579,7 @@ pub enum AnyOperation {
 }
 
 impl AnyOperation {
-    pub fn execute(self, ctx: &mut impl ExecuteContext) {
+    pub fn execute(self, ctx: &mut impl ExecuteContext<'_>) {
         match self {
             AnyOperation::ConnectChild(op) => op.execute(ctx),
             AnyOperation::Invalidate(op) => op.execute(ctx),

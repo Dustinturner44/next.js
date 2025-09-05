@@ -46,7 +46,7 @@ impl UpdateOutputOperation {
     pub fn run(
         task_id: TaskId,
         output: Result<RawVc, TurboTasksExecutionError>,
-        mut ctx: impl ExecuteContext,
+        mut ctx: impl ExecuteContext<'_>,
     ) {
         let mut dependent_tasks = Default::default();
         let mut children = Default::default();
@@ -140,7 +140,7 @@ impl UpdateOutputOperation {
 }
 
 impl Operation for UpdateOutputOperation {
-    fn execute(mut self, ctx: &mut impl ExecuteContext) {
+    fn execute(mut self, ctx: &mut impl ExecuteContext<'_>) {
         loop {
             ctx.operation_suspend_point(&self);
             match self {
