@@ -1,60 +1,48 @@
 import { useState } from 'react'
 import { ChatHeader } from './chat-header'
-import { ChatMessage, type Message } from './chat-message'
+import { ChatMessage } from './chat-message'
 import { ChatInput } from './chat-input'
+import { ChatToolbar } from './chat-toolbar'
+import { useChatMessages } from './use-chat-messages'
+import { useChatStream } from './use-chat-stream'
 import './chat-interface.css'
-
-const MOCK_MESSAGES: Message[] = [
-  {
-    id: '1',
-    content: 'Change this button to blue',
-    role: 'user',
-    timestamp: new Date(),
-  },
-  {
-    id: '2',
-    content: 'Done!',
-    role: 'assistant',
-    timestamp: new Date(),
-  },
-]
 
 interface ChatInterfaceProps {
   onClose?: () => void
 }
 
 export function ChatInterface({ onClose }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES)
-  const [isLoading, setIsLoading] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [selectedSourcePath, setSelectedSourcePath] = useState<string | null>(
+    null
+  )
+  const { messages, setMessages, isLoading, setIsLoading } = useChatMessages()
+  const { sendMessage } = useChatStream(setMessages, setIsLoading)
 
   const handleToggleMinimize = () => {
     setIsMinimized((prev) => !prev)
   }
 
   const handleSubmitMessage = async (content: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
+    if (isLoading) return
+    const context = selectedSourcePath
+      ? { sourcePath: selectedSourcePath }
+      : undefined
+    console.log(
+      '🐛 DEBUG: handleSubmitMessage - content:',
       content,
-      role: 'user',
-      timestamp: new Date(),
-    }
+      'context:',
+      context,
+      'selectedSourcePath:',
+      selectedSourcePath
+    )
+    await sendMessage(content, context)
+    setSelectedSourcePath(null) // Clear after sending
+  }
 
-    setMessages((prev) => [...prev, userMessage])
-    setIsLoading(true)
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          "I'd be happy to help! Could you provide more details about what you're trying to accomplish?",
-        role: 'assistant',
-        timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, aiMessage])
-      setIsLoading(false)
-    }, 1000)
+  const handleElementSelected = (sourcePath: string) => {
+    console.log('🐛 DEBUG: Element selected:', sourcePath)
+    setSelectedSourcePath(sourcePath)
   }
 
   return (
@@ -67,6 +55,20 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
       {!isMinimized && (
         <>
+          <ChatToolbar onElementSelected={handleElementSelected} />
+          {selectedSourcePath && (
+            <div
+              style={{
+                padding: '4px 8px',
+                background: '#e0f2fe',
+                fontSize: '11px',
+                color: '#0369a1',
+                borderBottom: '1px solid #d1d5db',
+              }}
+            >
+              Selected: {selectedSourcePath}
+            </div>
+          )}
           <div className="chatContent">
             <div className="messagesContainer">
               {messages.map((message) => (

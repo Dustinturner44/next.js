@@ -303,6 +303,7 @@
       "@types/react": "19.1.10",
       "@types/react-dom": "19.1.7",
       "@types/retry": "0.12.0",
+      "@types/node-fetch": "3.0.3",
       "jest-snapshot": "30.0.0-alpha.6",
       "react": "19.2.0-canary-2805f0ed-20250903",
       "react-dom": "19.2.0-canary-2805f0ed-20250903",

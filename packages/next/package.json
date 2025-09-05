@@ -102,9 +102,14 @@
     ]
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "1.0.105",
+    "@anthropic-ai/sdk": "0.61.0",
+    "@modelcontextprotocol/sdk": "1.17.5",
     "@next/env": "15.5.1-canary.24",
     "@swc/helpers": "0.5.15",
+    "@types/form-data": "2.5.2",
     "caniuse-lite": "^1.0.30001579",
+    "form-data": "4.0.4",
     "postcss": "8.4.31",
     "styled-jsx": "5.1.6"
   },
