@@ -254,3 +254,50 @@
 .submitButton:not(:disabled):hover {
   background: #2563eb;
 }
+
+.chatToolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 12px;
+}
+
+.toolbarButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  color: #374151;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.toolbarButton:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.toolbarButton.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.toolbarButton.active:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.locatorInstructions {
+  color: #6b7280;
+  font-size: 11px;
+  font-style: italic;
+}
