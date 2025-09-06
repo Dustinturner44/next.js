@@ -36,6 +36,7 @@ import {
   getSourceMapMiddleware,
 } from './middleware-turbopack'
 import { getChatMiddleware } from './middleware-chat'
+import { getMcpMiddleware } from './middleware-mcp'
 import { PageNotFoundError } from '../../shared/lib/utils'
 import { debounce } from '../utils'
 import { deleteCache } from './require-cache'
@@ -662,6 +663,7 @@ export async function createHotReloaderTurbopack(
     }),
     getSourceMapMiddleware(project),
     getChatMiddleware(),
+    getMcpMiddleware(opts.nextConfig, opts.port),
     getNextErrorFeedbackMiddleware(opts.telemetry),
     getDevOverlayFontMiddleware(),
     getDisableDevIndicatorMiddleware(),

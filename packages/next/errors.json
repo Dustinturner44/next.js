@@ -799,5 +799,13 @@
   "798": "expected a result to be returned",
   "799": "expected a page response, got %s",
   "800": "`experimental.rdcForNavigations` is enabled, but `experimental.ppr` is not.",
-  "801": "Claude API error: %s - %s"
+  "801": "Claude API error: %s - %s",
+  "802": "Tool name is required",
+  "803": "Tool '%s' not found",
+  "804": "Invalid expression. Only basic math operations allowed.",
+  "805": "Failed to evaluate expression",
+  "806": "Invalid parameters: %s",
+  "807": "%sTool call failed",
+  "808": "HTTP %s: %s",
+  "809": "Failed to connect to Next.js MCP server: %s"
 }
