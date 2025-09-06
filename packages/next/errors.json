@@ -809,5 +809,13 @@
   "808": "Invalid binary HMR message: insufficient data (expected %s bytes, got %s)",
   "809": "Invalid binary HMR message of type %s",
   "810": "React debug channel stream error",
-  "811": "Claude API error: %s - %s"
+  "811": "Claude API error: %s - %s",
+  "812": "Tool name is required",
+  "813": "Tool '%s' not found",
+  "814": "Invalid expression. Only basic math operations allowed.",
+  "815": "Failed to evaluate expression",
+  "816": "Invalid parameters: %s",
+  "817": "%sTool call failed",
+  "818": "HTTP %s: %s",
+  "819": "Failed to connect to Next.js MCP server: %s"
 }

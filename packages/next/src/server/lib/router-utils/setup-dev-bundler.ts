@@ -215,6 +215,7 @@ async function startWatcher(
           rewrites: opts.fsChecker.rewrites,
           previewProps: opts.fsChecker.prerenderManifest.preview,
           resetFetch,
+          port: opts.port,
         })
       })()
 

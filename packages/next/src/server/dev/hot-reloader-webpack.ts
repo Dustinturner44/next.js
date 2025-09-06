@@ -12,6 +12,7 @@ import {
   getSourceMapMiddleware,
 } from './middleware-webpack'
 import { getChatMiddleware } from './middleware-chat'
+import { getMcpMiddleware } from './middleware-mcp'
 import { WebpackHotMiddleware } from './hot-middleware'
 import { join, relative, isAbsolute, posix, dirname } from 'path'
 import {
@@ -256,6 +257,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
   public activeWebpackConfigs?: Array<
     UnwrapPromise<ReturnType<typeof getBaseWebpackConfig>>
   >
+  public port?: number
 
   constructor(
     dir: string,
@@ -271,6 +273,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       appDir,
       telemetry,
       resetFetch,
+      port,
     }: {
       config: NextConfigComplete
       isSrcDir: boolean
@@ -283,6 +286,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       appDir?: string
       telemetry: Telemetry
       resetFetch: () => void
+      port?: number
     }
   ) {
     this.hasAmpEntrypoints = false
@@ -296,6 +300,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     this.pagesDir = pagesDir
     this.appDir = appDir
     this.distDir = distDir
+    this.port = port
     this.clientStats = null
     this.serverStats = null
     this.edgeServerStats = null
@@ -1600,6 +1605,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
         edgeServerStats: () => this.edgeServerStats,
       }),
       getChatMiddleware(),
+      getMcpMiddleware(this.config, this.port),
       getNextErrorFeedbackMiddleware(this.telemetry),
       getDevOverlayFontMiddleware(),
       getDisableDevIndicatorMiddleware(),
