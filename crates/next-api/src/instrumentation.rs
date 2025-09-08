@@ -252,7 +252,8 @@ impl Endpoint for InstrumentationEndpoint {
             Ok(EndpointOutput {
                 output_assets: output_assets.to_resolved().await?,
                 output_paths: EndpointOutputPaths::Edge {
-                    server_paths,
+                    rsc_paths: server_paths,
+                    ssr_paths: vec![],
                     client_paths: vec![],
                 }
                 .resolved_cell(),

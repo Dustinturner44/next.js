@@ -381,7 +381,8 @@ impl Endpoint for MiddlewareEndpoint {
 
             Ok(EndpointOutput {
                 output_paths: EndpointOutputPaths::Edge {
-                    server_paths,
+                    rsc_paths: server_paths,
+                    ssr_paths: vec![],
                     client_paths,
                 }
                 .resolved_cell(),
