@@ -434,6 +434,26 @@ program
   )
   .usage('[directory] [options]')
 
+program
+  .command('mcp')
+  .description(
+    'Starts an MCP (Model Context Protocol) proxy for Claude Desktop. Bridges stdio transport to Next.js HTTP MCP server.'
+  )
+  .addOption(
+    new Option(
+      '-p, --port <port>',
+      'Port where Next.js development server is running.'
+    )
+      .argParser(parseValidPositiveInteger)
+      .default(3000)
+      .env('PORT')
+  )
+  .addOption(new Option('--url <url>', 'Full URL to Next.js MCP endpoint.'))
+  .action((options: { port?: number; url?: string }) =>
+    import('../cli/next-mcp.js').then((mod) => mod.nextMcp(options))
+  )
+  .usage('[options]')
+
 const internal = program
   .command('internal')
   .description(

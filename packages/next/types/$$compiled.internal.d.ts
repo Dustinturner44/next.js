@@ -860,8 +860,11 @@ declare module 'next/dist/compiled/zod' {
 }
 
 declare module 'next/dist/compiled/zod-validation-error' {
-  import * as zve from 'zod-validation-error'
-  export = zve
+  export function fromZodError(
+    error: any,
+    options?: { prefix?: string }
+  ): { toString(): string }
+  export class ValidationError extends Error {}
 }
 
 declare module 'mini-css-extract-plugin'

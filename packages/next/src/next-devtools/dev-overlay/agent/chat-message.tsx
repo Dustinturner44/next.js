@@ -5,6 +5,9 @@ export interface Message {
   content: string
   role: 'user' | 'assistant'
   timestamp: Date
+  context?: {
+    sourcePath?: string
+  }
 }
 
 interface ChatMessageProps {

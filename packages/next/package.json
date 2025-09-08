@@ -102,12 +102,18 @@
     ]
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "1.0.105",
+    "@anthropic-ai/sdk": "0.61.0",
+    "@modelcontextprotocol/sdk": "1.17.5",
     "@next/env": "15.5.1-canary.24",
     "@swc/helpers": "0.5.15",
+    "@types/form-data": "2.5.2",
     "caniuse-lite": "^1.0.30001579",
     "codice": "1.5.2",
+    "form-data": "4.0.4",
     "postcss": "8.4.31",
-    "styled-jsx": "5.1.6"
+    "styled-jsx": "5.1.6",
+    "zod": "3.25.76"
   },
   "peerDependencies": {
     "@opentelemetry/api": "^1.1.0",
@@ -354,8 +360,7 @@
     "webpack-sources1": "npm:webpack-sources@1.4.3",
     "webpack-sources3": "npm:webpack-sources@3.2.3",
     "ws": "8.2.3",
-    "zod": "3.25.76",
-    "zod-validation-error": "3.4.0"
+    "zod-to-json-schema": "3.23.5"
   },
   "keywords": [
     "react",
