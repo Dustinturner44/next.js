@@ -4,6 +4,7 @@ import type { ExportPathMap, NextConfigComplete } from '../server/config-shared'
 import type { MiddlewareManifest } from './webpack/plugins/middleware-plugin'
 import type { ActionManifest } from './webpack/plugins/flight-client-entry-plugin'
 import type { CacheControl, Revalidate } from '../server/lib/cache-control'
+import crypto from 'node:crypto'
 
 import '../lib/setup-exception-listeners'
 
@@ -1525,6 +1526,12 @@ export default async function build(
             }
           }
 
+          // Generate a secret token that we can use for the resume header
+          // value. Using this instead of a static value improves the security
+          // of the resume header and prevents arbitrary resumes from wrongly
+          // interacting with the application.
+          const resumeToken = crypto.randomBytes(32).toString('hex')
+
           return {
             version: 3,
             pages404: true,
@@ -1590,7 +1597,7 @@ export default async function build(
               ? {
                   chain: {
                     headers: {
-                      [NEXT_RESUME_HEADER]: '1',
+                      [NEXT_RESUME_HEADER]: resumeToken,
                     },
                   },
                 }

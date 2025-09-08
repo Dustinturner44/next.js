@@ -181,6 +181,11 @@ export type NormalizedRouteManifest = {
     readonly afterFiles: ReadonlyArray<ManifestRewriteRoute>
     readonly fallback: ReadonlyArray<ManifestRewriteRoute>
   }
+  ppr?: {
+    chain: {
+      headers: Record<string, string>
+    }
+  }
 }
 
 export interface Options {
@@ -1071,6 +1076,8 @@ export default abstract class Server<
 
           let { pathname: urlPathname } = new URL(req.url, 'http://localhost')
 
+          const routesManifest = this.getRoutesManifest()
+
           // For ISR the URL is normalized to the prerenderPath so if
           // it's a data request the URL path will be the data URL,
           // basePath is already stripped by this point
@@ -1082,9 +1089,21 @@ export default abstract class Server<
           else if (
             this.isAppPPREnabled &&
             this.minimalMode &&
-            req.headers[NEXT_RESUME_HEADER] === '1' &&
+            // Ensure that the resume header is set on the request and is the
+            // same as the one in the routes manifest. This is regenerated
+            // every time the routes manifest is generated.
+            routesManifest?.ppr?.chain.headers[NEXT_RESUME_HEADER] &&
+            routesManifest.ppr.chain.headers[NEXT_RESUME_HEADER] ===
+              req.headers[NEXT_RESUME_HEADER] &&
             req.method === 'POST'
           ) {
+            // Delete the resume header from the request headers so that it
+            // doesn't interfere with the request.
+            delete req.headers[NEXT_RESUME_HEADER]
+            if (isNodeNextRequest(req)) {
+              delete req.originalRequest.headers[NEXT_RESUME_HEADER]
+            }
+
             // Decode the postponed state from the request body, it will come as
             // an array of buffers, so collect them and then concat them to form
             // the string.

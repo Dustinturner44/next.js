@@ -22,6 +22,7 @@ describe('required server files app router', () => {
   let secondCookiePostpone: string
   let secondCookieHTML: string
   let cliOutput = ''
+  let resumeHeaders: Record<string, string>
 
   beforeAll(async () => {
     process.env.NOW_BUILDER = '1'
@@ -69,6 +70,8 @@ describe('required server files app router', () => {
     secondCookieHTML = await next.readFile(
       '.next/server/app/rewrite/second-cookie.html'
     )
+    resumeHeaders = (await next.readJSON('.next/routes-manifest.json')).ppr
+      .chain.headers
 
     await fs.rename(
       join(next.testDir, '.next/standalone'),
@@ -155,8 +158,8 @@ describe('required server files app router', () => {
   it('should properly stream resume with Next-Resume', async () => {
     const res = await fetchViaHTTP(appPort, '/delayed', undefined, {
       headers: {
+        ...resumeHeaders,
         'x-matched-path': '/delayed',
-        'next-resume': '1',
       },
       method: 'POST',
       body: delayedPostpone,
@@ -248,8 +251,8 @@ describe('required server files app router', () => {
         {
           method: 'POST',
           headers: {
+            ...resumeHeaders,
             'x-matched-path': '/rewrite/first-cookie',
-            'next-resume': '1',
           },
           body: rewritePostpone,
         }
@@ -270,8 +273,8 @@ describe('required server files app router', () => {
     const res = await fetchViaHTTP(appPort, '/dyn/' + random, undefined, {
       method: 'POST',
       headers: {
+        ...resumeHeaders,
         'x-matched-path': '/dyn/[slug]',
-        'next-resume': '1',
       },
       // This is a corrupted postponed JSON payload.
       body: '{',
@@ -444,11 +447,11 @@ describe('required server files app router', () => {
     res = await fetchViaHTTP(appPort, '/rewrite/second-cookie.rsc', undefined, {
       method: 'POST',
       headers: {
+        ...resumeHeaders,
         'x-matched-path': '/rewrite/[slug]',
         'x-now-route-matches': createNowRouteMatches({
           slug: 'second-cookie',
         }).toString(),
-        'next-resume': '1',
       },
       body: secondCookiePostpone,
     })
