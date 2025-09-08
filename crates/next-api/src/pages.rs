@@ -1216,8 +1216,8 @@ impl PageEndpoint {
                 .node_root()
                 .await?
                 .join("server")?,
-            project.server_chunking_context(true),
-            project.edge_chunking_context(true),
+            project.server_chunking_context(rcstr!("ssr"), true),
+            project.edge_chunking_context(rcstr!("ssr"), true),
             this.pages_project.ssr_runtime_entries(),
             this.pages_project.edge_ssr_runtime_entries(),
         ))
@@ -1234,8 +1234,12 @@ impl PageEndpoint {
                 .node_root()
                 .await?
                 .join("server/data")?,
-            this.pages_project.project().server_chunking_context(true),
-            this.pages_project.project().edge_chunking_context(true),
+            this.pages_project
+                .project()
+                .server_chunking_context(rcstr!("ssr"), true),
+            this.pages_project
+                .project()
+                .edge_chunking_context(rcstr!("ssr"), true),
             this.pages_project.ssr_data_runtime_entries(),
             this.pages_project.edge_ssr_data_runtime_entries(),
         ))
@@ -1252,8 +1256,12 @@ impl PageEndpoint {
                 .node_root()
                 .await?
                 .join("server")?,
-            this.pages_project.project().server_chunking_context(false),
-            this.pages_project.project().edge_chunking_context(false),
+            this.pages_project
+                .project()
+                .server_chunking_context(rcstr!("ssr"), false),
+            this.pages_project
+                .project()
+                .edge_chunking_context(rcstr!("ssr"), false),
             this.pages_project.ssr_runtime_entries(),
             this.pages_project.edge_ssr_runtime_entries(),
         ))

@@ -1224,11 +1224,13 @@ impl AppEndpoint {
         let ssr_chunking_context = if process_ssr {
             Some(
                 match runtime {
-                    NextRuntime::NodeJs => Vc::upcast(project.server_chunking_context(true)),
+                    NextRuntime::NodeJs => {
+                        Vc::upcast(project.server_chunking_context(rcstr!("ssr"), true))
+                    }
                     NextRuntime::Edge => this
                         .app_project
                         .project()
-                        .edge_chunking_context(process_client_assets),
+                        .edge_chunking_context(rcstr!("ssr"), process_client_assets),
                 }
                 .to_resolved()
                 .await?,
@@ -1439,9 +1441,11 @@ impl AppEndpoint {
                 NextRuntime::NodeJs => Vc::upcast(this.app_project.rsc_module_context()),
             },
             *module_graphs.full,
-            this.app_project
-                .project()
-                .runtime_chunking_context(process_client_assets, runtime),
+            this.app_project.project().runtime_chunking_context(
+                rcstr!("rsc"),
+                process_client_assets,
+                runtime,
+            ),
         )
         .await?;
         if emit_rsc_manifests {
@@ -1739,7 +1743,8 @@ impl AppEndpoint {
         let app_entry = self.app_endpoint_entry().await?;
         let runtime = app_entry.config.await?.runtime.unwrap_or_default();
 
-        let chunking_context = project.runtime_chunking_context(process_client_assets, runtime);
+        let chunking_context =
+            project.runtime_chunking_context(rcstr!("rsc"), process_client_assets, runtime);
 
         Ok(match runtime {
             NextRuntime::Edge => {
@@ -1971,9 +1976,11 @@ impl Endpoint for AppEndpoint {
                 .is_development()
             {
                 let node_root = this.app_project.project().node_root().owned().await?;
-                let rsc_paths = all_server_paths(output.rsc_assets(), node_root.clone())
+                // TODO what about manifests outside of rsc/ ?
+                let mut rsc_paths = all_server_paths(output.rsc_assets(), node_root.clone())
                     .owned()
                     .await?;
+                rsc_paths.retain(|p| p.path.starts_with("server/chunks/rsc"));
                 let ssr_paths = all_server_paths(output.ssr_assets(), node_root)
                     .owned()
                     .await?;
