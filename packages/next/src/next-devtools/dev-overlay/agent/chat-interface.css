@@ -301,3 +301,19 @@
   font-size: 11px;
   font-style: italic;
 }
+
+.streaming-cursor {
+  color: #3b82f6;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}

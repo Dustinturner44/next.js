@@ -58,6 +58,7 @@ export interface SyncMessage {
   errors: ReadonlyArray<CompilationError>
   warnings: ReadonlyArray<CompilationError>
   versionInfo: VersionInfo
+  projectDir: string
   updatedModules?: ReadonlyArray<string>
   debug?: DebugInfo
   devIndicator: DevIndicatorServerState

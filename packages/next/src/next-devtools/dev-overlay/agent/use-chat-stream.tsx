@@ -1,22 +1,39 @@
 import { useCallback } from 'react'
+import { z } from 'zod'
 import type { Message } from './chat-message'
+
+const QuickActionRequestSchema = z.object({
+  loc: z.string().min(1, 'loc cannot be empty'),
+  query: z.string().min(1, 'query cannot be empty'),
+})
 
 export function useChatStream(
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   setIsLoading: (loading: boolean) => void
 ) {
   const sendMessage = useCallback(
-    async (content: string, context?: { sourcePath?: string }) => {
+    async (content: string, selectedElement: string | null) => {
       if (!content.trim()) return
 
-      console.log('🐛 DEBUG: sendMessage called with:', { content, context })
+      // Validate that we have a selected element
+      if (!selectedElement) {
+        console.error(
+          'No element selected. Please select an element before sending a message.'
+        )
+        return
+      }
+
+      console.log('🐛 DEBUG: sendMessage called with:', {
+        content,
+        selectedElement,
+      })
 
       const userMessage: Message = {
         id: Date.now().toString(),
         content,
         role: 'user',
         timestamp: new Date(),
-        context,
+        context: { sourcePath: selectedElement },
       }
 
       setMessages((prev) => [...prev, userMessage])
@@ -25,21 +42,25 @@ export function useChatStream(
       const assistantMessageIdRef = { current: null as string | null }
 
       try {
+        // Use QuickActionRequestSchema format for Daemon
         const payload = {
-          message: content,
-          context,
+          loc: selectedElement,
+          query: content,
         }
+
+        // Validate the payload
+        const validatedPayload = QuickActionRequestSchema.parse(payload)
         console.log(
-          '🐛 DEBUG: Sending request to /__nextjs_chat with payload:',
-          payload
+          '🐛 DEBUG: Sending request to Daemon with payload:',
+          validatedPayload
         )
 
-        const response = await fetch('/__nextjs_chat', {
+        const response = await fetch('http://localhost:3010/quick-action', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(validatedPayload),
         })
 
         console.log(
@@ -58,72 +79,50 @@ export function useChatStream(
 
         const reader = response.body.getReader()
         const decoder = new TextDecoder()
-        let buffer = ''
+
+        // Create initial assistant message
+        const assistantMessageId = Date.now().toString()
+        assistantMessageIdRef.current = assistantMessageId
+
+        const initialAssistantMessage: Message = {
+          id: assistantMessageId,
+          content: '',
+          role: 'assistant',
+          timestamp: new Date(),
+          streaming: true,
+        }
+
+        setMessages((prev) => [...prev, initialAssistantMessage])
+        let accumulatedText = ''
 
         try {
           while (true) {
             const { done, value } = await reader.read()
             if (done) break
 
-            buffer += decoder.decode(value, { stream: true })
-            const lines = buffer.split('\n')
+            const chunk = decoder.decode(value, { stream: true })
+            accumulatedText += chunk
 
-            buffer = lines.pop() || ''
+            console.log('🐛 DEBUG: Received text chunk:', chunk)
 
-            for (const line of lines) {
-              if (!line.trim()) continue
-
-              try {
-                const data = JSON.parse(line)
-                console.log('🐛 DEBUG: Received streaming data:', data)
-
-                if (data.type === 'start') {
-                  // Stream started, keep loading
-                  console.log('🐛 DEBUG: Stream started')
-                } else if (data.type === 'content') {
-                  console.log('🐛 DEBUG: Content received:', data.content)
-                  handleStreamContent(
-                    data,
-                    assistantMessageIdRef.current,
-                    setMessages,
-                    (id) => {
-                      assistantMessageIdRef.current = id
-                    }
-                  )
-                } else if (data.type === 'complete') {
-                  handleStreamComplete(
-                    data,
-                    assistantMessageIdRef.current,
-                    setMessages,
-                    (id) => {
-                      assistantMessageIdRef.current = id
-                    }
-                  )
-                  setIsLoading(false)
-                  return
-                } else if (data.type === 'error') {
-                  handleStreamError(
-                    data,
-                    assistantMessageIdRef.current,
-                    setMessages,
-                    (id) => {
-                      assistantMessageIdRef.current = id
-                    }
-                  )
-                  setIsLoading(false)
-                  return
-                } else {
-                  console.log(
-                    '🐛 DEBUG: Unknown message type:',
-                    data.type,
-                    data
-                  )
-                }
-              } catch (parseError) {
-                console.warn('Failed to parse streaming response:', line)
-              }
-            }
+            // Update the assistant message with accumulated text
+            const currentAccumulated = accumulatedText
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: currentAccumulated }
+                  : msg
+              )
+            )
           }
+
+          // Stream is complete, stop loading and remove streaming indicator
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId ? { ...msg, streaming: false } : msg
+            )
+          )
+          setIsLoading(false)
         } finally {
           reader.releaseLock()
         }
@@ -157,85 +156,4 @@ export function useChatStream(
   )
 
   return { sendMessage }
-}
-
-function handleStreamContent(
-  data: any,
-  assistantMessageId: string | null,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setAssistantId: (id: string) => void
-) {
-  if (!assistantMessageId) {
-    const newId = (Date.now() + 1).toString()
-    setAssistantId(newId)
-    const assistantMessage: Message = {
-      id: newId,
-      content: data.content || '',
-      role: 'assistant',
-      timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, assistantMessage])
-  } else {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === assistantMessageId
-          ? { ...msg, content: msg.content + (data.content || '') }
-          : msg
-      )
-    )
-  }
-}
-
-function handleStreamComplete(
-  data: any,
-  assistantMessageId: string | null,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setAssistantId: (id: string) => void
-) {
-  if (!assistantMessageId) {
-    const newId = (Date.now() + 1).toString()
-    setAssistantId(newId)
-    const assistantMessage: Message = {
-      id: newId,
-      content: data.content || '',
-      role: 'assistant',
-      timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, assistantMessage])
-  } else {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === assistantMessageId
-          ? { ...msg, content: data.content || msg.content }
-          : msg
-      )
-    )
-  }
-}
-
-function handleStreamError(
-  data: any,
-  assistantMessageId: string | null,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setAssistantId: (id: string) => void
-) {
-  const errorContent = `Error: ${data.content || 'Unknown error'}`
-
-  if (!assistantMessageId) {
-    const newId = (Date.now() + 1).toString()
-    setAssistantId(newId)
-    const assistantMessage: Message = {
-      id: newId,
-      content: errorContent,
-      role: 'assistant',
-      timestamp: new Date(),
-    }
-    setMessages((prev) => [...prev, assistantMessage])
-  } else {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === assistantMessageId ? { ...msg, content: errorContent } : msg
-      )
-    )
-  }
 }

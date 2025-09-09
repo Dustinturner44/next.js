@@ -294,6 +294,7 @@ function processMessage(message: HmrMessageSentToBrowser) {
       // Is undefined when it's a 'built' event
       if ('versionInfo' in message)
         dispatcher.onVersionInfo(message.versionInfo)
+      if ('projectDir' in message) dispatcher.onProjectDir(message.projectDir)
       if ('devIndicator' in message)
         dispatcher.onDevIndicator(message.devIndicator)
       if ('devToolsConfig' in message)

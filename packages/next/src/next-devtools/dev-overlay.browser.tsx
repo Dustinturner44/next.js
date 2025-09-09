@@ -12,6 +12,7 @@ import {
   ACTION_UNHANDLED_ERROR,
   ACTION_UNHANDLED_REJECTION,
   ACTION_VERSION_INFO,
+  ACTION_PROJECT_DIR,
   useErrorOverlayReducer,
   ACTION_BUILDING_INDICATOR_HIDE,
   ACTION_BUILDING_INDICATOR_SHOW,
@@ -49,6 +50,7 @@ export interface Dispatcher {
   onBuildOk(): void
   onBuildError(message: string): void
   onVersionInfo(versionInfo: VersionInfo): void
+  onProjectDir(projectDir: string): void
   onDebugInfo(debugInfo: DebugInfo): void
   onBeforeRefresh(): void
   onRefresh(): void
@@ -108,6 +110,9 @@ export const dispatcher: Dispatcher = {
       dispatch({ type: ACTION_VERSION_INFO, versionInfo })
     }
   ),
+  onProjectDir: createQueuable((dispatch: Dispatch, projectDir: string) => {
+    dispatch({ type: ACTION_PROJECT_DIR, projectDir })
+  }),
   onStaticIndicator: createQueuable((dispatch: Dispatch, status: boolean) => {
     dispatch({ type: ACTION_STATIC_INDICATOR, staticIndicator: status })
   }),

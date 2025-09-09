@@ -899,6 +899,7 @@ export async function createHotReloaderTurbopack(
             warnings: [],
             hash: '',
             versionInfo,
+            projectDir: opts.dir,
             debug: {
               devtoolsFrontendUrl,
             },

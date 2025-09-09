@@ -46,6 +46,7 @@ export interface OverlayState {
   readonly errors: readonly SupportedErrorEvent[]
   readonly refreshState: FastRefreshState
   readonly versionInfo: VersionInfo
+  readonly projectDir: string
   readonly notFound: boolean
   readonly buildingIndicator: boolean
   readonly renderingIndicator: boolean
@@ -78,6 +79,7 @@ export const ACTION_BUILD_ERROR = 'build-error'
 export const ACTION_BEFORE_REFRESH = 'before-fast-refresh'
 export const ACTION_REFRESH = 'fast-refresh'
 export const ACTION_VERSION_INFO = 'version-info'
+export const ACTION_PROJECT_DIR = 'project-dir'
 export const ACTION_UNHANDLED_ERROR = 'unhandled-error'
 export const ACTION_UNHANDLED_REJECTION = 'unhandled-rejection'
 export const ACTION_DEBUG_INFO = 'debug-info'
@@ -148,6 +150,11 @@ interface VersionInfoAction {
   versionInfo: VersionInfo
 }
 
+interface ProjectDirAction {
+  type: typeof ACTION_PROJECT_DIR
+  projectDir: string
+}
+
 interface DevIndicatorAction {
   type: typeof ACTION_DEV_INDICATOR
   devIndicator: DevIndicatorServerState
@@ -216,6 +223,7 @@ export type DispatcherEvent =
   | UnhandledErrorAction
   | UnhandledRejectionAction
   | VersionInfoAction
+  | ProjectDirAction
   | StaticIndicatorAction
   | DebugInfoAction
   | DevIndicatorAction
@@ -271,6 +279,7 @@ export const INITIAL_OVERLAY_STATE: Omit<
   buildingIndicator: false,
   refreshState: { type: 'idle' },
   versionInfo: { installed: '0.0.0', staleness: 'unknown' },
+  projectDir: '',
   debugInfo: { devtoolsFrontendUrl: undefined },
   devToolsPosition: 'bottom-left',
   devToolsPanelPosition: {
@@ -406,6 +415,9 @@ export function useErrorOverlayReducer(
         }
         case ACTION_VERSION_INFO: {
           return { ...state, versionInfo: action.versionInfo }
+        }
+        case ACTION_PROJECT_DIR: {
+          return { ...state, projectDir: action.projectDir }
         }
         case ACTION_DEV_INDICATOR_SET: {
           return { ...state, disableDevIndicator: action.disabled }

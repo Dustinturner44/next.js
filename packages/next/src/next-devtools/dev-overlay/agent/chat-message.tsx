@@ -8,6 +8,7 @@ export interface Message {
   context?: {
     sourcePath?: string
   }
+  streaming?: boolean
 }
 
 interface ChatMessageProps {
@@ -21,7 +22,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
     <div className={`messageGroup ${isUser ? 'user' : ''}`}>
       <div className={`messageContent ${isUser ? 'user' : 'assistant'}`}>
         <div>
-          <p style={{ margin: 0, lineHeight: 1.5 }}>{message.content}</p>
+          <p style={{ margin: 0, lineHeight: 1.5 }}>
+            {message.content}
+            {message.streaming && message.role === 'assistant' && (
+              <span className="streaming-cursor">▊</span>
+            )}
+          </p>
         </div>
 
         {isUser && (
