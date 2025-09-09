@@ -207,6 +207,12 @@ import { getDynamicParam } from '../../shared/lib/router/utils/get-dynamic-param
 import type { ExperimentalConfig } from '../config-shared'
 import type { Params } from '../request/params'
 import { createPromiseWithResolvers } from '../../shared/lib/promise-with-resolvers'
+import {
+  collectStageChunksFromDynamicRender,
+  needsRuntimePrefetchValidation,
+  RenderStage,
+  validateRuntimePrefetches,
+} from './prefetch-validation'
 
 export type GetDynamicParamFromSegment = (
   // [slug] / [[slug]] / [...slug]
@@ -2218,7 +2224,7 @@ async function renderToStream(
       experimental.cacheComponents
     ) {
       // This is a dynamic render. We don't do dynamic tracking because we're not prerendering
-      const RSCPayload: InitialRSCPayload & {
+      const rscPayload: InitialRSCPayload & {
         /** Only available during cacheComponents development builds. Used for logging errors. */
         _validation?: Promise<React.ReactNode>
       } = await workUnitAsyncStorage.run(
@@ -2228,41 +2234,202 @@ async function renderToStream(
         ctx,
         res.statusCode === 404
       )
-      const [resolveValidation, validationOutlet] = createValidationOutlet()
-      RSCPayload._validation = validationOutlet
 
-      const reactServerStream = await workUnitAsyncStorage.run(
-        requestStore,
-        scheduleInSequentialTasks,
-        () => {
-          requestStore.prerenderPhase = true
-          return ComponentMod.renderToReadableStream(
-            RSCPayload,
-            clientReferenceManifest.clientModules,
-            {
-              onError: serverComponentsErrorHandler,
-              environmentName: () =>
-                requestStore.prerenderPhase === true ? 'Prerender' : 'Server',
-              filterStackFrame,
+      if (needsRuntimePrefetchValidation(rscPayload)) {
+        let currentStage: RenderStage = RenderStage.Static
+        const getStage = () => currentStage
+
+        const getEnvironmentName = (): string => {
+          switch (currentStage) {
+            case RenderStage.Static:
+              return 'Prerender'
+            case RenderStage.Runtime:
+              return 'Runtime Prerender'
+            case RenderStage.Dynamic:
+              return 'Server'
+            default:
+              currentStage satisfies never
+              return 'Unknown'
+          }
+        }
+
+        const runtimeStagePromise = createPromiseWithResolvers<void>()
+        const dynamicStagePromise = createPromiseWithResolvers<void>()
+
+        requestStore.runtimeStagePromise = runtimeStagePromise.promise
+        requestStore.dynamicStagePromise = dynamicStagePromise.promise
+
+        // TODO(prefetch-validation): bad if render() crashes
+        let chunksPromise: ReturnType<
+          typeof collectStageChunksFromDynamicRender
+        > = null!
+
+        const reactServerStream = await workUnitAsyncStorage.run(
+          requestStore,
+          scheduleInSequentialTasks,
+          () => {
+            requestStore.prerenderPhase = true
+
+            const [stream, teedStream] = ComponentMod.renderToReadableStream(
+              rscPayload,
+              clientReferenceManifest.clientModules,
+              {
+                onError: serverComponentsErrorHandler,
+                environmentName: getEnvironmentName,
+                // requestStore.prerenderPhase === true ? 'Prerender' : 'Server',
+                filterStackFrame,
+              }
+            ).tee()
+
+            chunksPromise = collectStageChunksFromDynamicRender(
+              teedStream,
+              getStage
+            )
+            return stream
+          },
+          () => {
+            requestStore.prerenderPhase = false
+            currentStage = RenderStage.Runtime
+            runtimeStagePromise.resolve()
+          },
+          () => {
+            currentStage = RenderStage.Dynamic
+            dynamicStagePromise.resolve()
+          }
+        )
+
+        chunksPromise.then(async (chunks) => {
+          console.debug('='.repeat(80))
+          let previousStage: RenderStage | null = null
+          for (const stage of [
+            RenderStage.Static,
+            RenderStage.Runtime,
+            RenderStage.Dynamic,
+          ]) {
+            console.debug(`\n\n${RenderStage[stage]}:\n`)
+            console.debug(
+              Buffer.concat(
+                chunks[stage]
+                  .slice(
+                    previousStage !== null ? chunks[previousStage].length : 0
+                  )
+                  .map((chunk) => Buffer.from(chunk))
+              )
+                .toString('utf-8')
+                .split('\n')
+                .filter((row) => !/^[0-9a-f]+:[DJ]/.test(row))
+                .join('\n')
+            )
+            console.debug('-'.repeat(60))
+            previousStage = stage
+          }
+
+          await validateRuntimePrefetches(
+            rscPayload,
+            clientReferenceManifest,
+            chunks,
+            async (getPayload) => {
+              const { getDynamicParamFromSegment } = ctx
+
+              const rootParams = getRootParams(
+                ComponentMod.routeModule.userland.loaderTree,
+                getDynamicParamFromSegment
+              )
+
+              const hmrRefreshHash = requestStore.cookies.get(
+                NEXT_HMR_REFRESH_HASH_COOKIE
+              )?.value
+
+              // This is a dynamic render, so we don't have any fallack params.
+              const fallbackRouteParams = null
+
+              const serverDynamicTracking = createDynamicTrackingState(
+                false // isDebugDynamicAccesses
+              )
+              const clientDynamicTracking = createDynamicTrackingState(
+                false // isDebugDynamicAccesses
+              )
+
+              const prerenderResumeDataCache = createPrerenderResumeDataCache()
+
+              const reactServerValidationResult =
+                await dynamicValidationFinalServerPrerender(
+                  ctx,
+                  getPayload,
+                  clientReferenceManifest,
+                  ///
+                  hmrRefreshHash,
+                  rootParams,
+                  fallbackRouteParams,
+                  prerenderResumeDataCache,
+                  ///
+                  serverDynamicTracking
+                )
+
+              const dynamicValidation = createDynamicValidationState()
+
+              const { prelude } = await dynamicValidationFinalClientPrerender(
+                ctx,
+                clientReferenceManifest,
+                ///
+                hmrRefreshHash,
+                rootParams,
+                fallbackRouteParams,
+                prerenderResumeDataCache,
+                ///
+                reactServerValidationResult,
+                clientDynamicTracking,
+                dynamicValidation
+              )
+
+              const result = await streamToString(prelude)
+              console.debug(
+                'dynamic validation for prefetch',
+                dynamicValidation
+              )
+              return result
             }
           )
-        },
-        () => {
-          requestStore.prerenderPhase = false
-        }
-      )
+        })
 
-      spawnDynamicValidationInDev(
-        resolveValidation,
-        tree,
-        ctx,
-        res.statusCode === 404,
-        clientReferenceManifest,
-        requestStore,
-        devValidatingFallbackParams
-      )
+        reactServerResult = new ReactServerResult(reactServerStream)
+      } else {
+        const [resolveValidation, validationOutlet] = createValidationOutlet()
+        rscPayload._validation = validationOutlet
 
-      reactServerResult = new ReactServerResult(reactServerStream)
+        const reactServerStream = await workUnitAsyncStorage.run(
+          requestStore,
+          scheduleInSequentialTasks,
+          () => {
+            requestStore.prerenderPhase = true
+            return ComponentMod.renderToReadableStream(
+              rscPayload,
+              clientReferenceManifest.clientModules,
+              {
+                onError: serverComponentsErrorHandler,
+                environmentName: () =>
+                  requestStore.prerenderPhase === true ? 'Prerender' : 'Server',
+                filterStackFrame,
+              }
+            )
+          },
+          () => {
+            requestStore.prerenderPhase = false
+          }
+        )
+
+        spawnDynamicValidationInDev(
+          resolveValidation,
+          tree,
+          ctx,
+          res.statusCode === 404,
+          clientReferenceManifest,
+          requestStore,
+          devValidatingFallbackParams
+        )
+
+        reactServerResult = new ReactServerResult(reactServerStream)
+      }
     } else {
       // This is a dynamic render. We don't do dynamic tracking because we're not prerendering
       const RSCPayload = await workUnitAsyncStorage.run(
@@ -2770,7 +2937,7 @@ type Result<T, E = unknown> =
 
 async function dynamicValidationProspectiveServerPrerender(
   ctx: AppRenderContext,
-  getPayload: () => ReturnType<typeof getRSCPayload>,
+  getPayload: () => Promise<InitialRSCPayload>,
   clientReferenceManifest: NonNullable<RenderOpts['clientReferenceManifest']>,
   ///
   hmrRefreshHash: PrerenderStoreModernCommon['hmrRefreshHash'],
@@ -3094,7 +3261,7 @@ async function dynamicValidationProspectiveClientPrerender(
 
 async function dynamicValidationFinalServerPrerender(
   ctx: AppRenderContext,
-  getPayload: () => ReturnType<typeof getRSCPayload>,
+  getPayload: () => Promise<InitialRSCPayload>,
   clientReferenceManifest: NonNullable<RenderOpts['clientReferenceManifest']>,
   ///
   hmrRefreshHash: PrerenderStoreModernCommon['hmrRefreshHash'],

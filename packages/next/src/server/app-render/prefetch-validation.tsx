@@ -11,6 +11,7 @@ import { createPromiseWithResolvers } from '../../shared/lib/promise-with-resolv
 import { getServerModuleMap } from './encryption-utils'
 import { Suspense, type ReactNode } from 'react'
 import { isThenable } from '../../shared/lib/is-thenable'
+import { inspect } from 'node:util'
 
 type StageChunks = Record<RenderStage, Uint8Array[]>
 
@@ -233,10 +234,16 @@ export async function validateRuntimePrefetches(
     if (prelude.includes(sentinelBoundaryId)) {
       // TODO: this needs to go into the render a la resolveValidation
       console.error(
-        'Runtime prefetchable segment did not produce an instant result',
+        '❌ Runtime prefetchable segment did not produce an instant result',
+        runtimeSegmentToValidate
+      )
+    } else {
+      console.log(
+        '✅ Runtime prefetchable segment is OK',
         runtimeSegmentToValidate
       )
     }
+    console.log(prelude)
   }
 }
 
@@ -308,7 +315,19 @@ function createValidationRouteTree(
   return createValidationRouteTreeFromSeedData(seedData, pathsToValidate)
 }
 
-enum RenderStage {
+export function needsRuntimePrefetchValidation(
+  initialRSCPayload: InitialRSCPayload
+) {
+  // TODO(prefetch-validation): this is hacky
+  const pathsToValidate = new Set<SegmentPath>()
+  const tree = createValidationRouteTree(initialRSCPayload, pathsToValidate)
+  console.log(
+    `needsRuntimePrefetchValidation: ${pathsToValidate.size > 0}\n${[...pathsToValidate]}\n${inspect(tree, { depth: undefined, colors: true })}`
+  )
+  return pathsToValidate.size > 0
+}
+
+export enum RenderStage {
   Static = 1,
   Runtime = 2,
   Dynamic = 3,
