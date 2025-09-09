@@ -5,7 +5,6 @@ import {
   MENU_CURVE,
   MENU_DURATION_MS,
 } from '../errors/dev-tools-indicator/utils'
-import { Draggable } from '../errors/dev-tools-indicator/draggable'
 import { VercelVectorImpl } from '../../agent/vercel-vector-impl'
 
 export const INDICATOR_PADDING = 20
@@ -30,13 +29,7 @@ export function VercelVector() {
         } as CSSProperties
       }
     >
-      <Draggable
-        padding={INDICATOR_PADDING}
-        setPosition={() => {}}
-        position="bottom-right"
-      >
-        <VercelVectorImpl />
-      </Draggable>
+      <VercelVectorImpl />
     </Toast>
   )
 }

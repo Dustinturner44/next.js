@@ -8,6 +8,8 @@ import { ChatToolbar } from './chat-toolbar'
 import { useChatMessages } from './use-chat-messages'
 import { useChatStream } from './use-chat-stream'
 import { useDevOverlayContext } from '../../dev-overlay.browser'
+import { useSegmentTree } from '../segment-explorer-trie'
+import { collectClientData, sendClientDataToMcp } from './client-data-collector'
 import './chat-interface.css'
 
 // Codice editor import
@@ -632,6 +634,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const { messages, setMessages, isLoading, setIsLoading } = useChatMessages()
   const { sendMessage } = useChatStream(setMessages, setIsLoading)
   const { state } = useDevOverlayContext()
+  const segmentTrieRoot = useSegmentTree()
 
   // Tell the Daemon about the project directory
   // TODO: this does not work when we have multiple projects open
@@ -662,6 +665,23 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
         console.error('InitRequest error:', err)
       })
   }, [state.projectDir])
+
+  // Collect and send client data on hydration
+  useEffect(() => {
+    const collectAndSendData = async () => {
+      try {
+        const clientData = collectClientData(segmentTrieRoot)
+        await sendClientDataToMcp(clientData)
+        console.log('[ChatInterface] Client data sent to MCP server')
+      } catch (error) {
+        console.error('[ChatInterface] Failed to send client data:', error)
+      }
+    }
+
+    // Small delay to ensure everything is hydrated
+    const timeoutId = setTimeout(collectAndSendData, 1000)
+    return () => clearTimeout(timeoutId)
+  }, [segmentTrieRoot])
 
   const handleToggleMinimize = () => {
     setIsMinimized((prev) => !prev)

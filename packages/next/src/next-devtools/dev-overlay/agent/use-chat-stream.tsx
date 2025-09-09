@@ -3,7 +3,7 @@ import { z } from 'zod'
 import type { Message } from './chat-message'
 
 const QuickActionRequestSchema = z.object({
-  loc: z.string().min(1, 'loc cannot be empty'),
+  loc: z.string().nullable().optional(),
   query: z.string().min(1, 'query cannot be empty'),
 })
 
@@ -17,10 +17,7 @@ export function useChatStream(
 
       // Validate that we have a selected element
       if (!selectedElement) {
-        console.error(
-          'No element selected. Please select an element before sending a message.'
-        )
-        return
+        console.log(`[DEBUG] No element selected. It's a general query`)
       }
 
       console.log('🐛 DEBUG: sendMessage called with:', {
@@ -33,7 +30,7 @@ export function useChatStream(
         content,
         role: 'user',
         timestamp: new Date(),
-        context: { sourcePath: selectedElement },
+        context: { sourcePath: selectedElement ?? undefined },
       }
 
       setMessages((prev) => [...prev, userMessage])
