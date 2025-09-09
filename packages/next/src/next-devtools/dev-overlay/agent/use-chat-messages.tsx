@@ -5,9 +5,14 @@ export function useChatMessages() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
+  const clearMessages = () => {
+    setMessages([])
+  }
+
   return {
     messages,
     setMessages,
+    clearMessages,
     isLoading,
     setIsLoading,
   }

@@ -631,7 +631,8 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const [selectedSourcePath, setSelectedSourcePath] = useState<string | null>(
     null
   )
-  const { messages, setMessages, isLoading, setIsLoading } = useChatMessages()
+  const { messages, setMessages, clearMessages, isLoading, setIsLoading } =
+    useChatMessages()
   const { sendMessage } = useChatStream(setMessages, setIsLoading)
   const { state } = useDevOverlayContext()
   const segmentTrieRoot = useSegmentTree()
@@ -713,6 +714,8 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
     setSelectedSourcePath(sourcePath)
   }
 
+  console.log('🐛 DEBUG: isLoading:', isLoading, isLoading)
+
   return (
     <>
       <div className={`chatContainer ${isMinimized ? 'minimized' : ''}`}>
@@ -722,6 +725,8 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
           isMinimized={isMinimized}
           onToggleInspect={handleToggleInspect}
           isInspecting={isInspecting}
+          onClearConversation={clearMessages}
+          hasMessages={messages.length > 0}
         />
 
         {!isMinimized && (
