@@ -563,7 +563,7 @@ function makeDynamicallyTrackedExoticParamsWithDevWarnings(
   // supports copying with spread and we don't want to unnecessarily
   // instrument the promise with spreadable properties of ReactPromise.
   const promise = hasFallbackParams
-    ? makeDevtoolsIOAwarePromise(underlyingParams)
+    ? makeDevtoolsIOAwarePromise(underlyingParams, 'runtime')
     : // We don't want to force an environment transition when this params is not part of the fallback params set
       Promise.resolve(underlyingParams)
 
@@ -627,7 +627,7 @@ function makeDynamicallyTrackedParamsWithDevWarnings(
   // supports copying with spread and we don't want to unnecessarily
   // instrument the promise with spreadable properties of ReactPromise.
   const promise = hasFallbackParams
-    ? makeDevtoolsIOAwarePromise(underlyingParams)
+    ? makeDevtoolsIOAwarePromise(underlyingParams, 'runtime')
     : // We don't want to force an environment transition when this params is not part of the fallback params set
       Promise.resolve(underlyingParams)
 

@@ -67,8 +67,11 @@ export interface RequestStore extends CommonWorkUnitStore {
 
   // DEV-only
   usedDynamic?: boolean
+  // TODO(prefetch-validation): might need updating to account for stages
   prerenderPhase?: boolean
   devFallbackParams?: OpaqueFallbackRouteParams | null
+  runtimeStagePromise?: Promise<void>
+  dynamicStagePromise?: Promise<void>
 }
 
 /**
@@ -523,12 +526,32 @@ export function getRuntimeStagePromise(
   switch (workUnitStore.type) {
     case 'prerender-runtime':
     case 'private-cache':
-      return workUnitStore.runtimeStagePromise
+    case 'request':
+      return workUnitStore.runtimeStagePromise ?? null
     case 'prerender':
     case 'prerender-client':
     case 'prerender-ppr':
     case 'prerender-legacy':
+    case 'cache':
+    case 'unstable-cache':
+      return null
+    default:
+      return workUnitStore satisfies never
+  }
+}
+
+export function getDynamicStagePromise(
+  workUnitStore: WorkUnitStore
+): Promise<void> | null {
+  switch (workUnitStore.type) {
     case 'request':
+      return workUnitStore.dynamicStagePromise ?? null
+    case 'prerender-runtime':
+    case 'private-cache':
+    case 'prerender':
+    case 'prerender-client':
+    case 'prerender-ppr':
+    case 'prerender-legacy':
     case 'cache':
     case 'unstable-cache':
       return null

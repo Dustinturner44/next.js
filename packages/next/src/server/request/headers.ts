@@ -283,7 +283,7 @@ function makeUntrackedExoticHeadersWithDevWarnings(
     return cachedHeaders
   }
 
-  const promise = makeDevtoolsIOAwarePromise(underlyingHeaders)
+  const promise = makeDevtoolsIOAwarePromise(underlyingHeaders, 'dynamic')
 
   CachedHeaders.set(underlyingHeaders, promise)
 
@@ -402,7 +402,7 @@ function makeUntrackedHeadersWithDevWarnings(
     return cachedHeaders
   }
 
-  const promise = makeDevtoolsIOAwarePromise(underlyingHeaders)
+  const promise = makeDevtoolsIOAwarePromise(underlyingHeaders, 'dynamic')
 
   const proxiedPromise = new Proxy(promise, {
     get(target, prop, receiver) {

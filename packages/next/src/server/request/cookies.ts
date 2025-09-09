@@ -292,7 +292,7 @@ function makeUntrackedExoticCookiesWithDevWarnings(
     return cachedCookies
   }
 
-  const promise = makeDevtoolsIOAwarePromise(underlyingCookies)
+  const promise = makeDevtoolsIOAwarePromise(underlyingCookies, 'runtime')
   CachedCookies.set(underlyingCookies, promise)
 
   Object.defineProperties(promise, {
@@ -443,7 +443,7 @@ function makeUntrackedCookiesWithDevWarnings(
     return cachedCookies
   }
 
-  const promise = makeDevtoolsIOAwarePromise(underlyingCookies)
+  const promise = makeDevtoolsIOAwarePromise(underlyingCookies, 'runtime')
 
   const proxiedPromise = new Proxy(promise, {
     get(target, prop, receiver) {

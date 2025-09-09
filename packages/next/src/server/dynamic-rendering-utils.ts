@@ -1,3 +1,9 @@
+import {
+  getDynamicStagePromise,
+  getRuntimeStagePromise,
+  workUnitAsyncStorage,
+} from './app-render/work-unit-async-storage.external'
+
 export function isHangingPromiseRejectionError(
   err: unknown
 ): err is HangingPromiseRejectionError {
@@ -73,7 +79,21 @@ export function makeHangingPromise<T>(
 
 function ignoreReject() {}
 
-export function makeDevtoolsIOAwarePromise<T>(underlying: T): Promise<T> {
+export function makeDevtoolsIOAwarePromise<T>(
+  underlying: T,
+  kind: 'runtime' | 'dynamic'
+): Promise<T> {
+  const workUnitStore = workUnitAsyncStorage.getStore()
+  if (workUnitStore) {
+    const promise =
+      kind === 'runtime'
+        ? getRuntimeStagePromise(workUnitStore)
+        : getDynamicStagePromise(workUnitStore)
+    if (promise) {
+      return promise.then(() => underlying)
+    }
+  }
+
   // in React DevTools if we resolve in a setTimeout we will observe
   // the promise resolution as something that can suspend a boundary or root.
   return new Promise<T>((resolve) => {
