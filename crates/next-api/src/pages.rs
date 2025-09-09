@@ -23,9 +23,9 @@ use next_core::{
     pages_structure::{
         PagesDirectoryStructure, PagesStructure, PagesStructureItem, find_pages_structure,
     },
-    util::{
-        NextRuntime, get_asset_prefix_from_pathname, pages_function_name, parse_config_from_source,
-    },
+    parse_segment_config_from_source,
+    segment_config::ParseSegmentMode,
+    util::{NextRuntime, get_asset_prefix_from_pathname, pages_function_name},
 };
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
@@ -322,7 +322,7 @@ impl PagesProject {
                 (
                     rcstr!("next-dynamic-client"),
                     ResolvedVc::upcast(
-                        NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
+                        NextDynamicTransition::new_client(self.client_transition())
                             .to_resolved()
                             .await?,
                     ),
@@ -930,7 +930,9 @@ impl PageEndpoint {
             .module();
 
         let config =
-            parse_config_from_source(self.source(), ssr_module, NextRuntime::default()).await?;
+            parse_segment_config_from_source(self.source(), ParseSegmentMode::Base).await?;
+
+        let runtime = config.runtime.unwrap_or(NextRuntime::NodeJs);
 
         Ok(
             // `/_app` and `/_document` never get rendered directly so they don't need to be
@@ -944,9 +946,9 @@ impl PageEndpoint {
                     // /_app and /_document are always rendered for Node.js for this case. For edge
                     // they're included in the page bundle.
                     runtime: NextRuntime::NodeJs,
-                    regions: config.regions.clone(),
+                    regions: config.preferred_region.clone(),
                 }
-            } else if config.runtime == NextRuntime::Edge {
+            } else if runtime == NextRuntime::Edge {
                 let modules = create_page_ssr_entry_module(
                     this.pathname.clone(),
                     reference_type,
@@ -955,7 +957,7 @@ impl PageEndpoint {
                     self.source(),
                     this.original_name.clone(),
                     *this.pages_structure,
-                    config.runtime,
+                    runtime,
                     this.pages_project.project().next_config(),
                 )
                 .await?;
@@ -964,8 +966,8 @@ impl PageEndpoint {
                     ssr_module: modules.ssr_module,
                     app_module: modules.app_module,
                     document_module: modules.document_module,
-                    runtime: config.runtime,
-                    regions: config.regions.clone(),
+                    runtime,
+                    regions: config.preferred_region.clone(),
                 }
             } else {
                 let modules = create_page_ssr_entry_module(
@@ -976,7 +978,7 @@ impl PageEndpoint {
                     self.source(),
                     this.original_name.clone(),
                     *this.pages_structure,
-                    config.runtime,
+                    runtime,
                     this.pages_project.project().next_config(),
                 )
                 .await?;
@@ -984,8 +986,8 @@ impl PageEndpoint {
                     ssr_module: modules.ssr_module,
                     app_module: modules.app_module,
                     document_module: modules.document_module,
-                    runtime: config.runtime,
-                    regions: config.regions.clone(),
+                    runtime,
+                    regions: config.preferred_region.clone(),
                 }
             }
             .cell(),
@@ -1071,7 +1073,7 @@ impl PageEndpoint {
             {
                 collect_next_dynamic_chunks(
                     self.client_module_graph(),
-                    Vc::upcast(project.client_chunking_context()),
+                    project.client_chunking_context(),
                     next_dynamic_imports,
                     NextDynamicChunkAvailability::AvailabilityInfo(client_availability_info),
                 )
@@ -1082,7 +1084,7 @@ impl PageEndpoint {
 
             let chunking_context: Vc<Box<dyn ChunkingContext>> = match runtime {
                 NextRuntime::NodeJs => Vc::upcast(node_chunking_context),
-                NextRuntime::Edge => Vc::upcast(edge_chunking_context),
+                NextRuntime::Edge => edge_chunking_context,
             };
 
             let mut current_chunks = OutputAssets::empty();
@@ -1340,16 +1342,14 @@ impl PageEndpoint {
             ..Default::default()
         };
         let manifest_path_prefix = get_asset_prefix_from_pathname(&self.pathname);
-        Ok(Vc::upcast(
-            build_manifest
-                .build_output(
-                    node_root.join(&format!(
-                        "server/pages{manifest_path_prefix}/build-manifest.json",
-                    ))?,
-                    client_relative_path,
-                )
-                .await?,
-        ))
+        build_manifest
+            .build_output(
+                node_root.join(&format!(
+                    "server/pages{manifest_path_prefix}/build-manifest.json",
+                ))?,
+                client_relative_path,
+            )
+            .await
     }
 
     #[turbo_tasks::function]

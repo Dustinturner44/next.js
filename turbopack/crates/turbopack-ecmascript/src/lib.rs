@@ -175,8 +175,27 @@ pub enum TreeShakingMode {
 #[turbo_tasks::value(transparent)]
 pub struct OptionTreeShaking(pub Option<TreeShakingMode>);
 
+/// The constant to replace `typeof window` with.
+#[derive(
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Debug,
+    Hash,
+    Serialize,
+    Deserialize,
+    TraceRawVcs,
+    NonLocalValue,
+    TaskInput,
+)]
+pub enum TypeofWindow {
+    Object,
+    Undefined,
+}
+
 #[turbo_tasks::value(shared)]
-#[derive(Hash, Debug, Default, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct EcmascriptOptions {
     /// variant of tree shaking to use
     pub tree_shaking_mode: Option<TreeShakingMode>,
@@ -200,6 +219,14 @@ pub struct EcmascriptOptions {
     /// parsing fails. This is useful to keep the module graph structure intact when syntax errors
     /// are temporarily introduced.
     pub keep_last_successful_parse: bool,
+    /// Whether the modules in this context are never chunked/codegen-ed, but only used for
+    /// tracing.
+    pub is_tracing: bool,
+    // TODO this should just be handled via CompileTimeInfo FreeVarReferences, but then it
+    // (currently) wouldn't be possible to have different replacement values in user code vs
+    // node_modules.
+    /// Whether to replace `typeof window` with some constant value.
+    pub enable_typeof_window_inlining: Option<TypeofWindow>,
 }
 
 #[turbo_tasks::value]
@@ -779,7 +806,7 @@ impl ChunkItem for ModuleChunkItem {
 
     #[turbo_tasks::function]
     fn chunking_context(&self) -> Vc<Box<dyn ChunkingContext>> {
-        *ResolvedVc::upcast(self.chunking_context)
+        *self.chunking_context
     }
 
     #[turbo_tasks::function]
@@ -1826,7 +1853,7 @@ async fn process_parse_result(
                 }
                 ParseResult::NotFound => {
                     let path = ident.path().to_string().await?;
-                    let msg = format!("Could not parse module '{path}'");
+                    let msg = format!("Could not parse module '{path}', file not found");
                     let body = vec![
                         quote!(
                             "const e = new Error($msg);" as Stmt,
@@ -2722,14 +2749,6 @@ fn merge_option_vec<T>(a: Option<Vec<T>>, b: Option<Vec<T>>) -> Option<Vec<T>> {
         (None, Some(b)) => Some(b),
         (None, None) => None,
     }
-}
-
-pub fn register() {
-    turbo_tasks::register();
-    turbo_tasks_fs::register();
-    turbopack_core::register();
-    turbo_esregex::register();
-    include!(concat!(env!("OUT_DIR"), "/register.rs"));
 }
 
 #[cfg(test)]
