@@ -8,7 +8,11 @@ import type { FetchServerResponseResult } from '../../client/components/router-r
 import type React from 'react'
 
 export type LoadingModuleData =
-  | [React.JSX.Element, React.ReactNode, React.ReactNode]
+  | [
+      element: React.JSX.Element,
+      styles: React.ReactNode,
+      scripts: React.ReactNode,
+    ]
   | null
 
 /** viewport metadata node */

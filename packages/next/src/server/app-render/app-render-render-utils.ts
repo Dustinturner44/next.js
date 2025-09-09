@@ -6,7 +6,7 @@ import { InvariantError } from '../../shared/lib/invariant-error'
  */
 export function scheduleInSequentialTasks<R>(
   render: () => R | Promise<R>,
-  followup: () => void
+  ...followups: [...(() => void)[], () => void]
 ): Promise<R> {
   if (process.env.NEXT_RUNTIME === 'edge') {
     throw new InvariantError(
@@ -22,8 +22,15 @@ export function scheduleInSequentialTasks<R>(
           reject(err)
         }
       })
+      if (followups.length > 1) {
+        for (let i = 0; i < followups.length - 1; i++) {
+          const followup = followups[i]
+          setImmediate(followup)
+        }
+      }
+      const lastFollowup = followups[followups.length - 1]
       setImmediate(() => {
-        followup()
+        lastFollowup()
         resolve(pendingResult)
       })
     })
