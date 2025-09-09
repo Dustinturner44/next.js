@@ -1307,7 +1307,7 @@ export default async function loadConfig(
   }
 
   // Original implementation continues below...
-  if (!process.env.__NEXT_PRIVATE_RENDER_WORKER) {
+  if (!process.env.__NEXT_PRIVATE_RENDER_WORKER && !process.env.TURBOPACK) {
     try {
       loadWebpackHook()
     } catch (err) {
