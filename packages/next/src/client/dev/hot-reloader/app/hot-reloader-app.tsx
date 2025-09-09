@@ -292,6 +292,7 @@ export function processMessage(
       // Is undefined when it's a 'built' event
       if ('versionInfo' in message)
         dispatcher.onVersionInfo(message.versionInfo)
+      if ('projectDir' in message) dispatcher.onProjectDir(message.projectDir)
       if ('debug' in message && message.debug)
         dispatcher.onDebugInfo(message.debug)
       if ('devIndicator' in message)

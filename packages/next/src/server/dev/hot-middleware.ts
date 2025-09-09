@@ -78,12 +78,14 @@ export class WebpackHotMiddleware {
   serverLatestStats: { ts: number; stats: webpack.Stats } | null
   closed: boolean
   versionInfo: VersionInfo
+  projectDir: string
   devtoolsFrontendUrl: string | undefined
   devToolsConfig: DevToolsConfig
 
   constructor(
     compilers: webpack.Compiler[],
     versionInfo: VersionInfo,
+    projectDir: string,
     devtoolsFrontendUrl: string | undefined,
     devToolsConfig: DevToolsConfig
   ) {
@@ -92,6 +94,7 @@ export class WebpackHotMiddleware {
     this.serverLatestStats = null
     this.closed = false
     this.versionInfo = versionInfo
+    this.projectDir = projectDir
     this.devtoolsFrontendUrl = devtoolsFrontendUrl
     this.devToolsConfig = devToolsConfig || ({} as DevToolsConfig)
 
@@ -211,6 +214,7 @@ export class WebpackHotMiddleware {
           ...(middlewareStats.warnings || []),
         ],
         versionInfo: this.versionInfo,
+        projectDir: this.projectDir,
         debug: {
           devtoolsFrontendUrl: this.devtoolsFrontendUrl,
         },

@@ -1558,6 +1558,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     this.webpackHotMiddleware = new WebpackHotMiddleware(
       this.multiCompiler.compilers,
       this.versionInfo,
+      this.dir,
       this.devtoolsFrontendUrl,
       initialDevToolsConfig
     )
