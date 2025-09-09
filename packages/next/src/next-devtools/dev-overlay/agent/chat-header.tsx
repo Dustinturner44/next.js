@@ -6,6 +6,8 @@ interface ChatHeaderProps {
   isMinimized: boolean
   onToggleInspect?: () => void
   isInspecting?: boolean
+  onClearConversation?: () => void
+  hasMessages?: boolean
 }
 
 export function ChatHeader({
@@ -14,6 +16,8 @@ export function ChatHeader({
   isMinimized,
   onToggleInspect,
   isInspecting = false,
+  onClearConversation,
+  hasMessages = false,
 }: ChatHeaderProps) {
   return (
     <div className="chatHeader">
@@ -29,6 +33,24 @@ export function ChatHeader({
         Vercel Vector™
       </h2>
       <div className="headerActions">
+        {onClearConversation && hasMessages && (
+          <button
+            type="button"
+            onClick={onClearConversation}
+            className="actionButton"
+            aria-label="Clear conversation"
+            title="Clear conversation"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16">
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M6.5 1.75a.75.75 0 00-1.5 0V3H2.75a.75.75 0 000 1.5h.5L4 12.5a1.5 1.5 0 001.5 1.5h5a1.5 1.5 0 001.5-1.5L12.75 4.5h.5a.75.75 0 000-1.5H11V1.75a.75.75 0 00-1.5 0V3H6.5V1.75zM5.75 4.5h4.5l-.75 8h-3l-.75-8z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        )}
         {onToggleInspect && (
           <button
             type="button"

@@ -18,12 +18,31 @@ interface ChatMessageProps {
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
+  // Handle empty content
+  const displayContent =
+    message.content.trim() ||
+    (message.streaming ? '' : isUser ? '[Empty message]' : '[No response]')
+
   return (
     <div className={`messageGroup ${isUser ? 'user' : ''}`}>
       <div className={`messageContent ${isUser ? 'user' : 'assistant'}`}>
         <div>
-          <p style={{ margin: 0, lineHeight: 1.5 }}>
-            {message.content}
+          <p
+            style={{
+              margin: 0,
+              lineHeight: 1.5,
+              whiteSpace: 'break-spaces',
+              fontStyle:
+                displayContent.startsWith('[') && displayContent.endsWith(']')
+                  ? 'italic'
+                  : 'normal',
+              opacity:
+                displayContent.startsWith('[') && displayContent.endsWith(']')
+                  ? 0.7
+                  : 1,
+            }}
+          >
+            {displayContent}
             {message.streaming && message.role === 'assistant' && (
               <span className="streaming-cursor">▊</span>
             )}

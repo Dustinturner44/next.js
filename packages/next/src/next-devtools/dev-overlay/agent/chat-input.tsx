@@ -14,7 +14,6 @@ export function ChatInput({
 }: ChatInputProps) {
   const [message, setMessage] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const maxLength = 1000
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current
@@ -43,9 +42,6 @@ export function ChatInput({
     }
   }
 
-  const isSubmitDisabled =
-    disabled || !message.trim() || message.length > maxLength
-
   return (
     <div className="chatInput">
       <div className="inputContainer">
@@ -70,13 +66,11 @@ export function ChatInput({
                 width: '100%',
               }}
             >
-              <span className="charCount">
-                {message.length}/{maxLength}
-              </span>
+              <span className="charCount">{message.length / 1000}k</span>
             </div>
             <button
               type="submit"
-              disabled={isSubmitDisabled}
+              disabled={disabled}
               className="submitButton"
               aria-label="Submit"
             >

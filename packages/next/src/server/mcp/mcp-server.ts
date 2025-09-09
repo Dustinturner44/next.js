@@ -35,6 +35,47 @@ interface ClientData {
   }
 }
 
+// Helper function to filter out non-rendered items from segment trie
+function filterRenderedSegments(
+  node: SerializableSegmentTrieNode
+): SerializableSegmentTrieNode | null {
+  // Filter out boundaries and built-in Next.js files
+  const shouldExclude = (pagePath: string): boolean => {
+    return (
+      pagePath.endsWith('@boundary') || pagePath.includes('__next_builtin__')
+    )
+  }
+
+  // If this node should be excluded, return null
+  if (node.value && shouldExclude(node.value.pagePath)) {
+    return null
+  }
+
+  // Recursively filter children
+  const filteredChildren: { [key: string]: SerializableSegmentTrieNode } = {}
+  let hasValidChildren = false
+
+  for (const [key, child] of Object.entries(node.children)) {
+    if (child) {
+      const filteredChild = filterRenderedSegments(child)
+      if (filteredChild) {
+        filteredChildren[key] = filteredChild
+        hasValidChildren = true
+      }
+    }
+  }
+
+  // If this node has no value and no valid children, exclude it
+  if (!node.value && !hasValidChildren) {
+    return null
+  }
+
+  return {
+    ...(node.value && { value: node.value }),
+    children: filteredChildren,
+  }
+}
+
 export function createMcpServer(
   _config?: NextConfig,
   clientData?: ClientData | null
@@ -189,11 +230,16 @@ export function createMcpServer(
           }
         }
 
+        // Filter out non-rendered segments (boundaries and built-ins)
+        const filteredTrie = filterRenderedSegments(clientData.segmentTrie)
+
         return {
           content: [
             {
               type: 'text',
-              text: JSON.stringify(clientData.segmentTrie, null, 2),
+              text: filteredTrie
+                ? JSON.stringify(filteredTrie, null, 2)
+                : 'No rendered segments found',
             },
           ],
         }
@@ -250,6 +296,75 @@ export function createMcpServer(
                 null,
                 2
               ),
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        }
+      }
+    }
+  )
+
+  // Register tool to get only rendered files (filtered list)
+  server.registerTool(
+    'get_rendered_files',
+    {
+      description:
+        'Get a list of only the actually rendered files (excludes boundaries and built-in Next.js files)',
+      inputSchema: {},
+    },
+    async (_request) => {
+      try {
+        if (!clientData) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'No client data available',
+              },
+            ],
+          }
+        }
+
+        // Extract rendered file paths from filtered trie
+        const extractRenderedFiles = (
+          node: SerializableSegmentTrieNode | null
+        ): string[] => {
+          if (!node) return []
+
+          const files: string[] = []
+
+          if (node.value) {
+            files.push(node.value.pagePath)
+          }
+
+          for (const child of Object.values(node.children)) {
+            if (child) {
+              files.push(...extractRenderedFiles(child))
+            }
+          }
+
+          return files
+        }
+
+        const filteredTrie = filterRenderedSegments(clientData.segmentTrie)
+        const renderedFiles = extractRenderedFiles(filteredTrie)
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text:
+                renderedFiles.length > 0
+                  ? `Rendered files:\n${renderedFiles.map((file) => `- ${file}`).join('\n')}`
+                  : 'No rendered files found',
             },
           ],
         }
