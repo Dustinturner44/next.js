@@ -1,7 +1,15 @@
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { NextConfig } from '../config-shared'
+import type webpack from 'webpack'
+import type { Project } from '../../build/swc/types'
 import { createMcpServer } from '../mcp/mcp-server'
 import { parseBody } from '../api-utils/node/parse-body'
+import { getOriginalStackFrames as getOriginalStackFramesWebpack } from './middleware-webpack'
+import { getOriginalStackFrames as getOriginalStackFramesTurbopack } from './middleware-turbopack'
+import type {
+  OriginalStackFramesRequest,
+  OriginalStackFramesResponse,
+} from '../../next-devtools/server/shared'
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 
@@ -47,10 +55,45 @@ export function getStoredClientData(): ClientData | null {
   return storedClientData
 }
 
+type StackFrameResolver = (
+  request: OriginalStackFramesRequest
+) => Promise<OriginalStackFramesResponse>
+
+export function createWebpackStackFrameResolver(
+  clientStats: () => webpack.Stats | null,
+  serverStats: () => webpack.Stats | null,
+  edgeServerStats: () => webpack.Stats | null,
+  rootDirectory: string
+): StackFrameResolver {
+  return async (request: OriginalStackFramesRequest) => {
+    return getOriginalStackFramesWebpack({
+      ...request,
+      clientStats,
+      serverStats,
+      edgeServerStats,
+      rootDirectory,
+    })
+  }
+}
+
+export function createTurbopackStackFrameResolver(
+  project: Project,
+  projectPath: string
+): StackFrameResolver {
+  return async (request: OriginalStackFramesRequest) => {
+    return getOriginalStackFramesTurbopack({
+      ...request,
+      project,
+      projectPath,
+    })
+  }
+}
+
 export function getMcpMiddleware(
   config: NextConfig,
   port?: number,
-  dir?: string
+  dir?: string,
+  stackFrameResolver?: StackFrameResolver
 ) {
   const serverPort = port || 3000
   const mcpUrl = `http://localhost:${serverPort}/_next/mcp`
@@ -139,7 +182,12 @@ export function getMcpMiddleware(
     }
 
     // Create MCP server and transport
-    const server = createMcpServer(config, storedClientData, dir)
+    const server = createMcpServer(
+      config,
+      storedClientData,
+      dir,
+      stackFrameResolver
+    )
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     })

@@ -1,5 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { z } from 'zod'
 import type { NextConfig } from '../config-shared'
+import type {
+  OriginalStackFramesRequest,
+  OriginalStackFramesResponse,
+} from '../../next-devtools/server/shared'
 
 // Serializable segment trie node structure
 interface SerializableSegmentTrieNode {
@@ -79,7 +84,10 @@ function filterRenderedSegments(
 export function createMcpServer(
   _config?: NextConfig,
   clientData?: ClientData | null,
-  projectDir?: string
+  projectDir?: string,
+  getOriginalStackFrames?: (
+    request: OriginalStackFramesRequest
+  ) => Promise<OriginalStackFramesResponse>
 ): McpServer {
   const server = new McpServer({
     name: 'nextjs',
@@ -407,6 +415,85 @@ export function createMcpServer(
             {
               type: 'text',
               text: projectDir,
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        }
+      }
+    }
+  )
+
+  // Register stack frames resolution tool
+  server.registerTool(
+    'resolve_stack_frames',
+    {
+      description:
+        'Resolve original stack frames with source maps for Next.js errors',
+      inputSchema: {
+        frames: z
+          .array(
+            z.object({
+              file: z
+                .union([z.string(), z.null()])
+                .describe('File path or URL'),
+              methodName: z.string().describe('Method name'),
+              arguments: z.array(z.string()).describe('Method arguments'),
+              line1: z
+                .union([z.number(), z.null()])
+                .describe('1-based line number'),
+              column1: z
+                .union([z.number(), z.null()])
+                .describe('1-based column number'),
+            })
+          )
+          .describe('Array of stack frames to resolve'),
+        isServer: z
+          .boolean()
+          .describe('Whether the error occurred on the server'),
+        isEdgeServer: z
+          .boolean()
+          .describe('Whether the error occurred on the edge server'),
+        isAppDirectory: z
+          .boolean()
+          .describe('Whether the app directory is being used'),
+      },
+    },
+    async (request) => {
+      try {
+        if (!getOriginalStackFrames) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Stack frame resolution not available. Make sure the development server is running.',
+              },
+            ],
+          }
+        }
+
+        const { frames, isServer, isEdgeServer, isAppDirectory } =
+          request as OriginalStackFramesRequest
+
+        const result = await getOriginalStackFrames({
+          frames,
+          isServer,
+          isEdgeServer,
+          isAppDirectory,
+        })
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(result, null, 2),
             },
           ],
         }
