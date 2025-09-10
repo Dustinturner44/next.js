@@ -718,7 +718,7 @@ export async function createHotReloaderTurbopack(
     }),
     getSourceMapMiddleware(project),
     getChatMiddleware(),
-    getMcpMiddleware(opts.nextConfig, opts.port),
+    getMcpMiddleware(opts.nextConfig, opts.port, opts.dir),
     getNextErrorFeedbackMiddleware(opts.telemetry),
     getDevOverlayFontMiddleware(),
     getDisableDevIndicatorMiddleware(),

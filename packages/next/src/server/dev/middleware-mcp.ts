@@ -47,7 +47,11 @@ export function getStoredClientData(): ClientData | null {
   return storedClientData
 }
 
-export function getMcpMiddleware(config: NextConfig, port?: number) {
+export function getMcpMiddleware(
+  config: NextConfig,
+  port?: number,
+  dir?: string
+) {
   const serverPort = port || 3000
   const mcpUrl = `http://localhost:${serverPort}/_next/mcp`
 
@@ -135,7 +139,7 @@ export function getMcpMiddleware(config: NextConfig, port?: number) {
     }
 
     // Create MCP server and transport
-    const server = createMcpServer(config, storedClientData)
+    const server = createMcpServer(config, storedClientData, dir)
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
     })

@@ -1606,7 +1606,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
         edgeServerStats: () => this.edgeServerStats,
       }),
       getChatMiddleware(),
-      getMcpMiddleware(this.config, this.port),
+      getMcpMiddleware(this.config, this.port, this.dir),
       getNextErrorFeedbackMiddleware(this.telemetry),
       getDevOverlayFontMiddleware(),
       getDisableDevIndicatorMiddleware(),

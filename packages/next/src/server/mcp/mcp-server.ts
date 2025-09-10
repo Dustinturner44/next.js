@@ -78,7 +78,8 @@ function filterRenderedSegments(
 
 export function createMcpServer(
   _config?: NextConfig,
-  clientData?: ClientData | null
+  clientData?: ClientData | null,
+  projectDir?: string
 ): McpServer {
   const server = new McpServer({
     name: 'nextjs',
@@ -365,6 +366,47 @@ export function createMcpServer(
                 renderedFiles.length > 0
                   ? `Rendered files:\n${renderedFiles.map((file) => `- ${file}`).join('\n')}`
                   : 'No rendered files found',
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        }
+      }
+    }
+  )
+
+  // Register tool to get project directory
+  server.registerTool(
+    'get_project_directory',
+    {
+      description: 'Get the current Next.js project directory path',
+      inputSchema: {},
+    },
+    async (_request) => {
+      try {
+        if (!projectDir) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Project directory not available',
+              },
+            ],
+          }
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: projectDir,
             },
           ],
         }

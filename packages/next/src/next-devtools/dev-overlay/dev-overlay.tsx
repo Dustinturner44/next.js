@@ -9,7 +9,7 @@ import { DevToolsIndicator } from './components/devtools-indicator/devtools-indi
 import { PanelRouter } from './menu/panel-router'
 import { PanelRouterContext, type PanelStateKind } from './menu/context'
 import { useDevOverlayContext } from '../dev-overlay.browser'
-import { VercelVector } from './components/devtools-indicator/vercel-vector'
+import { useDaemonInit } from './hooks/use-daemon-init'
 
 export const RenderErrorContext = createContext<{
   runtimeErrors: ReadyRuntimeError[]
@@ -25,6 +25,9 @@ export function DevOverlay() {
     useDevOverlayContext()
 
   const triggerRef = useRef<HTMLButtonElement>(null)
+
+  // Initialize daemon connection and send client data
+  useDaemonInit()
   return (
     <ShadowPortal>
       <ScaleUpdater />
@@ -59,7 +62,6 @@ export function DevOverlay() {
                       />
                       <PanelRouter />
                       <DevToolsIndicator />
-                      <VercelVector />
                     </PanelRouterContext>
                   </RenderErrorContext>
                 </>
