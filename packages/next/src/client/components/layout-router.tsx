@@ -3,12 +3,12 @@
 import type {
   CacheNode,
   LazyCacheNode,
-  LoadingModuleData,
-} from '../../shared/lib/app-router-context.shared-runtime'
+} from '../../shared/lib/app-router-types'
+import type { LoadingModuleData } from '../../shared/lib/app-router-types'
 import type {
   FlightRouterState,
   FlightSegmentPath,
-} from '../../server/app-render/types'
+} from '../../shared/lib/app-router-types'
 import type { ErrorComponent } from './error-boundary'
 import {
   ACTION_SERVER_PATCH,
@@ -608,10 +608,7 @@ export default function OuterLayoutRouter({
 
     let segmentBoundaryTriggerNode: React.ReactNode = null
     let segmentViewStateNode: React.ReactNode = null
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      process.env.__NEXT_DEVTOOL_SEGMENT_EXPLORER
-    ) {
+    if (process.env.NODE_ENV !== 'production') {
       const { SegmentBoundaryTriggerNode, SegmentViewStateNode } =
         require('../../next-devtools/userspace/app/segment-explorer-node') as typeof import('../../next-devtools/userspace/app/segment-explorer-node')
 
