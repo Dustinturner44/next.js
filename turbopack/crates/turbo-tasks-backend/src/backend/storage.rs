@@ -812,15 +812,6 @@ impl Storage {
         )
     }
 
-    /// Completely removes a task from storage, including all its data and metadata.
-    /// This should only be called for tasks that are guaranteed to never be accessed again.
-    pub fn remove_task(&self, task_id: TaskId) {
-        // Remove from the main storage map
-        self.map.remove(&task_id);
-        // Remove from the modified tracking
-        self.modified.remove(&task_id);
-    }
-
     pub fn drop_contents(&self) {
         drop_contents(&self.map);
         drop_contents(&self.modified);
