@@ -2022,7 +2022,7 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         };
         let InProgressState::InProgress(box InProgressStateInner {
             done_event,
-            once_task,
+            once_task: _,
             stale,
             session_dependent,
             done: _,
@@ -2137,15 +2137,6 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         task.shrink_to_fit(CachedDataItemType::OutputDependency);
         task.shrink_to_fit(CachedDataItemType::CollectiblesDependency);
         drop(task);
-
-        // ✅ ADD: Remove Once tasks from transient_tasks after completion
-        if once_task && !stale {
-            self.transient_tasks.remove(&task_id);
-            // CRITICAL: Return the task ID to the factory for reuse
-            unsafe {
-                self.transient_task_id_factory.reuse(task_id);
-            }
-        }
 
         false
     }
@@ -2575,6 +2566,12 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
 
         let mut ctx = self.execute_context(turbo_tasks);
         let mut task = ctx.task(task_id, TaskDataCategory::All);
+
+        // Check if this is a Once task by examining the root type
+        let is_once_task = get!(task, Activeness)
+            .map(|activeness| matches!(activeness.root_ty, Some(RootType::OnceTask)))
+            .unwrap_or(false);
+
         let is_dirty = get!(task, Dirty).map_or(false, |dirty| dirty.get(self.session_id));
         let has_dirty_containers = get!(task, AggregatedDirtyContainerCount)
             .map_or(false, |dirty_containers| {
@@ -2590,6 +2587,22 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
             // Technically nobody should be listening to this event, but just in case
             // we notify it anyway
             activeness_state.all_clean_event.notify(usize::MAX);
+        }
+
+        // ✅ PROPER FIX: Once tasks should be completely cleaned up when disposed
+        if is_once_task {
+            // Drop the task and context to release locks before cleanup
+            drop(task);
+            drop(ctx);
+
+            // Remove from transient_tasks tracking
+            self.transient_tasks.remove(&task_id);
+            // Completely remove all storage data for this task
+            self.storage.remove_task(task_id);
+            // Return the task ID to the factory for reuse
+            unsafe {
+                self.transient_task_id_factory.reuse(task_id);
+            }
         }
     }
 
