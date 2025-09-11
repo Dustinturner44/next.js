@@ -20,6 +20,55 @@ const nextConfig = {
 module.exports = withMDX(nextConfig)
 ```
 
+Changing these values affects App Router file conventions and other entrypoints that rely on extensions. Specifically, it applies to:
+
+- `app/**/page.*`
+- `app/**/route.*`
+- `app/**/layout.*`
+- `app/**/template.*`
+- `app/**/default.*`
+- `app/**/not-found.*`
+- `app/**/loading.*`
+- `app/**/error.*`
+- `app/global-not-found.*` (when `experimental.globalNotFound` is enabled)
+- `middleware.*` (at the project root)
+- `instrumentation.*` (at the project root or `src/`)
+- Metadata route files under `app/` like `robots.*`, `manifest.*`, `sitemap.*`, and static metadata assets (e.g. `icon.*`, `apple-icon.*`, `opengraph-image.*`, `twitter-image.*`). Static asset extensions remain fixed (e.g. `.ico`, `.png`, etc.), while code-based variants use your configured extensions.
+
+For example using this configuration:
+
+```js filename="next.config.js"
+/** @type {import('next').NextConfig} */
+module.exports = {
+  // TS-only with custom extension suffix
+  pageExtensions: ['app.ts', 'app.tsx'],
+}
+```
+
+```txt filename="Project files"
+app/
+  blog/
+    page.app.tsx          // picked up (page)
+  dashboard/
+    layout.app.tsx        // picked up (layout)
+    page.app.tsx          // picked up (page)
+  sitemap/
+    route.app.ts          // picked up (route)
+  robots.app.ts           // picked up (metadata route)
+  manifest.app.ts         // picked up (metadata route)
+  favicon.ico             // static asset (extension fixed)
+  not-found.app.tsx       // picked up (not-found)
+  global-not-found.app.tsx // picked up when experimental.globalNotFound = true
+  error.app.tsx           // picked up (error)
+  loading.app.tsx         // picked up (loading)
+middleware.app.ts         // picked up at project root
+instrumentation.app.ts    // picked up at project root or src/
+```
+
+> **Good to know**:
+> This is an advanced feature, mostly used when [mdx support](/docs/app/guides/mdx) is needed.
+> For most applications setting `pageExtensions` is not necessary.
+
 </AppOnly>
 
 <PagesOnly>
