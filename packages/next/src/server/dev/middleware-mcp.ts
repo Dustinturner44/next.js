@@ -38,6 +38,38 @@ interface ClientData {
 
 let storedClientData: ClientData | null = null
 
+// Global storage for error data
+interface ErrorsData {
+  buildError: string | null
+  runtimeErrors: Array<{
+    id: string
+    type: 'build' | 'runtime' | 'console' | 'recoverable'
+    timestamp: string
+    error: {
+      name: string
+      message: string
+      stack?: string
+      environmentName?: string
+    }
+    frames?: Array<{
+      file: string | null
+      methodName: string
+      arguments: string[]
+      line1: number | null
+      column1: number | null
+    }>
+    codeFrame?: string
+    hydrationWarning?: string | null
+    notes?: string | null
+    reactOutputComponentDiff?: string | null
+  }>
+  totalErrorCount: number
+  isErrorOverlayOpen: boolean
+  lastUpdated: string
+}
+
+let storedErrorsData: ErrorsData | null = null
+
 // Serializable segment trie node structure
 interface SerializableSegmentTrieNode {
   value?: {
@@ -53,6 +85,11 @@ interface SerializableSegmentTrieNode {
 // Export function to get stored client data
 export function getStoredClientData(): ClientData | null {
   return storedClientData
+}
+
+// Export function to get stored errors data
+export function getStoredErrorsData(): ErrorsData | null {
+  return storedErrorsData
 }
 
 type StackFrameResolver = (
@@ -164,6 +201,55 @@ export function getMcpMiddleware(
       }
     }
 
+    // Handle error data storage endpoint
+    if (url.pathname === '/_next/mcp/error-data') {
+      if (req.method === 'POST') {
+        try {
+          const body = await new Promise<string>((resolve, reject) => {
+            let data = ''
+            req.on('data', (chunk) => {
+              data += chunk
+            })
+            req.on('end', () => resolve(data))
+            req.on('error', reject)
+          })
+
+          const errorsData: ErrorsData = JSON.parse(body)
+          storedErrorsData = errorsData
+
+          console.log('[MCP] Error data stored:', {
+            buildError: !!errorsData.buildError,
+            runtimeErrorCount: errorsData.runtimeErrors.length,
+            totalErrorCount: errorsData.totalErrorCount,
+            lastUpdated: errorsData.lastUpdated,
+          })
+
+          res.statusCode = 200
+          res.setHeader('Content-Type', 'application/json')
+          res.end(
+            JSON.stringify({ success: true, message: 'Error data stored' })
+          )
+          return
+        } catch (error) {
+          console.error('[MCP] Error storing error data:', error)
+          res.statusCode = 500
+          res.setHeader('Content-Type', 'application/json')
+          res.end(
+            JSON.stringify({
+              success: false,
+              error: 'Failed to store error data',
+            })
+          )
+          return
+        }
+      } else {
+        res.statusCode = 405
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ success: false, error: 'Method not allowed' }))
+        return
+      }
+    }
+
     if (!url.pathname.startsWith('/_next/mcp')) {
       return next()
     }
@@ -186,7 +272,8 @@ export function getMcpMiddleware(
       config,
       storedClientData,
       dir,
-      stackFrameResolver
+      stackFrameResolver,
+      storedErrorsData
     )
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,

@@ -18,6 +18,17 @@ export const RenderErrorContext = createContext<{
 
 export const useRenderErrorContext = () => useContext(RenderErrorContext)
 
+const InitDaemon = ({
+  runtimeErrors,
+  totalErrorCount,
+}: {
+  runtimeErrors: ReadyRuntimeError[]
+  totalErrorCount: number
+}) => {
+  useDaemonInit(runtimeErrors, totalErrorCount)
+  return null
+}
+
 export function DevOverlay() {
   const [panel, setPanel] = useState<null | PanelStateKind>(null)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -26,8 +37,6 @@ export function DevOverlay() {
 
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Initialize daemon connection and send client data
-  useDaemonInit()
   return (
     <ShadowPortal>
       <ScaleUpdater />
@@ -66,6 +75,10 @@ export function DevOverlay() {
                   </RenderErrorContext>
                 </>
               ) : null}
+              <InitDaemon
+                runtimeErrors={runtimeErrors}
+                totalErrorCount={totalErrorCount}
+              />
             </>
           )
         }}
