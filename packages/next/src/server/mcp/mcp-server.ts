@@ -81,13 +81,44 @@ function filterRenderedSegments(
   }
 }
 
+// Error data interface
+interface ErrorsData {
+  buildError: string | null
+  runtimeErrors: Array<{
+    id: string
+    type: 'build' | 'runtime' | 'console' | 'recoverable'
+    timestamp: string
+    error: {
+      name: string
+      message: string
+      stack?: string
+      environmentName?: string
+    }
+    frames?: Array<{
+      file: string | null
+      methodName: string
+      arguments: string[]
+      line1: number | null
+      column1: number | null
+    }>
+    codeFrame?: string
+    hydrationWarning?: string | null
+    notes?: string | null
+    reactOutputComponentDiff?: string | null
+  }>
+  totalErrorCount: number
+  isErrorOverlayOpen: boolean
+  lastUpdated: string
+}
+
 export function createMcpServer(
   _config?: NextConfig,
   clientData?: ClientData | null,
   projectDir?: string,
   getOriginalStackFrames?: (
     request: OriginalStackFramesRequest
-  ) => Promise<OriginalStackFramesResponse>
+  ) => Promise<OriginalStackFramesResponse>,
+  errorsData?: ErrorsData | null
 ): McpServer {
   const server = new McpServer({
     name: 'nextjs',
@@ -494,6 +525,83 @@ export function createMcpServer(
             {
               type: 'text',
               text: JSON.stringify(result, null, 2),
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        }
+      }
+    }
+  )
+
+  // Register error state tool
+  server.registerTool(
+    'get_current_error_state',
+    {
+      description:
+        'Get the current error state of the app when rendered in the browser, including any build or runtime errors',
+      inputSchema: {},
+    },
+    async (_request) => {
+      try {
+        if (!errorsData) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    hasErrors: false,
+                    message: 'No errors detected in the browser',
+                    buildError: null,
+                    runtimeErrors: [],
+                    totalErrorCount: 0,
+                    isErrorOverlayOpen: false,
+                    lastUpdated: null,
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+          }
+        }
+
+        // Simplify the response to focus on the most important error information
+        const response = {
+          hasErrors: errorsData.totalErrorCount > 0,
+          message:
+            errorsData.totalErrorCount > 0
+              ? `Found ${errorsData.totalErrorCount} error(s) in the browser`
+              : 'No errors detected in the browser',
+          buildError: errorsData.buildError,
+          runtimeErrors: errorsData.runtimeErrors.map((error) => ({
+            id: error.id,
+            type: error.type,
+            name: error.error.name,
+            message: error.error.message,
+            stack: error.error.stack,
+            timestamp: error.timestamp,
+            codeFrame: error.codeFrame,
+            frames: error.frames,
+          })),
+          totalErrorCount: errorsData.totalErrorCount,
+          isErrorOverlayOpen: errorsData.isErrorOverlayOpen,
+          lastUpdated: errorsData.lastUpdated,
+        }
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(response, null, 2),
             },
           ],
         }
