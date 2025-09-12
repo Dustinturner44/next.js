@@ -96,18 +96,14 @@ const print = console.log
 const RESERVED_PAGE = /^\/(_app|_error|_document|api(\/|$))/
 const fileGzipStats: { [k: string]: Promise<number> | undefined } = {}
 const fsStatGzip = (file: string) => {
-  const cached = fileGzipStats[file]
-  if (cached) return cached
-  return (fileGzipStats[file] = getGzipSize.file(file))
+  return (fileGzipStats[file] ??= getGzipSize.file(file))
 }
 
 const fileSize = async (file: string) => (await fs.stat(file)).size
 
 const fileStats: { [k: string]: Promise<number> | undefined } = {}
 const fsStat = (file: string) => {
-  const cached = fileStats[file]
-  if (cached) return cached
-  return (fileStats[file] = fileSize(file))
+  return (fileStats[file] ??= fileSize(file))
 }
 
 export function unique<T>(main: ReadonlyArray<T>, sub: ReadonlyArray<T>): T[] {
@@ -139,7 +135,8 @@ function sum(a: ReadonlyArray<number>): number {
 type ComputeFilesGroup = {
   files: ReadonlyArray<string>
   size: {
-    total: number
+    totalJs: number
+    totalCss: number
   }
 }
 
@@ -268,7 +265,11 @@ export async function computeFromManifest(
 
           const size = stats.get(f)
           if (typeof size === 'number') {
-            acc.size.total += size
+            if (f.endsWith('.js')) {
+              acc.size.totalJs += size
+            } else if (f.endsWith('.css')) {
+              acc.size.totalCss += size
+            }
           }
 
           return acc
@@ -276,7 +277,8 @@ export async function computeFromManifest(
         {
           files: [] as string[],
           size: {
-            total: 0,
+            totalJs: 0,
+            totalCss: 0,
           },
         }
       )
@@ -689,7 +691,7 @@ export async function printTreeView(
       }
     })
 
-    const sharedFilesSize = stats.router[routerType]?.common.size.total
+    const sharedFilesJsSize = stats.router[routerType]?.common.size.totalJs
 
     const sharedFiles = process.env.__NEXT_PRIVATE_DETERMINISTIC_BUILD_OUTPUT
       ? []
@@ -697,15 +699,16 @@ export async function printTreeView(
 
     messages.push([
       '+ First Load JS shared by all',
-      typeof sharedFilesSize === 'number'
-        ? getPrettySize(sharedFilesSize, { strong: true })
+      typeof sharedFilesJsSize === 'number'
+        ? getPrettySize(sharedFilesJsSize, { strong: true })
         : '',
       '',
       '',
       '',
     ])
     const sharedCssFiles: string[] = []
-    const sharedJsChunks = [
+    // shared chunks include the js and then the css with sorted by name.
+    const sharedChunks = [
       ...sharedFiles
         .filter((file) => {
           if (file.endsWith('.css')) {
@@ -719,11 +722,11 @@ export async function printTreeView(
       ...sharedCssFiles.map((e) => e.replace(buildId, '<buildId>')).sort(),
     ]
 
-    // if the some chunk are less than 10kb or we don't know the size, we only show the total size of the rest
-    const tenKbLimit = 10 * 1000
+    // if some chunks are less than 10kb or we don't show it, we only show the total size of the rest
+    const tenKbLimit = 0
     let restChunkSize = 0
     let restChunkCount = 0
-    sharedJsChunks.forEach((fileName, index, { length }) => {
+    sharedChunks.forEach((fileName, index, { length }) => {
       const innerSymbol = index + restChunkCount === length - 1 ? '└' : '├'
 
       const originalName = fileName.replace('<buildId>', buildId)
