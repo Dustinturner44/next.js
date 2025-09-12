@@ -618,10 +618,7 @@ export async function printTreeView(
         const contSymbol = i === arr.length - 1 ? ' ' : '├'
 
         let routes: { route: string; duration: number; avgDuration?: number }[]
-        if (
-          pageInfo.ssgPageDurations &&
-          pageInfo.ssgPageDurations.some((d) => d > MIN_DURATION)
-        ) {
+        if (pageInfo.ssgPageDurations?.some((d) => d > MIN_DURATION)) {
           const previewPages = totalRoutes === 8 ? 8 : Math.min(totalRoutes, 7)
           const routesWithDuration = pageInfo.ssgPageRoutes
             .map((route, idx) => ({
@@ -723,7 +720,7 @@ export async function printTreeView(
     ]
 
     // if some chunks are less than 10kb or we don't show it, we only show the total size of the rest
-    const tenKbLimit = 0
+    const tenKbLimit = 10 * 1000
     let restChunkSize = 0
     let restChunkCount = 0
     sharedChunks.forEach((fileName, index, { length }) => {
