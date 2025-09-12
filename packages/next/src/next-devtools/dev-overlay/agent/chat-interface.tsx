@@ -4,7 +4,6 @@ import { ChatMessage } from './chat-message'
 import { ChatInput } from './chat-input'
 import { parseStack } from '../../../server/lib/parse-stack'
 import { getOriginalStackFrames } from '../../shared/stack-frame'
-import { ChatToolbar } from './chat-toolbar'
 import { useChatMessages } from './use-chat-messages'
 import { useChatStream } from './use-chat-stream'
 import './chat-interface.css'
@@ -625,9 +624,6 @@ function InspectOverlay() {
 export function ChatInterface({ onClose }: ChatInterfaceProps) {
   const [isMinimized, setIsMinimized] = useState(false)
   const [isInspecting, setIsInspecting] = useState(false)
-  const [selectedSourcePath, setSelectedSourcePath] = useState<string | null>(
-    null
-  )
   const { messages, setMessages, clearMessages, isLoading, setIsLoading } =
     useChatMessages()
   const { sendMessage } = useChatStream(setMessages, setIsLoading)
@@ -642,24 +638,7 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
   const handleSubmitMessage = async (content: string) => {
     if (isLoading) return
-    const context = selectedSourcePath
-      ? { sourcePath: selectedSourcePath }
-      : undefined
-    console.log(
-      '🐛 DEBUG: handleSubmitMessage - content:',
-      content,
-      'context:',
-      context,
-      'selectedSourcePath:',
-      selectedSourcePath
-    )
-    await sendMessage(content, selectedSourcePath)
-    setSelectedSourcePath(null) // Clear after sending
-  }
-
-  const handleElementSelected = (sourcePath: string) => {
-    console.log('🐛 DEBUG: Element selected:', sourcePath)
-    setSelectedSourcePath(sourcePath)
+    await sendMessage(content, null)
   }
 
   console.log('🐛 DEBUG: isLoading:', isLoading, isLoading)
@@ -679,20 +658,6 @@ export function ChatInterface({ onClose }: ChatInterfaceProps) {
 
         {!isMinimized && (
           <>
-            <ChatToolbar onElementSelected={handleElementSelected} />
-            {selectedSourcePath && (
-              <div
-                style={{
-                  padding: '4px 8px',
-                  background: '#e0f2fe',
-                  fontSize: '11px',
-                  color: '#0369a1',
-                  borderBottom: '1px solid #d1d5db',
-                }}
-              >
-                Selected: {selectedSourcePath}
-              </div>
-            )}
             <div className="chatContent">
               <div className="messagesContainer">
                 {messages.map((message) => (
