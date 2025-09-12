@@ -1,3 +1,4 @@
+import { isDebugCacheEnabled } from '../debug-utils'
 import type { RouteMetadata } from '../../../export/routes/types'
 import type { CacheHandler, CacheHandlerContext, CacheHandlerValue } from '.'
 import type { CacheFs } from '../../../shared/lib/utils'
@@ -38,7 +39,7 @@ export default class FileSystemCache implements CacheHandler {
   private flushToDisk?: FileSystemCacheContext['flushToDisk']
   private serverDistDir: FileSystemCacheContext['serverDistDir']
   private revalidatedTags: string[]
-  private static debug: boolean = !!process.env.NEXT_PRIVATE_DEBUG_CACHE
+  private static debug: boolean = isDebugCacheEnabled()
   private static memoryCache: LRUCache<CacheHandlerValue> | undefined
 
   constructor(ctx: FileSystemCacheContext) {

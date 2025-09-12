@@ -1,7 +1,8 @@
 import DefaultCacheHandler from '../lib/cache-handlers/default.external'
 import type { CacheHandlerCompat } from '../lib/cache-handlers/types'
+import { isDebugCacheEnabled } from '../lib/debug-utils'
 
-const debug = process.env.NEXT_PRIVATE_DEBUG_CACHE
+const debug = isDebugCacheEnabled()
   ? (message: string, ...args: any[]) => {
       console.log(`use-cache: ${message}`, ...args)
     }

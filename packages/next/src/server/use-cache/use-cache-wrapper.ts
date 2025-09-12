@@ -111,9 +111,11 @@ export type UseCacheLayoutComponentProps = {
   [slot: string]: any
 }
 
+import { isDebugCacheEnabled } from '../lib/debug-utils'
+
 const isEdgeRuntime = process.env.NEXT_RUNTIME === 'edge'
 
-const debug = process.env.NEXT_PRIVATE_DEBUG_CACHE
+const debug = isDebugCacheEnabled()
   ? console.debug.bind(console, 'use-cache:')
   : undefined
 

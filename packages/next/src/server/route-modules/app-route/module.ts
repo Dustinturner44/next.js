@@ -1,3 +1,4 @@
+import { isDebugCacheEnabled } from '../../lib/debug-utils'
 import type { NextConfig } from '../../config-shared'
 import type { AppRouteRouteDefinition } from '../../route-definitions/app-route-route-definition'
 import type { AppSegmentConfig } from '../../../build/segment-config/app/app-segment-config'
@@ -333,7 +334,7 @@ export class AppRouteRouteModule extends RouteModule<
       context.renderOpts.pendingWaitUntil = executeRevalidates(
         workStore
       ).finally(() => {
-        if (process.env.NEXT_PRIVATE_DEBUG_CACHE) {
+        if (isDebugCacheEnabled()) {
           console.log(
             'pending revalidates promise finished for:',
             requestStore.url

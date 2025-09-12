@@ -7,6 +7,7 @@
  * considered expired/missing in such cache handlers.
  */
 
+import { isDebugCacheEnabled } from '../debug-utils'
 import { LRUCache } from '../lru-cache'
 import type { CacheEntry, CacheHandlerV2 } from './types'
 import {
@@ -41,7 +42,7 @@ const memoryCache = new LRUCache<PrivateCacheEntry>(
 )
 const pendingSets = new Map<string, Promise<void>>()
 
-const debug = process.env.NEXT_PRIVATE_DEBUG_CACHE
+const debug = isDebugCacheEnabled()
   ? console.debug.bind(console, 'DefaultCacheHandler:')
   : undefined
 

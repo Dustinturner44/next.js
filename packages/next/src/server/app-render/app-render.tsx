@@ -1,3 +1,4 @@
+import { isDebugCacheEnabled } from '../lib/debug-utils'
 import type { RenderOpts, PreloadCallbacks } from './types'
 import type {
   ActionResult,
@@ -1798,7 +1799,7 @@ async function renderToHTMLOrFlightImpl(
       workStore.pendingRevalidatedTags
     ) {
       const pendingPromise = executeRevalidates(workStore).finally(() => {
-        if (process.env.NEXT_PRIVATE_DEBUG_CACHE) {
+        if (isDebugCacheEnabled()) {
           console.log('pending revalidates promise finished for:', url)
         }
       })
@@ -1966,7 +1967,7 @@ async function renderToHTMLOrFlightImpl(
       workStore.pendingRevalidatedTags
     ) {
       const pendingPromise = executeRevalidates(workStore).finally(() => {
-        if (process.env.NEXT_PRIVATE_DEBUG_CACHE) {
+        if (isDebugCacheEnabled()) {
           console.log('pending revalidates promise finished for:', url)
         }
       })

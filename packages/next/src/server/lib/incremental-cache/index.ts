@@ -1,3 +1,4 @@
+import { isDebugCacheEnabled } from '../debug-utils'
 import type { CacheFs } from '../../../shared/lib/utils'
 import type { PrerenderManifest } from '../../../build'
 import {
@@ -93,8 +94,7 @@ export class IncrementalCache implements IncrementalCacheType {
   readonly isOnDemandRevalidate?: boolean
   readonly revalidatedTags?: readonly string[]
 
-  private static readonly debug: boolean =
-    !!process.env.NEXT_PRIVATE_DEBUG_CACHE
+  private static readonly debug: boolean = isDebugCacheEnabled()
   private readonly locks = new Map<string, Promise<void>>()
 
   /**
