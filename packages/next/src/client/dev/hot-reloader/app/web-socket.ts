@@ -8,10 +8,7 @@ import {
   processMessage,
   type StaticIndicatorState,
 } from './hot-reloader-app'
-import {
-  isTerminalLoggingEnabled,
-  logQueue,
-} from '../../../../next-devtools/userspace/app/forward-logs'
+import { logQueue } from '../../../../next-devtools/userspace/app/forward-logs'
 import { InvariantError } from '../../../../shared/lib/invariant-error'
 
 export function createWebSocket(
@@ -21,11 +18,10 @@ export function createWebSocket(
   const url = getSocketUrl(assetPrefix)
   const webSocket = new window.WebSocket(`${url}/_next/webpack-hmr`)
 
-  if (isTerminalLoggingEnabled) {
-    webSocket.addEventListener('open', () => {
-      logQueue.onSocketReady(webSocket)
-    })
-  }
+  // Always connect socket for file logging, regardless of terminal logging setting
+  webSocket.addEventListener('open', () => {
+    logQueue.onSocketReady(webSocket)
+  })
 
   const sendMessage = (data: string) => {
     if (webSocket.readyState === webSocket.OPEN) {

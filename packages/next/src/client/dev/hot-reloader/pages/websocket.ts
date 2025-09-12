@@ -1,7 +1,4 @@
-import {
-  isTerminalLoggingEnabled,
-  logQueue,
-} from '../../../../next-devtools/userspace/app/forward-logs'
+import { logQueue } from '../../../../next-devtools/userspace/app/forward-logs'
 import {
   HMR_MESSAGE_SENT_TO_BROWSER,
   type HmrMessageSentToBrowser,
@@ -32,9 +29,8 @@ export function connectHMR(options: { path: string; assetPrefix: string }) {
     if (source) source.close()
 
     function handleOnline() {
-      if (isTerminalLoggingEnabled) {
-        logQueue.onSocketReady(source)
-      }
+      // Always connect socket for file logging, regardless of terminal logging setting
+      logQueue.onSocketReady(source)
       reconnections = 0
       window.console.log('[HMR] connected')
     }
