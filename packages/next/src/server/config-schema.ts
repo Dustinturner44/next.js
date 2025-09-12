@@ -149,7 +149,6 @@ const zTurbopackRuleConfigCollection: zod.ZodType<TurbopackRuleConfigCollection>
 
 const zTurbopackConfig: zod.ZodType<TurbopackOptions> = z.strictObject({
   rules: z.record(z.string(), zTurbopackRuleConfigCollection).optional(),
-  conditions: z.record(z.string(), zTurbopackCondition).optional(),
   resolveAlias: z
     .record(
       z.string(),
@@ -500,6 +499,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
             })
             .optional(),
         ]),
+        reactDebugChannel: z.boolean().optional(),
         staticGenerationRetryCount: z.number().int().optional(),
         staticGenerationMaxConcurrency: z.number().int().optional(),
         staticGenerationMinPagesPerWorker: z.number().int().optional(),

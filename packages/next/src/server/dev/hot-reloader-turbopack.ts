@@ -26,10 +26,6 @@ import type {
 } from '../../build/swc/types'
 import { createDefineEnv } from '../../build/swc'
 import * as Log from '../../build/output/log'
-import {
-  getVersionInfo,
-  matchNextPageBundleRequest,
-} from './hot-reloader-webpack'
 import { BLOCKED_PAGES } from '../../shared/lib/constants'
 import {
   getOverlayMiddleware,
@@ -78,7 +74,10 @@ import {
   getEntryKey,
   splitEntryKey,
 } from '../../shared/lib/turbopack/entry-key'
-import { FAST_REFRESH_RUNTIME_RELOAD } from './messages'
+import {
+  createBinaryHmrMessageData,
+  FAST_REFRESH_RUNTIME_RELOAD,
+} from './messages'
 import { generateEncryptionKeyBase64 } from '../app-render/encryption-utils-server'
 import { isAppPageRouteDefinition } from '../route-definitions/app-page-route-definition'
 import { normalizeAppPath } from '../../shared/lib/router/utils/app-paths'
@@ -89,7 +88,6 @@ import { setBundlerFindSourceMapImplementation } from '../patch-error-inspect'
 import { getNextErrorFeedbackMiddleware } from '../../next-devtools/server/get-next-error-feedback-middleware'
 import {
   formatIssue,
-  getTurbopackJsConfig,
   isPersistentCachingEnabled,
   isWellKnownError,
   processIssues,
@@ -113,6 +111,15 @@ import {
   devToolsConfigMiddleware,
   getDevToolsConfig,
 } from '../../next-devtools/server/devtools-config-middleware'
+import {
+  connectReactDebugChannel,
+  deleteReactDebugChannel,
+  setReactDebugChannel,
+} from './debug-channel'
+import {
+  getVersionInfo,
+  matchNextPageBundleRequest,
+} from './hot-reloader-shared-utils'
 
 const wsServer = new ws.Server({ noServer: true })
 const isTestMode = !!(
@@ -233,7 +240,6 @@ export async function createHotReloaderTurbopack(
       projectPath: normalizePath(relative(rootPath, projectPath) || '.'),
       distDir,
       nextConfig: opts.nextConfig,
-      jsConfig: await getTurbopackJsConfig(projectPath, nextConfig),
       watch: {
         enable: dev,
         pollIntervalMs: nextConfig.watchOptions?.pollIntervalMs,
@@ -422,10 +428,16 @@ export async function createHotReloaderTurbopack(
   let hmrHash = 0
 
   const clients = new Set<ws>()
+  const clientsByRequestId = new Map<string, ws>()
   const clientStates = new WeakMap<ws, ClientState>()
 
   function sendToClient(client: ws, message: HmrMessageSentToBrowser) {
-    client.send(JSON.stringify(message))
+    const data =
+      typeof message.type === 'number'
+        ? createBinaryHmrMessageData(message)
+        : JSON.stringify(message)
+
+    client.send(data)
   }
 
   function sendEnqueuedMessages() {
@@ -695,7 +707,17 @@ export async function createHotReloaderTurbopack(
     }),
   ]
 
-  const versionInfoPromise = getVersionInfo()
+  let versionInfoCached: ReturnType<typeof getVersionInfo> | undefined
+  // This fetch, even though not awaited, is not kicked off eagerly because the first `fetch()` in
+  // Node.js adds roughly 20ms main-thread blocking to load the SSL certificate cache
+  // We don't want that blocking time to be in the hot path for the `ready in` logging.
+  // Instead, the fetch is kicked off lazily when the first `getVersionInfoCached()` is called.
+  const getVersionInfoCached = (): ReturnType<typeof getVersionInfo> => {
+    if (!versionInfoCached) {
+      versionInfoCached = getVersionInfo()
+    }
+    return versionInfoCached
+  }
 
   let devtoolsFrontendUrl: string | undefined
   const nodeDebugType = getNodeDebugType()
@@ -766,6 +788,15 @@ export async function createHotReloaderTurbopack(
         const subscriptions: Map<string, AsyncIterator<any>> = new Map()
 
         clients.add(client)
+
+        const requestId = req.url
+          ? new URL(req.url, 'http://n').searchParams.get('id')
+          : null
+
+        if (requestId) {
+          clientsByRequestId.set(requestId, client)
+        }
+
         clientStates.set(client, {
           clientIssues,
           messages: new Map(),
@@ -780,6 +811,11 @@ export async function createHotReloaderTurbopack(
           }
           clientStates.delete(client)
           clients.delete(client)
+
+          if (requestId) {
+            clientsByRequestId.delete(requestId)
+            deleteReactDebugChannel(requestId)
+          }
         })
 
         client.addEventListener('message', async ({ data }) => {
@@ -924,7 +960,7 @@ export async function createHotReloaderTurbopack(
         }
 
         ;(async function () {
-          const versionInfo = await versionInfoPromise
+          const versionInfo = await getVersionInfoCached()
           const devToolsConfig = await getDevToolsConfig(distDir)
 
           const syncMessage: SyncMessage = {
@@ -942,14 +978,32 @@ export async function createHotReloaderTurbopack(
           }
 
           sendToClient(client, syncMessage)
+
+          if (requestId) {
+            connectReactDebugChannel(requestId, sendToClient.bind(null, client))
+          }
         })()
       })
     },
 
     send(action) {
       const payload = JSON.stringify(action)
+
       for (const client of clients) {
         client.send(payload)
+      }
+    },
+
+    setReactDebugChannel(debugChannel, htmlRequestId, requestId) {
+      // Store the debug channel, regardless of whether the client is connected.
+      setReactDebugChannel(requestId, debugChannel)
+
+      // If the client is connected, we can connect the debug channel
+      // immediately. Otherwise, we'll do that when the client connects.
+      const client = clientsByRequestId.get(htmlRequestId)
+
+      if (client) {
+        connectReactDebugChannel(requestId, sendToClient.bind(null, client))
       }
     },
 
@@ -1188,6 +1242,7 @@ export async function createHotReloaderTurbopack(
         wsClient.terminate()
       }
       clients.clear()
+      clientsByRequestId.clear()
     },
   }
 
