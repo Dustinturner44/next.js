@@ -1,6 +1,5 @@
 import type { NextConfigComplete } from '../server/config-shared'
 import type { ExperimentalPPRConfig } from '../server/lib/experimental/ppr'
-import type { AppBuildManifest } from './webpack/plugins/app-build-manifest-plugin'
 import { computeAppBuildManifestFromClientReferences } from './client-reference-manifest-utils'
 import type { AssetBinding } from './webpack/loaders/get-module-build-info'
 import type { PageConfig, ServerRuntime } from '../types'
@@ -155,7 +154,6 @@ type ComputeFilesManifestResult = {
 }
 
 let cachedBuildManifest: BuildManifest | undefined
-let cachedAppBuildManifest: AppBuildManifest | undefined
 
 let lastCompute: ComputeFilesManifestResult | undefined
 let lastComputePageInfo: boolean | undefined
@@ -163,7 +161,6 @@ let lastComputePageInfo: boolean | undefined
 export async function computeFromManifest(
   manifests: {
     build: BuildManifest
-    app?: AppBuildManifest
   },
   distPath: string,
   gzipSize: boolean = true,
@@ -171,8 +168,7 @@ export async function computeFromManifest(
 ): Promise<ComputeFilesManifestResult> {
   if (
     Object.is(cachedBuildManifest, manifests.build) &&
-    lastComputePageInfo === !!pageInfos &&
-    Object.is(cachedAppBuildManifest, manifests.app)
+    lastComputePageInfo === !!pageInfos
   ) {
     return lastCompute!
   }
@@ -308,7 +304,6 @@ export async function computeFromManifest(
   }
 
   cachedBuildManifest = manifests.build
-  cachedAppBuildManifest = manifests.app
   lastComputePageInfo = !!pageInfos
   return lastCompute!
 }
@@ -406,7 +401,6 @@ export async function printTreeView(
     pagesDir,
     pageExtensions,
     buildManifest,
-    appBuildManifest,
     middlewareManifest,
     useStaticPages404,
     gzipSize = true,
@@ -416,7 +410,6 @@ export async function printTreeView(
     pagesDir?: string
     pageExtensions: PageExtensions
     buildManifest: BuildManifest
-    appBuildManifest?: AppBuildManifest
     middlewareManifest: MiddlewareManifest
     useStaticPages404: boolean
     gzipSize?: boolean
@@ -468,7 +461,7 @@ export async function printTreeView(
   const messages: [string, string, string, string, string][] = []
 
   const stats = await computeFromManifest(
-    { build: buildManifest, app: appBuildManifest },
+    { build: buildManifest },
     distPath,
     gzipSize,
     pageInfos
@@ -928,16 +921,17 @@ export async function getJsPageSizeInKb(
   page: string,
   distPath: string,
   buildManifest: BuildManifest,
-  appBuildManifest?: AppBuildManifest,
   gzipSize: boolean = true,
   cachedStats?: ComputeFilesManifestResult
 ): Promise<[number, number]> {
-  const pageManifest = routerType === 'pages' ? buildManifest : appBuildManifest
-  if (!pageManifest) {
-    throw new Error('expected appBuildManifest with an "app" pageType')
-  }
+  // For app router, get manifest from client reference manifests
+  // For pages router, use the build manifest
+  const pageManifest =
+    routerType === 'pages'
+      ? buildManifest
+      : computeAppBuildManifestFromClientReferences(distPath)
 
-  // Normalize appBuildManifest keys
+  // Normalize app manifest keys
   if (routerType === 'app') {
     pageManifest.pages = Object.entries(pageManifest.pages).reduce(
       (acc: Record<string, string[]>, [key, value]) => {
@@ -952,11 +946,7 @@ export async function getJsPageSizeInKb(
   // If stats was not provided, then compute it again.
   const stats =
     cachedStats ??
-    (await computeFromManifest(
-      { build: buildManifest, app: appBuildManifest },
-      distPath,
-      gzipSize
-    ))
+    (await computeFromManifest({ build: buildManifest }, distPath, gzipSize))
 
   const pageData = stats.router[routerType]
   if (!pageData) {

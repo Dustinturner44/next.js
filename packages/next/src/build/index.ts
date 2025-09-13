@@ -1,4 +1,3 @@
-import type { AppBuildManifest } from './webpack/plugins/app-build-manifest-plugin'
 import type { PagesManifest } from './webpack/plugins/pages-manifest-plugin'
 import type { ExportPathMap, NextConfigComplete } from '../server/config-shared'
 import type { MiddlewareManifest } from './webpack/plugins/middleware-plugin'
@@ -68,7 +67,6 @@ import {
   MIDDLEWARE_MANIFEST,
   APP_PATHS_MANIFEST,
   APP_PATH_ROUTES_MANIFEST,
-  APP_BUILD_MANIFEST,
   RSC_MODULE_TYPES,
   NEXT_FONT_MANIFEST,
   SUBRESOURCE_INTEGRITY_MANIFEST,
@@ -1840,7 +1838,6 @@ export default async function build(
       const postCompileSpinner = createSpinner('Collecting page data')
 
       const buildManifestPath = path.join(distDir, BUILD_MANIFEST)
-      const appBuildManifestPath = path.join(distDir, APP_BUILD_MANIFEST)
 
       let staticAppPagesCount = 0
       let serverAppPagesCount = 0
@@ -1861,9 +1858,6 @@ export default async function build(
       const pageInfos: PageInfos = new Map<string, PageInfo>()
       let pagesManifest = await readManifest<PagesManifest>(pagesManifestPath)
       const buildManifest = await readManifest<BuildManifest>(buildManifestPath)
-      const appBuildManifest = appDir
-        ? await readManifest<AppBuildManifest>(appBuildManifestPath)
-        : undefined
 
       const appPathRoutes: Record<string, string> = {}
 
@@ -1981,7 +1975,7 @@ export default async function build(
         let hasSsrAmpPages = false
 
         const computedManifestData = await computeFromManifest(
-          { build: buildManifest, app: appBuildManifest },
+          { build: buildManifest },
           distDir,
           config.experimental.gzipSize
         )
@@ -2048,7 +2042,6 @@ export default async function build(
                   actualPage,
                   distDir,
                   buildManifest,
-                  appBuildManifest,
                   config.experimental.gzipSize,
                   computedManifestData
                 )
@@ -2547,7 +2540,6 @@ export default async function build(
                       : []),
                     path.join(SERVER_DIRECTORY, APP_PATHS_MANIFEST),
                     path.join(APP_PATH_ROUTES_MANIFEST),
-                    APP_BUILD_MANIFEST,
                     path.join(
                       SERVER_DIRECTORY,
                       SERVER_REFERENCE_MANIFEST + '.js'
@@ -4160,7 +4152,6 @@ export default async function build(
           pagesDir,
           useStaticPages404,
           pageExtensions: config.pageExtensions,
-          appBuildManifest,
           buildManifest,
           middlewareManifest,
           gzipSize: config.experimental.gzipSize,
