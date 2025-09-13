@@ -12,6 +12,7 @@ import { getServerModuleMap } from './encryption-utils'
 import { Suspense, type ReactNode } from 'react'
 import { isThenable } from '../../shared/lib/is-thenable'
 import { inspect } from 'node:util'
+import { RenderStage } from './staged-rendering'
 
 type StageChunks = Record<RenderStage, Uint8Array[]>
 
@@ -165,7 +166,7 @@ export async function validateRuntimePrefetches(
   initialRSCPayload: InitialRSCPayload,
   clientReferenceManifest: TODO,
   stageChunks: StageChunks,
-  prerenderClient: (
+  prerenderServerAndClient: (
     getPayload: () => Promise<InitialRSCPayload>
   ) => Promise<string>
 ) {
@@ -191,7 +192,7 @@ export async function validateRuntimePrefetches(
   for (const runtimeSegmentToValidate of runtimeSegmentsToValidate) {
     const sentinelBoundaryId = `__next-sentinel-boundary-${Date.now()}`
 
-    const prelude = await prerenderClient(async () => {
+    const prelude = await prerenderServerAndClient(async () => {
       // TODO: this seems sketchy wrt transferring preloads, maybe we should disassemble the segments separately?
       // alternatively, maybe try doing this lazily when we access one of the stages
       const cache = createValidationCache()
@@ -201,15 +202,31 @@ export async function validateRuntimePrefetches(
         RenderStage.Dynamic,
       ]) {
         const chunks = stageChunks[stage]
-        const initialRSCPayloadInStage: InitialRSCPayload =
-          await createFromReadableStream(
+        console.debug(
+          '[start] decoding payload for stage',
+          stage,
+          runtimeSegmentToValidate
+        )
+
+        const initialRSCPayloadInStage = await atMostOneTask(
+          createFromReadableStream(
             createUnclosingPrefetchStream(streamFromChunks(chunks)),
             {
               findSourceMapURL,
               serverConsumerManifest,
+              environmentName: getEnvironmentNameForStage(stage),
             }
-          )
-        fillCacheWithRootSeedData(cache, stage, initialRSCPayloadInStage)
+          ) as Promise<InitialRSCPayload>,
+          () => null
+        )
+        console.debug(
+          `[end] decoding payload for stage${initialRSCPayloadInStage === null ? ' (empty)' : ''}`,
+          stage,
+          runtimeSegmentToValidate
+        )
+        if (initialRSCPayloadInStage) {
+          fillCacheWithRootSeedData(cache, stage, initialRSCPayloadInStage)
+        }
       }
 
       const combinedSeedData = createValidationSeedData(
@@ -231,7 +248,8 @@ export async function validateRuntimePrefetches(
       }
       return combinedRSCPayload
     })
-    if (prelude.includes(sentinelBoundaryId)) {
+
+    if (prelude.length === 0 || prelude.includes(sentinelBoundaryId)) {
       // TODO: this needs to go into the render a la resolveValidation
       console.error(
         '❌ Runtime prefetchable segment did not produce an instant result',
@@ -243,8 +261,32 @@ export async function validateRuntimePrefetches(
         runtimeSegmentToValidate
       )
     }
-    console.log(prelude)
+    console.log(prelude || '<SSR result is empty>')
   }
+}
+
+function atMostOneTask<T, U>(
+  promise: Promise<T>,
+  onTimeout: () => U
+): Promise<T | U> {
+  let didSettle = false
+  const onSettled = () => {
+    didSettle = true
+  }
+  promise.then(onSettled, onSettled)
+  return Promise.race([
+    promise,
+    new Promise<U>((resolve, reject) => {
+      setTimeout(() => {
+        if (didSettle) return
+        try {
+          return resolve(onTimeout())
+        } catch (err) {
+          reject(err)
+        }
+      })
+    }),
+  ])
 }
 
 function streamFromChunks(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
@@ -327,12 +369,6 @@ export function needsRuntimePrefetchValidation(
   return pathsToValidate.size > 0
 }
 
-export enum RenderStage {
-  Static = 1,
-  Runtime = 2,
-  Dynamic = 3,
-}
-
 //=====================================
 // Validation tree
 //=====================================
@@ -341,6 +377,7 @@ type SegmentPath = string & { _tag: 'SegmentPath' }
 
 type ValidationRouteTree = {
   path: SegmentPath
+  segment: Segment
   slots: { [parallelRouteKey: string]: ValidationRouteTree }
 }
 
@@ -358,7 +395,7 @@ function createValidationRouteTreeImpl(
   pathsToValidate: Set<SegmentPath>
 ): ValidationRouteTree {
   const [
-    _segment,
+    segment,
     _node,
     parallelRoutesData,
     _loading,
@@ -393,7 +430,7 @@ function createValidationRouteTreeImpl(
     )
   }
 
-  return { path, slots }
+  return { path, segment, slots }
 }
 
 function fillCacheWithRootSeedData(
@@ -465,6 +502,11 @@ function stringifySegment(segment: Segment): SegmentPath {
   ) as SegmentPath
 }
 
+async function MissingNode() {
+  await new Promise<never>(() => {})
+  return null
+}
+
 function createValidationSeedData(
   cache: ValidationSegmentCache,
   fullValidationTree: ValidationRouteTree,
@@ -475,6 +517,10 @@ function createValidationSeedData(
     validationTree: ValidationRouteTree,
     isParentBeingValidated: boolean
   ) {
+    const wrap = (element: ReactNode) => (
+      <Suspense fallback={sentinelBoundaryId}>{element}</Suspense>
+    )
+
     const { path, slots } = validationTree
     const isFirstSegmentToValidate = path === pathToRuntimeSegment
     const isSegmentBeingValidated =
@@ -483,22 +529,23 @@ function createValidationSeedData(
       ? RenderStage.Runtime
       : RenderStage.Dynamic
 
-    const segmentSeedData = readSegmentFromValidationCache(cache, group, path)
+    let segmentSeedData = readSegmentFromValidationCache(cache, group, path)
     if (!segmentSeedData) {
-      throw new InvariantError(
-        `Validation segment was present in tree but missing from cache: ${inspectSegmentKey(createSegmentKey(group, path))}`
-      )
+      // If we didn't get a payload, then the segment was blocked in this stage.
+      segmentSeedData = {
+        isPartial: true,
+        node: <MissingNode key={path} />,
+        loading: null,
+        hasRuntimePrefetch: false, // probably not needed at this point
+        segment: validationTree.segment,
+      }
     }
-    const wrappedSegmentSeedData: SegmentSeedData = {
-      ...segmentSeedData,
-    }
+    let wrappedSegmentSeedData: SegmentSeedData = segmentSeedData
     // TODO: we could try to detect if child slots suspended
     // by adding a "trigger when rendered" client component fallback
     // that resuspends (to avoid changing the behavior)
     if (isFirstSegmentToValidate) {
-      const wrap = (element: ReactNode) => (
-        <Suspense fallback={sentinelBoundaryId}>{element}</Suspense>
-      )
+      wrappedSegmentSeedData = { ...segmentSeedData }
       const { node, loading } = wrappedSegmentSeedData
       if (!loading) {
         wrappedSegmentSeedData.node = wrap(node)

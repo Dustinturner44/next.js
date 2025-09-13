@@ -22,6 +22,7 @@ import { StaticGenBailoutError } from '../../client/components/static-generation
 import { DynamicServerError } from '../../client/components/hooks-server-context'
 import { InvariantError } from '../../shared/lib/invariant-error'
 import { ReflectAdapter } from '../web/spec-extension/adapters/reflect'
+import { RenderStage } from '../app-render/staged-rendering'
 
 /**
  * In this version of Next.js `draftMode()` returns a Promise however you can still reference the properties of the underlying draftMode object
@@ -256,11 +257,10 @@ function syncIODev(route: string | undefined, expression: string) {
   if (workUnitStore) {
     switch (workUnitStore.type) {
       case 'request':
-        if (workUnitStore.prerenderPhase === true) {
-          // When we're rendering dynamically in dev, we need to advance out of
-          // the Prerender environment when we read Request data synchronously.
-          trackSynchronousRequestDataAccessInDev(workUnitStore)
-        }
+        trackSynchronousRequestDataAccessInDev(
+          workUnitStore,
+          RenderStage.Runtime
+        )
         break
       case 'prerender':
       case 'prerender-client':

@@ -32,6 +32,7 @@ import {
 } from '../dynamic-rendering-utils'
 import { createDedupedByCallsiteServerErrorLoggerDev } from '../create-deduped-by-callsite-server-error-logger'
 import { dynamicAccessAsyncStorage } from '../app-render/dynamic-access-async-storage.external'
+import { RenderStage } from '../app-render/staged-rendering'
 
 export type ParamValue = string | Array<string> | undefined
 export type Params = Record<string, ParamValue>
@@ -683,11 +684,10 @@ function syncIODev(
   if (workUnitStore) {
     switch (workUnitStore.type) {
       case 'request':
-        if (workUnitStore.prerenderPhase === true) {
-          // When we're rendering dynamically in dev, we need to advance out of
-          // the Prerender environment when we read Request data synchronously.
-          trackSynchronousRequestDataAccessInDev(workUnitStore)
-        }
+        trackSynchronousRequestDataAccessInDev(
+          workUnitStore,
+          RenderStage.Runtime
+        )
         break
       case 'prerender':
       case 'prerender-client':

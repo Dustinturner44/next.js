@@ -34,6 +34,7 @@ import {
   throwWithStaticGenerationBailoutErrorWithDynamicError,
   throwForSearchParamsAccessInUseCache,
 } from './utils'
+import { RenderStage } from '../app-render/staged-rendering'
 
 export type SearchParams = { [key: string]: string | string[] | undefined }
 
@@ -826,11 +827,10 @@ function syncIODev(
   if (workUnitStore) {
     switch (workUnitStore.type) {
       case 'request':
-        if (workUnitStore.prerenderPhase === true) {
-          // When we're rendering dynamically in dev, we need to advance out of
-          // the Prerender environment when we read Request data synchronously.
-          trackSynchronousRequestDataAccessInDev(workUnitStore)
-        }
+        trackSynchronousRequestDataAccessInDev(
+          workUnitStore,
+          RenderStage.Runtime
+        )
         break
       case 'prerender':
       case 'prerender-client':

@@ -9,8 +9,11 @@ export default function Page() {
     <main>
       <h1>Nested page (runtime prefetch)</h1>
       {/* <Runtime /> */}
+      <Suspense fallback="Loading runtime...">
+        <Runtime />
+      </Suspense>
       {/* <Dynamic /> */}
-      <Suspense fallback="Loading...">
+      <Suspense fallback="Loading dynamic...">
         <Dynamic />
       </Suspense>
       {/* <Suspense fallback="Loading...">

@@ -19,6 +19,7 @@ import type { ImplicitTags } from '../lib/implicit-tags'
 import type { WorkStore } from './work-async-storage.external'
 import { NEXT_HMR_REFRESH_HASH_COOKIE } from '../../client/components/app-router-headers'
 import { InvariantError } from '../../shared/lib/invariant-error'
+import type { StagedRenderController } from './staged-rendering'
 
 export type WorkUnitPhase = 'action' | 'render' | 'after'
 
@@ -28,7 +29,7 @@ export interface CommonWorkUnitStore {
   readonly implicitTags: ImplicitTags
 }
 
-export interface RequestStore extends CommonWorkUnitStore {
+export type RequestStore = CommonWorkUnitStore & {
   readonly type: 'request'
 
   /**
@@ -68,10 +69,8 @@ export interface RequestStore extends CommonWorkUnitStore {
   // DEV-only
   usedDynamic?: boolean
   // TODO(prefetch-validation): might need updating to account for stages
-  prerenderPhase?: boolean
   devFallbackParams?: OpaqueFallbackRouteParams | null
-  runtimeStagePromise?: Promise<void>
-  dynamicStagePromise?: Promise<void>
+  stagedRendering?: StagedRenderController
 }
 
 /**

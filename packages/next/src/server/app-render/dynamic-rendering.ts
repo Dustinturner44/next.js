@@ -50,6 +50,7 @@ import {
 import { scheduleOnNextTick } from '../../lib/scheduler'
 import { BailoutToCSRError } from '../../shared/lib/lazy-dynamic/bailout-to-csr'
 import { InvariantError } from '../../shared/lib/invariant-error'
+import type { RenderStage } from './staged-rendering'
 
 const hasPostpone = typeof React.unstable_postpone === 'function'
 
@@ -295,11 +296,16 @@ export function abortOnSynchronousPlatformIOAccess(
 }
 
 export function trackSynchronousPlatformIOAccessInDev(
-  requestStore: RequestStore
-): void {
+  requestStore: RequestStore,
+  minimumStage: RenderStage.Runtime | RenderStage.Dynamic
+) {
   // We don't actually have a controller to abort but we do the semantic equivalent by
   // advancing the request store out of prerender mode
-  requestStore.prerenderPhase = false
+  if (requestStore.stagedRendering) {
+    if (requestStore.stagedRendering.currentStage < minimumStage) {
+      requestStore.stagedRendering.advanceStage(minimumStage)
+    }
+  }
 }
 
 /**

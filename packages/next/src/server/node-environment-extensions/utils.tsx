@@ -5,9 +5,10 @@ import {
 } from '../app-render/work-unit-async-storage.external'
 import {
   abortOnSynchronousPlatformIOAccess,
-  trackSynchronousPlatformIOAccessInDev,
+  trackSynchronousRequestDataAccessInDev,
 } from '../app-render/dynamic-rendering'
 import { InvariantError } from '../../shared/lib/invariant-error'
+import { RenderStage } from '../app-render/staged-rendering'
 
 type ApiType = 'time' | 'random' | 'crypto'
 
@@ -86,9 +87,7 @@ export function io(expression: string, type: ApiType) {
       break
     }
     case 'request':
-      if (workUnitStore.prerenderPhase === true) {
-        trackSynchronousPlatformIOAccessInDev(workUnitStore)
-      }
+      trackSynchronousRequestDataAccessInDev(workUnitStore, RenderStage.Dynamic)
       break
     case 'prerender-ppr':
     case 'prerender-legacy':
