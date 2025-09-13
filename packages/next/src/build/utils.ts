@@ -1,6 +1,7 @@
 import type { NextConfigComplete } from '../server/config-shared'
 import type { ExperimentalPPRConfig } from '../server/lib/experimental/ppr'
 import type { AppBuildManifest } from './webpack/plugins/app-build-manifest-plugin'
+import { computeAppBuildManifestFromClientReferences } from './client-reference-manifest-utils'
 import type { AssetBinding } from './webpack/loaders/get-module-build-info'
 import type { PageConfig, ServerRuntime } from '../types'
 import type { BuildManifest } from '../server/get-page-files'
@@ -222,13 +223,18 @@ export async function computeFromManifest(
     countBuildFiles(files.pages.each, key, manifests.build.pages)
   }
 
-  // Collect the build files form the app manifest.
-  if (manifests.app?.pages) {
+  // Collect the build files from client reference manifests.
+  // This provides accurate client-side bundle information for App Router
+  // including React Server Component client dependencies.
+  const clientReferenceManifest =
+    computeAppBuildManifestFromClientReferences(distPath)
+
+  if (Object.keys(clientReferenceManifest.pages).length > 0) {
     files.app = { each: new Map<string, number>(), expected: 0 }
 
-    for (const key in manifests.app.pages) {
+    for (const key in clientReferenceManifest.pages) {
       files.app.expected++
-      countBuildFiles(files.app.each, key, manifests.app.pages)
+      countBuildFiles(files.app.each, key, clientReferenceManifest.pages)
     }
   }
 
