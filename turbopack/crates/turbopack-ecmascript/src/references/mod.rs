@@ -1054,7 +1054,7 @@ pub async fn analyse_ecmascript_module_internal(
                         "unexpected Effect::Unreachable in tracing mode"
                     );
 
-                    let _tracing_span = tracing::info_span!("handle unreachable").entered();
+                    let _tracing_span = tracing::trace_span!("handle unreachable").entered();
                     analysis
                         .add_code_gen(Unreachable::new(AstPathRange::StartAfter(start_ast_path)));
                 }
@@ -1220,7 +1220,7 @@ pub async fn analyse_ecmascript_module_internal(
                         }
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle conditional"))
+                    .instrument(tracing::trace_span!("handle conditional"))
                     .await?;
                 }
                 Effect::Call {
@@ -1255,7 +1255,7 @@ pub async fn analyse_ecmascript_module_internal(
                         )
                         .await
                     }
-                    .instrument(tracing::info_span!("handle call"))
+                    .instrument(tracing::trace_span!("handle call"))
                     .await?;
                 }
                 Effect::MemberCall {
@@ -1329,7 +1329,7 @@ pub async fn analyse_ecmascript_module_internal(
                         }
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle member call"))
+                    .instrument(tracing::trace_span!("handle member call"))
                     .await?;
                 }
                 Effect::FreeVar {
@@ -1361,7 +1361,7 @@ pub async fn analyse_ecmascript_module_internal(
                         }
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle free var"))
+                    .instrument(tracing::trace_span!("handle free var"))
                     .await?;
                 }
                 Effect::Member {
@@ -1384,7 +1384,7 @@ pub async fn analyse_ecmascript_module_internal(
                         handle_member(&ast_path, obj, prop, span, analysis_state, analysis).await?;
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle member"))
+                    .instrument(tracing::trace_span!("handle member"))
                     .await?;
                 }
                 Effect::ImportedBinding {
@@ -1440,7 +1440,7 @@ pub async fn analyse_ecmascript_module_internal(
 
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle imported binding"))
+                    .instrument(tracing::trace_span!("handle imported binding"))
                     .await?;
                 }
                 Effect::TypeOf {
@@ -1456,7 +1456,7 @@ pub async fn analyse_ecmascript_module_internal(
                         handle_typeof(&ast_path, arg, span, analysis_state, analysis).await?;
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle typeof"))
+                    .instrument(tracing::trace_span!("handle typeof"))
                     .await?;
                 }
                 Effect::ImportMeta {
@@ -1476,7 +1476,7 @@ pub async fn analyse_ecmascript_module_internal(
                         analysis.add_code_gen(ImportMetaRef::new(ast_path.into()));
                         anyhow::Ok(())
                     }
-                    .instrument(tracing::info_span!("handle import meta"))
+                    .instrument(tracing::trace_span!("handle import meta"))
                     .await?;
                 }
             }
