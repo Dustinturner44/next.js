@@ -30,10 +30,14 @@ Changing these values affects App Router file conventions and other entrypoints 
 - `app/**/not-found.*`
 - `app/**/loading.*`
 - `app/**/error.*`
-- `app/global-not-found.*` (when `experimental.globalNotFound` is enabled)
-- `middleware.*` (at the project root)
-- `instrumentation.*` (at the project root or `src/`)
-- Metadata route files under `app/` like `robots.*`, `manifest.*`, `sitemap.*`, and static metadata assets (e.g. `icon.*`, `apple-icon.*`, `opengraph-image.*`, `twitter-image.*`). Static asset extensions remain fixed (e.g. `.ico`, `.png`, etc.), while code-based variants use your configured extensions.
+- `app/global-not-found.*`
+- `middleware.*`
+- `instrumentation.*`
+
+Static asset extensions remain fixed , `.xml`, `.ico`, `.png`, while code-based variants use your configured extensions.
+
+- Metadata route like `robots.*`, `manifest.*`, `sitemap.*`
+- Static metadata assets `icon.*`, `apple-icon.*`, `opengraph-image.*`, `twitter-image.*`
 
 For example using this configuration:
 
@@ -45,25 +49,24 @@ module.exports = {
 }
 ```
 
-```txt filename="Project files"
-app/
-  blog/
-    page.app.tsx          // picked up (page)
-  dashboard/
-    layout.app.tsx        // picked up (layout)
-    page.app.tsx          // picked up (page)
-  sitemap/
-    route.app.ts          // picked up (route)
-  robots.app.ts           // picked up (metadata route)
-  manifest.app.ts         // picked up (metadata route)
-  favicon.ico             // static asset (extension fixed)
-  not-found.app.tsx       // picked up (not-found)
-  global-not-found.app.tsx // picked up when experimental.globalNotFound = true
-  error.app.tsx           // picked up (error)
-  loading.app.tsx         // picked up (loading)
-middleware.app.ts         // picked up at project root
-instrumentation.app.ts    // picked up at project root or src/
-```
+| Path                           | Recognized as    |
+| ------------------------------ | ---------------- |
+| `app/blog/page.app.tsx`        | page             |
+| `app/dashboard/layout.app.tsx` | layout           |
+| `app/dashboard/page.app.tsx`   | page             |
+| `app/sitemap/route.app.ts`     | route            |
+| `app/robots.app.ts`            | metadata route   |
+| `app/manifest.app.ts`          | metadata route   |
+| `app/favicon.ico`              | static asset     |
+| `app/sitemap.xml`              | static asset     |
+| `app/not-found.app.tsx`        | not-found        |
+| `app/global-not-found.app.tsx` | global-not-found |
+| `app/error.app.tsx`            | error            |
+| `app/loading.app.tsx`          | loading          |
+| `middleware.app.ts`            | middleware       |
+| `instrumentation.app.ts`       | instrumentation  |
+
+Note that for example `favicon.ico` and `sitemap.xml` are not affected.
 
 > **Good to know**:
 > This is an advanced feature, mostly used when [mdx support](/docs/app/guides/mdx) is needed.
