@@ -1856,7 +1856,7 @@ export default async function build(
       const fallbackModes = new Map<string, FallbackMode>()
       const appDefaultConfigs = new Map<string, AppSegmentConfig>()
       const pageInfos: PageInfos = new Map<string, PageInfo>()
-      let pagesManifest = await readManifest<PagesManifest>(pagesManifestPath)
+      const pagesManifest = await readManifest<PagesManifest>(pagesManifestPath)
       const buildManifest = await readManifest<BuildManifest>(buildManifestPath)
 
       const appPathRoutes: Record<string, string> = {}

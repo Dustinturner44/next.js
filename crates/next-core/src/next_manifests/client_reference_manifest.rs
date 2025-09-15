@@ -240,11 +240,8 @@ impl ClientReferenceManifest {
                         .await?;
                         let chunk_paths = ssr_chunks_paths
                             .filter_map(|(_, chunk_path)| {
-                                node_root_ref
-                                    .get_path_to(&chunk_path)
-                                    .map(ToString::to_string)
+                                node_root_ref.get_path_to(&chunk_path).map(RcStr::from)
                             })
-                            .map(RcStr::from)
                             .collect::<Vec<_>>();
 
                         let is_async = async_modules.contains(&ResolvedVc::upcast(ssr_module));

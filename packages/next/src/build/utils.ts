@@ -69,7 +69,6 @@ import { denormalizePagePath } from '../shared/lib/page-path/denormalize-page-pa
 import { normalizePagePath } from '../shared/lib/page-path/normalize-page-path'
 import { getRuntimeContext } from '../server/web/sandbox'
 import { isClientReference } from '../lib/client-and-server-references'
-import { normalizeAppPath } from '../shared/lib/router/utils/app-paths'
 import { denormalizeAppPagePath } from '../shared/lib/page-path/denormalize-app-path'
 import { RouteKind } from '../server/route-kind'
 import type { PageExtensions } from './page-extensions-type'
@@ -184,10 +183,8 @@ export async function computeFromManifest(
     for (const file of manifest[key]) {
       if (key === '/_app') {
         map.set(file, Infinity)
-      } else if (map.has(file)) {
-        map.set(file, map.get(file)! + 1)
       } else {
-        map.set(file, 1)
+        map.set(file, (map.get(file) ?? 0) + 1)
       }
     }
   }
@@ -930,18 +927,6 @@ export async function getJsPageSizeInKb(
     routerType === 'pages'
       ? buildManifest
       : computeAppBuildManifestFromClientReferences(distPath)
-
-  // Normalize app manifest keys
-  if (routerType === 'app') {
-    pageManifest.pages = Object.entries(pageManifest.pages).reduce(
-      (acc: Record<string, string[]>, [key, value]) => {
-        const newKey = normalizeAppPath(key)
-        acc[newKey] = value as string[]
-        return acc
-      },
-      {}
-    )
-  }
 
   // If stats was not provided, then compute it again.
   const stats =

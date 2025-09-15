@@ -3,9 +3,37 @@ import { join } from 'node:path'
 
 import { CLIENT_REFERENCE_MANIFEST } from '../shared/lib/constants'
 import type { ClientReferenceManifest } from './webpack/plugins/flight-manifest-plugin'
+import { normalizeAppPath } from '../shared/lib/router/utils/app-paths'
 
 export interface AppBuildManifestFromClientReferences {
   pages: Record<string, string[]>
+}
+
+// Cache the computed manifest to avoid re-scanning filesystem
+let cachedManifest: AppBuildManifestFromClientReferences | undefined
+let cachedDistPath: string | undefined
+
+/**
+ * Normalizes chunk paths to handle differences between webpack and turbopack formats
+ * Turbopack includes a configurable asset prefix (ending with /_next/) while webpack uses relative paths
+ */
+function normalizeChunkPath(chunkPath: string): string {
+  // Strip asset prefix if present (turbopack format)
+  // The asset prefix is configurable but always ends with /_next/
+  let normalized = chunkPath
+  const nextIndex = normalized.indexOf('/_next/')
+  if (nextIndex !== -1) {
+    normalized = normalized.slice(nextIndex + '/_next/'.length)
+  }
+
+  // Handle URL decoding for any escaped characters
+  try {
+    normalized = decodeURIComponent(normalized)
+  } catch {
+    // If decoding fails, use the original normalized path
+  }
+
+  return normalized
 }
 
 /**
@@ -16,14 +44,26 @@ export interface AppBuildManifestFromClientReferences {
 export function computeAppBuildManifestFromClientReferences(
   distPath: string
 ): AppBuildManifestFromClientReferences {
+  // Return cached result if available for the same distPath
+  if (cachedManifest && cachedDistPath === distPath) {
+    return cachedManifest
+  }
+
   const serverAppPath = join(distPath, 'server', 'app')
 
   if (!existsSync(serverAppPath)) {
-    return { pages: {} }
+    const emptyManifest = { pages: {} }
+    cachedManifest = emptyManifest
+    cachedDistPath = distPath
+    return emptyManifest
   }
 
   const manifest: AppBuildManifestFromClientReferences = { pages: {} }
-  const allFiles = new Set<string>()
+
+  console.log(
+    '[client-ref-manifest] Searching for manifests in:',
+    serverAppPath
+  )
 
   // Recursively find all client reference manifest files
   function findClientReferenceManifests(
@@ -49,6 +89,11 @@ export function computeAppBuildManifestFromClientReferences(
 
   const manifestFiles = findClientReferenceManifests(serverAppPath)
 
+  console.log(
+    '[client-ref-manifest] Found manifest files:',
+    manifestFiles.length
+  )
+
   for (const manifestFile of manifestFiles) {
     try {
       // Read and parse the client reference manifest
@@ -58,10 +103,15 @@ export function computeAppBuildManifestFromClientReferences(
       const routeMatch = content.match(
         /globalThis\.__RSC_MANIFEST\["([^"]+)"\]\s*=\s*({.*})/
       )
-      if (!routeMatch) continue
+      if (!routeMatch)
+        throw new Error(
+          `Unexpected content in client-reference-manifest file ${manifestFile}, cannot extract manifest`
+        )
 
       const route = routeMatch[1]
       const manifestDataStr = routeMatch[2]
+
+      console.log('[client-ref-manifest] Processing route:', route)
 
       // Parse the manifest data
       const manifestData: ClientReferenceManifest = JSON.parse(manifestDataStr)
@@ -73,8 +123,7 @@ export function computeAppBuildManifestFromClientReferences(
       // This is the key data - what client-side JS actually needs to be loaded
       for (const moduleInfo of Object.values(manifestData.clientModules)) {
         for (const chunk of moduleInfo.chunks) {
-          chunks.add(chunk)
-          allFiles.add(chunk)
+          chunks.add(normalizeChunkPath(chunk))
         }
       }
 
@@ -82,21 +131,29 @@ export function computeAppBuildManifestFromClientReferences(
       if (manifestData.entryCSSFiles) {
         for (const cssFiles of Object.values(manifestData.entryCSSFiles)) {
           for (const cssFile of cssFiles) {
-            chunks.add(cssFile.path)
-            allFiles.add(cssFile.path)
+            chunks.add(normalizeChunkPath(cssFile.path))
           }
         }
       }
 
-      // Store the route with all its required chunks
-      manifest.pages[route] = Array.from(chunks).sort()
+      // Add entry JS files (turbopack specific - these are shared chunks)
+      if (manifestData.entryJSFiles) {
+        for (const jsFiles of Object.values(manifestData.entryJSFiles)) {
+          for (const jsFile of jsFiles) {
+            chunks.add(normalizeChunkPath(jsFile))
+          }
+        }
+      }
+
+      // Normalize the route path and store it with all its required chunks
+      const normalizedRoute = normalizeAppPath(route)
+      manifest.pages[normalizedRoute] = Array.from(chunks).sort()
     } catch (error) {
       // Skip malformed manifest files
       console.warn(
         `Failed to parse client reference manifest: ${manifestFile}`,
         error
       )
-      continue
     }
   }
 
@@ -108,6 +165,10 @@ export function computeAppBuildManifestFromClientReferences(
       sortedPages[key] = manifest.pages[key]
     })
   manifest.pages = sortedPages
+
+  // Cache the result
+  cachedManifest = manifest
+  cachedDistPath = distPath
 
   return manifest
 }

@@ -21,7 +21,7 @@ export function getLinkAndScriptTags(
   const entryCSSFiles =
     clientReferenceManifest.entryCSSFiles[filePathWithoutExt]
   const entryJSFiles =
-    clientReferenceManifest.entryJSFiles?.[filePathWithoutExt] ?? []
+    clientReferenceManifest.entryJSFiles?.[filePathWithoutExt]
 
   if (entryCSSFiles) {
     for (const css of entryCSSFiles) {
