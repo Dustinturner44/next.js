@@ -10,6 +10,7 @@ import {
   killApp,
   launchApp,
   retry,
+  waitFor,
 } from 'next-test-utils'
 
 const appDir = join(__dirname, '..')
@@ -68,6 +69,8 @@ describe('Custom _error', () => {
       stderr = ''
       try {
         await fs.writeFile(page404, `export default () => 'not found...'`)
+        // Matches `next-dev.ts` patchFileDelay
+        await waitFor(1000)
         await retry(async () => {
           // retry because the page might not be built yet
           const html = await renderViaHTTP(appPort, '/404')
@@ -76,6 +79,8 @@ describe('Custom _error', () => {
         })
       } finally {
         await fs.remove(page404)
+        // Matches `next-dev.ts` patchFileDelay
+        await waitFor(1000)
       }
     })
 
