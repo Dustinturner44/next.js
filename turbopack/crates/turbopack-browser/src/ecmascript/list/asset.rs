@@ -59,6 +59,34 @@ impl EcmascriptDevChunkList {
     fn own_content(self: Vc<Self>) -> Vc<EcmascriptDevChunkListContent> {
         EcmascriptDevChunkListContent::new(self)
     }
+
+    #[turbo_tasks::function]
+    async fn ident_for_path(&self) -> Result<Vc<AssetIdent>> {
+        let mut ident = self.ident.owned().await?;
+        ident.add_modifier(rcstr!("ecmascript dev chunk list"));
+
+        match self.source {
+            EcmascriptDevChunkListSource::Entry => {}
+            EcmascriptDevChunkListSource::Dynamic => {
+                ident.add_modifier(rcstr!("dynamic"));
+            }
+        }
+
+        // We must not include the actual chunks idents as part of the chunk list's
+        // ident, because it must remain stable whenever a chunk is added or
+        // removed from the list.
+
+        Ok(AssetIdent::new(ident))
+    }
+
+    #[turbo_tasks::function]
+    pub async fn path_without_content_hash(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
+        let this = self.await?;
+        let ident = self.ident_for_path();
+        Ok(this
+            .chunking_context
+            .chunk_path(None, ident, None, rcstr!(".js")))
+    }
 }
 
 #[turbo_tasks::value_impl]
@@ -74,21 +102,7 @@ impl OutputAsset for EcmascriptDevChunkList {
     #[turbo_tasks::function]
     async fn path(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
         let this = self.await?;
-        let mut ident = this.ident.owned().await?;
-        ident.add_modifier(rcstr!("ecmascript dev chunk list"));
-
-        match this.source {
-            EcmascriptDevChunkListSource::Entry => {}
-            EcmascriptDevChunkListSource::Dynamic => {
-                ident.add_modifier(rcstr!("dynamic"));
-            }
-        }
-
-        // We must not include the actual chunks idents as part of the chunk list's
-        // ident, because it must remain stable whenever a chunk is added or
-        // removed from the list.
-
-        let ident = AssetIdent::new(ident);
+        let ident = self.ident_for_path();
         Ok(this
             .chunking_context
             .chunk_path(Some(Vc::upcast(self)), ident, None, rcstr!(".js")))

@@ -93,6 +93,15 @@ impl EcmascriptBrowserChunk {
     pub fn chunk(&self) -> Result<Vc<Box<dyn Chunk>>> {
         Ok(Vc::upcast(*self.chunk))
     }
+
+    #[turbo_tasks::function]
+    pub async fn path_without_content_hash(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
+        let this = self.await?;
+        let ident = this.ident_for_path();
+        Ok(this
+            .chunking_context
+            .chunk_path(None, ident, None, rcstr!(".js")))
+    }
 }
 
 #[turbo_tasks::value_impl]

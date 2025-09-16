@@ -94,7 +94,7 @@ impl EcmascriptBrowserEvaluateChunk {
         let script_or_path = match *this.chunking_context.current_chunk_method().await? {
             CurrentChunkMethod::StringLiteral => {
                 let output_root = this.chunking_context.output_root().await?;
-                let chunk_path_vc = self.path();
+                let chunk_path_vc = self.path_without_content_hash();
                 chunk_path = chunk_path_vc.await?;
                 let chunk_server_path = if let Some(path) = output_root.get_path_to(&chunk_path) {
                     path
@@ -110,6 +110,7 @@ impl EcmascriptBrowserEvaluateChunk {
             CurrentChunkMethod::DocumentCurrentScript => {
                 Either::Right(CURRENT_CHUNK_METHOD_DOCUMENT_CURRENT_SCRIPT_EXPR)
             }
+            CurrentChunkMethod::None => Either::Right("undefined"),
         };
 
         let other_chunks_data = self.chunks_data().await?;
@@ -232,6 +233,15 @@ impl EcmascriptBrowserEvaluateChunk {
             self.ident_for_path(),
             Vc::upcast(self),
         ))
+    }
+
+    #[turbo_tasks::function]
+    async fn path_without_content_hash(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
+        let this = self.await?;
+        let ident = self.ident_for_path();
+        Ok(this
+            .chunking_context
+            .chunk_path(None, ident, Some(rcstr!("turbopack")), rcstr!(".js")))
     }
 }
 

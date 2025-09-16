@@ -79,7 +79,7 @@ impl EcmascriptBrowserChunkContent {
         let script_or_path = match *this.chunking_context.current_chunk_method().await? {
             CurrentChunkMethod::StringLiteral => {
                 let output_root = this.chunking_context.output_root().await?;
-                let chunk_path_vc = this.chunk.path();
+                let chunk_path_vc = this.chunk.path_without_content_hash();
                 chunk_path = chunk_path_vc.await?;
                 let chunk_server_path = if let Some(path) = output_root.get_path_to(&chunk_path) {
                     path
@@ -95,6 +95,7 @@ impl EcmascriptBrowserChunkContent {
             CurrentChunkMethod::DocumentCurrentScript => {
                 Either::Right(CURRENT_CHUNK_METHOD_DOCUMENT_CURRENT_SCRIPT_EXPR)
             }
+            CurrentChunkMethod::None => Either::Right("undefined"),
         };
         let mut code = CodeBuilder::new(source_maps);
 

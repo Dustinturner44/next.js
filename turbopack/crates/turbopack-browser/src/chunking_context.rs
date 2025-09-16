@@ -46,6 +46,7 @@ use crate::ecmascript::{
 pub enum CurrentChunkMethod {
     StringLiteral,
     DocumentCurrentScript,
+    None,
 }
 
 pub const CURRENT_CHUNK_METHOD_DOCUMENT_CURRENT_SCRIPT_EXPR: &str =

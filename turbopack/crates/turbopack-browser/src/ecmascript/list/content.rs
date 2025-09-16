@@ -33,6 +33,7 @@ use crate::chunking_context::{
 enum CurrentChunkMethodWithData {
     StringLiteral(RcStr),
     DocumentCurrentScript,
+    None,
 }
 
 /// Contents of an [`EcmascriptDevChunkList`].
@@ -57,7 +58,7 @@ impl EcmascriptDevChunkListContent {
         {
             CurrentChunkMethod::StringLiteral => {
                 let path = output_root
-                    .get_path_to(&*chunk_list.path().await?)
+                    .get_path_to(&*chunk_list.path_without_content_hash().await?)
                     .context("chunk list path not in output root")?
                     .into();
                 CurrentChunkMethodWithData::StringLiteral(path)
@@ -65,6 +66,7 @@ impl EcmascriptDevChunkListContent {
             CurrentChunkMethod::DocumentCurrentScript => {
                 CurrentChunkMethodWithData::DocumentCurrentScript
             }
+            CurrentChunkMethod::None => CurrentChunkMethodWithData::None,
         };
         Ok(EcmascriptDevChunkListContent {
             current_chunk_method,
@@ -145,6 +147,7 @@ impl EcmascriptDevChunkListContent {
             CurrentChunkMethodWithData::DocumentCurrentScript => {
                 Either::Right(CURRENT_CHUNK_METHOD_DOCUMENT_CURRENT_SCRIPT_EXPR)
             }
+            CurrentChunkMethodWithData::None => Either::Right("undefined"),
         };
 
         let mut code = CodeBuilder::default();

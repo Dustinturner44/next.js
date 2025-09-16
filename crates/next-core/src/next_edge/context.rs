@@ -4,7 +4,7 @@ use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{ResolvedVc, TaskInput, Vc, trace::TraceRawVcs};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack::{css::chunk::CssChunkType, resolve_options_context::ResolveOptionsContext};
-use turbopack_browser::BrowserChunkingContext;
+use turbopack_browser::{BrowserChunkingContext, CurrentChunkMethod};
 use turbopack_core::{
     chunk::{
         ChunkingConfig, ChunkingContext, MangleType, MinifyType, SourceMapsType,
@@ -251,6 +251,7 @@ pub async fn get_edge_chunking_context_with_client_assets(
     } else {
         SourceMapsType::None
     })
+    .current_chunk_method(CurrentChunkMethod::None)
     .module_id_strategy(module_id_strategy.to_resolved().await?)
     .export_usage(*export_usage.await?);
 
@@ -322,6 +323,7 @@ pub async fn get_edge_chunking_context(
     } else {
         SourceMapsType::None
     })
+    .current_chunk_method(CurrentChunkMethod::None)
     .module_id_strategy(module_id_strategy.to_resolved().await?)
     .export_usage(*export_usage.await?);
 
