@@ -6,7 +6,10 @@ declare var ASSET_PREFIX: string
 
 const path = require('path')
 
-const relativePathToRuntimeRoot = path.relative(RUNTIME_PUBLIC_PATH, '.')
+const relativePathToRuntimeRoot = path.relative(
+  path.join(RUNTIME_PUBLIC_PATH, '_'),
+  '.'
+)
 // Compute the relative path to the `distDir`.
 const relativePathToDistRoot = path.join(
   relativePathToRuntimeRoot,

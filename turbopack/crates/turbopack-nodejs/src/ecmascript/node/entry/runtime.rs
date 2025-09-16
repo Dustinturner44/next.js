@@ -42,13 +42,13 @@ impl EcmascriptBuildNodeRuntimeChunk {
             .chunking_context
             .reference_chunk_source_maps(Vc::upcast(self))
             .await?;
-        let runtime_path = self.path().await?;
-        let runtime_public_path = if let Some(path) = output_root.get_path_to(&runtime_path) {
+        let chunk_root = this.chunking_context.chunk_root_path().await?;
+        let runtime_public_path = if let Some(path) = output_root.get_path_to(&chunk_root) {
             path
         } else {
             bail!(
-                "runtime path {} is not in output root {}",
-                runtime_path.to_string(),
+                "runtime chunk root {} is not in output root {}",
+                chunk_root.to_string(),
                 output_root.to_string()
             );
         };
