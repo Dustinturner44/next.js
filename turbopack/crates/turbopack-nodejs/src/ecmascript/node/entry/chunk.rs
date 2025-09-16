@@ -67,8 +67,8 @@ impl EcmascriptBuildNodeEntryChunk {
             } else {
                 bail!(
                     "cannot find a relative path from the chunk ({}) to the runtime chunk ({})",
-                    chunk_path.to_string(),
-                    runtime_path.to_string(),
+                    chunk_path.value_to_string().await?,
+                    runtime_path.value_to_string().await?,
                 );
             };
         let chunk_public_path = if let Some(path) = output_root.get_path_to(&chunk_path) {
@@ -76,8 +76,8 @@ impl EcmascriptBuildNodeEntryChunk {
         } else {
             bail!(
                 "chunk path ({}) is not in output root ({})",
-                chunk_path.to_string(),
-                output_root.to_string()
+                chunk_path.value_to_string().await?,
+                output_root.value_to_string().await?
             );
         };
 

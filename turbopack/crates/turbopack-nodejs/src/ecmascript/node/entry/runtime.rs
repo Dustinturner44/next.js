@@ -48,8 +48,8 @@ impl EcmascriptBuildNodeRuntimeChunk {
         } else {
             bail!(
                 "runtime chunk root {} is not in output root {}",
-                chunk_root.to_string(),
-                output_root.to_string()
+                chunk_root.value_to_string().await?,
+                output_root.value_to_string().await?
             );
         };
 
