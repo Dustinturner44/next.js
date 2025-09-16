@@ -103,7 +103,10 @@ import { getSourceCodeMiddleware } from '../../next-devtools/server/source-code-
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
 import { backgroundLogCompilationEvents } from '../../shared/lib/turbopack/compilation-events'
 import { getSupportedBrowsers } from '../../build/utils'
-import { receiveBrowserLogsTurbopack } from './browser-logs/receive-logs'
+import {
+  receiveBrowserLogsTurbopack,
+  logBrowserLogsToFile,
+} from './browser-logs/receive-logs'
 import { normalizePath } from '../../lib/normalize-path'
 import {
   devToolsConfigMiddleware,
@@ -915,6 +918,29 @@ export async function createHotReloaderTurbopack(
               // TODO
               break
             case 'browser-logs': {
+              // Always log to file with sourcemap context
+              // Browser logs: if no sourceType specified, treat as client-side
+              // Only use server sourcemaps if explicitly marked as server/edge-server
+              const isServerSourced = parsedData.sourceType === 'server'
+              const isEdgeServerSourced =
+                parsedData.sourceType === 'edge-server'
+
+              const ctx = {
+                bundler: 'turbopack' as const,
+                project,
+                projectPath,
+                isServer: isServerSourced,
+                isEdgeServer: isEdgeServerSourced,
+                isAppDirectory: parsedData.router === 'app',
+              }
+
+              await logBrowserLogsToFile({
+                entries: parsedData.entries,
+                distDir,
+                ctx,
+              })
+
+              // Only log to terminal if enabled
               if (nextConfig.experimental.browserDebugInfoInTerminal) {
                 await receiveBrowserLogsTurbopack({
                   entries: parsedData.entries,

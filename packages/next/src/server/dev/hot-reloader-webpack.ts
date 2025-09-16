@@ -95,7 +95,10 @@ import { getSourceCodeMiddleware } from '../../next-devtools/server/source-code-
 import getWebpackBundler from '../../shared/lib/get-webpack-bundler'
 import { getRestartDevServerMiddleware } from '../../next-devtools/server/restart-dev-server-middleware'
 import { checkPersistentCacheInvalidationAndCleanup } from '../../build/webpack/cache-invalidation'
-import { receiveBrowserLogsWebpack } from './browser-logs/receive-logs'
+import {
+  receiveBrowserLogsWebpack,
+  logBrowserLogsToFile,
+} from './browser-logs/receive-logs'
 import {
   devToolsConfigMiddleware,
   getDevToolsConfig,
@@ -571,6 +574,30 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
               break
             }
             case 'browser-logs': {
+              // Always log to file with sourcemap context
+              // Browser logs: if no sourceType specified, treat as client-side
+              // Only use server sourcemaps if explicitly marked as server/edge-server
+              const isServerSourced = payload.sourceType === 'server'
+              const isEdgeServerSourced = payload.sourceType === 'edge-server'
+
+              const ctx = {
+                bundler: 'webpack' as const,
+                isServer: isServerSourced,
+                isEdgeServer: isEdgeServerSourced,
+                isAppDirectory: payload.router === 'app',
+                clientStats: () => this.clientStats,
+                serverStats: () => this.serverStats,
+                edgeServerStats: () => this.edgeServerStats,
+                rootDirectory: this.dir,
+              }
+
+              await logBrowserLogsToFile({
+                entries: payload.entries,
+                distDir: this.distDir,
+                ctx,
+              })
+
+              // Only log to terminal if enabled
               if (this.config.experimental.browserDebugInfoInTerminal) {
                 await receiveBrowserLogsWebpack({
                   entries: payload.entries,

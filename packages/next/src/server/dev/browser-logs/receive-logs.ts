@@ -13,6 +13,7 @@ import {
   type ConsoleEntry,
   UNDEFINED_MARKER,
 } from '../../../next-devtools/shared/forward-logs-shared'
+import { FileLogger } from './file-logger'
 
 export function restoreUndefined(x: any): any {
   if (x === UNDEFINED_MARKER) return undefined
@@ -417,11 +418,20 @@ export async function handleLog(
   entries: ServerLogEntry[],
   ctx: MappingContext,
   distDir: string,
-  config: boolean | { logDepth?: number; showSourceLocation?: boolean }
+  config: boolean | { logDepth?: number; showSourceLocation?: boolean },
+  fileLogger: FileLogger
 ): Promise<void> {
   const browserPrefix = cyan('[browser]')
 
   for (const entry of entries) {
+    // Log to file if fileLogger is provided
+    if (fileLogger) {
+      try {
+        await fileLogger.logEntry(entry)
+      } catch (error) {
+        console.error('Failed to log to file:', error)
+      }
+    }
     try {
       switch (entry.kind) {
         case 'console': {
@@ -522,6 +532,23 @@ export async function handleLog(
 }
 
 // the data is used later when we need to get sourcemaps for error stacks
+// Always log to file, regardless of terminal logging settings
+export async function logBrowserLogsToFile(opts: {
+  entries: ServerLogEntry[]
+  distDir: string
+  ctx?: MappingContext
+}): Promise<void> {
+  const fileLogger = FileLogger.getInstance(opts.distDir)
+
+  for (const entry of opts.entries) {
+    try {
+      await fileLogger.logEntry(entry, opts.ctx)
+    } catch (error) {
+      console.error('Failed to log to file:', error)
+    }
+  }
+}
+
 export async function receiveBrowserLogsWebpack(opts: {
   entries: ServerLogEntry[]
   router: 'app' | 'pages'
@@ -559,7 +586,10 @@ export async function receiveBrowserLogsWebpack(opts: {
     rootDirectory,
   }
 
-  await handleLog(entries, ctx, distDir, opts.config)
+  // Use singleton file logger instance
+  const fileLogger = FileLogger.getInstance(distDir)
+
+  await handleLog(entries, ctx, distDir, opts.config, fileLogger)
 }
 
 export async function receiveBrowserLogsTurbopack(opts: {
@@ -586,5 +616,8 @@ export async function receiveBrowserLogsTurbopack(opts: {
     isAppDirectory,
   }
 
-  await handleLog(entries, ctx, distDir, opts.config)
+  // Use singleton file logger instance
+  const fileLogger = FileLogger.getInstance(distDir)
+
+  await handleLog(entries, ctx, distDir, opts.config, fileLogger)
 }

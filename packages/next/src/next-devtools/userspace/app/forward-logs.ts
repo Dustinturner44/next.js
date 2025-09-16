@@ -171,6 +171,7 @@ export const logQueue: {
   sourceType: undefined,
   router: null,
   scheduleLogSend: (entry: ClientLogEntry) => {
+    // Always send logs to server for file logging, regardless of terminal logging setting
     logQueue.entries.push(entry)
     if (logQueue.flushScheduled) {
       return
