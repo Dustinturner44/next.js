@@ -27,7 +27,7 @@ export function connectReactDebugChannel(
   const reader = debugChannel.readable
     .pipeThrough(
       // We're sending the chunks in batches to reduce overhead in the browser.
-      createBufferedTransformStream({ maxBufferByteLength: 128 * 1024 })
+      createBufferedTransformStream({ maxBufferByteLength: 128 * 10024 })
     )
     .getReader()
 
