@@ -118,7 +118,10 @@ export function createMcpServer(
   getOriginalStackFrames?: (
     request: OriginalStackFramesRequest
   ) => Promise<OriginalStackFramesResponse>,
-  errorsData?: ErrorsData | null
+  errorsData?: ErrorsData | null,
+  restartHandler?: (options: {
+    cleanCache?: boolean
+  }) => Promise<{ success: boolean; message: string }>
 ): McpServer {
   const server = new McpServer({
     name: 'nextjs',
@@ -611,6 +614,50 @@ export function createMcpServer(
             {
               type: 'text',
               text: `Error: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+        }
+      }
+    }
+  )
+
+  // Register restart dev server tool
+  server.registerTool(
+    'restart_dev_server',
+    {
+      description:
+        'Restart the Next.js development server and clear the build cache. Use this when errors persist and seem related to server state, such as when adding new routes returns 404 errors.',
+      inputSchema: {},
+    },
+    async (_request) => {
+      try {
+        if (!restartHandler) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Server restart not available. Make sure the dev server is running with restart support.',
+              },
+            ],
+          }
+        }
+
+        const result = await restartHandler({ cleanCache: true })
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: result.message,
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error restarting server: ${error instanceof Error ? error.message : String(error)}`,
             },
           ],
         }

@@ -10,6 +10,8 @@ import type {
   OriginalStackFramesRequest,
   OriginalStackFramesResponse,
 } from '../../next-devtools/server/shared'
+import { RESTART_EXIT_CODE } from '../lib/utils'
+import { invalidatePersistentCache } from '../../build/webpack/cache-invalidation'
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 
@@ -96,6 +98,10 @@ type StackFrameResolver = (
   request: OriginalStackFramesRequest
 ) => Promise<OriginalStackFramesResponse>
 
+type RestartHandler = (options: {
+  cleanCache?: boolean
+}) => Promise<{ success: boolean; message: string }>
+
 export function createWebpackStackFrameResolver(
   clientStats: () => webpack.Stats | null,
   serverStats: () => webpack.Stats | null,
@@ -113,6 +119,30 @@ export function createWebpackStackFrameResolver(
   }
 }
 
+export function createWebpackRestartHandler(
+  webpackCacheDirectories: Set<string>
+): RestartHandler {
+  return async ({ cleanCache = false }) => {
+    if (cleanCache && webpackCacheDirectories) {
+      await Promise.all(
+        Array.from(webpackCacheDirectories).map(invalidatePersistentCache)
+      )
+    }
+
+    // Schedule restart - same as restart-dev-server-middleware.ts
+    setTimeout(() => {
+      process.exit(RESTART_EXIT_CODE)
+    }, 0)
+
+    return {
+      success: true,
+      message: cleanCache
+        ? 'Restarting server and clearing webpack cache...'
+        : 'Restarting server...',
+    }
+  }
+}
+
 export function createTurbopackStackFrameResolver(
   project: Project,
   projectPath: string
@@ -126,11 +156,34 @@ export function createTurbopackStackFrameResolver(
   }
 }
 
+export function createTurbopackRestartHandler(
+  project: Project
+): RestartHandler {
+  return async ({ cleanCache = false }) => {
+    if (cleanCache && project) {
+      await project.invalidatePersistentCache()
+    }
+
+    // Schedule restart - same as restart-dev-server-middleware.ts
+    setTimeout(() => {
+      process.exit(RESTART_EXIT_CODE)
+    }, 0)
+
+    return {
+      success: true,
+      message: cleanCache
+        ? 'Restarting server and clearing turbopack cache...'
+        : 'Restarting server...',
+    }
+  }
+}
+
 export function getMcpMiddleware(
   config: NextConfig,
   port?: number,
   dir?: string,
-  stackFrameResolver?: StackFrameResolver
+  stackFrameResolver?: StackFrameResolver,
+  restartHandler?: RestartHandler
 ) {
   const serverPort = port || 3000
   const mcpUrl = `http://localhost:${serverPort}/_next/mcp`
@@ -273,7 +326,8 @@ export function getMcpMiddleware(
       storedClientData,
       dir,
       stackFrameResolver,
-      storedErrorsData
+      storedErrorsData,
+      restartHandler
     )
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,

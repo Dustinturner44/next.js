@@ -15,6 +15,7 @@ import { getChatMiddleware } from './middleware-chat'
 import {
   getMcpMiddleware,
   createWebpackStackFrameResolver,
+  createWebpackRestartHandler,
 } from './middleware-mcp'
 import { WebpackHotMiddleware } from './hot-middleware'
 import { join, relative, isAbsolute, posix, dirname } from 'path'
@@ -1618,6 +1619,11 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
           () => this.serverStats,
           () => this.edgeServerStats,
           this.dir
+        ),
+        createWebpackRestartHandler(
+          this.activeWebpackConfigs != null
+            ? getCacheDirectories(this.activeWebpackConfigs)
+            : new Set()
         )
       ),
       getNextErrorFeedbackMiddleware(this.telemetry),

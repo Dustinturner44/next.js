@@ -35,6 +35,7 @@ import { getChatMiddleware } from './middleware-chat'
 import {
   getMcpMiddleware,
   createTurbopackStackFrameResolver,
+  createTurbopackRestartHandler,
 } from './middleware-mcp'
 import { PageNotFoundError } from '../../shared/lib/utils'
 import { debounce } from '../utils'
@@ -725,7 +726,8 @@ export async function createHotReloaderTurbopack(
       opts.nextConfig,
       opts.port,
       opts.dir,
-      createTurbopackStackFrameResolver(project, projectPath)
+      createTurbopackStackFrameResolver(project, projectPath),
+      createTurbopackRestartHandler(project)
     ),
     getNextErrorFeedbackMiddleware(opts.telemetry),
     getDevOverlayFontMiddleware(),
