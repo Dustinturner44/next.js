@@ -48,6 +48,8 @@ describe('Custom _error', () => {
         })
       } finally {
         await fs.remove(page404)
+        // Matches `next-dev.ts` patchFileDelay
+        await waitFor(1000)
       }
     })
   })
