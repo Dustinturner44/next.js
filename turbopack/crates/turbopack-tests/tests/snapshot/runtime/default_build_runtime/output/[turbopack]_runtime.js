@@ -1,4 +1,4 @@
-const RUNTIME_PUBLIC_PATH = "output/[turbopack]_runtime.js";
+const RUNTIME_PUBLIC_PATH = "output";
 const RELATIVE_ROOT_PATH = "../../../../../../..";
 const ASSET_PREFIX = "/";
 /**
@@ -523,7 +523,7 @@ externalRequire.resolve = (id, options)=>{
 };
 contextPrototype.x = externalRequire;
 /* eslint-disable @typescript-eslint/no-unused-vars */ const path = require('path');
-const relativePathToRuntimeRoot = path.relative(RUNTIME_PUBLIC_PATH, '.');
+const relativePathToRuntimeRoot = path.relative(path.join(RUNTIME_PUBLIC_PATH, '_'), '.');
 // Compute the relative path to the `distDir`.
 const relativePathToDistRoot = path.join(relativePathToRuntimeRoot, RELATIVE_ROOT_PATH);
 const RUNTIME_ROOT = path.resolve(__filename, relativePathToRuntimeRoot);

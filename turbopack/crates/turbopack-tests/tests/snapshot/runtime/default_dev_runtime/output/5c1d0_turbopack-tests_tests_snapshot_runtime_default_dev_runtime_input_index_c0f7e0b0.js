@@ -1528,14 +1528,18 @@ function createModuleHot(moduleId, hotData) {
     runtimeChunkLists.add(chunkListPath);
 }
 function registerChunk(registration) {
-    const chunkPath = getPathFromScript(registration[0]);
+    const chunkPath = registration[0] === undefined ? undefined : getPathFromScript(registration[0]);
     let runtimeParams;
     // When bootstrapping we are passed a single runtimeParams object so we can distinguish purely based on length
     if (registration.length === 2) {
         runtimeParams = registration[1];
     } else {
         runtimeParams = undefined;
-        installCompressedModuleFactories(registration, /* offset= */ 1, moduleFactories, (id)=>addModuleToChunk(id, chunkPath));
+        installCompressedModuleFactories(registration, /* offset= */ 1, moduleFactories, (id)=>{
+            if (chunkPath) {
+                addModuleToChunk(id, chunkPath);
+            }
+        });
     }
     return BACKEND.registerChunk(chunkPath, runtimeParams);
 }
@@ -1583,6 +1587,9 @@ let BACKEND;
 (()=>{
     BACKEND = {
         async registerChunk (chunkPath, params) {
+            if (chunkPath === undefined) {
+                throw new Error('Missing chunkPath');
+            }
             const chunkUrl = getChunkRelativeUrl(chunkPath);
             const resolver = getOrCreateResolver(chunkUrl);
             resolver.resolve();
