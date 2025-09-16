@@ -113,7 +113,7 @@ const queuedInvalidatedModules: Set<ModuleId> = new Set()
  */
 // @ts-ignore
 function getOrInstantiateRuntimeModule(
-  chunkPath: ChunkPath,
+  chunkPath: ChunkPath | undefined,
   moduleId: ModuleId
 ): Module {
   const module = devModuleCache[moduleId]
@@ -1129,7 +1129,10 @@ function markChunkListAsRuntime(chunkListPath: ChunkListPath) {
 }
 
 function registerChunk(registration: ChunkRegistration) {
-  const chunkPath = getPathFromScript(registration[0])
+  const chunkPath =
+    registration[0] === undefined
+      ? undefined
+      : getPathFromScript(registration[0])
   let runtimeParams: RuntimeParams | undefined
   // When bootstrapping we are passed a single runtimeParams object so we can distinguish purely based on length
   if (registration.length === 2) {
@@ -1140,7 +1143,11 @@ function registerChunk(registration: ChunkRegistration) {
       registration as CompressedModuleFactories,
       /* offset= */ 1,
       moduleFactories,
-      (id: ModuleId) => addModuleToChunk(id, chunkPath)
+      (id: ModuleId) => {
+        if (chunkPath) {
+          addModuleToChunk(id, chunkPath)
+        }
+      }
     )
   }
   return BACKEND.registerChunk(chunkPath, runtimeParams)

@@ -10,7 +10,7 @@ contextPrototype.c = moduleCache
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getOrInstantiateRuntimeModule(
-  chunkPath: ChunkPath,
+  chunkPath: ChunkPath | undefined,
   moduleId: ModuleId
 ): Module {
   const module = moduleCache[moduleId]
@@ -85,7 +85,10 @@ function instantiateModule(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function registerChunk(registration: ChunkRegistration) {
-  const chunkPath = getPathFromScript(registration[0])
+  const chunkPath =
+    registration[0] === undefined
+      ? undefined
+      : getPathFromScript(registration[0])
   let runtimeParams: RuntimeParams | undefined
   // When bootstrapping we are passed a single runtimeParams object so we can distinguish purely based on length
   if (registration.length === 2) {

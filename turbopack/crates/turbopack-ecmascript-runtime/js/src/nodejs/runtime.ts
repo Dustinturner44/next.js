@@ -19,7 +19,7 @@ enum SourceType {
   Parent = 1,
 }
 
-type SourceData = ChunkPath | ModuleId
+type SourceData = ChunkPath | ModuleId | undefined
 
 process.env.TURBOPACK = '1'
 
@@ -265,7 +265,7 @@ function getOrInstantiateModuleFromParent(
  * Instantiates a runtime module.
  */
 function instantiateRuntimeModule(
-  chunkPath: ChunkPath,
+  chunkPath: ChunkPath | undefined,
   moduleId: ModuleId
 ): Module {
   return instantiateModule(moduleId, SourceType.Runtime, chunkPath)
@@ -276,7 +276,7 @@ function instantiateRuntimeModule(
  */
 // @ts-ignore TypeScript doesn't separate this module space from the browser runtime
 function getOrInstantiateRuntimeModule(
-  chunkPath: ChunkPath,
+  chunkPath: ChunkPath | undefined,
   moduleId: ModuleId
 ): Module {
   const module = moduleCache[moduleId]

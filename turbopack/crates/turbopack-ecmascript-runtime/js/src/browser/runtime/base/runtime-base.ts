@@ -41,7 +41,7 @@ type RuntimeParams = {
 }
 
 type ChunkRegistration = [
-  chunkPath: ChunkScript,
+  chunkPath: ChunkScript | undefined,
   ...([RuntimeParams] | CompressedModuleFactories),
 ]
 
@@ -73,7 +73,10 @@ enum SourceType {
 
 type SourceData = ChunkPath | ModuleId | ModuleId[] | undefined
 interface RuntimeBackend {
-  registerChunk: (chunkPath: ChunkPath, params?: RuntimeParams) => void
+  registerChunk: (
+    chunkPath: ChunkPath | undefined,
+    params?: RuntimeParams
+  ) => void
   /**
    * Returns the same Promise for the same chunk URL.
    */

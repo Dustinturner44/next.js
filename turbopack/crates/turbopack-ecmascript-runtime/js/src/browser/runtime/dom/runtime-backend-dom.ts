@@ -28,6 +28,9 @@ const chunkResolvers: Map<ChunkUrl, ChunkResolver> = new Map()
 ;(() => {
   BACKEND = {
     async registerChunk(chunkPath, params) {
+      if (chunkPath === undefined) {
+        throw new Error('Missing chunkPath')
+      }
       const chunkUrl = getChunkRelativeUrl(chunkPath)
 
       const resolver = getOrCreateResolver(chunkUrl)
