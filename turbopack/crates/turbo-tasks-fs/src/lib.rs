@@ -1045,6 +1045,11 @@ impl FileSystemPath {
         if self.fs != inner.fs {
             return None;
         }
+
+        if self.path == inner.path {
+            return Some("");
+        }
+
         let path = inner.path.strip_prefix(&*self.path)?;
         if self.path.is_empty() {
             Some(path)
@@ -2476,6 +2481,31 @@ mod tests {
             get_relative_path_to("file:///a/b/c", "file:///c/b/a").as_str(),
             "../../../c/b/a"
         );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn get_path_to() {
+        turbo_tasks_testing::VcStorage::with(async {
+            let fs = Vc::upcast::<Box<dyn FileSystem>>(VirtualFileSystem::new())
+                .to_resolved()
+                .await?;
+
+            let path = FileSystemPath::new_normalized(fs, rcstr!("foo/bar/baz"));
+
+            let relative = FileSystemPath::new_normalized(fs, rcstr!("")).get_path_to(&path);
+            assert_eq!(relative, Some("foo/bar/baz"));
+
+            let relative = FileSystemPath::new_normalized(fs, rcstr!("foo")).get_path_to(&path);
+            assert_eq!(relative, Some("bar/baz"));
+
+            let relative =
+                FileSystemPath::new_normalized(fs, rcstr!("foo/bar/baz")).get_path_to(&path);
+            assert_eq!(relative, Some(""));
+
+            anyhow::Ok(())
+        })
+        .await
+        .unwrap()
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
