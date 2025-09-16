@@ -130,9 +130,12 @@ impl OutputAsset for EcmascriptBuildNodeRuntimeChunk {
         let this = self.await?;
         let ident = self.ident_for_path();
 
-        Ok(this
-            .chunking_context
-            .chunk_path(Some(Vc::upcast(self)), ident, None, rcstr!(".js")))
+        Ok(this.chunking_context.chunk_path(
+            Some(Vc::upcast(self)),
+            ident,
+            Some(rcstr!("turbopack")),
+            rcstr!(".js"),
+        ))
     }
 
     #[turbo_tasks::function]
