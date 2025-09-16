@@ -46,6 +46,7 @@
       "ReactRefreshLogBox app conversion to class component (1)",
       "ReactRefreshLogBox app css syntax errors",
       "ReactRefreshLogBox app logbox: anchors links in error messages",
+      "ReactRefreshLogBox app module init error not shown",
       "ReactRefreshLogBox app server component can recover from error thrown in the module",
       "ReactRefreshLogBox app should collapse bundler internal stack frames",
       "ReactRefreshLogBox app should hide unrelated frames in stack trace with nodejs internal calls",
@@ -53,7 +54,7 @@
       "ReactRefreshLogBox app should strip whitespace correctly with newline",
       "ReactRefreshLogBox app unterminated JSX"
     ],
-    "failed": ["ReactRefreshLogBox app module init error not shown"],
+    "failed": [],
     "pending": [
       "ReactRefreshLogBox app internal package errors",
       "ReactRefreshLogBox app non-Error errors are handled properly"
@@ -349,13 +350,13 @@
     "runtimeError": false
   },
   "test/development/acceptance/ReactRefreshLogBox-builtins.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "ReactRefreshLogBox Module not found",
       "ReactRefreshLogBox Module not found (empty import trace)",
       "ReactRefreshLogBox Module not found (missing global CSS)",
       "ReactRefreshLogBox Node.js builtins"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -375,17 +376,16 @@
       "ReactRefreshLogBox Call stack count is correct for pages error",
       "ReactRefreshLogBox boundaries",
       "ReactRefreshLogBox conversion to class component (1)",
+      "ReactRefreshLogBox css syntax errors",
       "ReactRefreshLogBox logbox: anchors links in error messages",
+      "ReactRefreshLogBox module init error not shown",
       "ReactRefreshLogBox non-Error errors are handled properly",
       "ReactRefreshLogBox should collapse nodejs internal stack frames from stack trace",
       "ReactRefreshLogBox should show anonymous frames from stack trace",
-      "ReactRefreshLogBox should strip whitespace correctly with newline"
-    ],
-    "failed": [
-      "ReactRefreshLogBox css syntax errors",
-      "ReactRefreshLogBox module init error not shown",
+      "ReactRefreshLogBox should strip whitespace correctly with newline",
       "ReactRefreshLogBox unterminated JSX"
     ],
+    "failed": [],
     "pending": ["ReactRefreshLogBox internal package errors"],
     "flakey": [],
     "runtimeError": false
@@ -399,15 +399,14 @@
   },
   "test/development/acceptance/ReactRefreshRegression.test.ts": {
     "passed": [
+      "ReactRefreshRegression can fast refresh a page with config",
+      "ReactRefreshRegression can fast refresh a page with getServerSideProps",
+      "ReactRefreshRegression can fast refresh a page with getStaticProps",
       "ReactRefreshRegression custom loader mdx should have Fast Refresh enabled",
       "ReactRefreshRegression shows an overlay for a server-side error",
       "ReactRefreshRegression styled-components hydration mismatch"
     ],
-    "failed": [
-      "ReactRefreshRegression can fast refresh a page with config",
-      "ReactRefreshRegression can fast refresh a page with getServerSideProps",
-      "ReactRefreshRegression can fast refresh a page with getStaticProps"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -541,8 +540,8 @@
     "runtimeError": false
   },
   "test/development/app-dir/build-error-logs/build-error-logs.test.ts": {
-    "passed": ["build-error-logs should only log error a single time"],
-    "failed": [],
+    "passed": [],
+    "failed": ["build-error-logs should only log error a single time"],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -991,10 +990,10 @@
     "runtimeError": false
   },
   "test/development/app-dir/server-component-next-dynamic-ssr-false/server-component-next-dynamic-ssr-false.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "app-dir - server-component-next-dynamic-ssr-false should error when use dynamic ssr:false in server component"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -1218,8 +1217,7 @@
     "runtimeError": false
   },
   "test/development/basic/gssp-ssr-change-reloading/test/index.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "GS(S)P Server-Side Change Reloading should keep scroll position when updating from change in getStaticProps",
       "GS(S)P Server-Side Change Reloading should not reload page when client-side is changed too GSP",
       "GS(S)P Server-Side Change Reloading should not reload page when client-side is changed too GSSP",
@@ -1233,6 +1231,7 @@
       "GS(S)P Server-Side Change Reloading should update page when getStaticProps is changed only for /another/index",
       "GS(S)P Server-Side Change Reloading should update page when getStaticProps is changed only for /index"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -1287,6 +1286,7 @@
   },
   "test/development/basic/hmr/error-recovery-no-base-path-no-asset-prefix.test.ts": {
     "passed": [
+      "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should detect syntax errors and recover",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should have client HMR events in trace file",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should recover after a bad return from the render function",
@@ -1302,7 +1302,6 @@
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should show the error on all pages"
     ],
     "failed": [
-      "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"\"} should not continously poll a custom error page"
     ],
     "pending": [],
@@ -1311,6 +1310,7 @@
   },
   "test/development/basic/hmr/error-recovery-no-base-path-yes-asset-prefix.test.ts": {
     "passed": [
+      "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should detect syntax errors and recover",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should have client HMR events in trace file",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should recover after a bad return from the render function",
@@ -1326,7 +1326,6 @@
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should show the error on all pages"
     ],
     "failed": [
-      "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"\",\"assetPrefix\":\"/asset-prefix\"} should not continously poll a custom error page"
     ],
     "pending": [],
@@ -1335,6 +1334,7 @@
   },
   "test/development/basic/hmr/error-recovery-yes-base-path-no-asset-prefix.test.ts": {
     "passed": [
+      "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should detect syntax errors and recover",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should have client HMR events in trace file",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should recover after a bad return from the render function",
@@ -1350,7 +1350,6 @@
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should show the error on all pages"
     ],
     "failed": [
-      "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"\"} should not continously poll a custom error page"
     ],
     "pending": [],
@@ -1359,6 +1358,7 @@
   },
   "test/development/basic/hmr/error-recovery-yes-base-path-yes-asset-prefix.test.ts": {
     "passed": [
+      "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should detect syntax errors and recover",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should have client HMR events in trace file",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should recover after a bad return from the render function",
@@ -1374,7 +1374,6 @@
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should show the error on all pages"
     ],
     "failed": [
-      "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should detect runtime errors on the module scope",
       "HMR - Error Recovery, nextConfig: {\"basePath\":\"/docs\",\"assetPrefix\":\"/asset-prefix\"} should not continously poll a custom error page"
     ],
     "pending": [],
@@ -1990,8 +1989,8 @@
     "runtimeError": false
   },
   "test/development/next-font/font-loader-in-document-error.test.ts": {
-    "passed": [],
-    "failed": ["font-loader-in-document-error next/font inside _document"],
+    "passed": ["font-loader-in-document-error next/font inside _document"],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -2081,6 +2080,7 @@
   "test/development/pages-dir/client-navigation/index.test.ts": {
     "passed": [
       "Client Navigation runtime errors should show redbox when a client side error is thrown inside a component",
+      "Client Navigation runtime errors should show redbox when a client side error is thrown outside a component",
       "Client Navigation should emit routeChangeError on hash change cancel",
       "Client Navigation should handle boolean async prop in next/script client-side: false",
       "Client Navigation should handle boolean async prop in next/script client-side: true",
@@ -2104,9 +2104,7 @@
       "Client Navigation with the current url should always replace the state",
       "Client Navigation with the current url should reload the page"
     ],
-    "failed": [
-      "Client Navigation runtime errors should show redbox when a client side error is thrown outside a component"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -3689,7 +3687,7 @@
       "app dir - basic server components client components should have consistent query and params handling",
       "app dir - basic server components dynamic routes should only pass params that apply to the layout",
       "app dir - basic server components middleware should strip internal query parameters from requests to middleware for redirect",
-      "app dir - basic server components middleware should strip internal query parameters from requests to middleware for rewrite",
+      "app dir - basic server components next/router should support router.back and router.forward",
       "app dir - basic server components should include client component layout with server component route should include it client-side",
       "app dir - basic server components should include client component layout with server component route should include it server-side",
       "app dir - basic server components should not serve .client.js as a path",
@@ -3733,7 +3731,7 @@
     ],
     "failed": [
       "app dir - basic <Link /> should navigate to pages dynamic route from pages page if it overlaps with an app page",
-      "app dir - basic server components next/router should support router.back and router.forward"
+      "app dir - basic server components middleware should strip internal query parameters from requests to middleware for rewrite"
     ],
     "pending": [
       "app dir - basic HMR should HMR correctly when changing the component type",
@@ -3980,7 +3978,12 @@
       "Cache Components Errors Dev Sync Dynamic Request client params should show a collapsed redbox with a sync access error",
       "Cache Components Errors Dev Sync Dynamic Request client searchParams should return `undefined` for `searchParams.foo`",
       "Cache Components Errors Dev Sync Dynamic Request client searchParams should show a collapsed redbox with a sync access error",
+      "Cache Components Errors Dev Sync Dynamic Request cookies at runtime should show a redbox with a sync access error and a runtime error",
+      "Cache Components Errors Dev Sync Dynamic Request cookies should show a redbox with a sync access error and a runtime error",
       "Cache Components Errors Dev Sync Dynamic Request draftMode should return `undefined` for `draftMode().isEnabled`",
+      "Cache Components Errors Dev Sync Dynamic Request draftMode should show a collapsed redbox with a sync access error",
+      "Cache Components Errors Dev Sync Dynamic Request headers at runtime should show a redbox with a sync access error and a runtime error",
+      "Cache Components Errors Dev Sync Dynamic Request headers should show a redbox with a sync access error and a runtime error",
       "Cache Components Errors Dev Sync Dynamic Request server params should return `undefined` for `params.slug`",
       "Cache Components Errors Dev Sync Dynamic Request server params should show a collapsed redbox with a sync access error",
       "Cache Components Errors Dev Sync Dynamic Request server searchParams should return `undefined` for `searchParams.foo`",
@@ -4007,13 +4010,7 @@
       "Cache Components Errors Dev With `use cache: private` with `headers()` should show a redbox error",
       "Cache Components Errors Dev With `use cache: private` without Suspense should show a redbox error"
     ],
-    "failed": [
-      "Cache Components Errors Dev Sync Dynamic Request cookies at runtime should show a redbox with a sync access error and a runtime error",
-      "Cache Components Errors Dev Sync Dynamic Request cookies should show a redbox with a sync access error and a runtime error",
-      "Cache Components Errors Dev Sync Dynamic Request draftMode should show a collapsed redbox with a sync access error",
-      "Cache Components Errors Dev Sync Dynamic Request headers at runtime should show a redbox with a sync access error and a runtime error",
-      "Cache Components Errors Dev Sync Dynamic Request headers should show a redbox with a sync access error and a runtime error"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -8459,16 +8456,16 @@
   "test/e2e/app-dir/server-source-maps/server-source-maps.test.ts": {
     "passed": [
       "app-dir - server source maps handles invalid sourcemaps gracefully",
+      "app-dir - server source maps ignore-lists anonymous rsc stack frame sandwiches",
       "app-dir - server source maps ignore-lists anonymous ssr stack frame sandwiches",
       "app-dir - server source maps logged errors have a sourcemapped `cause`",
       "app-dir - server source maps logged errors have a sourcemapped stack with a codeframe",
       "app-dir - server source maps logged errors preserve their name",
+      "app-dir - server source maps sourcemaps errors during module evaluation",
       "app-dir - server source maps stack frames are ignore-listed in ssr",
       "app-dir - server source maps thrown SSR errors"
     ],
     "failed": [
-      "app-dir - server source maps ignore-lists anonymous rsc stack frame sandwiches",
-      "app-dir - server source maps sourcemaps errors during module evaluation",
       "app-dir - server source maps stack frames are ignore-listed in rsc"
     ],
     "pending": [],
@@ -12765,6 +12762,7 @@
   },
   "test/integration/cli/test/index.test.js": {
     "passed": [
+      "CLI Usage dev --experimental-https",
       "CLI Usage dev --experimental-https with provided key/cert",
       "CLI Usage dev --help",
       "CLI Usage dev --hostname",
@@ -12800,7 +12798,7 @@
       "CLI Usage no command detects command typos",
       "CLI Usage no command invalid directory"
     ],
-    "failed": ["CLI Usage dev --experimental-https"],
+    "failed": [],
     "pending": [
       "CLI Usage production mode build --help",
       "CLI Usage production mode build -h",
