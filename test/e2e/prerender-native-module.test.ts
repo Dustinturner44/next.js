@@ -74,7 +74,7 @@ describe('prerender native module', () => {
         {
           page: '/_app',
           tests: [
-            /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+            /(webpack-runtime\.js|turbopack-\w+\.js)/,
             /node_modules\/react\/index\.js/,
             /node_modules\/react\/package\.json/,
             isReact18
@@ -86,7 +86,7 @@ describe('prerender native module', () => {
         {
           page: '/blog/[slug]',
           tests: [
-            /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+            /(webpack-runtime\.js|turbopack-\w+\.js)/,
             /node_modules\/react\/index\.js/,
             /node_modules\/react\/package\.json/,
             isReact18
@@ -103,19 +103,15 @@ describe('prerender native module', () => {
       ]
 
       for (const check of checks) {
-        const contents = await next.readFile(
+        const { version, files } = await next.readJSON(
           path.join('.next/server/pages/', check.page + '.js.nft.json')
         )
-        const { version, files } = JSON.parse(contents)
         expect(version).toBe(1)
-        expect(
-          check.tests.every((item) => files.some((file) => item.test(file)))
-        ).toBe(true)
-
-        if (path.sep === '/') {
-          expect(
-            check.notTests.some((item) => files.some((file) => item.test(file)))
-          ).toBe(false)
+        for (const test of check.tests) {
+          expect(files).toContain(expect.stringMatching(test))
+        }
+        for (const test of check.notTests) {
+          expect(files).not.toContain(expect.stringMatching(test))
         }
       }
     })

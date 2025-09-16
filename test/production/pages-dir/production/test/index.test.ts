@@ -180,7 +180,7 @@ describe('Production Usage', () => {
       {
         page: '/_app',
         tests: [
-          /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-runtime\.js|turbopack-\w+\.js)/,
           /node_modules\/react\/index\.js/,
           /node_modules\/react\/package\.json/,
           isReact18
@@ -192,7 +192,7 @@ describe('Production Usage', () => {
       {
         page: '/client-error',
         tests: [
-          /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-runtime\.js|turbopack-\w+\.js)/,
           /chunks\/.*?\.js/,
           /node_modules\/react\/index\.js/,
           /node_modules\/react\/package\.json/,
@@ -206,7 +206,7 @@ describe('Production Usage', () => {
       {
         page: '/index',
         tests: [
-          /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-runtime\.js|turbopack-\w+\.js)/,
           /chunks\/.*?\.js/,
           /node_modules\/react\/index\.js/,
           /node_modules\/react\/package\.json/,
@@ -223,7 +223,7 @@ describe('Production Usage', () => {
       {
         page: '/next-import',
         tests: [
-          /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-runtime\.js|turbopack-\w+\.js)/,
           /chunks\/.*?\.js/,
           /node_modules\/react\/index\.js/,
           /node_modules\/react\/package\.json/,
@@ -243,7 +243,7 @@ describe('Production Usage', () => {
       {
         page: '/api',
         tests: [
-          /(webpack-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-runtime\.js|turbopack-\w+\.js)/,
           /\/logo\.module\.css/,
         ],
         notTests: [
@@ -257,7 +257,7 @@ describe('Production Usage', () => {
       {
         page: '/api/readfile-dirname',
         tests: [
-          /(webpack-api-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-api-runtime\.js|turbopack-\w+\.js)/,
           /static\/data\/item\.txt/,
         ],
         notTests: [
@@ -271,7 +271,7 @@ describe('Production Usage', () => {
       {
         page: '/api/readfile-processcwd',
         tests: [
-          /(webpack-api-runtime\.js|\[turbopack\]_runtime\.js)/,
+          /(webpack-api-runtime\.js|turbopack-\w+\.js)/,
           /static\/data\/item\.txt/,
         ],
         notTests: [
