@@ -834,7 +834,7 @@ describe('generateRouteStaticParams', () => {
   describe('Basic functionality', () => {
     it('should return empty array for empty segments', async () => {
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams([], store)
+      const result = await generateRouteStaticParams([], store, __filename)
       expect(result).toEqual([])
     })
 
@@ -844,7 +844,11 @@ describe('generateRouteStaticParams', () => {
         createMockSegment(),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([])
     })
 
@@ -853,7 +857,11 @@ describe('generateRouteStaticParams', () => {
         createMockSegment(async () => [{ id: '1' }, { id: '2' }]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([{ id: '1' }, { id: '2' }])
     })
 
@@ -869,7 +877,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([
         { category: 'tech', slug: 'tech-post-1' },
         { category: 'tech', slug: 'tech-post-2' },
@@ -888,7 +900,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([
         { lang: 'en', category: 'en-tech' },
         { lang: 'fr', category: 'fr-tech' },
@@ -904,7 +920,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([{ lang: 'en', slug: 'en-slug' }])
     })
   })
@@ -913,7 +933,11 @@ describe('generateRouteStaticParams', () => {
     it('should handle empty generateStaticParams results', async () => {
       const segments: TestAppSegment[] = [createMockSegment(async () => [])]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([])
     })
 
@@ -923,7 +947,11 @@ describe('generateRouteStaticParams', () => {
         createMockSegment(async () => []), // Empty result
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([{ lang: 'en' }])
     })
 
@@ -935,7 +963,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([
         { lang: 'en', category: 'en-tech' },
         { category: 'default-tech' },
@@ -951,7 +983,7 @@ describe('generateRouteStaticParams', () => {
         }),
       ]
       const store = createMockWorkStore()
-      await generateRouteStaticParams(segments, store)
+      await generateRouteStaticParams(segments, store, __filename)
       expect(store.fetchCache).toBe('force-cache')
     })
 
@@ -960,7 +992,7 @@ describe('generateRouteStaticParams', () => {
         createMockSegment(async () => [{ id: '1' }]),
       ]
       const store = createMockWorkStore('force-cache')
-      await generateRouteStaticParams(segments, store)
+      await generateRouteStaticParams(segments, store, __filename)
       expect(store.fetchCache).toBe('force-cache')
     })
 
@@ -974,7 +1006,7 @@ describe('generateRouteStaticParams', () => {
         }),
       ]
       const store = createMockWorkStore()
-      await generateRouteStaticParams(segments, store)
+      await generateRouteStaticParams(segments, store, __filename)
       // Should have the last fetchCache value
       expect(store.fetchCache).toBe('default-cache')
     })
@@ -989,7 +1021,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([{ slug: ['a', 'b'] }, { slug: ['c', 'd', 'e'] }])
     })
 
@@ -1001,7 +1037,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([{ lang: 'en', slug: ['en', 'post'] }])
     })
   })
@@ -1015,7 +1055,11 @@ describe('generateRouteStaticParams', () => {
         createMockSegment(async ({ params }) => [{ d: `${params?.c}-4` }]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([{ a: '1', b: '1-2', c: '1-2-3', d: '1-2-3-4' }])
     })
 
@@ -1026,7 +1070,11 @@ describe('generateRouteStaticParams', () => {
         createMockSegment(async () => [{ z: 'i' }, { z: 'ii' }]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([
         { x: '1', y: 'a', z: 'i' },
         { x: '1', y: 'a', z: 'ii' },
@@ -1048,9 +1096,9 @@ describe('generateRouteStaticParams', () => {
         }),
       ]
       const store = createMockWorkStore()
-      await expect(generateRouteStaticParams(segments, store)).rejects.toThrow(
-        'Test error'
-      )
+      await expect(
+        generateRouteStaticParams(segments, store, __filename)
+      ).rejects.toThrow('Test error')
     })
 
     it('should handle generateStaticParams returning a rejected promise', async () => {
@@ -1060,9 +1108,9 @@ describe('generateRouteStaticParams', () => {
         }),
       ]
       const store = createMockWorkStore()
-      await expect(generateRouteStaticParams(segments, store)).rejects.toThrow(
-        'Async error'
-      )
+      await expect(
+        generateRouteStaticParams(segments, store, __filename)
+      ).rejects.toThrow('Async error')
     })
 
     it('should handle partially failing generateStaticParams', async () => {
@@ -1076,9 +1124,9 @@ describe('generateRouteStaticParams', () => {
         }),
       ]
       const store = createMockWorkStore()
-      await expect(generateRouteStaticParams(segments, store)).rejects.toThrow(
-        'Tech not allowed'
-      )
+      await expect(
+        generateRouteStaticParams(segments, store, __filename)
+      ).rejects.toThrow('Tech not allowed')
     })
   })
 
@@ -1100,7 +1148,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toHaveLength(12) // 3 langs × 2 categories × 2 slugs
       expect(result).toContainEqual({
         lang: 'en',
@@ -1132,7 +1184,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toEqual([
         {
           category: 'electronics',
@@ -1167,7 +1223,11 @@ describe('generateRouteStaticParams', () => {
         ]),
       ]
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toHaveLength(8) // 2 years × 2 months × 2 slug variations
       expect(result).toContainEqual({
         year: '2023',
@@ -1187,7 +1247,11 @@ describe('generateRouteStaticParams', () => {
         )
       }
       const store = createMockWorkStore()
-      const result = await generateRouteStaticParams(segments, store)
+      const result = await generateRouteStaticParams(
+        segments,
+        store,
+        __filename
+      )
       expect(result).toHaveLength(1)
       expect(Object.keys(result[0])).toHaveLength(5000)
     })
