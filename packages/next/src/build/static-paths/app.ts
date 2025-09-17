@@ -638,7 +638,8 @@ export async function generateRouteStaticParams(
   segments: ReadonlyArray<
     Readonly<Pick<AppSegment, 'config' | 'generateStaticParams'>>
   >,
-  store: Pick<WorkStore, 'fetchCache'>
+  store: Pick<WorkStore, 'fetchCache'>,
+  page: string
 ): Promise<Params[]> {
   // Early return if no segments to process
   if (segments.length === 0) return []
@@ -702,6 +703,14 @@ export async function generateRouteStaticParams(
 
     // Add next segment to work queue
     queue.push({ segmentIndex: segmentIndex + 1, params: nextParams })
+  }
+
+  for (const params of currentParams) {
+    if (typeof params !== 'object' || params === null) {
+      throw new Error(
+        `generateStaticParams returned a non-object "${typeof params}" value "${params}" while processing page "${page}".`
+      )
+    }
   }
 
   return currentParams
@@ -841,8 +850,32 @@ export async function buildAppStaticPaths({
   })
 
   const routeParams = await ComponentMod.workAsyncStorage.run(store, () =>
-    generateRouteStaticParams(segments, store)
+    generateRouteStaticParams(segments, store, page)
   )
+
+  // Early validation for unexpected parameter keys in routeParams.
+  // "/[id]" would expect key "id", but if "id2" is provided, it's invalid.
+  const expectedParamKeys = new Set(
+    childrenRouteParamSegments.map((p) => p.paramName)
+  )
+  const invalidParamKeys = new Set<string>()
+  for (const params of routeParams) {
+    for (const key in params) {
+      if (!expectedParamKeys.has(key)) {
+        invalidParamKeys.add(key)
+      }
+    }
+  }
+
+  if (invalidParamKeys.size > 0) {
+    throw new Error(
+      `Invalid param keys found in generateStaticParams for "${page}":\n${[
+        ...invalidParamKeys,
+      ]
+        .map((key) => `  - "${key}"`)
+        .join('\n')}`
+    )
+  }
 
   await afterRunner.executeAfter()
 
