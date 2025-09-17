@@ -638,8 +638,7 @@ export async function generateRouteStaticParams(
   segments: ReadonlyArray<
     Readonly<Pick<AppSegment, 'config' | 'generateStaticParams'>>
   >,
-  store: Pick<WorkStore, 'fetchCache'>,
-  page: string
+  store: Pick<WorkStore, 'fetchCache'>
 ): Promise<Params[]> {
   // Early return if no segments to process
   if (segments.length === 0) return []
@@ -703,14 +702,6 @@ export async function generateRouteStaticParams(
 
     // Add next segment to work queue
     queue.push({ segmentIndex: segmentIndex + 1, params: nextParams })
-  }
-
-  for (const params of currentParams) {
-    if (typeof params !== 'object' || params === null) {
-      throw new Error(
-        `generateStaticParams returned a non-object "${typeof params}" value "${params}" while processing page "${page}".`
-      )
-    }
   }
 
   return currentParams
@@ -850,7 +841,7 @@ export async function buildAppStaticPaths({
   })
 
   const routeParams = await ComponentMod.workAsyncStorage.run(store, () =>
-    generateRouteStaticParams(segments, store, page)
+    generateRouteStaticParams(segments, store)
   )
 
   // Early validation for unexpected parameter keys in routeParams.
@@ -860,6 +851,11 @@ export async function buildAppStaticPaths({
   )
   const invalidParamKeys = new Set<string>()
   for (const params of routeParams) {
+    if (typeof params !== 'object' || params === null) {
+      throw new Error(
+        `generateStaticParams returned a non-object "${typeof params}" value "${params}" while processing page "${page}".`
+      )
+    }
     for (const key in params) {
       if (!expectedParamKeys.has(key)) {
         invalidParamKeys.add(key)
