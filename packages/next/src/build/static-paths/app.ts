@@ -869,7 +869,7 @@ export async function buildAppStaticPaths({
 
   if (invalidParamKeys.size > 0) {
     throw new Error(
-      `Invalid param keys found in generateStaticParams for "${page}":\n${[
+      `Invalid params keys found in generateStaticParams for "${page}":\n${[
         ...invalidParamKeys,
       ]
         .map((key) => `  - "${key}"`)
