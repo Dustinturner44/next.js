@@ -114,7 +114,10 @@ export async function collectAppFiles(
   const appPaths = []
   const layoutPaths = []
   const defaultPaths = []
-  // requestPath => relativePath
+  // Map of "requestPath" => "relativePath".
+  // "requestPath" will be used for the output path "{distDir}/static/metadata/{requestPath}" and
+  // its matcher. When the request comes in, the filesystem handler will look for the output path
+  // and serve the file if exists. "relativePath" will be used to copy the file to the output path.
   const staticMetadataFiles = new Map<string, string>()
 
   for (const relativePath of allAppFiles) {
