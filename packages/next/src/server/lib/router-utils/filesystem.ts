@@ -519,7 +519,7 @@ export async function setupFsCheck(opts: {
             }
           }
         } else {
-          const reqPath = path.join('/_next/static/metadata', itemPath)
+          const reqPath = path.posix.join('/_next/static/metadata', itemPath)
           if (nextStaticFolderItems.has(reqPath)) {
             const fsPath = path.join(distDir, 'static/metadata', itemPath)
             return {
