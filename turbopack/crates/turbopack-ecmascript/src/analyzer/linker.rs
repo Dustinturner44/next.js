@@ -8,52 +8,6 @@ use turbo_tasks::TryJoinIterExt;
 
 use super::{JsValue, graph::VarGraph};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum LinkEarlyAbortCondition {
-    // The return value is only inspected for truthiness
-    Truthy,
-    // We are only interested in WellKnownFunctions (and alternatives of them)
-    WellKnownFunction,
-}
-
-impl LinkEarlyAbortCondition {
-    fn process(&self, val: &JsValue) -> Option<JsValue> {
-        match self {
-            LinkEarlyAbortCondition::Truthy => {
-                // TODO
-                if let Some(_) = val.is_truthy() {
-                    Some(val.clone())
-                } else {
-                    None
-                }
-            }
-            LinkEarlyAbortCondition::WellKnownFunction => match val {
-                JsValue::Variable(_) | JsValue::Argument(_, _) => {
-                    // These can still end up as well-known functions
-                    None
-                }
-                JsValue::WellKnownFunction(_) => Some(val.clone()),
-                JsValue::Alternatives { values, .. } => {
-                    let mapped = values
-                        .iter()
-                        .flat_map(|v| self.process(v))
-                        .collect::<Vec<_>>();
-                    if mapped.len() == values.len() {
-                        // We could determine the state of all values
-                        Some(JsValue::alternatives(mapped))
-                    } else {
-                        None
-                    }
-                }
-                _ => Some(JsValue::unknown_empty(
-                    false,
-                    "early abort non well-known function",
-                )),
-            },
-        }
-    }
-}
-
 // Resolves variable references only, doesn't exhaustively evaluate everything inside of the value.
 pub async fn link_shallow<'a, B, RB, F, RF>(
     graph: &VarGraph,
