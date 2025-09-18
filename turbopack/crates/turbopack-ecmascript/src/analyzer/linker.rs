@@ -4,8 +4,136 @@ use anyhow::Result;
 use parking_lot::Mutex;
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::ecma::ast::Id;
+use turbo_tasks::TryJoinIterExt;
 
 use super::{JsValue, graph::VarGraph};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinkEarlyAbortCondition {
+    // The return value is only inspected for truthiness
+    Truthy,
+    // We are only interested in WellKnownFunctions (and alternatives of them)
+    WellKnownFunction,
+}
+
+impl LinkEarlyAbortCondition {
+    fn process(&self, val: &JsValue) -> Option<JsValue> {
+        match self {
+            LinkEarlyAbortCondition::Truthy => {
+                // TODO
+                if let Some(_) = val.is_truthy() {
+                    Some(val.clone())
+                } else {
+                    None
+                }
+            }
+            LinkEarlyAbortCondition::WellKnownFunction => match val {
+                JsValue::Variable(_) | JsValue::Argument(_, _) => {
+                    // These can still end up as well-known functions
+                    None
+                }
+                JsValue::WellKnownFunction(_) => Some(val.clone()),
+                JsValue::Alternatives { values, .. } => {
+                    let mapped = values
+                        .iter()
+                        .flat_map(|v| self.process(v))
+                        .collect::<Vec<_>>();
+                    if mapped.len() == values.len() {
+                        // We could determine the state of all values
+                        Some(JsValue::alternatives(mapped))
+                    } else {
+                        None
+                    }
+                }
+                _ => Some(JsValue::unknown_empty(
+                    false,
+                    "early abort non well-known function",
+                )),
+            },
+        }
+    }
+}
+
+// Resolves variable references only, doesn't exhaustively evaluate everything inside of the value.
+pub async fn link_shallow<'a, B, RB, F, RF>(
+    graph: &VarGraph,
+    mut current_val: JsValue,
+    early_visitor: &B,
+    visitor: &F,
+    fun_args_values: &Mutex<FxHashMap<u32, Vec<JsValue>>>,
+    var_cache: &Mutex<FxHashMap<Id, JsValue>>,
+) -> Result<JsValue>
+where
+    RB: 'a + Future<Output = Result<(JsValue, bool)>> + Send,
+    B: 'a + Fn(JsValue) -> RB + Sync,
+    RF: 'a + Future<Output = Result<(JsValue, bool)>> + Send,
+    F: 'a + Fn(JsValue) -> RF + Sync,
+{
+    current_val.normalize();
+
+    if let JsValue::Alternatives {
+        values,
+        logical_property,
+        ..
+    } = current_val
+    {
+        let values = values
+            .into_iter()
+            .map(|v| link_shallow(graph, v, early_visitor, visitor, fun_args_values, var_cache))
+            .try_join()
+            .await?;
+        return Ok(if let Some(logical_property) = logical_property {
+            JsValue::alternatives_with_additional_property(values, logical_property)
+        } else {
+            JsValue::alternatives(values)
+        });
+    }
+
+    // Resolve variable references, don't do anything else.
+    loop {
+        match current_val {
+            JsValue::Variable(var) => {
+                if let Some(val) = graph.values.get(&var) {
+                    current_val = val.clone();
+                    continue;
+                } else {
+                    current_val = JsValue::unknown(
+                        JsValue::Variable(var),
+                        false,
+                        "no value of this variable analysed",
+                    );
+                }
+            }
+            JsValue::Argument(func_ident, index) => {
+                if let Some(args) = fun_args_values.lock().get(&func_ident) {
+                    if let Some(val) = args.get(index) {
+                        current_val = val.clone();
+                        continue;
+                    } else {
+                        current_val = JsValue::unknown_empty(
+                            false,
+                            "unknown function argument (out of bounds)",
+                        );
+                    }
+                } else {
+                    current_val = JsValue::unknown(
+                        JsValue::Argument(func_ident, index),
+                        false,
+                        "function calls are not analysed yet",
+                    );
+                }
+            }
+            val => {
+                current_val = val;
+            }
+        };
+        break;
+    }
+
+    let val = early_visitor(current_val).await?.0;
+    let val = visitor(val).await?.0;
+    Ok(val)
+}
 
 pub async fn link<'a, B, RB, F, RF>(
     graph: &VarGraph,

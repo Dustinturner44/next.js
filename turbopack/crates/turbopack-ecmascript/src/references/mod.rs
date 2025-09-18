@@ -136,7 +136,7 @@ use crate::{
         builtin::early_replace_builtin,
         graph::{ConditionalKind, EffectArg, EvalContext, VarGraph},
         imports::{ImportAnnotations, ImportAttributes, ImportedSymbol, Reexport},
-        linker::JsValueTruthy,
+        linker::link_shallow,
         parse_require_context,
         top_level_await::has_top_level_await,
     },
@@ -469,6 +469,33 @@ impl AnalysisState<'_> {
         .0)
     }
 
+    /// Links a value to the graph, returning the linked value, but without recursing.
+    async fn unsafe_link_value_shallow(
+        &self,
+        value: JsValue,
+        attributes: &ImportAttributes,
+    ) -> Result<JsValue> {
+        link_shallow(
+            self.var_graph,
+            value,
+            &early_value_visitor,
+            &|value| {
+                value_visitor(
+                    *self.origin,
+                    value,
+                    *self.compile_time_info,
+                    &self.free_var_references,
+                    self.var_graph,
+                    attributes,
+                    self.define_process_cwd,
+                )
+            },
+            &self.fun_args_values,
+            &self.var_cache,
+        )
+        .await
+    }
+
     async fn link_truthy(&self, value: JsValue, attributes: &ImportAttributes) -> Result<JsValue> {
         self.link_value(value, attributes).await
     }
@@ -478,7 +505,10 @@ impl AnalysisState<'_> {
         value: JsValue,
         attributes: &ImportAttributes,
     ) -> Result<Vec<WellKnownFunctionKind>> {
-        let value = self.link_value(value, attributes).await?;
+        // We are only interested in well-known functions, the only JsValues that can evaluated to
+        // that are WellKnownFunction-s, and Variables that point to them. Anything else can be
+        // short circuited.
+        let value = self.unsafe_link_value_shallow(value, attributes).await?;
         Ok(match value {
             JsValue::WellKnownFunction(kind) => vec![kind],
             JsValue::Alternatives { values, .. } => values
