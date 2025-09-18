@@ -136,7 +136,6 @@ use crate::{
         builtin::early_replace_builtin,
         graph::{ConditionalKind, EffectArg, EvalContext, VarGraph},
         imports::{ImportAnnotations, ImportAttributes, ImportedSymbol, Reexport},
-        linker::link_shallow,
         parse_require_context,
         top_level_await::has_top_level_await,
     },
@@ -450,6 +449,7 @@ impl AnalysisState<'_> {
         Ok(link(
             self.var_graph,
             value,
+            &|v| v,
             &early_value_visitor,
             &|value| {
                 value_visitor(
@@ -474,10 +474,12 @@ impl AnalysisState<'_> {
         &self,
         value: JsValue,
         attributes: &ImportAttributes,
+        earliest_toplevel_visitor: &impl Fn(JsValue) -> JsValue,
     ) -> Result<JsValue> {
-        link_shallow(
+        link(
             self.var_graph,
             value,
+            earliest_toplevel_visitor,
             &early_value_visitor,
             &|value| {
                 value_visitor(
@@ -493,7 +495,8 @@ impl AnalysisState<'_> {
             &self.fun_args_values,
             &self.var_cache,
         )
-        .await
+        .await?
+        .0)
     }
 
     async fn link_truthy(&self, value: JsValue, attributes: &ImportAttributes) -> Result<JsValue> {
@@ -508,7 +511,14 @@ impl AnalysisState<'_> {
         // We are only interested in well-known functions, the only JsValues that can evaluated to
         // that are WellKnownFunction-s, and Variables that point to them. Anything else can be
         // short circuited.
-        let value = self.unsafe_link_value_shallow(value, attributes).await?;
+        let value = self
+            .unsafe_link_value_shallow(value, attributes, &|v| match v {
+                JsValue::Alternatives { .. } | JsValue::FreeVar { .. } | JsValue::Member { .. } => {
+                    v
+                }
+                _ => JsValue::unknown(v, false, "earliest visitor well known function"),
+            })
+            .await?;
         Ok(match value {
             JsValue::WellKnownFunction(kind) => vec![kind],
             JsValue::Alternatives { values, .. } => values
