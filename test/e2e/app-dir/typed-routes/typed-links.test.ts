@@ -1,4 +1,5 @@
 import { nextTestSetup } from 'e2e-utils'
+import { retry } from 'next-test-utils'
 
 describe('typed-links', () => {
   const { next, isNextStart, skipped } = nextTestSetup({
@@ -11,14 +12,20 @@ describe('typed-links', () => {
   }
 
   it('should generate types for next/link', async () => {
-    const dts = await next.readFile('.next/types/link.d.ts')
-    expect(dts).toContain(`declare module 'next/link'`)
+    // The types get written outside of the server bootup process, so there isn't a specific guarantee that they're available when the dev server is started.
+    await retry(async () => {
+      const dts = await next.readFile('.next/types/link.d.ts')
+      expect(dts).toContain(`declare module 'next/link'`)
+    })
   })
 
   it('should include handler route from app/api-test/route.ts in generated link route definitions', async () => {
-    const dts = await next.readFile('.next/types/link.d.ts')
-    // Ensure the app route handler at app/api-test/route.ts ("/api-test") is present
-    expect(dts).toContain('`/api-test`')
+    // The types get written outside of the server bootup process, so there isn't a specific guarantee that they're available when the dev server is started.
+    await retry(async () => {
+      const dts = await next.readFile('.next/types/link.d.ts')
+      // Ensure the app route handler at app/api-test/route.ts ("/api-test") is present
+      expect(dts).toContain('`/api-test`')
+    })
   })
 
   if (isNextStart) {
