@@ -5,7 +5,7 @@ description: Parses the User-Agent header and returns structured information abo
 
 {/* The content of this doc is shared between the app and pages router. You can use the `<PagesOnly>Content</PagesOnly>` component to add content that is specific to the Pages Router. Any shared content should not be wrapped in a component. */}
 
-The `userAgent` helper parses the request's `User-Agent` header and returns structured information about the client's browser, device, engine, OS, CPU and whether or not the client is a known bot`.
+The `userAgent` helper parses the request's `User-Agent` header and returns structured information about the client's browser, device, engine, OS, CPU, and whether the client is a known bot.
 
 ```ts filename="middleware.ts" switcher
 import { NextRequest, NextResponse, userAgent } from 'next/server'
@@ -47,6 +47,8 @@ import { userAgent, userAgentFromString } from 'next/server'
 // From a Request (e.g. Middleware, Route Handler)
 const ua = userAgent(request)
 ```
+
+`request` can be either a standard [Web API `Request`](https://developer.mozilla.org/docs/Web/API/Request) or a [`NextRequest`](/docs/app/api-reference/functions/next-request).
 
 ### When you only have the User-Agent string
 
@@ -123,8 +125,8 @@ export function GET(request) {
 
 > **Good to know**
 >
-> - Works in Middleware and Route Handlers with `userAgent(request)`.
-> - In App Router, read the header with `headers()` and use `userAgentFromString`.
+> - Works in [Middleware](/docs/app/building-your-application/routing/middleware) and [Route Handlers](/docs/app/api-reference/file-conventions/route) with `userAgent(request)`.
+> - In App Router, read the header with [`headers()`](/docs/app/api-reference/functions/headers) and use `userAgentFromString`.
 > - User-Agent strings can be spoofed or empty. Avoid using them for security decisions.
 
 </AppOnly>
@@ -162,8 +164,7 @@ export default function handler(req, res) {
 
 > **Good to know**
 >
-> - Works in Middleware with `userAgent(request)`.
-> - In `getServerSideProps` and API Routes, use `userAgentFromString(req.headers['user-agent'])`.
+> - In [`getServerSideProps`](/docs/pages/building-your-application/data-fetching/get-server-side-props) and [API Routes](/docs/pages/building-your-application/routing/api-routes), use `userAgentFromString(req.headers['user-agent'])`.
 > - User-Agent strings can be spoofed or empty. Avoid using them for security decisions.
 
 </PagesOnly>
