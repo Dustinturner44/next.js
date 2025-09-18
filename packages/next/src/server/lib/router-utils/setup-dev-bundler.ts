@@ -344,7 +344,7 @@ async function startWatcher(
       },
     })
     const fileWatchTimes = new Map()
-    let enabledTypeScript = await verifyTypeScript(opts)
+    let enabledTypeScript: Promise<boolean> = verifyTypeScript(opts)
     let previousClientRouterFilters: any
     let previousConflictingPagePaths: Set<string> = new Set()
 
@@ -411,7 +411,7 @@ async function startWatcher(
 
         if (tsconfigPaths.includes(fileName)) {
           if (fileName.endsWith('tsconfig.json')) {
-            enabledTypeScript = true
+            enabledTypeScript = Promise.resolve(true)
           }
           if (watchTimeChange) {
             tsconfigChange = true
@@ -487,7 +487,7 @@ async function startWatcher(
         }
 
         if (fileName.endsWith('.ts') || fileName.endsWith('.tsx')) {
-          enabledTypeScript = true
+          enabledTypeScript = Promise.resolve(true)
         }
 
         if (!(isAppPath || isPagePath)) {
@@ -1054,69 +1054,76 @@ async function startWatcher(
         }
         prevSortedRoutes = sortedRoutes
 
-        if (enabledTypeScript) {
-          // Using === false to make the check clearer.
-          if (typescriptStatusFromLastAggregation === false) {
-            // we tolerate the error here as this is best effort
-            // and the manual install command will be shown
-            await verifyTypeScript(opts)
-              .then(() => {
-                tsconfigChange = true
+        enabledTypeScript
+          .then(async (enabled) => {
+            if (!enabled) {
+              return
+            }
+            // Using === false to make the check clearer.
+            if ((await typescriptStatusFromLastAggregation) === false) {
+              // we tolerate the error here as this is best effort
+              // and the manual install command will be shown
+              await verifyTypeScript(opts)
+                .then(() => {
+                  tsconfigChange = true
+                })
+                .catch(() => {})
+            }
+
+            if (writeEnvDefinitions && nextConfig.experimental?.typedEnv) {
+              // TODO: The call to propagateServerField 'loadEnvConfig' causes the env to be loaded twice on env file changes.
+              const loadEnvConfig = (
+                require('@next/env') as typeof import('@next/env')
+              ).loadEnvConfig
+              const { loadedEnvFiles } = loadEnvConfig(
+                dir,
+                process.env.NODE_ENV === 'development',
+                // Silent as it's the second time `loadEnvConfig` is called in this pass.
+                undefined,
+                true
+              )
+
+              const createEnvDefinitions = (
+                require('../experimental/create-env-definitions') as typeof import('../experimental/create-env-definitions')
+              ).createEnvDefinitions
+              await createEnvDefinitions({
+                distDir,
+                loadedEnvFiles: [
+                  ...loadedEnvFiles,
+                  {
+                    path: nextConfig.configFileName,
+                    env: nextConfig.env,
+                    contents: '',
+                  },
+                ],
               })
-              .catch(() => {})
-          }
+            }
 
-          if (writeEnvDefinitions && nextConfig.experimental?.typedEnv) {
-            // TODO: The call to propagateServerField 'loadEnvConfig' causes the env to be loaded twice on env file changes.
-            const loadEnvConfig = (
-              require('@next/env') as typeof import('@next/env')
-            ).loadEnvConfig
-            const { loadedEnvFiles } = loadEnvConfig(
+            const routeTypesManifest = await createRouteTypesManifest({
               dir,
-              process.env.NODE_ENV === 'development',
-              // Silent as it's the second time `loadEnvConfig` is called in this pass.
-              undefined,
-              true
-            )
-
-            const createEnvDefinitions = (
-              require('../experimental/create-env-definitions') as typeof import('../experimental/create-env-definitions')
-            ).createEnvDefinitions
-            await createEnvDefinitions({
-              distDir,
-              loadedEnvFiles: [
-                ...loadedEnvFiles,
-                {
-                  path: nextConfig.configFileName,
-                  env: nextConfig.env,
-                  contents: '',
-                },
-              ],
+              pageRoutes,
+              appRoutes,
+              layoutRoutes,
+              slots,
+              redirects: opts.nextConfig.redirects,
+              rewrites: opts.nextConfig.rewrites,
+              // Ensure relative paths in validator.ts are computed from validatorFilePath,
+              // matching behavior of build and CLI typegen.
+              validatorFilePath,
+              appRouteHandlers,
+              pageApiRoutes,
             })
-          }
 
-          const routeTypesManifest = await createRouteTypesManifest({
-            dir,
-            pageRoutes,
-            appRoutes,
-            layoutRoutes,
-            slots,
-            redirects: opts.nextConfig.redirects,
-            rewrites: opts.nextConfig.rewrites,
-            // Ensure relative paths in validator.ts are computed from validatorFilePath,
-            // matching behavior of build and CLI typegen.
-            validatorFilePath,
-            appRouteHandlers,
-            pageApiRoutes,
+            await writeRouteTypesManifest(
+              routeTypesManifest,
+              routeTypesFilePath,
+              opts.nextConfig
+            )
+            await writeValidatorFile(routeTypesManifest, validatorFilePath)
           })
-
-          await writeRouteTypesManifest(
-            routeTypesManifest,
-            routeTypesFilePath,
-            opts.nextConfig
-          )
-          await writeValidatorFile(routeTypesManifest, validatorFilePath)
-        }
+          .catch((err) => {
+            Log.warn('Failed to create TypeScript setup', err)
+          })
 
         if (!resolved) {
           resolve()
