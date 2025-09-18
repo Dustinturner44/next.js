@@ -138,6 +138,7 @@ use crate::{
         imports::{ImportAnnotations, ImportAttributes, ImportedSymbol, Reexport},
         parse_require_context,
         top_level_await::has_top_level_await,
+        well_known::is_well_known_function_prop,
     },
     chunk::EcmascriptExports,
     code_gen::{CodeGen, CodeGens, IntoCodeGenReference},
@@ -475,7 +476,7 @@ impl AnalysisState<'_> {
         value: JsValue,
         attributes: &ImportAttributes,
         earliest_toplevel_visitor: &impl Fn(JsValue) -> JsValue,
-    ) -> Result<JsValue> {
+    ) -> Result<(JsValue, u32)> {
         link(
             self.var_graph,
             value,
@@ -495,8 +496,7 @@ impl AnalysisState<'_> {
             &self.fun_args_values,
             &self.var_cache,
         )
-        .await?
-        .0)
+        .await
     }
 
     async fn link_truthy(&self, value: JsValue, attributes: &ImportAttributes) -> Result<JsValue> {
@@ -509,17 +509,30 @@ impl AnalysisState<'_> {
         attributes: &ImportAttributes,
     ) -> Result<Vec<WellKnownFunctionKind>> {
         // We are only interested in well-known functions, the only JsValues that can evaluated to
-        // that are WellKnownFunction-s, and Variables that point to them. Anything else can be
-        // short circuited.
+        // that are WellKnownFunctions, FreeVars and Members, (and Variables) that point to them.
+        // Everything else can be short circuited.
+        // let original = value.clone();
         let value = self
             .unsafe_link_value_shallow(value, attributes, &|v| match v {
-                JsValue::Alternatives { .. } | JsValue::FreeVar { .. } | JsValue::Member { .. } => {
-                    v
+                JsValue::Alternatives { .. }
+                | JsValue::WellKnownFunction { .. }
+                | JsValue::FreeVar { .. } => v,
+                JsValue::Member(_, _, ref prop) => {
+                    // Filter out `potentially_hugely_complex_value.startsWith`
+                    // This is unsafe because you could do `{foo: require}.foo("./file")` and this
+                    // skipping would miss it.
+                    if let Some(prop) = prop.as_str()
+                        && !is_well_known_function_prop(prop)
+                    {
+                        v.into_unknown(false, "earliest visitor well known function")
+                    } else {
+                        v
+                    }
                 }
-                _ => JsValue::unknown(v, false, "earliest visitor well known function"),
+                _ => v.into_unknown(false, "earliest visitor well known function"),
             })
             .await?;
-        Ok(match value {
+        Ok(match value.0 {
             JsValue::WellKnownFunction(kind) => vec![kind],
             JsValue::Alternatives { values, .. } => values
                 .into_iter()
@@ -528,7 +541,11 @@ impl AnalysisState<'_> {
                     _ => None,
                 })
                 .collect(),
-            _ => vec![],
+            JsValue::Unknown { .. } => vec![],
+            _ => {
+                // println!(" {:04} {:?} {:?}", value.1, value.0, original);
+                vec![]
+            }
         })
     }
 }
