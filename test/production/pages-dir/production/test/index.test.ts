@@ -944,13 +944,6 @@ describe('Production Usage', () => {
       expect(html).toMatch(/found server config/)
     })
 
-    it('should not have runtimeConfig in __NEXT_DATA__', async () => {
-      const html = await renderViaHTTP(next.appPort, '/runtime-config')
-      const $ = cheerio.load(html)
-      const script = $('#__NEXT_DATA__').html()
-      expect(script).not.toMatch(/runtimeConfig/)
-    })
-
     it('should add autoExport for auto pre-rendered pages', async () => {
       for (const page of ['/about']) {
         const html = await renderViaHTTP(next.appPort, page)
