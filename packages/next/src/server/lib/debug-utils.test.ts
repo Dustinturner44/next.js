@@ -1,4 +1,4 @@
-import { isDebugCacheEnabled } from '../debug-utils'
+import { isDebugCacheEnabled } from './debug-utils'
 
 describe('isDebugCacheEnabled', () => {
   const originalEnv = process.env.NEXT_PRIVATE_DEBUG_CACHE
