@@ -439,6 +439,11 @@ export interface ExperimentalConfig {
   turbopackMinify?: boolean
 
   /**
+   * Enable support for `with {type: "module"}` for ESM imports.
+   */
+  turbopackImportTypeBytes?: boolean
+
+  /**
    * Enable scope hoisting. Defaults to true in build mode. Always disabled in development mode.
    */
   turbopackScopeHoisting?: boolean
