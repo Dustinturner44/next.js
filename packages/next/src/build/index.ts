@@ -2729,7 +2729,11 @@ export default async function build(
       // the prod server will not know the distDir until loading the config.
       // Therefore we write the serialized config to the same directory as the
       // original config file.
-      if (config.output !== 'standalone' && config.distDir !== '.next' && config.experimental?.serializeNextConfigForProduction) {
+      if (
+        config.output !== 'standalone' &&
+        config.distDir !== '.next' &&
+        config.experimental?.serializeNextConfigForProduction
+      ) {
         const serializedConfigPath = path.join(
           // Write to the same directory as the original config file.
           config.configFile ? path.dirname(config.configFile) : dir,
