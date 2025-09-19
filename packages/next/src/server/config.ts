@@ -1355,9 +1355,8 @@ export default async function loadConfig(
     return standaloneConfig
   }
 
-  // Try to load from serialized config files in production
+  // During prod server, we can load from the serialized config.
   if (phase === PHASE_PRODUCTION_SERVER) {
-    // Helper to try loading serialized config
     const tryLoadSerializedConfig = (
       configPath: string
     ): NextConfigComplete | null => {
