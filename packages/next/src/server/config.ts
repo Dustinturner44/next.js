@@ -1,5 +1,13 @@
-import { existsSync } from 'fs'
-import { basename, extname, join, relative, isAbsolute, resolve } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import {
+  basename,
+  extname,
+  join,
+  relative,
+  isAbsolute,
+  resolve,
+  dirname,
+} from 'path'
 import { pathToFileURL } from 'url'
 import findUp from 'next/dist/compiled/find-up'
 import * as Log from '../build/output/log'
@@ -9,6 +17,9 @@ import {
   PHASE_DEVELOPMENT_SERVER,
   PHASE_EXPORT,
   PHASE_PRODUCTION_BUILD,
+  PHASE_PRODUCTION_SERVER,
+  SERVER_FILES_MANIFEST,
+  SERIALIZED_CONFIG_FILE,
   type PHASE_TYPE,
 } from '../shared/lib/constants'
 import { defaultConfig, normalizeConfig } from './config-shared'
@@ -1342,6 +1353,52 @@ export default async function loadConfig(
     })
 
     return standaloneConfig
+  }
+
+  // Try to load from serialized config files in production
+  if (phase === PHASE_PRODUCTION_SERVER) {
+    // Helper to try loading serialized config
+    const tryLoadSerializedConfig = (configPath: string) => {
+      try {
+        if (!existsSync(configPath)) {
+          return null
+        }
+
+        const parsed = JSON.parse(readFileSync(configPath, 'utf8'))
+        const config = parsed.config
+
+        // Cache the config
+        configCache.set(cacheKey, {
+          config,
+          rawConfig: config,
+          configuredExperimentalFeatures: [],
+        })
+
+        return config
+      } catch {
+        // Continue to next option
+      }
+      return null
+    }
+
+    // Try .next/required-server-files.json first (default distDir)
+    const fromManifest = tryLoadSerializedConfig(
+      join(dir, '.next', SERVER_FILES_MANIFEST)
+    )
+    if (fromManifest) {
+      return fromManifest
+    }
+
+    const configPath = await findUp(CONFIG_FILES, { cwd: dir })
+    const targetDir = configPath ? dirname(configPath) : dir
+
+    // Try next-config-serialized.json (custom distDir)
+    const fromSerialized = tryLoadSerializedConfig(
+      join(targetDir, SERIALIZED_CONFIG_FILE)
+    )
+    if (fromSerialized) {
+      return fromSerialized
+    }
   }
 
   const curLog = silent

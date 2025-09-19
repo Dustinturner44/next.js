@@ -61,6 +61,7 @@ import {
   PRERENDER_MANIFEST,
   REACT_LOADABLE_MANIFEST,
   ROUTES_MANIFEST,
+  SERIALIZED_CONFIG_FILE,
   SERVER_DIRECTORY,
   SERVER_FILES_MANIFEST,
   STATIC_STATUS_PAGES,
@@ -2722,6 +2723,19 @@ export default async function build(
         distDir,
         requiredServerFilesManifest
       )
+
+      // Write serialized config to project root for normal production mode with custom distDir
+      if (config.output !== 'standalone' && config.distDir !== '.next') {
+        const serializedConfigPath = path.join(
+          // Write to the same directory as the config file
+          config.configFile ? path.dirname(config.configFile) : dir,
+          SERIALIZED_CONFIG_FILE
+        )
+        await fs.writeFile(
+          serializedConfigPath,
+          JSON.stringify(requiredServerFilesManifest.config)
+        )
+      }
 
       // we don't need to inline for turbopack build as
       // it will handle it's own caching separate of compile
