@@ -145,8 +145,9 @@ describe.each([
       'production mode',
       () => {
         beforeAll(async () => {
-          await nextBuild(appDir)
-          await startServer({ GENERATE_ETAGS: 'true', NODE_ENV: 'production' })
+          // Set env during build for serialized next config.
+          await nextBuild(appDir, [], { env: { GENERATE_ETAGS: 'true' } })
+          await startServer({ NODE_ENV: 'production' })
         })
         afterAll(() => killApp(server))
 

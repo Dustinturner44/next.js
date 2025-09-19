@@ -219,8 +219,10 @@ describe('Config Experimental Warning', () => {
         expect(stdout).toMatch(' ✓ parallelServerCompiles')
       })
 
-      it('should show unrecognized experimental features in warning but not in start log experiments section', async () => {
-        configFile.write(`
+      // In prod, it will load a serialized config, so the warning will not appear during start.
+      if (global.isNextDev) {
+        it('should show unrecognized experimental features in warning but not in start log experiments section', async () => {
+          configFile.write(`
         module.exports = {
           experimental: {
             appDir: true
@@ -228,28 +230,29 @@ describe('Config Experimental Warning', () => {
         }
       `)
 
-        await collectStdoutFromBuild(appDir)
-        const port = await findPort()
-        let stdout = ''
-        let stderr = ''
-        app = await nextStart(appDir, port, {
-          onStdout(msg) {
-            stdout += msg
-          },
-          onStderr(msg) {
-            stderr += msg
-          },
-        })
+          await collectStdoutFromBuild(appDir)
+          const port = await findPort()
+          let stdout = ''
+          let stderr = ''
+          app = await nextStart(appDir, port, {
+            onStdout(msg) {
+              stdout += msg
+            },
+            onStderr(msg) {
+              stderr += msg
+            },
+          })
 
-        await check(() => {
-          const cliOutput = stripAnsi(stdout)
-          const cliOutputErr = stripAnsi(stderr)
-          expect(cliOutput).not.toContain(experimentalHeader)
-          expect(cliOutputErr).toContain(
-            `Unrecognized key(s) in object: 'appDir' at "experimental"`
-          )
+          await check(() => {
+            const cliOutput = stripAnsi(stdout)
+            const cliOutputErr = stripAnsi(stderr)
+            expect(cliOutput).not.toContain(experimentalHeader)
+            expect(cliOutputErr).toContain(
+              `Unrecognized key(s) in object: 'appDir' at "experimental"`
+            )
+          })
         })
-      })
+      }
     }
   )
 })

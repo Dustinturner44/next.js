@@ -58,8 +58,8 @@ describe('next.config.js schema validating - invalid config', () => {
 
       expect(output).toContain('Invalid next.config.js options detected')
       expect(output).toContain('badKey')
-      // for next start and next build we both display the warnings
-      expect(warningTimes).toBe(isNextStart ? 2 : 1)
+      // With serialized config, warnings only appear during build, not during start
+      expect(warningTimes).toBe(1)
 
       return 'success'
     }, 'success')

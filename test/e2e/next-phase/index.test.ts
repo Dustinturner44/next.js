@@ -26,7 +26,8 @@ describe('next-phase', () => {
     const phases = {
       dev: 'phase-development-server',
       build: 'phase-production-build',
-      start: 'phase-production-server',
+      // Serialized next config will use the config from build.
+      start: 'phase-production-build',
     }
     const currentPhase = isNextDev ? phases.dev : phases.build
     const nonExistedPhase = isNextDev ? phases.build : phases.dev
@@ -39,8 +40,6 @@ describe('next-phase', () => {
 
     if (isNextDev) {
       expect(next.cliOutput).not.toContain(phases.start)
-    } else {
-      expect(next.cliOutput).toContain(phases.start)
     }
   })
 })
