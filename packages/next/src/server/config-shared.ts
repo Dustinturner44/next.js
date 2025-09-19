@@ -1507,6 +1507,7 @@ export const defaultConfig = Object.freeze({
     browserDebugInfoInTerminal: false,
     optimizeRouterScrolling: false,
     isolatedDevBuild: false,
+    serializeNextConfigForProduction: true,
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,
