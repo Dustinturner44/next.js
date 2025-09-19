@@ -31,7 +31,7 @@ describe('next.config.js schema validating - defaultConfig', () => {
 })
 
 describe('next.config.js schema validating - invalid config', () => {
-  const { next, isNextStart, skipped } = nextTestSetup({
+  const { next, skipped } = nextTestSetup({
     files: {
       'pages/index.js': `
     export default function Page() {
