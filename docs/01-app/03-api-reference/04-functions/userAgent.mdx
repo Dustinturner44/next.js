@@ -41,10 +41,11 @@ export function middleware(request) {
 
 ## Reference
 
-```ts
-import { userAgent, userAgentFromString } from 'next/server'
+From a Request in Middleware or Route Handlers, parse and inspect User Agent fields.
 
-// From a Request (e.g. Middleware, Route Handler)
+```ts
+import { userAgent } from 'next/server'
+
 const ua = userAgent(request)
 ```
 
@@ -63,6 +64,8 @@ const ua = userAgentFromString(uaString)
 ```
 
 ## Returns
+
+Both helpers return a structured object describing the client and a bot flag.
 
 ```ts
 type UserAgent = {
@@ -99,6 +102,8 @@ type UserAgent = {
 
 ## Example: Route Handler
 
+Return JSON with `isBot` and a device hint.
+
 ```ts filename="app/api/ua/route.ts" switcher
 import { NextResponse, userAgent } from 'next/server'
 
@@ -134,6 +139,8 @@ export function GET(request) {
 <PagesOnly>
 
 ## Example: API Route
+
+In Pages Router API Routes, parse the `User-Agent` header from `req`.
 
 ```ts filename="pages/api/ua.ts" switcher
 import type { NextApiRequest, NextApiResponse } from 'next'
