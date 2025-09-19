@@ -178,7 +178,7 @@ describe('Config Experimental Warning', () => {
     expect(stdout).toContain(' ✓ scrollRestoration')
   })
 
-  it('should show unrecognized experimental features in warning but not in start log experiments section', async () => {
+  it('should show unrecognized experimental features in warning but not in start log experiments section during dev', async () => {
     configFile.write(`
         module.exports = {
           experimental: {
@@ -190,12 +190,11 @@ describe('Config Experimental Warning', () => {
     const { stderr } = await collectStdoutFromDev(appDir)
     await check(() => {
       const cliOutput = stripAnsi(stderr)
-      expect(stderr).toContain(
+      expect(cliOutput).toContain(
         `Unrecognized key(s) in object: 'appDir' at "experimental"`
       )
     })
-  })
-  ;(process.env.TURBOPACK_DEV ? describe.skip : describe)(
+  })(process.env.TURBOPACK_DEV ? describe.skip : describe)(
     'production mode',
     () => {
       it('should not show next app info in next start', async () => {
@@ -243,7 +242,7 @@ describe('Config Experimental Warning', () => {
       })
 
       // In prod, it will load a serialized config, so the warning will not appear during start.
-      it('should show unrecognized experimental features in warning but not in start log experiments section', async () => {
+      it('should show unrecognized experimental features in warning but not in start log experiments section during build', async () => {
         configFile.write(`
         module.exports = {
           experimental: {
@@ -255,7 +254,7 @@ describe('Config Experimental Warning', () => {
         const { stderr } = await collectStdoutFromBuild(appDir)
         await check(() => {
           const cliOutput = stripAnsi(stderr)
-          expect(stderr).toContain(
+          expect(cliOutput).toContain(
             `Unrecognized key(s) in object: 'appDir' at "experimental"`
           )
         })
