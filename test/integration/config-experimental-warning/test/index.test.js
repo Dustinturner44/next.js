@@ -194,7 +194,8 @@ describe('Config Experimental Warning', () => {
         `Unrecognized key(s) in object: 'appDir' at "experimental"`
       )
     })
-  })(process.env.TURBOPACK_DEV ? describe.skip : describe)(
+  })
+  ;(process.env.TURBOPACK_DEV ? describe.skip : describe)(
     'production mode',
     () => {
       it('should not show next app info in next start', async () => {
