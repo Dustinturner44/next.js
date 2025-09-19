@@ -1387,7 +1387,11 @@ export default async function loadConfig(
     const fromManifest = tryLoadSerializedConfig(
       join(dir, '.next', SERVER_FILES_MANIFEST)
     )
-    if (fromManifest) {
+    if (
+      fromManifest &&
+      // Don't return here and will eventually fall back to loading the config.
+      fromManifest.experimental?.serializeNextConfigForProduction
+    ) {
       return fromManifest
     }
 
@@ -1396,6 +1400,9 @@ export default async function loadConfig(
     const configPath = await findUp(CONFIG_FILES, { cwd: dir })
     const targetDir = configPath ? dirname(configPath) : dir
 
+    // Even though serializeNextConfigForProduction is enabled, we still need to check
+    // the existSync because there's no way to know if serializeNextConfigForProduction
+    // is enabled until we load the config.
     const fromSerialized = tryLoadSerializedConfig(
       join(targetDir, SERIALIZED_CONFIG_FILE)
     )

@@ -818,6 +818,17 @@ export interface ExperimentalConfig {
    * instead of `{distDir}`.
    */
   isolatedDevBuild?: boolean
+
+  /**
+   * When enabled, the produciton server will use the serialized config file
+   * instead of the original config file. This can save the time of loading the
+   * config file, especially when you are using `next.config.ts`. When the `distDir`
+   * is set, the serialized config file will be written to the same directory as the
+   * original config file.
+   *
+   * @default true
+   */
+  serializeNextConfigForProduction?: boolean
 }
 
 export type ExportPathMap = {
