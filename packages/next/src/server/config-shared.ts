@@ -823,8 +823,9 @@ export interface ExperimentalConfig {
    * When enabled, the produciton server will use the serialized config file
    * instead of the original config file. This can save the time of loading the
    * config file, especially when you are using `next.config.ts`. When the `distDir`
-   * is set, the serialized config file will be written to the same directory as the
-   * original config file.
+   * is set, the serialized config `next-config-serialized.json` will be written to
+   * the same directory as the original config file. This is because Next.js doesn't
+   * know the `distDir` until loading the config.
    *
    * @default true
    */
