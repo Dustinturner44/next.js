@@ -1358,7 +1358,9 @@ export default async function loadConfig(
   // Try to load from serialized config files in production
   if (phase === PHASE_PRODUCTION_SERVER) {
     // Helper to try loading serialized config
-    const tryLoadSerializedConfig = (configPath: string) => {
+    const tryLoadSerializedConfig = (
+      configPath: string
+    ): NextConfigComplete | null => {
       try {
         if (!existsSync(configPath)) {
           return null
@@ -1381,7 +1383,8 @@ export default async function loadConfig(
       return null
     }
 
-    // Try .next/required-server-files.json first (default distDir)
+    // Try load from ".next" dir since we don't know the
+    // distDir until loading the config.
     const fromManifest = tryLoadSerializedConfig(
       join(dir, '.next', SERVER_FILES_MANIFEST)
     )
@@ -1389,16 +1392,21 @@ export default async function loadConfig(
       return fromManifest
     }
 
+    // If the custom distDir is set, we write the serialized config
+    // to the same directory as the original config file.
     const configPath = await findUp(CONFIG_FILES, { cwd: dir })
     const targetDir = configPath ? dirname(configPath) : dir
 
-    // Try next-config-serialized.json (custom distDir)
     const fromSerialized = tryLoadSerializedConfig(
       join(targetDir, SERIALIZED_CONFIG_FILE)
     )
     if (fromSerialized) {
       return fromSerialized
     }
+
+    throw new Error(
+      `Failed to load the serialized config file "${SERIALIZED_CONFIG_FILE}" in "${targetDir}".`
+    )
   }
 
   const curLog = silent

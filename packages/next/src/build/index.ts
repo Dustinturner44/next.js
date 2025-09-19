@@ -2724,16 +2724,24 @@ export default async function build(
         requiredServerFilesManifest
       )
 
-      // Write serialized config to project root for normal production mode with custom distDir
+      // The required-server-files manifest contains serialized config, which can
+      // be loaded by the prod server. However, when a custom distDir is set,
+      // the prod server will not know the distDir until loading the config.
+      // Therefore we write the serialized config to the same directory as the
+      // original config file.
       if (config.output !== 'standalone' && config.distDir !== '.next') {
         const serializedConfigPath = path.join(
-          // Write to the same directory as the config file
+          // Write to the same directory as the original config file.
           config.configFile ? path.dirname(config.configFile) : dir,
           SERIALIZED_CONFIG_FILE
         )
         await fs.writeFile(
           serializedConfigPath,
-          JSON.stringify(requiredServerFilesManifest.config)
+          JSON.stringify({
+            // To match the format of required server files manifest.
+            version: 1,
+            config: requiredServerFilesManifest.config,
+          })
         )
       }
 
