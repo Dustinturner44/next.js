@@ -13,8 +13,8 @@ const nextConfig = {
   experimental: {
     // Disable because nx tries to copy the config to the dist dir
     // and expect to load the config inside the dist dir again.
-    // In this case, the serialized config file will be relative
-    // to the original config, not the one inside the dist dir.
+    // In this case, the `distDir` will be relative to the original config,
+    // not the config inside the dist dir, and cause distDir path mismatch.
     serializeNextConfigForProduction: false,
   },
 }
