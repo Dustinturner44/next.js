@@ -1357,9 +1357,9 @@ export default async function loadConfig(
 
   // During prod server, we can load from the serialized config.
   if (phase === PHASE_PRODUCTION_SERVER) {
-    const tryLoadSerializedConfig = (
+    function tryLoadSerializedConfig(
       configPath: string
-    ): NextConfigComplete | null => {
+    ): NextConfigComplete | null {
       try {
         if (!existsSync(configPath)) {
           return null
@@ -1403,9 +1403,7 @@ export default async function loadConfig(
       return fromSerialized
     }
 
-    throw new Error(
-      `Failed to load the serialized config file "${SERIALIZED_CONFIG_FILE}" in "${targetDir}".`
-    )
+    // Fall back to loading the config.
   }
 
   const curLog = silent
