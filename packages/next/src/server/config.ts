@@ -1374,7 +1374,8 @@ export default async function loadConfig(
 
         if (
           // Don't return here and will eventually fall back to loading the config.
-          config?.experimental?.serializeNextConfigForProduction ||
+          // Use nullish coalescing (??) since we don't want to return when it's false.
+          config?.experimental?.serializeNextConfigForProduction ??
           // This flag is used to be enabled on the tests.
           process.env
             .__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION === 'true'
@@ -1409,7 +1410,8 @@ export default async function loadConfig(
 
         if (
           // Don't return here and will eventually fall back to loading the config.
-          config?.experimental?.serializeNextConfigForProduction ||
+          // Use nullish coalescing (??) since we don't want to return when it's false.
+          config?.experimental?.serializeNextConfigForProduction ??
           // This flag is used to be enabled on the tests.
           process.env
             .__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION === 'true'
