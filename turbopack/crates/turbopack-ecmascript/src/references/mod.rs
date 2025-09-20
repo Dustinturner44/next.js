@@ -120,7 +120,6 @@ use super::{
     },
     errors,
     parse::ParseResult,
-    special_cases::special_cases,
     utils::js_value_to_pattern,
     webpack::{
         WebpackChunkAssetReference, WebpackEntryAssetReference, WebpackRuntimeAssetReference,
@@ -516,7 +515,7 @@ pub async fn analyse_ecmascript_module_internal(
     let origin = ResolvedVc::upcast::<Box<dyn ResolveOrigin>>(module);
 
     let mut analysis = AnalyzeEcmascriptModuleResultBuilder::new(is_tracing);
-    let path = origin.origin_path().owned().await?;
+    let path = &*origin.origin_path().await?;
 
     // Is this a typescript file that requires analyzing type references?
     let analyze_types = match &ty {
@@ -525,6 +524,7 @@ pub async fn analyse_ecmascript_module_internal(
         EcmascriptModuleAssetType::Ecmascript => false,
     };
 
+    // Split out our module part if we have one.
     let parsed = if let Some(part) = part {
         let split_data = split_module(*module);
         part_of_module(split_data, part)
@@ -569,8 +569,6 @@ pub async fn analyse_ecmascript_module_internal(
         .instrument(span)
         .await?;
     }
-
-    special_cases(&path.path, &mut analysis);
 
     let parsed = parsed.await?;
 
@@ -919,6 +917,7 @@ pub async fn analyse_ecmascript_module_internal(
         .instrument(span)
         .await?;
     }
+    // TODO: we can do this when constructing the var graph
     let span = tracing::info_span!("async module handling");
     async {
         let top_level_await_span =
@@ -1020,7 +1019,6 @@ pub async fn analyse_ecmascript_module_internal(
                     kind,
                     ast_path: condition_ast_path,
                     span: _,
-                    in_try: _,
                 } => {
                     // Don't replace condition with it's truth-y value, if it has side effects
                     // (e.g. function calls)
@@ -1286,7 +1284,6 @@ pub async fn analyse_ecmascript_module_internal(
                     var,
                     ast_path,
                     span,
-                    in_try: _,
                 } => {
                     debug_assert!(!is_tracing, "unexpected Effect::FreeVar in tracing mode");
 
@@ -1315,7 +1312,6 @@ pub async fn analyse_ecmascript_module_internal(
                     prop,
                     ast_path,
                     span,
-                    in_try: _,
                 } => {
                     debug_assert!(!is_tracing, "unexpected Effect::Member in tracing mode");
 
@@ -1334,7 +1330,6 @@ pub async fn analyse_ecmascript_module_internal(
                     export,
                     ast_path,
                     span: _,
-                    in_try: _,
                 } => {
                     let Some(r) = import_references.get(esm_reference_index) else {
                         continue;
@@ -1397,11 +1392,7 @@ pub async fn analyse_ecmascript_module_internal(
                         .await?;
                     handle_typeof(&ast_path, arg, span, &analysis_state, &mut analysis).await?;
                 }
-                Effect::ImportMeta {
-                    ast_path,
-                    span: _,
-                    in_try: _,
-                } => {
+                Effect::ImportMeta { ast_path, span: _ } => {
                     debug_assert!(!is_tracing, "unexpected Effect::ImportMeta in tracing mode");
                     if analysis_state.first_import_meta {
                         analysis_state.first_import_meta = false;
