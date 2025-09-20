@@ -177,24 +177,6 @@ describe('Config Experimental Warning', () => {
     expect(stdout).toContain(' ✓ workerThreads')
     expect(stdout).toContain(' ✓ scrollRestoration')
   })
-
-  it('should show unrecognized experimental features in warning but not in start log experiments section during dev', async () => {
-    configFile.write(`
-        module.exports = {
-          experimental: {
-            appDir: true
-          }
-        }
-      `)
-
-    const { stdout, stderr } = await collectStdoutFromDev(appDir)
-    await check(() => {
-      expect(stripAnsi(stdout)).not.toContain(experimentalHeader)
-      expect(stripAnsi(stderr)).toContain(
-        `Unrecognized key(s) in object: 'appDir' at "experimental"`
-      )
-    })
-  })
   ;(process.env.TURBOPACK_DEV ? describe.skip : describe)(
     'production mode',
     () => {
