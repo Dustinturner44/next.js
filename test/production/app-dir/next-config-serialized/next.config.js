@@ -6,6 +6,9 @@ const nextConfig = {
   env: {
     foo: 'foo',
   },
+  experimental: {
+    serializeNextConfigForProduction: true,
+  },
 }
 
 module.exports = nextConfig

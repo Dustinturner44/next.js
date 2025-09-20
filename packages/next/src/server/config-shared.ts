@@ -826,8 +826,6 @@ export interface ExperimentalConfig {
    * is set, the serialized config `next-config-serialized.json` will be written to
    * the same directory as the original config file. This is because Next.js doesn't
    * know the `distDir` until loading the config.
-   *
-   * @default true
    */
   serializeNextConfigForProduction?: boolean
 }
