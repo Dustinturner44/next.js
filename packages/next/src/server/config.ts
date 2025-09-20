@@ -1390,7 +1390,10 @@ export default async function loadConfig(
     if (
       fromManifest &&
       // Don't return here and will eventually fall back to loading the config.
-      fromManifest.experimental?.serializeNextConfigForProduction
+      (fromManifest.experimental?.serializeNextConfigForProduction ||
+        // This flag is used to be enabled on the tests.
+        process.env.__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION ===
+          'true')
     ) {
       return fromManifest
     }

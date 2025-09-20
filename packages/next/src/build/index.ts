@@ -2732,7 +2732,11 @@ export default async function build(
       if (
         config.output !== 'standalone' &&
         config.distDir !== '.next' &&
-        config.experimental?.serializeNextConfigForProduction
+        (config.experimental?.serializeNextConfigForProduction ||
+          // This flag is used to be enabled on the tests.
+          process.env
+            .__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION ===
+            'true')
       ) {
         const serializedConfigPath = path.join(
           // Write to the same directory as the original config file.
