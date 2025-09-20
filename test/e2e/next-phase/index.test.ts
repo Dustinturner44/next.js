@@ -23,11 +23,16 @@ describe('next-phase', () => {
   if (skipped) return
 
   it('should render page with next phase correctly', async () => {
+    const isSerializedNextConfigForProduction =
+      process.env.__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION ===
+      'true'
     const phases = {
       dev: 'phase-development-server',
       build: 'phase-production-build',
-      // Serialized next config will use the config from build.
-      start: 'phase-production-build',
+      start: isSerializedNextConfigForProduction
+        ? // Serialized next config will use the config from build.
+          'phase-production-build'
+        : 'phase-production-server',
     }
     const currentPhase = isNextDev ? phases.dev : phases.build
     const nonExistedPhase = isNextDev ? phases.build : phases.dev
@@ -40,6 +45,10 @@ describe('next-phase', () => {
 
     if (isNextDev) {
       expect(next.cliOutput).not.toContain(phases.start)
+    } else {
+      if (isSerializedNextConfigForProduction) {
+        expect(next.cliOutput).toContain(phases.start)
+      }
     }
   })
 })

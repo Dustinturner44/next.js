@@ -187,10 +187,10 @@ describe('Config Experimental Warning', () => {
         }
       `)
 
-    const { stderr } = await collectStdoutFromDev(appDir)
+    const { stdout, stderr } = await collectStdoutFromDev(appDir)
     await check(() => {
-      const cliOutput = stripAnsi(stderr)
-      expect(cliOutput).toContain(
+      expect(stripAnsi(stdout)).not.toContain(experimentalHeader)
+      expect(stripAnsi(stderr)).toContain(
         `Unrecognized key(s) in object: 'appDir' at "experimental"`
       )
     })
@@ -252,13 +252,42 @@ describe('Config Experimental Warning', () => {
         }
       `)
 
-        const { stderr } = await collectStdoutFromBuild(appDir)
+        const { stderr: buildStderr } = await collectStdoutFromBuild(appDir)
+
+        const port = await findPort()
+        let stdout = ''
+        let stderr = ''
+        app = await nextStart(appDir, port, {
+          onStdout(msg) {
+            stdout += msg
+          },
+          onStderr(msg) {
+            stderr += msg
+          },
+        })
+
         await check(() => {
-          const cliOutput = stripAnsi(stderr)
-          expect(cliOutput).toContain(
+          // TODO: experimentalHeader shows on build, likely not validating properly.
+          // expect(stripAnsi(buildStdout)).not.toContain(experimentalHeader)
+          expect(stripAnsi(buildStderr)).toContain(
             `Unrecognized key(s) in object: 'appDir' at "experimental"`
           )
         })
+
+        // For serialized config, the warning will not appear during start.
+        if (
+          process.env
+            .__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION !== 'true'
+        ) {
+          await check(() => {
+            const cliOutput = stripAnsi(stdout)
+            const cliOutputErr = stripAnsi(stderr)
+            expect(cliOutput).not.toContain(experimentalHeader)
+            expect(cliOutputErr).toContain(
+              `Unrecognized key(s) in object: 'appDir' at "experimental"`
+            )
+          })
+        }
       })
     }
   )
