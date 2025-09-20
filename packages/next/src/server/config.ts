@@ -1355,62 +1355,86 @@ export default async function loadConfig(
     return standaloneConfig
   }
 
+  let path: string | undefined
   // During prod server, we can load from the serialized config.
   if (phase === PHASE_PRODUCTION_SERVER) {
-    function tryLoadSerializedConfig(
-      configPath: string
-    ): NextConfigComplete | null {
-      try {
-        if (!existsSync(configPath)) {
-          return null
-        }
-
-        const parsed = JSON.parse(readFileSync(configPath, 'utf8'))
-        const config = parsed.config
-
-        // Cache the config
-        configCache.set(cacheKey, {
-          config,
-          rawConfig: config,
-          configuredExperimentalFeatures: [],
-        })
-
-        return config
-      } catch {
-        // Continue to next option
-      }
-      return null
-    }
-
     // Try load from ".next" dir since we don't know the
     // distDir until loading the config.
-    const fromManifest = tryLoadSerializedConfig(
-      join(dir, '.next', SERVER_FILES_MANIFEST)
-    )
-    if (
-      fromManifest &&
-      // Don't return here and will eventually fall back to loading the config.
-      (fromManifest.experimental?.serializeNextConfigForProduction ||
-        // This flag is used to be enabled on the tests.
-        process.env.__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION ===
-          'true')
-    ) {
-      return fromManifest
+    try {
+      const possiblyServerFilesManifestPath = join(
+        dir,
+        '.next',
+        SERVER_FILES_MANIFEST
+      )
+      if (existsSync(possiblyServerFilesManifestPath)) {
+        const parsed = JSON.parse(
+          readFileSync(possiblyServerFilesManifestPath, 'utf8')
+        )
+        const config: NextConfigComplete = parsed.config
+
+        if (
+          // Don't return here and will eventually fall back to loading the config.
+          config?.experimental?.serializeNextConfigForProduction ||
+          // This flag is used to be enabled on the tests.
+          process.env
+            .__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION === 'true'
+        ) {
+          // Cache the config
+          configCache.set(cacheKey, {
+            config,
+            rawConfig: config,
+            configuredExperimentalFeatures: [],
+          })
+
+          return config
+        }
+      }
+    } catch {
+      // Continue to next option
     }
 
     // If the custom distDir is set, we write the serialized config
     // to the same directory as the original config file.
-    const configPath = await findUp(CONFIG_FILES, { cwd: dir })
-    const targetDir = configPath ? dirname(configPath) : dir
+    path = await findUp(CONFIG_FILES, { cwd: dir })
+    const targetDir = path ? dirname(path) : dir
 
-    // Even though serializeNextConfigForProduction is enabled, we still need to check
+    // Even though serializeNextConfigForProduction might be disabled, we still need to check
     // the existSync because there's no way to know if serializeNextConfigForProduction
-    // is enabled until we load the config.
-    const fromSerialized = tryLoadSerializedConfig(
-      join(targetDir, SERIALIZED_CONFIG_FILE)
-    )
-    if (fromSerialized) {
-      return fromSerialized
+    // is disabled until we load the config.
+    const serializedConfigPath = join(targetDir, SERIALIZED_CONFIG_FILE)
+    try {
+      if (existsSync(serializedConfigPath)) {
+        const parsed = JSON.parse(readFileSync(serializedConfigPath, 'utf8'))
+        const config: NextConfigComplete = parsed.config
+
+        if (
+          // Don't return here and will eventually fall back to loading the config.
+          config?.experimental?.serializeNextConfigForProduction ||
+          // This flag is used to be enabled on the tests.
+          process.env
+            .__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION === 'true'
+        ) {
+          // Cache the config
+          configCache.set(cacheKey, {
+            config,
+            rawConfig: config,
+            configuredExperimentalFeatures: [],
+          })
+
+          return config
+        }
+      }
+    } catch (cause) {
+      if (
+        // This flag is used to be enabled on the tests.
+        process.env.__NEXT_EXPERIMENTAL_SERIALIZE_NEXT_CONFIG_FOR_PRODUCTION ===
+        'true'
+      ) {
+        throw new Error(
+          `Failed to load serialized config "${serializedConfigPath}".`,
+          { cause }
+        )
+      }
     }
 
     // Fall back to loading the config.
@@ -1461,7 +1485,7 @@ export default async function loadConfig(
     return config
   }
 
-  const path = await findUp(CONFIG_FILES, { cwd: dir })
+  path ??= await findUp(CONFIG_FILES, { cwd: dir })
 
   // If config file was found
   if (path?.length) {
