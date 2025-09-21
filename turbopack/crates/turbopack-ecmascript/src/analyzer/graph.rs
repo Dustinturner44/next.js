@@ -2395,12 +2395,12 @@ impl VisitAstPath for Analyzer<'_> {
         ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
     ) {
         enum ScopeType {
-            FunctionScope,
-            BlockScope,
-            ControlFlowScope,
+            Function,
+            Block,
+            ControlFlow,
         }
         let block_type = if ast_path.len() < 2 {
-            ScopeType::BlockScope
+            ScopeType::Block
         } else if matches!(
             &ast_path[ast_path.len() - 2..],
             [
@@ -2419,7 +2419,7 @@ impl VisitAstPath for Analyzer<'_> {
                     AstParentNodeRef::Stmt(_, StmtField::Block)
                 ]
         ) {
-            ScopeType::ControlFlowScope
+            ScopeType::ControlFlow
         } else if matches!(
             &ast_path[ast_path.len() - 2..],
             [_, AstParentNodeRef::Function(_, FunctionField::Body)]
@@ -2431,12 +2431,12 @@ impl VisitAstPath for Analyzer<'_> {
                 | [_, AstParentNodeRef::SetterProp(_, SetterPropField::Body)]
                 | [_, AstParentNodeRef::Constructor(_, ConstructorField::Body)]
         ) {
-            ScopeType::FunctionScope
+            ScopeType::Function
         } else {
-            ScopeType::BlockScope
+            ScopeType::Block
         };
         match block_type {
-            ScopeType::FunctionScope => {
+            ScopeType::Function => {
                 let early_return_stack = take(&mut self.early_return_stack);
                 let mut effects = take(&mut self.effects);
                 let hoisted_effects = take(&mut self.hoisted_effects);
@@ -2448,7 +2448,7 @@ impl VisitAstPath for Analyzer<'_> {
                 self.effects = effects;
                 self.early_return_stack = early_return_stack;
             }
-            ScopeType::BlockScope => {
+            ScopeType::Block => {
                 n.visit_children_with_ast_path(self, ast_path);
                 if self.end_early_return_block() {
                     self.early_return_stack.push(EarlyReturn::Always {
@@ -2457,7 +2457,7 @@ impl VisitAstPath for Analyzer<'_> {
                     });
                 }
             }
-            ScopeType::ControlFlowScope => {
+            ScopeType::ControlFlow => {
                 n.visit_children_with_ast_path(self, ast_path);
             }
         }
