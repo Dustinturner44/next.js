@@ -18,23 +18,23 @@ b#5 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analysed yet
 
-inner = (...) => ((a + b) | undefined)
+inner = (...) => (a + b)
 
-outer = (...) => (inner("b") | undefined)
+outer = (...) => inner("b")
 
-r = (...) => (a | (r((a + 1)) + 1) | undefined)
+r = (...) => (a | (r((a + 1)) + 1))
 
-v1 = ???*0*
-- *0* ((...) => ((a + b) | undefined) | undefined)(2)
-  ⚠️  non-function callee
+v1 = (???*0* + 2)
+- *0* arguments[0]
+  ⚠️  function calls are not analysed yet
 
-v2 = (2 | (???*0* + 1) | undefined)
-- *0* (...) => (a | (r((a + 1)) + 1) | undefined)(3)
+v2 = (2 | (???*0* + 1))
+- *0* (...) => (a | (r((a + 1)) + 1))(3)
   ⚠️  recursive function call
   ⚠️  This value might have side effects
 
-v3 = (`ab` | undefined)
+v3 = `ab`
 
-x = (...) => (y | undefined)
+x = (...) => y
 
-y = (...) => ((a + b) | undefined)
+y = (...) => (a + b)

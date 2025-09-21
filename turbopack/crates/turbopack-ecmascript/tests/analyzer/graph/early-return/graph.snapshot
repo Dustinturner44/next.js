@@ -82,10 +82,10 @@
     (
         "i",
         Function(
-            7,
+            6,
             606,
             Alternatives {
-                total_nodes: 6,
+                total_nodes: 5,
                 values: [
                     Call(
                         2,
@@ -100,9 +100,6 @@
                             "i2",
                         ),
                         [],
-                    ),
-                    Constant(
-                        Undefined,
                     ),
                 ],
                 logical_property: None,
@@ -112,10 +109,10 @@
     (
         "j#2",
         Function(
-            7,
+            6,
             673,
             Alternatives {
-                total_nodes: 6,
+                total_nodes: 5,
                 values: [
                     Call(
                         2,
@@ -130,9 +127,6 @@
                             "i2",
                         ),
                         [],
-                    ),
-                    Constant(
-                        Undefined,
                     ),
                 ],
                 logical_property: None,

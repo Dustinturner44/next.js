@@ -61,84 +61,75 @@
     (
         "Home",
         Function(
-            13,
+            11,
             227,
-            Alternatives {
-                total_nodes: 12,
-                values: [
-                    Call(
-                        10,
-                        Member(
-                            3,
-                            Module(
-                                ModuleValue {
-                                    module: "https://esm.sh/preact/jsx-runtime",
-                                    annotations: ImportAnnotations {
-                                        map: {},
-                                    },
-                                },
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "jsx",
-                                    ),
-                                ),
-                            ),
-                        ),
-                        [
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "button",
-                                    ),
-                                ),
-                            ),
-                            Object {
-                                total_nodes: 5,
-                                parts: [
-                                    KeyValue(
-                                        Constant(
-                                            Str(
-                                                Atom(
-                                                    "onClick",
-                                                ),
-                                            ),
-                                        ),
-                                        Variable(
-                                            (
-                                                "*arrow function 362*",
-                                                #0,
-                                            ),
-                                        ),
-                                    ),
-                                    KeyValue(
-                                        Constant(
-                                            Str(
-                                                Atom(
-                                                    "children",
-                                                ),
-                                            ),
-                                        ),
-                                        Constant(
-                                            Str(
-                                                Atom(
-                                                    "Click me",
-                                                ),
-                                            ),
-                                        ),
-                                    ),
-                                ],
-                                mutable: true,
+            Call(
+                10,
+                Member(
+                    3,
+                    Module(
+                        ModuleValue {
+                            module: "https://esm.sh/preact/jsx-runtime",
+                            annotations: ImportAnnotations {
+                                map: {},
                             },
-                        ],
+                        },
                     ),
                     Constant(
-                        Undefined,
+                        Str(
+                            Atom(
+                                "jsx",
+                            ),
+                        ),
                     ),
+                ),
+                [
+                    Constant(
+                        Str(
+                            Atom(
+                                "button",
+                            ),
+                        ),
+                    ),
+                    Object {
+                        total_nodes: 5,
+                        parts: [
+                            KeyValue(
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "onClick",
+                                        ),
+                                    ),
+                                ),
+                                Variable(
+                                    (
+                                        "*arrow function 362*",
+                                        #0,
+                                    ),
+                                ),
+                            ),
+                            KeyValue(
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "children",
+                                        ),
+                                    ),
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "Click me",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ],
+                        mutable: true,
+                    },
                 ],
-                logical_property: None,
-            },
+            ),
         ),
     ),
     (

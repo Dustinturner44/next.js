@@ -1339,155 +1339,137 @@
     (
         "md5cmn",
         Function(
-            19,
+            17,
             1414,
-            Alternatives {
-                total_nodes: 18,
-                values: [
+            Call(
+                16,
+                FreeVar(
+                    "safeAdd",
+                ),
+                [
                     Call(
-                        16,
+                        13,
                         FreeVar(
-                            "safeAdd",
+                            "bitRotateLeft",
                         ),
                         [
                             Call(
-                                13,
+                                10,
                                 FreeVar(
-                                    "bitRotateLeft",
+                                    "safeAdd",
                                 ),
                                 [
                                     Call(
-                                        10,
+                                        4,
                                         FreeVar(
                                             "safeAdd",
                                         ),
                                         [
-                                            Call(
-                                                4,
-                                                FreeVar(
-                                                    "safeAdd",
+                                            Variable(
+                                                (
+                                                    "a",
+                                                    #5,
                                                 ),
-                                                [
-                                                    Variable(
-                                                        (
-                                                            "a",
-                                                            #5,
-                                                        ),
-                                                    ),
-                                                    Variable(
-                                                        (
-                                                            "q",
-                                                            #5,
-                                                        ),
-                                                    ),
-                                                ],
                                             ),
-                                            Call(
-                                                4,
-                                                FreeVar(
-                                                    "safeAdd",
+                                            Variable(
+                                                (
+                                                    "q",
+                                                    #5,
                                                 ),
-                                                [
-                                                    Variable(
-                                                        (
-                                                            "x",
-                                                            #5,
-                                                        ),
-                                                    ),
-                                                    Variable(
-                                                        (
-                                                            "t",
-                                                            #5,
-                                                        ),
-                                                    ),
-                                                ],
                                             ),
                                         ],
                                     ),
-                                    Variable(
-                                        (
-                                            "s",
-                                            #5,
+                                    Call(
+                                        4,
+                                        FreeVar(
+                                            "safeAdd",
                                         ),
+                                        [
+                                            Variable(
+                                                (
+                                                    "x",
+                                                    #5,
+                                                ),
+                                            ),
+                                            Variable(
+                                                (
+                                                    "t",
+                                                    #5,
+                                                ),
+                                            ),
+                                        ],
                                     ),
                                 ],
                             ),
                             Variable(
                                 (
-                                    "b",
+                                    "s",
                                     #5,
                                 ),
                             ),
                         ],
                     ),
-                    Constant(
-                        Undefined,
+                    Variable(
+                        (
+                            "b",
+                            #5,
+                        ),
                     ),
                 ],
-                logical_property: None,
-            },
+            ),
         ),
     ),
     (
         "md5ff",
         Function(
-            11,
+            9,
             1530,
-            Alternatives {
-                total_nodes: 10,
-                values: [
-                    Call(
-                        8,
-                        Variable(
-                            (
-                                "md5cmn",
-                                #2,
-                            ),
-                        ),
-                        [
-                            Unknown {
-                                original_value: None,
-                                reason: "unsupported expression",
-                                has_side_effects: true,
-                            },
-                            Variable(
-                                (
-                                    "a",
-                                    #6,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "b",
-                                    #6,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "x",
-                                    #6,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "s",
-                                    #6,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "t",
-                                    #6,
-                                ),
-                            ),
-                        ],
+            Call(
+                8,
+                Variable(
+                    (
+                        "md5cmn",
+                        #2,
                     ),
-                    Constant(
-                        Undefined,
+                ),
+                [
+                    Unknown {
+                        original_value: None,
+                        reason: "unsupported expression",
+                        has_side_effects: true,
+                    },
+                    Variable(
+                        (
+                            "a",
+                            #6,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "b",
+                            #6,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "x",
+                            #6,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "s",
+                            #6,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "t",
+                            #6,
+                        ),
                     ),
                 ],
-                logical_property: None,
-            },
+            ),
         ),
     ),
     (
@@ -1636,46 +1618,37 @@
     (
         "wordsToMd5",
         Function(
-            8,
+            6,
             83,
-            Alternatives {
-                total_nodes: 7,
-                values: [
-                    Array {
-                        total_nodes: 5,
-                        items: [
-                            Variable(
-                                (
-                                    "a",
-                                    #3,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "b",
-                                    #3,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "c",
-                                    #3,
-                                ),
-                            ),
-                            Variable(
-                                (
-                                    "d",
-                                    #3,
-                                ),
-                            ),
-                        ],
-                        mutable: true,
-                    },
-                    Constant(
-                        Undefined,
+            Array {
+                total_nodes: 5,
+                items: [
+                    Variable(
+                        (
+                            "a",
+                            #3,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "b",
+                            #3,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "c",
+                            #3,
+                        ),
+                    ),
+                    Variable(
+                        (
+                            "d",
+                            #3,
+                        ),
                     ),
                 ],
-                logical_property: None,
+                mutable: true,
             },
         ),
     ),

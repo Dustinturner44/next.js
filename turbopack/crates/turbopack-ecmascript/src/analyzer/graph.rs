@@ -824,9 +824,6 @@ trait FunctionLike {
         false
     }
     fn span(&self) -> Span;
-    fn is_expr_arrow_fn(&self) -> bool {
-        false
-    }
 }
 
 impl FunctionLike for Function {
@@ -839,9 +836,6 @@ impl FunctionLike for Function {
     fn span(&self) -> Span {
         self.span
     }
-    fn is_expr_arrow_fn(&self) -> bool {
-        false
-    }
 }
 impl FunctionLike for ArrowExpr {
     fn is_async(&self) -> bool {
@@ -852,9 +846,6 @@ impl FunctionLike for ArrowExpr {
     }
     fn span(&self) -> Span {
         self.span
-    }
-    fn is_expr_arrow_fn(&self) -> bool {
-        matches!(*self.body, BlockStmtOrExpr::Expr(_))
     }
 }
 
@@ -958,18 +949,10 @@ mod analyzer_state {
             let fn_id = function.span().lo.0;
             let prev_fn_id = self.state.cur_fn_id.replace(fn_id);
             let prev_return_values = self.state.cur_fn_return_values.replace(vec![]);
-            let prev_early_return_stack = take(&mut self.early_return_stack);
 
             visitor(self);
-            let mut return_values = self.state.cur_fn_return_values.take().unwrap();
-            // If we do not always end with a `return` and the function is not an arrow function
-            // with a single expression then there is an implicit `undefined` return value
-            if !self.end_early_return_block() && !function.is_expr_arrow_fn() {
-                // If the block doesn't end in a return there is an implicit `undefined` return
-                return_values.push(JsValue::Constant(ConstantValue::Undefined))
-            }
+            let return_values = self.state.cur_fn_return_values.take().unwrap();
 
-            self.early_return_stack = prev_early_return_stack;
             self.state.cur_fn_id = prev_fn_id;
             self.state.cur_fn_return_values = prev_return_values;
             JsValue::function(
@@ -977,7 +960,15 @@ mod analyzer_state {
                 function.is_async(),
                 function.is_generator(),
                 match return_values.len() {
-                    0 => JsValue::Constant(ConstantValue::Undefined),
+                    0 => {
+                        // This doesn't really seem possible
+                        debug_assert!(
+                            false,
+                            "Function with no return values and early return handling didn't \
+                             detect it"
+                        );
+                        JsValue::Constant(ConstantValue::Undefined)
+                    }
                     1 => return_values.into_iter().next().unwrap(),
                     _ => JsValue::alternatives(return_values),
                 },
@@ -1120,7 +1111,11 @@ impl Analyzer<'_> {
                     {
                         let mut ast_path = ast_path
                             .with_guard(AstParentNodeRef::FnExpr(fn_expr, FnExprField::Function));
-                        self.handle_iife_function(function, &mut ast_path, &n.args);
+                        // We don't handle the value of the function here, though we could to better
+                        // model the value of this 'call'
+                        self.enter_fn(&**function, |this| {
+                            this.handle_iife_function(function, &mut ast_path, &n.args);
+                        });
                     }
 
                     true
@@ -1130,7 +1125,11 @@ impl Analyzer<'_> {
                     let mut ast_path =
                         ast_path.with_guard(AstParentNodeRef::Expr(expr, ExprField::Arrow));
                     let args = &n.args;
-                    self.handle_iife_arrow(arrow_expr, args, &mut ast_path);
+                    // We don't handle the value of the function here, though we could to better
+                    // model the value of this 'call'
+                    self.enter_fn(arrow_expr, |this| {
+                        this.handle_iife_arrow(arrow_expr, args, &mut ast_path);
+                    });
                     true
                 }
                 _ => false,
@@ -1701,10 +1700,13 @@ impl VisitAstPath for Analyzer<'_> {
     ) {
         let fn_value = self.enter_fn(&*decl.function, |this| {
             decl.visit_children_with_ast_path(this, ast_path);
-            // Take all effects produced by the function and move them to hoisted effects since
-            // function declarations are hoisted.
-            this.hoisted_effects.append(&mut this.effects);
         });
+        // Take all effects produced by the function and move them to hoisted effects since
+        // function declarations are hoisted.
+        // This accounts for the fact that even with `if (false) { function f() {} }` `f` is
+        // hoisted out of the condition. so we still need to process effects for it.
+        // TODO(lukesandberg): shouldn't this just be the effects associated with the function.
+        self.hoisted_effects.append(&mut self.effects);
 
         self.add_value(decl.ident.to_id(), fn_value);
     }
@@ -2441,7 +2443,9 @@ impl VisitAstPath for Analyzer<'_> {
                 let mut effects = take(&mut self.effects);
                 let hoisted_effects = take(&mut self.hoisted_effects);
                 n.visit_children_with_ast_path(self, ast_path);
-                self.end_early_return_block();
+                if !self.end_early_return_block() {
+                    self.add_return_value(JsValue::Constant(ConstantValue::Undefined));
+                }
                 self.effects.append(&mut self.hoisted_effects);
                 effects.append(&mut self.effects);
                 self.hoisted_effects = hoisted_effects;

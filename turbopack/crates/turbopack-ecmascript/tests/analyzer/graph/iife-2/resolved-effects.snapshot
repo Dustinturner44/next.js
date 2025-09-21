@@ -24,7 +24,7 @@
 - *0* arguments[1]
   ⚠️  function calls are not analysed yet
 
-0 -> 14 call = (...) => (parent | undefined)(???*0*, (???*2* ? ???*3* : (???*10* | undefined)), (???*15* | {}){truthy})
+0 -> 14 call = (...) => parent(???*0*, (???*2* ? ???*3* : (???*10* | undefined)), (???*15* | {}){truthy})
 - *0* ???*1*[key]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -68,4 +68,4 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 16 call = (...) => (parent | undefined)({"wrapper": {"data": {"key": {}}}}, "", {})
+0 -> 16 call = (...) => parent({"wrapper": {"data": {"key": {}}}}, "", {})

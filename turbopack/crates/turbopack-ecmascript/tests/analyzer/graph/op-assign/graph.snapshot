@@ -77,23 +77,14 @@
     (
         "getClientComponentLoaderMetrics",
         Function(
-            4,
+            2,
             415,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Variable(
-                        (
-                            "metrics",
-                            #7,
-                        ),
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
+            Variable(
+                (
+                    "metrics",
+                    #7,
+                ),
+            ),
         ),
     ),
     (
@@ -178,37 +169,28 @@
     (
         "wrapClientComponentLoader",
         Function(
-            6,
+            4,
             95,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Object {
-                        total_nodes: 3,
-                        parts: [
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "loadChunk",
-                                        ),
-                                    ),
-                                ),
-                                Variable(
-                                    (
-                                        "*arrow function 173*",
-                                        #0,
-                                    ),
+            Object {
+                total_nodes: 3,
+                parts: [
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "loadChunk",
                                 ),
                             ),
-                        ],
-                        mutable: true,
-                    },
-                    Constant(
-                        Undefined,
+                        ),
+                        Variable(
+                            (
+                                "*arrow function 173*",
+                                #0,
+                            ),
+                        ),
                     ),
                 ],
-                logical_property: None,
+                mutable: true,
             },
         ),
     ),

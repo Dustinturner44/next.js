@@ -77,23 +77,14 @@
     (
         "generateBinPath",
         Function(
-            4,
+            2,
             387,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Variable(
-                        (
-                            "binPath",
-                            #4,
-                        ),
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
+            Variable(
+                (
+                    "binPath",
+                    #4,
+                ),
+            ),
         ),
     ),
     (
@@ -248,52 +239,43 @@
     (
         "pkgAndSubpathForCurrentPlatform",
         Function(
-            8,
+            6,
             217,
-            Alternatives {
-                total_nodes: 7,
-                values: [
-                    Object {
-                        total_nodes: 5,
-                        parts: [
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "pkg",
-                                        ),
-                                    ),
-                                ),
-                                Variable(
-                                    (
-                                        "pkg",
-                                        #3,
-                                    ),
+            Object {
+                total_nodes: 5,
+                parts: [
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "pkg",
                                 ),
                             ),
-                            KeyValue(
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "subpath",
-                                        ),
-                                    ),
-                                ),
-                                Variable(
-                                    (
-                                        "subpath",
-                                        #3,
-                                    ),
+                        ),
+                        Variable(
+                            (
+                                "pkg",
+                                #3,
+                            ),
+                        ),
+                    ),
+                    KeyValue(
+                        Constant(
+                            Str(
+                                Atom(
+                                    "subpath",
                                 ),
                             ),
-                        ],
-                        mutable: true,
-                    },
-                    Constant(
-                        Undefined,
+                        ),
+                        Variable(
+                            (
+                                "subpath",
+                                #3,
+                            ),
+                        ),
                     ),
                 ],
-                logical_property: None,
+                mutable: true,
             },
         ),
     ),

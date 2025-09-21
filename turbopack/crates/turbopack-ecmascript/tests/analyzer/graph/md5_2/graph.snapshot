@@ -2,13 +2,247 @@
     (
         "*anonymous function 181*",
         Function(
-            11,
+            9,
             181,
-            Alternatives {
-                total_nodes: 10,
-                values: [
+            MemberCall(
+                8,
+                Variable(
+                    (
+                        "crypt",
+                        #3,
+                    ),
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "endian",
+                        ),
+                    ),
+                ),
+                [
+                    Array {
+                        total_nodes: 5,
+                        items: [
+                            Variable(
+                                (
+                                    "a",
+                                    #4,
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "b",
+                                    #4,
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "c",
+                                    #4,
+                                ),
+                            ),
+                            Variable(
+                                (
+                                    "d",
+                                    #4,
+                                ),
+                            ),
+                        ],
+                        mutable: true,
+                    },
+                ],
+            ),
+        ),
+    ),
+    (
+        "*anonymous function 5013*",
+        Function(
+            4,
+            5013,
+            Add(
+                3,
+                [
+                    Unknown {
+                        original_value: None,
+                        reason: "unsupported expression",
+                        has_side_effects: true,
+                    },
+                    Variable(
+                        (
+                            "b",
+                            #7,
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ),
+    (
+        "*anonymous function 5163*",
+        Function(
+            4,
+            5163,
+            Add(
+                3,
+                [
+                    Unknown {
+                        original_value: None,
+                        reason: "unsupported expression",
+                        has_side_effects: true,
+                    },
+                    Variable(
+                        (
+                            "b",
+                            #8,
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ),
+    (
+        "*anonymous function 5313*",
+        Function(
+            4,
+            5313,
+            Add(
+                3,
+                [
+                    Unknown {
+                        original_value: None,
+                        reason: "unsupported expression",
+                        has_side_effects: true,
+                    },
+                    Variable(
+                        (
+                            "b",
+                            #9,
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ),
+    (
+        "*anonymous function 5454*",
+        Function(
+            4,
+            5454,
+            Add(
+                3,
+                [
+                    Unknown {
+                        original_value: None,
+                        reason: "unsupported expression",
+                        has_side_effects: true,
+                    },
+                    Variable(
+                        (
+                            "b",
+                            #10,
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ),
+    (
+        "*anonymous function 5685*",
+        Function(
+            22,
+            5685,
+            Tenary(
+                21,
+                Logical(
+                    5,
+                    And,
+                    [
+                        Variable(
+                            (
+                                "options",
+                                #11,
+                            ),
+                        ),
+                        Member(
+                            3,
+                            Variable(
+                                (
+                                    "options",
+                                    #11,
+                                ),
+                            ),
+                            Constant(
+                                Str(
+                                    Atom(
+                                        "asBytes",
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
+                Variable(
+                    (
+                        "digestbytes",
+                        #11,
+                    ),
+                ),
+                Tenary(
+                    14,
+                    Logical(
+                        5,
+                        And,
+                        [
+                            Variable(
+                                (
+                                    "options",
+                                    #11,
+                                ),
+                            ),
+                            Member(
+                                3,
+                                Variable(
+                                    (
+                                        "options",
+                                        #11,
+                                    ),
+                                ),
+                                Constant(
+                                    Str(
+                                        Atom(
+                                            "asString",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
                     MemberCall(
-                        8,
+                        4,
+                        Variable(
+                            (
+                                "bin",
+                                #3,
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "bytesToString",
+                                ),
+                            ),
+                        ),
+                        [
+                            Variable(
+                                (
+                                    "digestbytes",
+                                    #11,
+                                ),
+                            ),
+                        ],
+                    ),
+                    MemberCall(
+                        4,
                         Variable(
                             (
                                 "crypt",
@@ -18,309 +252,21 @@
                         Constant(
                             Str(
                                 Atom(
-                                    "endian",
+                                    "bytesToHex",
                                 ),
                             ),
                         ),
                         [
-                            Array {
-                                total_nodes: 5,
-                                items: [
-                                    Variable(
-                                        (
-                                            "a",
-                                            #4,
-                                        ),
-                                    ),
-                                    Variable(
-                                        (
-                                            "b",
-                                            #4,
-                                        ),
-                                    ),
-                                    Variable(
-                                        (
-                                            "c",
-                                            #4,
-                                        ),
-                                    ),
-                                    Variable(
-                                        (
-                                            "d",
-                                            #4,
-                                        ),
-                                    ),
-                                ],
-                                mutable: true,
-                            },
-                        ],
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
-    ),
-    (
-        "*anonymous function 5013*",
-        Function(
-            6,
-            5013,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Add(
-                        3,
-                        [
-                            Unknown {
-                                original_value: None,
-                                reason: "unsupported expression",
-                                has_side_effects: true,
-                            },
                             Variable(
                                 (
-                                    "b",
-                                    #7,
+                                    "digestbytes",
+                                    #11,
                                 ),
                             ),
                         ],
                     ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
-    ),
-    (
-        "*anonymous function 5163*",
-        Function(
-            6,
-            5163,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Add(
-                        3,
-                        [
-                            Unknown {
-                                original_value: None,
-                                reason: "unsupported expression",
-                                has_side_effects: true,
-                            },
-                            Variable(
-                                (
-                                    "b",
-                                    #8,
-                                ),
-                            ),
-                        ],
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
-    ),
-    (
-        "*anonymous function 5313*",
-        Function(
-            6,
-            5313,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Add(
-                        3,
-                        [
-                            Unknown {
-                                original_value: None,
-                                reason: "unsupported expression",
-                                has_side_effects: true,
-                            },
-                            Variable(
-                                (
-                                    "b",
-                                    #9,
-                                ),
-                            ),
-                        ],
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
-    ),
-    (
-        "*anonymous function 5454*",
-        Function(
-            6,
-            5454,
-            Alternatives {
-                total_nodes: 5,
-                values: [
-                    Add(
-                        3,
-                        [
-                            Unknown {
-                                original_value: None,
-                                reason: "unsupported expression",
-                                has_side_effects: true,
-                            },
-                            Variable(
-                                (
-                                    "b",
-                                    #10,
-                                ),
-                            ),
-                        ],
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
-        ),
-    ),
-    (
-        "*anonymous function 5685*",
-        Function(
-            24,
-            5685,
-            Alternatives {
-                total_nodes: 23,
-                values: [
-                    Tenary(
-                        21,
-                        Logical(
-                            5,
-                            And,
-                            [
-                                Variable(
-                                    (
-                                        "options",
-                                        #11,
-                                    ),
-                                ),
-                                Member(
-                                    3,
-                                    Variable(
-                                        (
-                                            "options",
-                                            #11,
-                                        ),
-                                    ),
-                                    Constant(
-                                        Str(
-                                            Atom(
-                                                "asBytes",
-                                            ),
-                                        ),
-                                    ),
-                                ),
-                            ],
-                        ),
-                        Variable(
-                            (
-                                "digestbytes",
-                                #11,
-                            ),
-                        ),
-                        Tenary(
-                            14,
-                            Logical(
-                                5,
-                                And,
-                                [
-                                    Variable(
-                                        (
-                                            "options",
-                                            #11,
-                                        ),
-                                    ),
-                                    Member(
-                                        3,
-                                        Variable(
-                                            (
-                                                "options",
-                                                #11,
-                                            ),
-                                        ),
-                                        Constant(
-                                            Str(
-                                                Atom(
-                                                    "asString",
-                                                ),
-                                            ),
-                                        ),
-                                    ),
-                                ],
-                            ),
-                            MemberCall(
-                                4,
-                                Variable(
-                                    (
-                                        "bin",
-                                        #3,
-                                    ),
-                                ),
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "bytesToString",
-                                        ),
-                                    ),
-                                ),
-                                [
-                                    Variable(
-                                        (
-                                            "digestbytes",
-                                            #11,
-                                        ),
-                                    ),
-                                ],
-                            ),
-                            MemberCall(
-                                4,
-                                Variable(
-                                    (
-                                        "crypt",
-                                        #3,
-                                    ),
-                                ),
-                                Constant(
-                                    Str(
-                                        Atom(
-                                            "bytesToHex",
-                                        ),
-                                    ),
-                                ),
-                                [
-                                    Variable(
-                                        (
-                                            "digestbytes",
-                                            #11,
-                                        ),
-                                    ),
-                                ],
-                            ),
-                        ),
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
+                ),
+            ),
         ),
     ),
     (

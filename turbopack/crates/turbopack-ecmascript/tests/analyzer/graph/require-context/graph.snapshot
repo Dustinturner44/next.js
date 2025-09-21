@@ -66,52 +66,43 @@
     (
         "importAll",
         Function(
-            9,
+            7,
             1,
-            Alternatives {
-                total_nodes: 8,
-                values: [
-                    MemberCall(
-                        6,
-                        MemberCall(
-                            3,
-                            Variable(
-                                (
-                                    "r",
-                                    #3,
-                                ),
-                            ),
-                            Constant(
-                                Str(
-                                    Atom(
-                                        "keys",
-                                    ),
-                                ),
-                            ),
-                            [],
+            MemberCall(
+                6,
+                MemberCall(
+                    3,
+                    Variable(
+                        (
+                            "r",
+                            #3,
                         ),
-                        Constant(
-                            Str(
-                                Atom(
-                                    "map",
-                                ),
-                            ),
-                        ),
-                        [
-                            Variable(
-                                (
-                                    "r",
-                                    #3,
-                                ),
-                            ),
-                        ],
                     ),
                     Constant(
-                        Undefined,
+                        Str(
+                            Atom(
+                                "keys",
+                            ),
+                        ),
+                    ),
+                    [],
+                ),
+                Constant(
+                    Str(
+                        Atom(
+                            "map",
+                        ),
+                    ),
+                ),
+                [
+                    Variable(
+                        (
+                            "r",
+                            #3,
+                        ),
                     ),
                 ],
-                logical_property: None,
-            },
+            ),
         ),
     ),
     (

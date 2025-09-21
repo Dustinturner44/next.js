@@ -2,15 +2,7 @@ binPath = (???*0* | ???*1*)
 - *0* binPath
   ⚠️  pattern without value
 - *1* require.resolve*2*(
-        `${(
-              | ???*3*
-              | "esbuild-windows-arm64"
-              | "esbuild-windows-32"
-              | "esbuild-windows-64"
-              | ???*4*
-              | ???*6*
-              | undefined["pkg"]
-            )}/${(???*7* | "esbuild.exe" | ???*8* | undefined["subpath"])}`
+        `${(???*3* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*4* | ???*6*)}/${(???*7* | "esbuild.exe" | ???*8*)}`
     )
   ⚠️  require.resolve non constant
   ⚠️  This value might have side effects
@@ -34,7 +26,7 @@ e = ???*0*
 - *0* e
   ⚠️  pattern without value
 
-generateBinPath = (...) => (binPath | undefined)
+generateBinPath = (...) => binPath
 
 knownWindowsPackages = {
     "win32 arm64 LE": "esbuild-windows-arm64",
@@ -58,15 +50,7 @@ pkg#3 = (???*0* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-wind
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-pkg#4 = (
-  | ???*0*
-  | "esbuild-windows-arm64"
-  | "esbuild-windows-32"
-  | "esbuild-windows-64"
-  | ???*1*
-  | ???*3*
-  | undefined["pkg"]
-)
+pkg#4 = (???*0* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*1* | ???*3*)
 - *0* pkg
   ⚠️  pattern without value
 - *1* {}[???*2*]
@@ -78,31 +62,23 @@ pkg#4 = (
 - *3* unknown mutation
   ⚠️  This value might have side effects
 
-pkgAndSubpathForCurrentPlatform = (...) => ({"pkg": pkg, "subpath": subpath} | undefined)
+pkgAndSubpathForCurrentPlatform = (...) => {"pkg": pkg, "subpath": subpath}
 
 subpath#3 = (???*0* | "esbuild.exe")
 - *0* subpath
   ⚠️  pattern without value
 
-subpath#4 = (???*0* | "esbuild.exe" | ???*1* | undefined["subpath"])
+subpath#4 = (???*0* | "esbuild.exe" | ???*1*)
 - *0* subpath
   ⚠️  pattern without value
 - *1* unknown mutation
   ⚠️  This value might have side effects
 
-x = (???*0* | ???*1* | undefined)
+x = (???*0* | ???*1*)
 - *0* binPath
   ⚠️  pattern without value
 - *1* require.resolve*2*(
-        `${(
-              | ???*3*
-              | "esbuild-windows-arm64"
-              | "esbuild-windows-32"
-              | "esbuild-windows-64"
-              | ???*4*
-              | ???*6*
-              | undefined["pkg"]
-            )}/${(???*7* | "esbuild.exe" | ???*8* | undefined["subpath"])}`
+        `${(???*3* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*4* | ???*6*)}/${(???*7* | "esbuild.exe" | ???*8*)}`
     )
   ⚠️  require.resolve non constant
   ⚠️  This value might have side effects

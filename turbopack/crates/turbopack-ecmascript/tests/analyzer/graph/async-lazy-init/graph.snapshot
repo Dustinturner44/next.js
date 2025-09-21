@@ -2,71 +2,44 @@
     (
         "computeAsyncValue",
         Function(
-            5,
+            3,
             222,
             Promise(
-                4,
-                Alternatives {
-                    total_nodes: 3,
-                    values: [
-                        Constant(
-                            Str(
-                                Atom(
-                                    "async result",
-                                ),
-                            ),
+                2,
+                Constant(
+                    Str(
+                        Atom(
+                            "async result",
                         ),
-                        Constant(
-                            Undefined,
-                        ),
-                    ],
-                    logical_property: None,
-                },
+                    ),
+                ),
             ),
         ),
     ),
     (
         "ensureAsyncProcessStarted",
         Function(
-            4,
+            2,
             606,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Variable(
-                        (
-                            "lasyInitAsyncProcess",
-                            #2,
-                        ),
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
+            Variable(
+                (
+                    "lasyInitAsyncProcess",
+                    #2,
+                ),
+            ),
         ),
     ),
     (
         "getLasyInitAsyncValue",
         Function(
-            4,
+            2,
             294,
-            Alternatives {
-                total_nodes: 3,
-                values: [
-                    Variable(
-                        (
-                            "lasyInitAsyncValue",
-                            #2,
-                        ),
-                    ),
-                    Constant(
-                        Undefined,
-                    ),
-                ],
-                logical_property: None,
-            },
+            Variable(
+                (
+                    "lasyInitAsyncValue",
+                    #2,
+                ),
+            ),
         ),
     ),
     (

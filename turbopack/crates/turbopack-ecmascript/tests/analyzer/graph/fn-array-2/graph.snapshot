@@ -16,45 +16,36 @@
     (
         "c",
         Function(
-            8,
+            6,
             1,
-            Alternatives {
-                total_nodes: 7,
-                values: [
-                    Array {
-                        total_nodes: 5,
-                        items: [
-                            Concat(
-                                3,
-                                [
-                                    Variable(
-                                        (
-                                            "a",
-                                            #3,
-                                        ),
-                                    ),
-                                    Variable(
-                                        (
-                                            "x",
-                                            #3,
-                                        ),
-                                    ),
-                                ],
-                            ),
+            Array {
+                total_nodes: 5,
+                items: [
+                    Concat(
+                        3,
+                        [
                             Variable(
                                 (
                                     "a",
                                     #3,
                                 ),
                             ),
+                            Variable(
+                                (
+                                    "x",
+                                    #3,
+                                ),
+                            ),
                         ],
-                        mutable: true,
-                    },
-                    Constant(
-                        Undefined,
+                    ),
+                    Variable(
+                        (
+                            "a",
+                            #3,
+                        ),
                     ),
                 ],
-                logical_property: None,
+                mutable: true,
             },
         ),
     ),

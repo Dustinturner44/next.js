@@ -1,18 +1,16 @@
-0 -> 2 member call = ["../lib/a.js", "../lib/b.js"]["map"]((...) => (file | undefined))
+0 -> 2 member call = ["../lib/a.js", "../lib/b.js"]["map"]((...) => file)
 
 2 -> 3 unreachable = ???*0*
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 5 member call = ["../lib/a.js", "../lib/b.js"]["map"]((...) => ([file] | undefined))
+0 -> 5 member call = ["../lib/a.js", "../lib/b.js"]["map"]((...) => [file])
 
 5 -> 6 unreachable = ???*0*
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 8 member call = ["../lib/a.js", "../lib/b.js"]["map"](
-    (...) => (FreeVar(require)["resolve"](file) | undefined)
-)
+0 -> 8 member call = ["../lib/a.js", "../lib/b.js"]["map"]((...) => FreeVar(require)["resolve"](file))
 
 8 -> 10 free var = FreeVar(require)
 

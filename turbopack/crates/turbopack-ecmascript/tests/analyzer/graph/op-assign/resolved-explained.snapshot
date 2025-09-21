@@ -16,7 +16,7 @@ clientComponentLoadTimes = (0 | (???*0* + ???*1*))
 - *1* unsupported expression
   ⚠️  This value might have side effects
 
-getClientComponentLoaderMetrics = (...) => (metrics | undefined)
+getClientComponentLoaderMetrics = (...) => metrics
 
 metrics = (???*0* ? undefined : {"clientComponentLoadTimes": (0 | ???*4*)})
 - *0* ((0 | ???*1*) === 0)
@@ -46,4 +46,4 @@ startTime = ???*0*()
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-wrapClientComponentLoader = (...) => ({"loadChunk": *arrow function 173*} | undefined)
+wrapClientComponentLoader = (...) => {"loadChunk": *arrow function 173*}

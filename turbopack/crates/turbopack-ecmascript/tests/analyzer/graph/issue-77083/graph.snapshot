@@ -2,10 +2,10 @@
     (
         "runGetClassesOrUseCache",
         Function(
-            5,
+            4,
             52,
             Alternatives {
-                total_nodes: 4,
+                total_nodes: 3,
                 values: [
                     Constant(
                         Str(
@@ -20,9 +20,6 @@
                                 "value b",
                             ),
                         ),
-                    ),
-                    Constant(
-                        Undefined,
                     ),
                 ],
                 logical_property: None,

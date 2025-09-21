@@ -2,9 +2,9 @@
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 2 conditional = !((null | Promise<("async result" | undefined)>))
+0 -> 2 conditional = !((null | Promise<"async result">))
 
-2 -> 3 call = (...) => Promise<("async result" | undefined)>()
+2 -> 3 call = (...) => Promise<"async result">()
 
 0 -> 4 unreachable = ???*0*
 - *0* unreachable

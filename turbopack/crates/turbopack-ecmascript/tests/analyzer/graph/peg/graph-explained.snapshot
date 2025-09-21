@@ -1,273 +1,189 @@
-*anonymous function 10064* = (...) => ("OR" | undefined)
+*anonymous function 10064* = (...) => "OR"
 
-*anonymous function 10192* = (...) => ("NOT" | undefined)
+*anonymous function 10192* = (...) => "NOT"
 
-*anonymous function 10796* = (...) => ({"type": "identifier", "name": name} | undefined)
+*anonymous function 10796* = (...) => {"type": "identifier", "name": name}
 
-*anonymous function 11187* = (...) => ((head + tail["join"]("")) | undefined)
+*anonymous function 11187* = (...) => (head + tail["join"](""))
 
-*anonymous function 11339* = (...) => ({"type": "parameter_name", "name": text()} | undefined)
+*anonymous function 11339* = (...) => {"type": "parameter_name", "name": text()}
 
-*anonymous function 11668* = (...) => (text() | undefined)
+*anonymous function 11668* = (...) => text()
 
-*anonymous function 11725* = (...) => (seq | undefined)
+*anonymous function 11725* = (...) => seq
 
-*anonymous function 11890* = (...) => ("\b" | undefined)
+*anonymous function 11890* = (...) => "\b"
 
-*anonymous function 12016* = (...) => ("\f" | undefined)
+*anonymous function 12016* = (...) => "\f"
 
-*anonymous function 12142* = (...) => ("\n" | undefined)
+*anonymous function 12142* = (...) => "\n"
 
-*anonymous function 12268* = (...) => ("\r" | undefined)
+*anonymous function 12268* = (...) => "\r"
 
-*anonymous function 12394* = (...) => ("\t" | undefined)
+*anonymous function 12394* = (...) => "\t"
 
-*anonymous function 12449* = (...) => (text() | undefined)
+*anonymous function 12449* = (...) => text()
 
-*anonymous function 12577* = (...) => (
-  | FreeVar(String)["fromCharCode"](FreeVar(parseInt)(digits, 16))
-  | undefined
-)
+*anonymous function 12577* = (...) => FreeVar(String)["fromCharCode"](FreeVar(parseInt)(digits, 16))
 
-*anonymous function 1271* = (...) => ("any character" | undefined)
+*anonymous function 1271* = (...) => "any character"
 
-*anonymous function 12829* = (...) => (v | undefined)
+*anonymous function 12829* = (...) => v
 
-*anonymous function 12892* = (...) => ({"property": property, "alias": alias} | undefined)
+*anonymous function 12892* = (...) => {"property": property, "alias": alias}
 
-*anonymous function 12977* = (...) => (expression | undefined)
+*anonymous function 12977* = (...) => expression
 
-*anonymous function 13048* = (...) => (
-  | {"type": "array_subquery_expression", "expression": expression}
-  | undefined
-)
+*anonymous function 13048* = (...) => {"type": "array_subquery_expression", "expression": expression}
 
-*anonymous function 13181* = (...) => (
-  | {"type": "exists_subquery_expression", "expression": expression}
-  | undefined
-)
+*anonymous function 13181* = (...) => {"type": "exists_subquery_expression", "expression": expression}
 
-*anonymous function 13315* = (...) => (
-  | {"type": "scalar_subquery_expression", "expression": expression}
-  | undefined
-)
+*anonymous function 13315* = (...) => {"type": "scalar_subquery_expression", "expression": expression}
 
-*anonymous function 1343* = (...) => ("end of input" | undefined)
+*anonymous function 1343* = (...) => "end of input"
 
-*anonymous function 13449* = (...) => ({"property": property, "computed": false} | undefined)
+*anonymous function 13449* = (...) => {"property": property, "computed": false}
 
-*anonymous function 13543* = (...) => ({"property": property, "computed": true} | undefined)
+*anonymous function 13543* = (...) => {"property": property, "computed": true}
 
-*anonymous function 13636* = (...) => (tail["reduce"](*arrow function 13694*, head) | undefined)
+*anonymous function 13636* = (...) => tail["reduce"](*arrow function 13694*, head)
 
-*anonymous function 13891* = (...) => (
-  | {"type": "scalar_unary_expression", "operator": operator, "argument": argument}
-  | undefined
-)
+*anonymous function 13891* = (...) => {"type": "scalar_unary_expression", "operator": operator, "argument": argument}
 
-*anonymous function 1416* = (...) => (expectation["description"] | undefined)
+*anonymous function 1416* = (...) => expectation["description"]
 
-*anonymous function 14188* = (...) => (
-  | {
-        "type": "scalar_conditional_expression",
-        "test": test,
-        "consequent": consequent,
-        "alternate": alternate
-    }
-  | undefined
-)
+*anonymous function 14188* = (...) => {
+    "type": "scalar_conditional_expression",
+    "test": test,
+    "consequent": consequent,
+    "alternate": alternate
+}
 
-*anonymous function 14448* = (...) => (buildBinaryExpression(head, tail) | undefined)
+*anonymous function 14448* = (...) => buildBinaryExpression(head, tail)
 
-*anonymous function 15047* = (...) => (
-  | {"type": "scalar_in_expression", "value": value, "list": list}
-  | undefined
-)
+*anonymous function 15047* = (...) => {"type": "scalar_in_expression", "value": value, "list": list}
 
-*anonymous function 15185* = (...) => (
-  | {"type": "scalar_between_expression", "value": value, "begin": begin, "end": end}
-  | undefined
-)
+*anonymous function 15185* = (...) => {"type": "scalar_between_expression", "value": value, "begin": begin, "end": end}
 
-*anonymous function 15997* = (...) => ({"key": key, "value": value} | undefined)
+*anonymous function 15997* = (...) => {"key": key, "value": value}
 
-*anonymous function 16072* = (...) => (
-  | {"type": "collection_expression", "expression": expression}
-  | undefined
-)
+*anonymous function 16072* = (...) => {"type": "collection_expression", "expression": expression}
 
-*anonymous function 16201* = (...) => (tail["reduce"](*arrow function 16259*, head) | undefined)
+*anonymous function 16201* = (...) => tail["reduce"](*arrow function 16259*, head)
 
-*anonymous function 16460* = (...) => (
-  | {"type": "collection_subquery_expression", "expression": expression}
-  | undefined
-)
+*anonymous function 16460* = (...) => {"type": "collection_subquery_expression", "expression": expression}
 
-*anonymous function 16598* = (...) => ({"type": "top_specification", "value": value} | undefined)
+*anonymous function 16598* = (...) => {"type": "top_specification", "value": value}
 
-*anonymous function 16713* = (...) => (
-  | {"type": "number_constant", "value": FreeVar(Number)(text())}
-  | undefined
-)
+*anonymous function 16713* = (...) => {"type": "number_constant", "value": FreeVar(Number)(text())}
 
-*anonymous function 16837* = (...) => ((head ? ???*0* : []) | undefined)
+*anonymous function 16837* = (...) => (head ? ???*0* : [])
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 16925* = (...) => (subquery | undefined)
+*anonymous function 16925* = (...) => subquery
 
-*anonymous function 1822* = (...) => (`\x0${hex(ch)}` | undefined)
+*anonymous function 1822* = (...) => `\x0${hex(ch)}`
 
-*anonymous function 1920* = (...) => (`\x${hex(ch)}` | undefined)
+*anonymous function 1920* = (...) => `\x${hex(ch)}`
 
-*anonymous function 2287* = (...) => (`\x0${hex(ch)}` | undefined)
+*anonymous function 2287* = (...) => `\x0${hex(ch)}`
 
-*anonymous function 2385* = (...) => (`\x${hex(ch)}` | undefined)
+*anonymous function 2385* = (...) => `\x${hex(ch)}`
 
-*anonymous function 3852* = (...) => ({"type": "sql", "body": body} | undefined)
+*anonymous function 3852* = (...) => {"type": "sql", "body": body}
 
-*anonymous function 3949* = (...) => (v | undefined)
+*anonymous function 3949* = (...) => v
 
-*anonymous function 4000* = (...) => (v | undefined)
+*anonymous function 4000* = (...) => v
 
-*anonymous function 4064* = (...) => (v | undefined)
+*anonymous function 4064* = (...) => v
 
-*anonymous function 4134* = (...) => (v | undefined)
+*anonymous function 4134* = (...) => v
 
-*anonymous function 4211* = (...) => (
-  | {
-        "type": "select_query",
-        "top": top,
-        "select": select,
-        "from": from,
-        "where": where,
-        "orderBy": orderBy
-    }
-  | undefined
-)
+*anonymous function 4211* = (...) => {
+    "type": "select_query",
+    "top": top,
+    "select": select,
+    "from": from,
+    "where": where,
+    "orderBy": orderBy
+}
 
-*anonymous function 4474* = (...) => ({"type": "select_specification", "*": true} | undefined)
+*anonymous function 4474* = (...) => {"type": "select_specification", "*": true}
 
-*anonymous function 4589* = (...) => (
-  | {"type": "select_specification", "properties": properties}
-  | undefined
-)
+*anonymous function 4589* = (...) => {"type": "select_specification", "properties": properties}
 
-*anonymous function 4716* = (...) => ({"type": "select_specification", "value": value} | undefined)
+*anonymous function 4716* = (...) => {"type": "select_specification", "value": value}
 
-*anonymous function 4902* = (...) => (v | undefined)
+*anonymous function 4902* = (...) => v
 
-*anonymous function 4960* = (...) => (
-  | {"type": "object_property_list", "properties": ???*0*}
-  | undefined
-)
+*anonymous function 4960* = (...) => {"type": "object_property_list", "properties": ???*0*}
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 5104* = (...) => (v | undefined)
+*anonymous function 5104* = (...) => v
 
-*anonymous function 5164* = (...) => (
-  | {"type": "from_specification", "source": source, "joins": joins}
-  | undefined
-)
+*anonymous function 5164* = (...) => {"type": "from_specification", "source": source, "joins": joins}
 
-*anonymous function 5303* = (...) => (
-  | {"type": "from_source", "expression": expression, "alias": alias, "iteration": true}
-  | undefined
-)
+*anonymous function 5303* = (...) => {"type": "from_source", "expression": expression, "alias": alias, "iteration": true}
 
-*anonymous function 5468* = (...) => (v | undefined)
+*anonymous function 5468* = (...) => v
 
-*anonymous function 5532* = (...) => (
-  | {"type": "from_source", "expression": expression, "alias": alias}
-  | undefined
-)
+*anonymous function 5532* = (...) => {"type": "from_source", "expression": expression, "alias": alias}
 
-*anonymous function 5672* = (...) => (
-  | {"type": "filter_condition", "condition": condition}
-  | undefined
-)
+*anonymous function 5672* = (...) => {"type": "filter_condition", "condition": condition}
 
-*anonymous function 5793* = (...) => (
-  | {"type": "sort_specification", "expressions": ???*0*}
-  | undefined
-)
+*anonymous function 5793* = (...) => {"type": "sort_specification", "expressions": ???*0*}
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 5936* = (...) => (
-  | {"type": "sort_expression", "expression": expression, "order": order}
-  | undefined
-)
+*anonymous function 5936* = (...) => {"type": "sort_expression", "expression": expression, "order": order}
 
-*anonymous function 625* = (...) => (
-  | `Expected ${describeExpected(expected)} but ${describeFound(found)} found.`
-  | undefined
-)
+*anonymous function 625* = (...) => `Expected ${describeExpected(expected)} but ${describeFound(found)} found.`
 
-*anonymous function 6287* = (...) => (
-  | {"type": "scalar_function_expression", "name": name, "arguments": args, "udf": true}
-  | undefined
-)
+*anonymous function 6287* = (...) => {"type": "scalar_function_expression", "name": name, "arguments": args, "udf": true}
 
-*anonymous function 6458* = (...) => (
-  | {"type": "scalar_function_expression", "name": name, "arguments": args}
-  | undefined
-)
+*anonymous function 6458* = (...) => {"type": "scalar_function_expression", "name": name, "arguments": args}
 
-*anonymous function 6748* = (...) => (
-  | {"type": "scalar_object_expression", "properties": (head ? ???*0* : [])}
-  | undefined
-)
+*anonymous function 6748* = (...) => {"type": "scalar_object_expression", "properties": (head ? ???*0* : [])}
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 702* = (...) => (`"${literalEscape(expectation["text"])}"` | undefined)
+*anonymous function 702* = (...) => `"${literalEscape(expectation["text"])}"`
 
-*anonymous function 7046* = (...) => (
-  | {"type": "scalar_array_expression", "elements": elements}
-  | undefined
-)
+*anonymous function 7046* = (...) => {"type": "scalar_array_expression", "elements": elements}
 
-*anonymous function 7257* = (...) => ({"type": "undefined_constant"} | undefined)
+*anonymous function 7257* = (...) => {"type": "undefined_constant"}
 
-*anonymous function 7337* = (...) => ({"type": "null_constant"} | undefined)
+*anonymous function 7337* = (...) => {"type": "null_constant"}
 
-*anonymous function 7412* = (...) => ({"type": "boolean_constant", "value": false} | undefined)
+*anonymous function 7412* = (...) => {"type": "boolean_constant", "value": false}
 
-*anonymous function 7527* = (...) => ({"type": "boolean_constant", "value": true} | undefined)
+*anonymous function 7527* = (...) => {"type": "boolean_constant", "value": true}
 
-*anonymous function 7869* = (...) => (
-  | {
-        "type": "number_constant",
-        "value": (hex ? FreeVar(parseInt)(text(), 16) : FreeVar(parseFloat)(text()))
-    }
-  | undefined
-)
+*anonymous function 7869* = (...) => {
+    "type": "number_constant",
+    "value": (hex ? FreeVar(parseInt)(text(), 16) : FreeVar(parseFloat)(text()))
+}
 
-*anonymous function 804* = (...) => (
-  | `[${(expectation["inverted"] ? "^" : "")}${escapedParts}]`
-  | undefined
-)
+*anonymous function 804* = (...) => `[${(expectation["inverted"] ? "^" : "")}${escapedParts}]`
 
-*anonymous function 8139* = (...) => (
-  | {"type": "string_constant", "value": chars["join"]("")}
-  | undefined
-)
+*anonymous function 8139* = (...) => {"type": "string_constant", "value": chars["join"]("")}
 
-*anonymous function 8336* = (...) => ({"type": "array_constant", "elements": ???*0*} | undefined)
+*anonymous function 8336* = (...) => {"type": "array_constant", "elements": ???*0*}
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 8472* = (...) => ({"type": "object_constant", "properties": ???*0*} | undefined)
+*anonymous function 8472* = (...) => {"type": "object_constant", "properties": ???*0*}
 - *0* spread is not supported
   ⚠️  This value might have side effects
 
-*anonymous function 9682* = (...) => ("ASC" | undefined)
+*anonymous function 9682* = (...) => "ASC"
 
-*anonymous function 9811* = (...) => ("DESC" | undefined)
+*anonymous function 9811* = (...) => "DESC"
 
-*anonymous function 9939* = (...) => ("AND" | undefined)
+*anonymous function 9939* = (...) => "AND"
 
 *arrow function 13694* = (...) => {"type": "scalar_member_expression", "object": object, "property": property, "computed": computed}
 
@@ -306,7 +222,7 @@ begin = arguments[1]
 
 body = arguments[0]
 
-buildBinaryExpression = (...) => (tail["reduce"](*arrow function 169161*, head) | undefined)
+buildBinaryExpression = (...) => tail["reduce"](*arrow function 169161*, head)
 
 ch#14 = arguments[0]
 
@@ -322,10 +238,7 @@ chars = arguments[0]
 
 child = arguments[0]
 
-classEscape = (...) => (
-  | ...[...](..., ...)["replace"](/\^/g, "\\^")["replace"](/-/g, "\\-")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 2287*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 2385*)
-  | undefined
-)
+classEscape = (...) => ...[...](..., ...)["replace"](/\]/g, "\\]")["replace"](/\^/g, "\\^")["replace"](/-/g, "\\-")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 2287*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 2385*)
 
 computed#86 = arguments[1]["computed"]
 
@@ -337,10 +250,7 @@ consequent = arguments[1]
 
 ctor = (...) => undefined
 
-describeExpectation = (...) => (
-  | DESCRIBE_EXPECTATION_FNS[expectation["type"]](expectation)
-  | undefined
-)
+describeExpectation = (...) => DESCRIBE_EXPECTATION_FNS[expectation["type"]](expectation)
 
 describeExpected = (...) => (
   | descriptions[0]
@@ -353,10 +263,7 @@ describeExpected = (...) => (
 - *1* unsupported expression
   ⚠️  This value might have side effects
 
-describeFound = (...) => (
-  | (found ? `"${literalEscape(found)}"` : "end of input")
-  | undefined
-)
+describeFound = (...) => (found ? `"${literalEscape(found)}"` : "end of input")
 
 description#105 = arguments[0]
 
@@ -480,10 +387,7 @@ head#99 = arguments[0]
 
 hex#56 = arguments[0]
 
-hex#7 = (...) => (
-  | ch["charCodeAt"](0)["toString"](16)["toUpperCase"]()
-  | undefined
-)
+hex#7 = (...) => ch["charCodeAt"](0)["toString"](16)["toUpperCase"]()
 
 i#22 = (???*0* | 0 | ???*1* | 1)
 - *0* i
@@ -519,10 +423,7 @@ left = arguments[0]
 
 list = arguments[1]
 
-literalEscape = (...) => (
-  | s["replace"](/\\/g, "\\\\")["replace"](/"/g, "\\\"")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 1822*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 1920*)
-  | undefined
-)
+literalEscape = (...) => s["replace"](/\\/g, "\\\\")["replace"](/"/g, "\\\"")["replace"](/\0/g, "\\0")["replace"](/\t/g, "\\t")["replace"](/\n/g, "\\n")["replace"](/\r/g, "\\r")["replace"](/[\x00-\x0F]/g, *anonymous function 1822*)["replace"](/[\x10-\x1F\x7F-\x9F]/g, *anonymous function 1920*)
 
 location#105 = (
   | arguments[1]
@@ -538,7 +439,7 @@ location#123 = arguments[1]
 
 location#124 = arguments[2]
 
-location#28 = (...) => (peg$computeLocation(peg$savedPos, peg$currPos) | undefined)
+location#28 = (...) => peg$computeLocation(peg$savedPos, peg$currPos)
 
 location#5 = arguments[3]
 
@@ -584,14 +485,11 @@ peg$FAILED = {}
 
 peg$SyntaxError = (...) => undefined
 
-peg$anyExpectation = (...) => ({"type": "any"} | undefined)
+peg$anyExpectation = (...) => {"type": "any"}
 
-peg$buildSimpleError = (...) => (new peg$SyntaxError(message, null, null, location) | undefined)
+peg$buildSimpleError = (...) => new peg$SyntaxError(message, null, null, location)
 
-peg$buildStructuredError = (...) => (
-  | new peg$SyntaxError(peg$SyntaxError["buildMessage"](expected, found), expected, found, location)
-  | undefined
-)
+peg$buildStructuredError = (...) => new peg$SyntaxError(peg$SyntaxError["buildMessage"](expected, found), expected, found, location)
 
 peg$c0 = *anonymous function 3852*
 
@@ -1023,20 +921,14 @@ peg$c98 = *anonymous function 10064*
 
 peg$c99 = "not"
 
-peg$classExpectation = (...) => (
-  | {"type": "class", "parts": parts, "inverted": inverted, "ignoreCase": ignoreCase}
-  | undefined
-)
+peg$classExpectation = (...) => {"type": "class", "parts": parts, "inverted": inverted, "ignoreCase": ignoreCase}
 
-peg$computeLocation = (...) => (
-  | {
-        "start": {"offset": startPos, "line": startPosDetails["line"], "column": startPosDetails["column"]},
-        "end": {"offset": endPos, "line": endPosDetails["line"], "column": endPosDetails["column"]}
-    }
-  | undefined
-)
+peg$computeLocation = (...) => {
+    "start": {"offset": startPos, "line": startPosDetails["line"], "column": startPosDetails["column"]},
+    "end": {"offset": endPos, "line": endPosDetails["line"], "column": endPosDetails["column"]}
+}
 
-peg$computePosDetails = (...) => (details | undefined)
+peg$computePosDetails = (...) => details
 
 peg$currPos = (
   | 0
@@ -1179,206 +1071,203 @@ peg$currPos = (
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
-peg$endExpectation = (...) => ({"type": "end"} | undefined)
+peg$endExpectation = (...) => {"type": "end"}
 
 peg$fail = (...) => undefined
 
-peg$literalExpectation = (...) => (
-  | {"type": "literal", "text": text, "ignoreCase": ignoreCase}
-  | undefined
-)
+peg$literalExpectation = (...) => {"type": "literal", "text": text, "ignoreCase": ignoreCase}
 
 peg$maxFailExpected = []
 
 peg$maxFailPos = (0 | peg$currPos)
 
-peg$otherExpectation = (...) => ({"type": "other", "description": description} | undefined)
+peg$otherExpectation = (...) => {"type": "other", "description": description}
 
 peg$parse = (...) => (peg$result | undefined)
 
-peg$parse_ = (...) => (s0 | undefined)
+peg$parse_ = (...) => s0
 
-peg$parseand = (...) => (s0 | undefined)
+peg$parseand = (...) => s0
 
-peg$parsearray = (...) => (s0 | undefined)
+peg$parsearray = (...) => s0
 
-peg$parsearray_constant = (...) => (s0 | undefined)
+peg$parsearray_constant = (...) => s0
 
-peg$parsearray_subquery_expression = (...) => (s0 | undefined)
+peg$parsearray_subquery_expression = (...) => s0
 
-peg$parseas = (...) => (s0 | undefined)
+peg$parseas = (...) => s0
 
-peg$parseasc = (...) => (s0 | undefined)
+peg$parseasc = (...) => s0
 
-peg$parsebetween = (...) => (s0 | undefined)
+peg$parsebetween = (...) => s0
 
-peg$parseboolean_constant = (...) => (s0 | undefined)
+peg$parseboolean_constant = (...) => s0
 
-peg$parseby = (...) => (s0 | undefined)
+peg$parseby = (...) => s0
 
-peg$parsecharactor_escape_sequence = (...) => (s0 | undefined)
+peg$parsecharactor_escape_sequence = (...) => s0
 
-peg$parsecollection_expression = (...) => (s0 | undefined)
+peg$parsecollection_expression = (...) => s0
 
-peg$parsecollection_member_expression = (...) => (s0 | undefined)
+peg$parsecollection_member_expression = (...) => s0
 
-peg$parsecollection_primary_expression = (...) => (s0 | undefined)
+peg$parsecollection_primary_expression = (...) => s0
 
-peg$parsecollection_subquery_expression = (...) => (s0 | undefined)
+peg$parsecollection_subquery_expression = (...) => s0
 
-peg$parsecomment = (...) => (s0 | undefined)
+peg$parsecomment = (...) => s0
 
-peg$parseconstant = (...) => (s0 | undefined)
+peg$parseconstant = (...) => s0
 
-peg$parsedesc = (...) => (s0 | undefined)
+peg$parsedesc = (...) => s0
 
-peg$parsedouble_string_character = (...) => (s0 | undefined)
+peg$parsedouble_string_character = (...) => s0
 
-peg$parseescape_character = (...) => (s0 | undefined)
+peg$parseescape_character = (...) => s0
 
-peg$parseescape_sequence = (...) => (s0 | undefined)
+peg$parseescape_sequence = (...) => s0
 
-peg$parseexists = (...) => (s0 | undefined)
+peg$parseexists = (...) => s0
 
-peg$parseexists_subquery_expression = (...) => (s0 | undefined)
+peg$parseexists_subquery_expression = (...) => s0
 
-peg$parsefalse = (...) => (s0 | undefined)
+peg$parsefalse = (...) => s0
 
-peg$parsefilter_condition = (...) => (s0 | undefined)
+peg$parsefilter_condition = (...) => s0
 
-peg$parsefrom = (...) => (s0 | undefined)
+peg$parsefrom = (...) => s0
 
-peg$parsefrom_source = (...) => (s0 | undefined)
+peg$parsefrom_source = (...) => s0
 
-peg$parsefrom_specification = (...) => (s0 | undefined)
+peg$parsefrom_specification = (...) => s0
 
-peg$parsehex_digit = (...) => (s0 | undefined)
+peg$parsehex_digit = (...) => s0
 
-peg$parseidentifier = (...) => (s0 | undefined)
+peg$parseidentifier = (...) => s0
 
-peg$parseidentifier_name = (...) => (s0 | undefined)
+peg$parseidentifier_name = (...) => s0
 
-peg$parseidentifier_start = (...) => (s0 | undefined)
+peg$parseidentifier_start = (...) => s0
 
-peg$parsein = (...) => (s0 | undefined)
+peg$parsein = (...) => s0
 
-peg$parsejoin = (...) => (s0 | undefined)
+peg$parsejoin = (...) => s0
 
-peg$parsenon_escape_character = (...) => (s0 | undefined)
+peg$parsenon_escape_character = (...) => s0
 
-peg$parsenot = (...) => (s0 | undefined)
+peg$parsenot = (...) => s0
 
-peg$parsenull = (...) => (s0 | undefined)
+peg$parsenull = (...) => s0
 
-peg$parsenull_constant = (...) => (s0 | undefined)
+peg$parsenull_constant = (...) => s0
 
-peg$parsenumber_constant = (...) => (s0 | undefined)
+peg$parsenumber_constant = (...) => s0
 
-peg$parseobject_constant = (...) => (s0 | undefined)
+peg$parseobject_constant = (...) => s0
 
-peg$parseobject_constant_property = (...) => (s0 | undefined)
+peg$parseobject_constant_property = (...) => s0
 
-peg$parseobject_property = (...) => (s0 | undefined)
+peg$parseobject_property = (...) => s0
 
-peg$parseobject_property_list = (...) => (s0 | undefined)
+peg$parseobject_property_list = (...) => s0
 
-peg$parseor = (...) => (s0 | undefined)
+peg$parseor = (...) => s0
 
-peg$parseorder = (...) => (s0 | undefined)
+peg$parseorder = (...) => s0
 
-peg$parseparameter_name = (...) => (s0 | undefined)
+peg$parseparameter_name = (...) => s0
 
-peg$parsereserved = (...) => (s0 | undefined)
+peg$parsereserved = (...) => s0
 
-peg$parsescalar_array_expression = (...) => (s0 | undefined)
+peg$parsescalar_array_expression = (...) => s0
 
-peg$parsescalar_between_expression = (...) => (s0 | undefined)
+peg$parsescalar_between_expression = (...) => s0
 
-peg$parsescalar_binary_additive_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_additive_expression = (...) => s0
 
-peg$parsescalar_binary_and_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_and_expression = (...) => s0
 
-peg$parsescalar_binary_bitwise_and_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_bitwise_and_expression = (...) => s0
 
-peg$parsescalar_binary_bitwise_or_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_bitwise_or_expression = (...) => s0
 
-peg$parsescalar_binary_bitwise_xor_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_bitwise_xor_expression = (...) => s0
 
-peg$parsescalar_binary_equality_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_equality_expression = (...) => s0
 
-peg$parsescalar_binary_multiplicative_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_multiplicative_expression = (...) => s0
 
-peg$parsescalar_binary_or_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_or_expression = (...) => s0
 
-peg$parsescalar_binary_relational_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_relational_expression = (...) => s0
 
-peg$parsescalar_binary_shift_expression = (...) => (s0 | undefined)
+peg$parsescalar_binary_shift_expression = (...) => s0
 
-peg$parsescalar_conditional_expression = (...) => (s0 | undefined)
+peg$parsescalar_conditional_expression = (...) => s0
 
-peg$parsescalar_expression_list = (...) => (s0 | undefined)
+peg$parsescalar_expression_list = (...) => s0
 
-peg$parsescalar_function_expression = (...) => (s0 | undefined)
+peg$parsescalar_function_expression = (...) => s0
 
-peg$parsescalar_in_expression = (...) => (s0 | undefined)
+peg$parsescalar_in_expression = (...) => s0
 
-peg$parsescalar_member_expression = (...) => (s0 | undefined)
+peg$parsescalar_member_expression = (...) => s0
 
-peg$parsescalar_object_element_property = (...) => (s0 | undefined)
+peg$parsescalar_object_element_property = (...) => s0
 
-peg$parsescalar_object_expression = (...) => (s0 | undefined)
+peg$parsescalar_object_expression = (...) => s0
 
-peg$parsescalar_primary_expression = (...) => (s0 | undefined)
+peg$parsescalar_primary_expression = (...) => s0
 
-peg$parsescalar_subquery_expression = (...) => (s0 | undefined)
+peg$parsescalar_subquery_expression = (...) => s0
 
-peg$parsescalar_unary_expression = (...) => (s0 | undefined)
+peg$parsescalar_unary_expression = (...) => s0
 
-peg$parseselect = (...) => (s0 | undefined)
+peg$parseselect = (...) => s0
 
-peg$parseselect_query = (...) => (s0 | undefined)
+peg$parseselect_query = (...) => s0
 
-peg$parseselect_specification = (...) => (s0 | undefined)
+peg$parseselect_specification = (...) => s0
 
-peg$parsesingle_escape_character = (...) => (s0 | undefined)
+peg$parsesingle_escape_character = (...) => s0
 
-peg$parsesingle_string_character = (...) => (s0 | undefined)
+peg$parsesingle_string_character = (...) => s0
 
-peg$parsesort_expression = (...) => (s0 | undefined)
+peg$parsesort_expression = (...) => s0
 
-peg$parsesort_specification = (...) => (s0 | undefined)
+peg$parsesort_specification = (...) => s0
 
-peg$parsesource_character = (...) => (s0 | undefined)
+peg$parsesource_character = (...) => s0
 
-peg$parsesql = (...) => (s0 | undefined)
+peg$parsesql = (...) => s0
 
-peg$parsestring_constant = (...) => (s0 | undefined)
+peg$parsestring_constant = (...) => s0
 
-peg$parsesubquery = (...) => (s0 | undefined)
+peg$parsesubquery = (...) => s0
 
-peg$parsesubquery_expression = (...) => (s0 | undefined)
+peg$parsesubquery_expression = (...) => s0
 
-peg$parsetop = (...) => (s0 | undefined)
+peg$parsetop = (...) => s0
 
-peg$parsetop_specification = (...) => (s0 | undefined)
+peg$parsetop_specification = (...) => s0
 
-peg$parsetrue = (...) => (s0 | undefined)
+peg$parsetrue = (...) => s0
 
-peg$parseudf = (...) => (s0 | undefined)
+peg$parseudf = (...) => s0
 
-peg$parseunary_operator = (...) => (s0 | undefined)
+peg$parseunary_operator = (...) => s0
 
-peg$parseundefined_constant = (...) => (s0 | undefined)
+peg$parseundefined_constant = (...) => s0
 
-peg$parseunicode_escape_sequence = (...) => (s0 | undefined)
+peg$parseunicode_escape_sequence = (...) => s0
 
-peg$parseunsigned_integer = (...) => (s0 | undefined)
+peg$parseunsigned_integer = (...) => s0
 
-peg$parsevalue = (...) => (s0 | undefined)
+peg$parsevalue = (...) => s0
 
-peg$parsewhere = (...) => (s0 | undefined)
+peg$parsewhere = (...) => s0
 
-peg$parsewhitespace = (...) => (s0 | undefined)
+peg$parsewhitespace = (...) => s0
 
 peg$posDetailsCache = [{"line": 1, "column": 1}]
 
@@ -3497,7 +3386,7 @@ test = arguments[0]
 
 text#107 = arguments[0]
 
-text#28 = (...) => (input["substring"](peg$savedPos, peg$currPos) | undefined)
+text#28 = (...) => input["substring"](peg$savedPos, peg$currPos)
 
 top#31 = arguments[0]
 
