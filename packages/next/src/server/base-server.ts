@@ -45,6 +45,7 @@ import type { TLSSocket } from 'tls'
 import type { PathnameNormalizer } from './normalizers/request/pathname-normalizer'
 import type { InstrumentationModule } from './instrumentation/types'
 
+import * as path from 'path'
 import { format as formatUrl, parse as parseUrl } from 'url'
 import { formatHostname } from './lib/format-hostname'
 import {
@@ -147,6 +148,7 @@ import { computeCacheBustingSearchParam } from '../shared/lib/router/utils/cache
 import { setCacheBustingSearchParamWithHash } from '../client/components/router-reducer/set-cache-busting-search-param'
 import type { CacheControl } from './lib/cache-control'
 import type { PrerenderedRoute } from '../build/static-paths/types'
+import { createOpaqueFallbackRouteParams } from './request/fallback-params'
 
 export type FindComponentsResult = {
   components: LoadComponentsReturnType
@@ -404,7 +406,7 @@ export default abstract class Server<
 
   protected abstract loadEnvConfig(params: {
     dev: boolean
-    forceReload?: boolean
+    forceReload: boolean
   }): void
 
   // TODO-APP: (wyattjoh): Make protected again. Used for turbopack in route-resolver.ts right now.
@@ -443,10 +445,10 @@ export default abstract class Server<
     this.experimentalTestProxy = experimentalTestProxy
     this.serverOptions = options
 
-    this.dir = (require('path') as typeof import('path')).resolve(dir)
+    this.dir = path.resolve(/* turbopackIgnore: true */ dir)
 
     this.quiet = quiet
-    this.loadEnvConfig({ dev })
+    this.loadEnvConfig({ dev, forceReload: false })
 
     // TODO: should conf be normalized to prevent missing
     // values from causing issues as this can be user provided
@@ -457,8 +459,8 @@ export default abstract class Server<
       this.fetchHostname = formatHostname(this.hostname)
     }
     this.port = port
-    this.distDir = (require('path') as typeof import('path')).join(
-      this.dir,
+    this.distDir = path.join(
+      /* turbopackIgnore: true */ this.dir,
       this.nextConfig.distDir
     )
     this.publicDir = this.getPublicDir()
@@ -568,6 +570,10 @@ export default abstract class Server<
           this.nextConfig.experimental.clientSegmentCache === 'client-only'
             ? 'client-only'
             : Boolean(this.nextConfig.experimental.clientSegmentCache),
+        clientParamParsing:
+          this.nextConfig.experimental.clientParamParsing ?? false,
+        clientParamParsingOrigins:
+          this.nextConfig.experimental.clientParamParsingOrigins,
         dynamicOnHover: this.nextConfig.experimental.dynamicOnHover ?? false,
         inlineCss: this.nextConfig.experimental.inlineCss ?? false,
         authInterrupts: !!this.nextConfig.experimental.authInterrupts,
@@ -575,8 +581,6 @@ export default abstract class Server<
       onInstrumentationRequestError:
         this.instrumentationOnRequestError.bind(this),
       reactMaxHeadersLength: this.nextConfig.reactMaxHeadersLength,
-      devtoolSegmentExplorer:
-        this.nextConfig.experimental.devtoolSegmentExplorer,
     }
 
     // Initialize next/config with the environment configuration
@@ -600,6 +604,10 @@ export default abstract class Server<
 
     this.setAssetPrefix(assetPrefix)
     this.responseCache = this.getResponseCache({ dev })
+  }
+
+  protected reloadMatchers() {
+    return this.matchers.reload()
   }
 
   private handleRSCRequest: RouteHandler<ServerRequest, ServerResponse> = (
@@ -878,13 +886,13 @@ export default abstract class Server<
   ): Promise<void> {
     await this.prepare()
     const method = req.method.toUpperCase()
-
     const tracer = getTracer()
+
     return tracer.withPropagatedContext(req.headers, () => {
       return tracer.trace(
         BaseServerSpan.handleRequest,
         {
-          spanName: `${method} ${req.url}`,
+          spanName: `${method}`,
           kind: SpanKind.SERVER,
           attributes: {
             'http.method': method,
@@ -940,11 +948,7 @@ export default abstract class Server<
               })
               span.updateName(name)
             } else {
-              span.updateName(
-                isRSCRequest
-                  ? `RSC ${method} ${req.url}`
-                  : `${method} ${req.url}`
-              )
+              span.updateName(isRSCRequest ? `RSC ${method}` : `${method}`)
             }
           })
       )
@@ -2317,13 +2321,10 @@ export default abstract class Server<
             }
           }
           if (smallestFallbackRouteParams) {
-            const devValidatingFallbackParams = new Map<string, string>(
-              smallestFallbackRouteParams.map((v) => [v, ''])
-            )
             addRequestMeta(
               req,
               'devValidatingFallbackParams',
-              devValidatingFallbackParams
+              createOpaqueFallbackRouteParams(smallestFallbackRouteParams)!
             )
           }
         }
@@ -2414,19 +2415,19 @@ export default abstract class Server<
     return null
   }
 
-  private stripNextDataPath(path: string, stripLocale = true) {
-    if (path.includes(this.buildId)) {
-      const splitPath = path.substring(
-        path.indexOf(this.buildId) + this.buildId.length
+  private stripNextDataPath(filePath: string, stripLocale = true) {
+    if (filePath.includes(this.buildId)) {
+      const splitPath = filePath.substring(
+        filePath.indexOf(this.buildId) + this.buildId.length
       )
 
-      path = denormalizePagePath(splitPath.replace(/\.json$/, ''))
+      filePath = denormalizePagePath(splitPath.replace(/\.json$/, ''))
     }
 
     if (this.localeNormalizer && stripLocale) {
-      return this.localeNormalizer.normalize(path)
+      return this.localeNormalizer.normalize(filePath)
     }
-    return path
+    return filePath
   }
 
   // map the route to the actual bundle name
@@ -2747,9 +2748,10 @@ export default abstract class Server<
 
       const is404 = res.statusCode === 404
       let using404Page = false
+      const hasAppDir = this.enabledDirectories.app
 
       if (is404) {
-        if (this.enabledDirectories.app) {
+        if (hasAppDir) {
           // Use the not-found entry in app directory
           result = await this.findPageComponents({
             locale: getRequestMeta(ctx.req, 'locale'),
@@ -2787,6 +2789,21 @@ export default abstract class Server<
         // skip ensuring /500 in dev mode as it isn't used and the
         // dev overlay is used instead
         if (statusPage !== '/500' || !this.renderOpts.dev) {
+          if (!result && hasAppDir) {
+            // Otherwise if app router present, load app router built-in 500 page
+            result = await this.findPageComponents({
+              locale: getRequestMeta(ctx.req, 'locale'),
+              page: statusPage,
+              query,
+              params: {},
+              isAppPath: true,
+              // Ensuring can't be done here because you never "match" a 500
+              // route.
+              shouldEnsure: true,
+              url: ctx.req.url,
+            })
+          }
+          // If the above App Router result is empty, fallback to pages router 500 page
           result = await this.findPageComponents({
             locale: getRequestMeta(ctx.req, 'locale'),
             page: statusPage,

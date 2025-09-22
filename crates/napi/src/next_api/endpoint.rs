@@ -34,7 +34,7 @@ pub struct NapiServerPath {
 impl From<ServerPath> for NapiServerPath {
     fn from(server_path: ServerPath) -> Self {
         Self {
-            path: server_path.path,
+            path: server_path.path.into_owned(),
             content_hash: format!("{:x}", server_path.content_hash),
         }
     }
@@ -59,7 +59,7 @@ impl From<Option<EndpointOutputPaths>> for NapiWrittenEndpoint {
                 client_paths,
             }) => Self {
                 r#type: "nodejs".to_string(),
-                entry_path: Some(server_entry_path),
+                entry_path: Some(server_entry_path.into_owned()),
                 client_paths: client_paths.into_iter().map(From::from).collect(),
                 server_paths: server_paths.into_iter().map(From::from).collect(),
                 ..Default::default()
@@ -131,7 +131,7 @@ pub async fn endpoint_write_to_disk(
     let (written, issues, diags) = endpoint
         .turbopack_ctx()
         .turbo_tasks()
-        .run_once(async move {
+        .run(async move {
             let written_entrypoint_with_issues_op =
                 get_written_endpoint_with_issues_operation(endpoint_op);
             let WrittenEndpointWithIssues {
@@ -146,7 +146,7 @@ pub async fn endpoint_write_to_disk(
 
             Ok((written.clone(), issues.clone(), diagnostics.clone()))
         })
-        .or_else(|e| ctx.throw_turbopack_internal_result(&e))
+        .or_else(|e| ctx.throw_turbopack_internal_result(&e.into()))
         .await?;
     Ok(TurbopackResult {
         result: NapiWrittenEndpoint::from(written.map(ReadRef::into_owned)),

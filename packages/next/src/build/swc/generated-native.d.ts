@@ -120,8 +120,6 @@ export interface NapiProjectOptions {
   watch: NapiWatchOptions
   /** The contents of next.config.js, serialized to JSON. */
   nextConfig: RcStr
-  /** The contents of ts/config read by load-jsconfig, serialized to JSON. */
-  jsConfig: RcStr
   /** A map of environment variables to use when compiling code. */
   env: Array<NapiEnvVar>
   /**
@@ -172,8 +170,6 @@ export interface NapiPartialProjectOptions {
   watch?: NapiWatchOptions
   /** The contents of next.config.js, serialized to JSON. */
   nextConfig?: RcStr
-  /** The contents of ts/config read by load-jsconfig, serialized to JSON. */
-  jsConfig?: RcStr
   /** A map of environment variables to use when compiling code. */
   env?: Array<NapiEnvVar>
   /**
@@ -424,6 +420,14 @@ export interface NapiDiagnostic {
   name: string
   payload: Record<string, string>
 }
+export declare function expandNextJsTemplate(
+  content: Buffer,
+  templatePath: string,
+  nextPackageDirPath: string,
+  replacements: Record<string, string>,
+  injections: Record<string, string>,
+  imports: Record<string, string | null>
+): string
 export declare function parse(
   src: string,
   options: Buffer,
@@ -457,7 +461,10 @@ export declare function transformSync(
   isModule: boolean,
   options: Buffer
 ): object
-export declare function startTurbopackTraceServer(path: string): void
+export declare function startTurbopackTraceServer(
+  path: string,
+  port?: number | undefined | null
+): void
 export interface NextBuildContext {
   /** The root directory of the workspace. */
   root?: string
