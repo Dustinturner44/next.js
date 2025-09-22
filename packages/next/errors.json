@@ -867,5 +867,7 @@
   "866": "Both \"%s\" and \"%s\" files are detected. Please use \"%s\" instead.",
   "867": "The %s \"%s\" must export a %s or a \\`default\\` function",
   "868": "No reference found for param: %s in reference: %s",
-  "869": "No reference found for segment: %s with reference: %s"
+  "869": "No reference found for segment: %s with reference: %s",
+  "870": "`pipelineInSequentialTasks` should not be called in edge runtime.",
+  "871": "dynamicInDevStagedRendering should only be used in development mode and when Cache Components is enabled."
 }
