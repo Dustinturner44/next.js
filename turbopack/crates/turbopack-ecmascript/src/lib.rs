@@ -25,7 +25,6 @@ pub mod references;
 pub mod runtime_functions;
 pub mod side_effect_optimization;
 pub mod source_map;
-pub(crate) mod special_cases;
 pub(crate) mod static_code;
 mod swc_comments;
 pub mod text;
@@ -174,6 +173,48 @@ pub enum TreeShakingMode {
     ReexportsOnly,
 }
 
+#[derive(
+    PartialOrd,
+    Ord,
+    PartialEq,
+    Eq,
+    Hash,
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    Serialize,
+    Deserialize,
+    TaskInput,
+    TraceRawVcs,
+    NonLocalValue,
+)]
+pub enum AnalyzeMode {
+    /// For bundling only, no tracing of referenced files.
+    #[default]
+    CodeGeneration,
+    /// For bundling and tracing of referenced files.
+    CodeGenerationAndTracing,
+    /// For tracing of referenced files only, no bundling (i.e. no codegen).
+    Tracing,
+}
+
+impl AnalyzeMode {
+    pub fn is_tracing(self) -> bool {
+        match self {
+            AnalyzeMode::Tracing | AnalyzeMode::CodeGenerationAndTracing => true,
+            AnalyzeMode::CodeGeneration => false,
+        }
+    }
+
+    pub fn is_code_gen(self) -> bool {
+        match self {
+            AnalyzeMode::CodeGeneration | AnalyzeMode::CodeGenerationAndTracing => true,
+            AnalyzeMode::Tracing => false,
+        }
+    }
+}
+
 #[turbo_tasks::value(transparent)]
 pub struct OptionTreeShaking(pub Option<TreeShakingMode>);
 
@@ -223,7 +264,7 @@ pub struct EcmascriptOptions {
     pub keep_last_successful_parse: bool,
     /// Whether the modules in this context are never chunked/codegen-ed, but only used for
     /// tracing.
-    pub is_tracing: bool,
+    pub analyze_mode: AnalyzeMode,
     // TODO this should just be handled via CompileTimeInfo FreeVarReferences, but then it
     // (currently) wouldn't be possible to have different replacement values in user code vs
     // node_modules.
