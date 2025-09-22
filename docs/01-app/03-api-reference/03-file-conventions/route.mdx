@@ -629,6 +629,62 @@ export async function GET() {
 }
 ```
 
+### Reading files using `process.cwd()`
+
+When serving an asset from the filesystem, including `public` directory, in a Route Handler, resolve the file path relative to your project root using `process.cwd()` with `path.join`. Avoid relative paths like `./public/...` which depend on the current working directory.
+
+```ts filename="app/api/file/route.ts" switcher
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+export async function GET() {
+  const filePath = join(process.cwd(), 'public', 'logo.png')
+  const file = await readFile(filePath)
+  return new Response(file, {
+    headers: { 'Content-Type': 'image/png' },
+  })
+}
+```
+
+```js filename="app/api/file/route.js" switcher
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+export async function GET() {
+  const filePath = join(process.cwd(), 'public', 'logo.png')
+  const file = await readFile(filePath)
+  return new Response(file, {
+    headers: { 'Content-Type': 'image/png' },
+  })
+}
+```
+
+To read a file co-located with your Route Handler, also anchor from `process.cwd()` and include the folder segments from the project root:
+
+```ts filename="app/api/reports/route.ts" switcher
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+export async function GET() {
+  const filePath = join(process.cwd(), 'app', 'api', 'reports', 'data.json')
+  const contents = await readFile(filePath, 'utf8')
+  return Response.json(JSON.parse(contents))
+}
+```
+
+```js filename="app/api/reports/route.js" switcher
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+export async function GET() {
+  const filePath = join(process.cwd(), 'app', 'api', 'reports', 'data.json')
+  const contents = await readFile(filePath, 'utf8')
+  return Response.json(JSON.parse(contents))
+}
+```
+
+Hosting platforms may execute your handler from a different working directory or compiled output. In these cases `./public/...` may resolve incorrectly, whereas `path.join(process.cwd(), 'public', ...)` anchors to the project root.
+
 ### Segment Config Options
 
 Route Handlers use the same [route segment configuration](/docs/app/api-reference/file-conventions/route-segment-config) as pages and layouts.

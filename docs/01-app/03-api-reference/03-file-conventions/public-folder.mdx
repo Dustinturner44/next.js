@@ -22,6 +22,50 @@ export function AvatarOfMe() {
 }
 ```
 
+## Reading files from the filesystem
+
+When you need to read files from the `public` folder, in Route Handlers, Server Components, or Server Functions, avoid using relative paths like `./public/asset.png`. Relative paths can break in production or across platforms because the process working directory may differ from the file location where the code runs.
+
+Instead, resolve paths relative to your project root using `process.cwd()` with `path.join`:
+
+```ts filename="app/api/read-asset/route.ts" switcher
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+export async function GET() {
+  const filePath = join(process.cwd(), 'public', 'asset.png')
+  const file = await readFile(filePath)
+  return new Response(file, {
+    headers: { 'Content-Type': 'image/png' },
+  })
+}
+```
+
+```js filename="app/api/read-asset/route.js" switcher
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
+
+export async function GET() {
+  const filePath = join(process.cwd(), 'public', 'asset.png')
+  const file = await readFile(filePath)
+  return new Response(file, {
+    headers: { 'Content-Type': 'image/png' },
+  })
+}
+```
+
+The `path.join(process.cwd(), 'public', '...')` pattern, is compatible with most deployment platforms and works the same in development and production.
+
+## Writing to the filesystem at runtime
+
+Avoid writing to the filesystem at runtime to create or modify files in `public` (or elsewhere). In many production environments:
+
+- File writes are not persisted (ephemeral filesystems used to serve requests).
+- The platform may block write permissions for security and scalability.
+- Next.js build outputs and static asset manifests are generated at build time. Files written at runtime are not included and won’t be served by the static file server.
+
+Prefer storing dynamic data in a database, object storage, or caching layer. If you need to generate assets ahead of time, do so during the build process.
+
 ## Caching
 
 Next.js cannot safely cache assets in the `public` folder because they may change. The default caching headers applied are:
