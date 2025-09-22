@@ -1153,20 +1153,6 @@ export interface NextConfig extends Record<string, any> {
   reactMaxHeadersLength?: number
 
   /**
-   * Add public (in browser) runtime configuration to your app
-   *
-   * @see [Runtime configuration](https://nextjs.org/docs/pages/api-reference/config/next-config-js/runtime-configuration
-   */
-  publicRuntimeConfig?: { [key: string]: any }
-
-  /**
-   * Add server runtime configuration to your app
-   *
-   * @see [Runtime configuration](https://nextjs.org/docs/pages/api-reference/config/next-config-js/runtime-configuration
-   */
-  serverRuntimeConfig?: { [key: string]: any }
-
-  /**
    * Next.js enables HTTP Keep-Alive by default.
    * You may want to disable HTTP Keep-Alive for certain `fetch()` calls or globally.
    *
@@ -1384,8 +1370,6 @@ export const defaultConfig = Object.freeze({
   i18n: null,
   productionBrowserSourceMaps: false,
   excludeDefaultMomentLocales: true,
-  serverRuntimeConfig: {},
-  publicRuntimeConfig: {},
   reactProductionProfiling: false,
   reactStrictMode: null,
   reactMaxHeadersLength: 6000,
