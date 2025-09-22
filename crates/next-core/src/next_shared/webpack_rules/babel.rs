@@ -149,11 +149,16 @@ pub async fn get_babel_loader_rules(
         && let Some(babel_plugin_path) =
             resolve_babel_plugin_react_compiler(next_config, project_path).await?
     {
-        let react_compiler_options = react_compiler_options.await?;
+        let mut react_compiler_options = react_compiler_options.owned().await?;
+        react_compiler_options
+            .enable_name_anonymous_functions
+            .get_or_insert_with(|| {
+                builtin_conditions.contains(&WebpackLoaderBuiltinCondition::Development)
+            });
         let react_compiler_plugins =
             serde_json::Value::Array(vec![serde_json::Value::Array(vec![
                 serde_json::Value::String(babel_plugin_path.into_owned()),
-                serde_json::to_value(&*react_compiler_options)
+                serde_json::to_value(&react_compiler_options)
                     .expect("react compiler options JSON serialization should never fail"),
             ])]);
 

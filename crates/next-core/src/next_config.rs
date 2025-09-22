@@ -772,6 +772,8 @@ pub struct ReactCompilerOptions {
     pub compilation_mode: ReactCompilerCompilationMode,
     #[serde(default)]
     pub panic_threshold: ReactCompilerPanicThreshold,
+    #[serde(default)]
+    pub enable_name_anonymous_functions: Option<bool>,
 }
 
 #[derive(
