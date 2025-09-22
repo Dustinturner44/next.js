@@ -100,6 +100,7 @@ async function getCacheCharacteristics(
   reactCompilerPlugins ??= []
   const hasReactCompiler =
     reactCompilerPlugins.length !== 0 &&
+    !loaderOptions.isServer &&
     !/[/\\]node_modules[/\\]/.test(filename) &&
     !reactCompilerExclude?.(filename) &&
     (await isReactCompilerRequired(filename))
@@ -484,7 +485,7 @@ function getCacheKey(cacheCharacteristics: CharacteristicsGermaneToCaching) {
     (hasModuleExports ? 0b010000 : 0) |
     (hasReactCompiler ? 0b100000 : 0)
 
-  // separate strings will null bytes, assuming null bytes are not valid in file
+  // separate strings with null bytes, assuming null bytes are not valid in file
   // paths
   return `${configFilePath || ''}\x00${fileExt}\x00${flags}`
 }
