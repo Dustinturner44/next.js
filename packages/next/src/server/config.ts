@@ -76,8 +76,8 @@ export function warnOptionHasBeenDeprecated(
     let found = true
     const nestedPropertyKeys = nestedPropertyKey.split('.')
     for (const key of nestedPropertyKeys) {
-      if (current[key] !== undefined) {
-        current = current[key]
+      if ((current as any)[key] !== undefined) {
+        current = (current as any)[key]
       } else {
         found = false
         break
@@ -167,10 +167,12 @@ export function warnOptionHasBeenMovedOutOfExperimental(
     const newKeys = newKey.split('.')
     while (newKeys.length > 1) {
       const key = newKeys.shift()!
-      current[key] = current[key] || {}
-      current = current[key]
+      ;(current as any)[key] = (current as any)[key] || {}
+      current = (current as any)[key]
     }
-    current[newKeys.shift()!] = (config.experimental as any)[oldExperimentalKey]
+    ;(current as any)[newKeys.shift()!] = (config.experimental as any)[
+      oldExperimentalKey
+    ]
   }
 
   return config
@@ -192,7 +194,7 @@ function warnCustomizedOption(
     if (!(seg in current)) {
       return
     }
-    current = current[seg]
+    current = (current as any)[seg]
   }
 
   if (!silent && current !== defaultValue) {
@@ -218,16 +220,16 @@ function assignDefaultsAndValidate(
   phase: PHASE_TYPE
 ): NextConfigComplete {
   const configFileName = userConfig.configFileName
-  if (typeof userConfig.exportTrailingSlash !== 'undefined') {
+  if (typeof (userConfig as any).exportTrailingSlash !== 'undefined') {
     if (!silent) {
       Log.warn(
         `The "exportTrailingSlash" option has been renamed to "trailingSlash". Please update your ${configFileName}.`
       )
     }
     if (typeof userConfig.trailingSlash === 'undefined') {
-      userConfig.trailingSlash = userConfig.exportTrailingSlash
+      userConfig.trailingSlash = (userConfig as any).exportTrailingSlash
     }
-    delete userConfig.exportTrailingSlash
+    delete (userConfig as any).exportTrailingSlash
   }
 
   // Handle migration of experimental.dynamicIO to experimental.cacheComponents
@@ -245,7 +247,7 @@ function assignDefaultsAndValidate(
 
   const config = Object.keys(userConfig).reduce<{ [key: string]: any }>(
     (currentConfig, key) => {
-      const value = userConfig[key]
+      const value = (userConfig as any)[key]
 
       if (value === undefined || value === null) {
         return currentConfig
@@ -1266,7 +1268,6 @@ function getCacheKey(
 
   return djb2Hash(keyData).toString(36)
 }
-
 export default async function loadConfig(
   phase: PHASE_TYPE,
   dir: string,
@@ -1371,7 +1372,7 @@ export default async function loadConfig(
         silent,
         configuredExperimentalFeatures,
         phase
-      ) as NextConfigComplete,
+      ),
       phase,
       silent
     )
@@ -1481,7 +1482,7 @@ export default async function loadConfig(
       validateConfigSchema(userConfig, configFileName, curLog.warn)
     }
 
-    if (userConfig.target && userConfig.target !== 'server') {
+    if ((userConfig as any).target && (userConfig as any).target !== 'server') {
       throw new Error(
         `The "target" property is no longer supported in ${configFileName}.\n` +
           'See more info here https://nextjs.org/docs/messages/deprecated-target-config'
@@ -1538,7 +1539,7 @@ export default async function loadConfig(
       silent,
       configuredExperimentalFeatures,
       phase
-    ) as NextConfigComplete
+    )
 
     const finalConfig = await applyModifyConfig(completeConfig, phase, silent)
 
