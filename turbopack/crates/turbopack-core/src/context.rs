@@ -29,13 +29,14 @@ pub enum ProcessResult {
 #[turbo_tasks::value_impl]
 impl ProcessResult {
     #[turbo_tasks::function]
-    pub fn module(&self) -> Result<Vc<Box<dyn Module>>> {
+    pub async fn module(&self) -> Result<Vc<Box<dyn Module>>> {
         match *self {
             ProcessResult::Module(m) => Ok(*m),
             ProcessResult::Ignore => {
                 bail!("Expected process result to be a module, but it was ignored")
             }
-            ProcessResult::Unknown(_) => {
+            ProcessResult::Unknown(source) => {
+                emit_unknown_module_type_error(*source).await?;
                 bail!("Expected process result to be a module, but it could not be processed")
             }
         }
