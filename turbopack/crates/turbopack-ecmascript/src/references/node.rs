@@ -70,7 +70,6 @@ impl DirAssetReference {
     }
 }
 
-#[turbo_tasks::function]
 async fn resolve_reference_from_dir(
     parent_path: FileSystemPath,
     path: Vc<Pattern>,
@@ -155,13 +154,9 @@ impl ModuleReference for DirAssetReference {
             "trace directory",
             pattern = display(self.path.to_string().await?)
         );
-        async {
-            resolve_reference_from_dir(parent_path, *self.path)
-                .resolve()
-                .await
-        }
-        .instrument(span)
-        .await
+        resolve_reference_from_dir(parent_path, *self.path)
+            .instrument(span)
+            .await
     }
 }
 
