@@ -82,6 +82,9 @@ export default function Page() {
 }
 ```
 
+> **Good to know**: For security reasons, the Image Optimization API using the default [loader](#loader) will _not_ forward headers when fetching the `src` image.
+> If the `src` image requires authentication, consider using the [unoptimized](#unoptimized) property to disable Image Optimization.
+
 #### `alt`
 
 The `alt` property is used to describe the image for screen readers and search engines. It is also the fallback text if images have been disabled or an error occurs while loading the image.
@@ -527,7 +530,7 @@ module.exports = {
 }
 ```
 
-If using a version prior to 15.3.0, you can configure `remotePatterns` using the object:
+You can also configure `remotePatterns` using the object:
 
 ```js filename="next.config.js"
 module.exports = {
@@ -863,7 +866,7 @@ The `getImageProps` function can be used to get the props that would be passed t
 ```jsx
 import { getImageProps } from 'next/image'
 
-const props = getImageProps({
+const { props } = getImageProps({
   src: 'https://example.com/image.jpg',
   alt: 'A scenic mountain view',
   width: 1200,
