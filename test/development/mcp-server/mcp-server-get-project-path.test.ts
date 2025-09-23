@@ -1,59 +1,17 @@
 import { FileRef, nextTestSetup } from 'e2e-utils'
 import path from 'path'
+import { initializeMCPSession } from './utils/mcp-test-utils'
 
-describe('mcp-server', () => {
+describe('mcp-server get_project_path tool', () => {
   const { next } = nextTestSetup({
     files: new FileRef(path.join(__dirname, 'fixtures', 'default-template')),
   })
 
-  async function initializeMCPSession(
-    mcpEndpoint: string,
-    id: string
-  ): Promise<any> {
-    const initResponse = await fetch(mcpEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json, text/event-stream',
-      },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id,
-        method: 'initialize',
-        params: {
-          protocolVersion: '1.0.0',
-          capabilities: {},
-          clientInfo: {
-            name: 'test-client',
-            version: '1.0.0',
-          },
-        },
-      }),
-    })
-
-    const initText = await initResponse.text()
-    const dataMatch = initText.match(/data: ({.*})/s)
-    if (!dataMatch) {
-      throw new Error(`Unexpected response format: ${initText}`)
-    }
-
-    const initResult = JSON.parse(dataMatch[1])
-    if (initResult.error) {
-      throw new Error(`MCP error: ${JSON.stringify(initResult.error)}`)
-    }
-
-    return initResult
-  }
-
-  it('should initialize MCP server and list available tools', async () => {
+  it('should list get_project_path tool in available tools', async () => {
     const mcpEndpoint = `${next.url}/_next/mcp`
 
     // Initialize MCP session
-    const initResult = await initializeMCPSession(mcpEndpoint, 'init-1')
-
-    expect(initResult.jsonrpc).toBe('2.0')
-    expect(initResult.id).toBe('init-1')
-    expect(initResult.result?.serverInfo?.name).toBe('Next.js MCP Server')
+    await initializeMCPSession(mcpEndpoint, 'init-1')
 
     // List available tools
     const listToolsResponse = await fetch(mcpEndpoint, {
@@ -72,29 +30,34 @@ describe('mcp-server', () => {
 
     const listToolsText = await listToolsResponse.text()
     const listToolsDataMatch = listToolsText.match(/data: ({.*})/s)
-    if (!listToolsDataMatch) {
-      throw new Error(`Unexpected response format: ${listToolsText}`)
-    }
-    const listToolsResult = JSON.parse(listToolsDataMatch[1])
+    expect(listToolsDataMatch).toBeTruthy()
 
+    const listToolsResult = JSON.parse(listToolsDataMatch![1])
     expect(listToolsResult.result?.tools).toBeInstanceOf(Array)
 
     const projectDirTool = listToolsResult.result?.tools?.find(
       (tool: { name: string }) => tool.name === 'get_project_path'
     )
+
     expect(projectDirTool).toBeDefined()
     expect(projectDirTool?.description).toBe(
       'Returns the absolute path of the root directory for this Next.js project.'
     )
+
+    // Input schema should be an empty object schema
+    expect(projectDirTool?.inputSchema).toMatchObject({
+      type: 'object',
+      properties: {},
+    })
   })
 
-  it('should return exact absolute path for get_project_path tool', async () => {
+  it('should return correct project path via get_project_path tool', async () => {
     const mcpEndpoint = `${next.url}/_next/mcp`
 
-    // Initialize MCP session (required before calling tools)
+    // Initialize MCP session
     await initializeMCPSession(mcpEndpoint, 'init-2')
 
-    // Call get_project_path tool and verify response
+    // Call get_project_path tool
     const callToolResponse = await fetch(mcpEndpoint, {
       method: 'POST',
       headers: {
@@ -114,11 +77,9 @@ describe('mcp-server', () => {
 
     const callToolText = await callToolResponse.text()
     const callToolDataMatch = callToolText.match(/data: ({.*})/s)
-    if (!callToolDataMatch) {
-      throw new Error(`Unexpected response format: ${callToolText}`)
-    }
-    const callToolResult = JSON.parse(callToolDataMatch[1])
+    expect(callToolDataMatch).toBeTruthy()
 
+    const callToolResult = JSON.parse(callToolDataMatch![1])
     expect(callToolResult.jsonrpc).toBe('2.0')
     expect(callToolResult.id).toBe('call-tool-1')
 
@@ -126,10 +87,12 @@ describe('mcp-server', () => {
     expect(content).toBeInstanceOf(Array)
     expect(content?.[0]?.type).toBe('text')
 
-    // Get the actual project path from the response
     const actualProjectPath = content?.[0]?.text
 
-    // Project directory should match the test directory from the test harness
+    // Verify it's an absolute path
+    expect(path.isAbsolute(actualProjectPath)).toBe(true)
+
+    // Should match the test directory
     expect(actualProjectPath).toBe(next.testDir)
   })
 })

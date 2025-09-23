@@ -818,5 +818,7 @@
   "817": "`cacheLifeProfiles` should always be provided.",
   "818": "`cacheLife()` can only be called inside a \"use cache\" function.",
   "819": "`cacheTag()` can only be called inside a \"use cache\" function.",
-  "820": "`cacheLife()` can only be called during App Router rendering at the moment."
+  "820": "`cacheLife()` can only be called during App Router rendering at the moment.",
+  "821": "Stack frame resolver not available. This is a bug in Next.js.",
+  "822": "Failed to resolve stack frames: %s"
 }

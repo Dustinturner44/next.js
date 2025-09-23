@@ -30,6 +30,7 @@ import { BLOCKED_PAGES } from '../../shared/lib/constants'
 import {
   getOverlayMiddleware,
   getSourceMapMiddleware,
+  getOriginalStackFrames,
 } from './middleware-turbopack'
 import { PageNotFoundError } from '../../shared/lib/utils'
 import { debounce } from '../utils'
@@ -112,6 +113,7 @@ import {
   matchNextPageBundleRequest,
 } from './hot-reloader-shared-utils'
 import { getMcpMiddleware } from '../mcp/get-mcp-middleware'
+import { setStackFrameResolver } from '../mcp/tools/resolve-stack-frames'
 
 const wsServer = new ws.Server({ noServer: true })
 const isTestMode = !!(
@@ -737,6 +739,19 @@ export async function createHotReloaderTurbopack(
       ? [getMcpMiddleware(projectPath)]
       : []),
   ]
+
+  if (nextConfig.experimental.mcpServer) {
+    setStackFrameResolver(async (request) => {
+      return getOriginalStackFrames({
+        project,
+        projectPath,
+        frames: request.frames,
+        isServer: request.isServer,
+        isEdgeServer: request.isEdgeServer,
+        isAppDirectory: request.isAppDirectory,
+      })
+    })
+  }
 
   let versionInfoCached: ReturnType<typeof getVersionInfo> | undefined
   // This fetch, even though not awaited, is not kicked off eagerly because the first `fetch()` in

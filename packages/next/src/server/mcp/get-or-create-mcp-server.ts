@@ -1,4 +1,6 @@
 import { McpServer } from 'next/dist/compiled/@modelcontextprotocol/sdk/server/mcp'
+import { registerGetProjectPathTool } from './tools/get-project-path'
+import { registerResolveStackFramesTool } from './tools/resolve-stack-frames'
 
 let mcpServer: McpServer | undefined
 
@@ -12,46 +14,8 @@ export const getOrCreateMcpServer = (projectPath: string) => {
     version: '0.1.0',
   })
 
-  mcpServer.registerTool(
-    'get_project_path',
-    {
-      description:
-        'Returns the absolute path of the root directory for this Next.js project.',
-      inputSchema: {},
-    },
-    async (_request) => {
-      try {
-        if (!projectPath) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: 'Unable to determine the absolute path of the Next.js project.',
-              },
-            ],
-          }
-        }
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: projectPath,
-            },
-          ],
-        }
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-        }
-      }
-    }
-  )
+  registerGetProjectPathTool(mcpServer, projectPath)
+  registerResolveStackFramesTool(mcpServer)
 
   return mcpServer
 }
