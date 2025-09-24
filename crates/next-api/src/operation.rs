@@ -45,6 +45,19 @@ async fn entrypoints_without_collectibles_operation(
 
 #[turbo_tasks::value_impl]
 impl EntrypointsOperation {
+    /// an empty set of entrypoints for when there are critical errors
+    #[turbo_tasks::function]
+    pub fn empty() -> Vc<Self> {
+        Self {
+            routes: FxIndexMap::default(),
+            middleware: None,
+            instrumentation: None,
+            pages_document_endpoint: none_endpoint_operation(),
+            pages_app_endpoint: none_endpoint_operation(),
+            pages_error_endpoint: none_endpoint_operation(),
+        }
+        .cell()
+    }
     #[turbo_tasks::function(operation)]
     pub async fn new(entrypoints: OperationVc<Entrypoints>) -> Result<Vc<Self>> {
         let e = entrypoints.connect().await?;
@@ -138,6 +151,11 @@ enum EndpointSelector {
 
 #[turbo_tasks::value(transparent)]
 pub struct OptionEndpoint(Option<ResolvedVc<Box<dyn Endpoint>>>);
+
+#[turbo_tasks::function(operation)]
+pub fn none_endpoint_operation() -> Vc<OptionEndpoint> {
+    OptionEndpoint(None).cell()
+}
 
 /// Given a selector and the `Entrypoints` operation that it comes from, connect the operation and
 /// return an `OperationVc` containing the selected value. The returned operation will keep the

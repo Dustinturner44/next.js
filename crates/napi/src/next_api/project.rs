@@ -69,7 +69,7 @@ use crate::{
         },
         utils::{
             DetachedVc, NapiDiagnostic, NapiIssue, RootTask, TurbopackResult, get_diagnostics,
-            get_issues, subscribe,
+            get_issues, strongly_consistent_catch_collectables, subscribe,
         },
     },
     util::DhatProfilerGuard,
@@ -740,16 +740,13 @@ pub struct NapiMiddleware {
 }
 
 impl NapiMiddleware {
-    fn from_middleware(
-        value: &MiddlewareOperation,
-        turbopack_ctx: &NextTurbopackContext,
-    ) -> Result<Self> {
-        Ok(NapiMiddleware {
+    fn from_middleware(value: &MiddlewareOperation, turbopack_ctx: &NextTurbopackContext) -> Self {
+        NapiMiddleware {
             endpoint: External::new(ExternalEndpoint(DetachedVc::new(
                 turbopack_ctx.clone(),
                 value.endpoint,
             ))),
-        })
+        }
     }
 }
 
@@ -763,8 +760,8 @@ impl NapiInstrumentation {
     fn from_instrumentation(
         value: &InstrumentationOperation,
         turbopack_ctx: &NextTurbopackContext,
-    ) -> Result<Self> {
-        Ok(NapiInstrumentation {
+    ) -> Self {
+        NapiInstrumentation {
             node_js: External::new(ExternalEndpoint(DetachedVc::new(
                 turbopack_ctx.clone(),
                 value.node_js,
@@ -773,7 +770,7 @@ impl NapiInstrumentation {
                 turbopack_ctx.clone(),
                 value.edge,
             ))),
-        })
+        }
     }
 }
 
@@ -791,7 +788,7 @@ impl NapiEntrypoints {
     fn from_entrypoints_op(
         entrypoints: &EntrypointsOperation,
         turbopack_ctx: &NextTurbopackContext,
-    ) -> Result<Self> {
+    ) -> Self {
         let routes = entrypoints
             .routes
             .iter()
@@ -800,13 +797,11 @@ impl NapiEntrypoints {
         let middleware = entrypoints
             .middleware
             .as_ref()
-            .map(|m| NapiMiddleware::from_middleware(m, turbopack_ctx))
-            .transpose()?;
+            .map(|m| NapiMiddleware::from_middleware(m, turbopack_ctx));
         let instrumentation = entrypoints
             .instrumentation
             .as_ref()
-            .map(|i| NapiInstrumentation::from_instrumentation(i, turbopack_ctx))
-            .transpose()?;
+            .map(|i| NapiInstrumentation::from_instrumentation(i, turbopack_ctx));
         let pages_document_endpoint = External::new(ExternalEndpoint(DetachedVc::new(
             turbopack_ctx.clone(),
             entrypoints.pages_document_endpoint,
@@ -819,19 +814,20 @@ impl NapiEntrypoints {
             turbopack_ctx.clone(),
             entrypoints.pages_error_endpoint,
         )));
-        Ok(NapiEntrypoints {
+        NapiEntrypoints {
             routes,
             middleware,
             instrumentation,
             pages_document_endpoint,
             pages_app_endpoint,
             pages_error_endpoint,
-        })
+        }
     }
 }
 
 #[turbo_tasks::value(serialization = "none")]
 struct EntrypointsWithIssues {
+    // Will be an empty set of entrypoints if there were fatal issues.
     entrypoints: ReadRef<EntrypointsOperation>,
     issues: Arc<Vec<ReadRef<PlainIssue>>>,
     diagnostics: Arc<Vec<ReadRef<PlainDiagnostic>>>,
@@ -844,12 +840,15 @@ async fn get_entrypoints_with_issues_operation(
 ) -> Result<Vc<EntrypointsWithIssues>> {
     let entrypoints_operation =
         EntrypointsOperation::new(project_container_entrypoints_operation(container));
-    let entrypoints = entrypoints_operation.read_strongly_consistent().await?;
-    let issues = get_issues(entrypoints_operation).await?;
-    let diagnostics = get_diagnostics(entrypoints_operation).await?;
-    let effects = Arc::new(get_effects(entrypoints_operation).await?);
+
+    let (entrypoints, issues, diagnostics, effects) =
+        strongly_consistent_catch_collectables(entrypoints_operation).await?;
+
     Ok(EntrypointsWithIssues {
-        entrypoints,
+        entrypoints: match entrypoints {
+            Some(ep) => ep,
+            None => EntrypointsOperation::empty().await?,
+        },
         issues,
         diagnostics,
         effects,
@@ -917,7 +916,7 @@ pub async fn project_write_all_entrypoints_to_disk(
         .await?;
 
     Ok(TurbopackResult {
-        result: NapiEntrypoints::from_entrypoints_op(&entrypoints, &project.turbopack_ctx)?,
+        result: NapiEntrypoints::from_entrypoints_op(&entrypoints, &project.turbopack_ctx),
         issues: issues.iter().map(|i| NapiIssue::from(&**i)).collect(),
         diagnostics: diags.iter().map(|d| NapiDiagnostic::from(d)).collect(),
     })
@@ -932,12 +931,14 @@ async fn get_all_written_entrypoints_with_issues_operation(
         container,
         app_dir_only,
     ));
-    let entrypoints = entrypoints_operation.read_strongly_consistent().await?;
-    let issues = get_issues(entrypoints_operation).await?;
-    let diagnostics = get_diagnostics(entrypoints_operation).await?;
-    let effects = Arc::new(get_effects(entrypoints_operation).await?);
+    let (entrypoints, issues, diagnostics, effects) =
+        strongly_consistent_catch_collectables(entrypoints_operation).await?;
+
     Ok(EntrypointsWithIssues {
-        entrypoints,
+        entrypoints: match entrypoints {
+            Some(ep) => ep,
+            None => EntrypointsOperation::empty().await?,
+        },
         issues,
         diagnostics,
         effects,
@@ -1018,7 +1019,7 @@ pub fn project_entrypoints_subscribe(
             let (entrypoints, issues, diags) = ctx.value;
 
             Ok(vec![TurbopackResult {
-                result: NapiEntrypoints::from_entrypoints_op(&entrypoints, &turbopack_ctx)?,
+                result: NapiEntrypoints::from_entrypoints_op(&entrypoints, &turbopack_ctx),
                 issues: issues
                     .iter()
                     .map(|issue| NapiIssue::from(&**issue))

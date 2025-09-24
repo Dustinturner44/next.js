@@ -290,6 +290,10 @@ impl NapiDiagnostic {
     }
 }
 
+/// A result from a turbo-tasks computation that can be passed back and forth to JS across the
+/// [`napi`][mod@napi] boundary via [`External`].
+///
+/// The `result` field is flattened into the object when passing across the boundary.
 pub struct TurbopackResult<T: ToNapiValue> {
     pub result: T,
     pub issues: Vec<NapiIssue>,
