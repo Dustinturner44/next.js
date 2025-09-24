@@ -1522,26 +1522,13 @@ pub async fn resolve(
     request: Vc<Request>,
     options: Vc<ResolveOptions>,
 ) -> Result<Vc<ResolveResult>> {
-    resolve_inline(lookup_path, reference_type, request, options).await
-}
-
-pub async fn resolve_inline(
-    lookup_path: FileSystemPath,
-    reference_type: ReferenceType,
-    request: Vc<Request>,
-    options: Vc<ResolveOptions>,
-) -> Result<Vc<ResolveResult>> {
-    let span = {
-        let lookup_path = lookup_path.value_to_string().await?.to_string();
-        let request = request.to_string().await?.to_string();
-        tracing::info_span!(
-            "resolving",
-            lookup_path = lookup_path,
-            name = request,
-            reference_type = display(&reference_type),
-        )
-    };
-    async {
+    let span = tracing::info_span!(
+        "resolving",
+        name = display(request.to_string().await?),
+        lookup_path = display(&lookup_path.path),
+        reference_type = display(&reference_type),
+    );
+    async move {
         let before_plugins_result = handle_before_resolve_plugins(
             lookup_path.clone(),
             reference_type.clone(),
@@ -1740,15 +1727,11 @@ async fn resolve_internal_inline(
     request: Vc<Request>,
     options: Vc<ResolveOptions>,
 ) -> Result<Vc<ResolveResult>> {
-    let span = {
-        let lookup_path = lookup_path.value_to_string().await?.to_string();
-        let request = request.to_string().await?.to_string();
-        tracing::info_span!(
-            "internal resolving",
-            lookup_path = lookup_path,
-            name = request
-        )
-    };
+    let span = tracing::info_span!(
+        "internal resolving",
+        name = display(request.to_string().await?),
+        lookup_path = display(&lookup_path.path),
+    );
     async move {
         let options_value: &ResolveOptions = &*options.await?;
 

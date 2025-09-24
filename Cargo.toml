@@ -23,6 +23,8 @@ exclude = [
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"
+to_string_in_format_args = "warn"
+unnecessary_to_owned = "warn"
 
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
