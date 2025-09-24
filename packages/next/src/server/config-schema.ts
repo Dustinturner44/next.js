@@ -8,7 +8,6 @@ import type { SizeLimit } from '../types'
 import type {
   ExportPathMap,
   TurbopackLoaderItem,
-  DeprecatedExperimentalTurboOptions,
   TurbopackOptions,
   TurbopackRuleConfigItem,
   TurbopackRuleConfigCollection,
@@ -162,32 +161,6 @@ const zTurbopackConfig: zod.ZodType<TurbopackOptions> = z.strictObject({
   moduleIds: z.enum(['named', 'deterministic']).optional(),
   root: z.string().optional(),
 })
-
-// Same as zTurbopackConfig but with deprecated properties. Unfortunately, base
-// properties are duplicated here as `ZodType`s do not export `extend()`.
-const zDeprecatedExperimentalTurboConfig: zod.ZodType<DeprecatedExperimentalTurboOptions> =
-  z.strictObject({
-    loaders: z.record(z.string(), z.array(zTurbopackLoaderItem)).optional(),
-    rules: z.record(z.string(), zTurbopackRuleConfigCollection).optional(),
-    resolveAlias: z
-      .record(
-        z.string(),
-        z.union([
-          z.string(),
-          z.array(z.string()),
-          z.record(z.string(), z.union([z.string(), z.array(z.string())])),
-        ])
-      )
-      .optional(),
-    resolveExtensions: z.array(z.string()).optional(),
-    treeShaking: z.boolean().optional(),
-    persistentCaching: z.union([z.number(), z.literal(false)]).optional(),
-    memoryLimit: z.number().optional(),
-    moduleIds: z.enum(['named', 'deterministic']).optional(),
-    minify: z.boolean().optional(),
-    sourceMaps: z.boolean().optional(),
-    root: z.string().optional(),
-  })
 
 export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
   z.strictObject({
@@ -414,6 +387,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
         proxyTimeout: z.number().gte(0).optional(),
         rootParams: z.boolean().optional(),
         isolatedDevBuild: z.boolean().optional(),
+        mcpServer: z.boolean().optional(),
         routerBFCache: z.boolean().optional(),
         removeUncaughtErrorAndRejectionListeners: z.boolean().optional(),
         validateRSCRequestHeaders: z.boolean().optional(),
@@ -461,10 +435,6 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
         typedRoutes: z.boolean().optional(),
         webpackBuildWorker: z.boolean().optional(),
         webpackMemoryOptimizations: z.boolean().optional(),
-        /**
-         * @deprecated Use `config.turbopack` instead.
-         */
-        turbo: zDeprecatedExperimentalTurboConfig.optional(),
         turbopackMemoryLimit: z.number().optional(),
         turbopackMinify: z.boolean().optional(),
         turbopackPersistentCaching: z.boolean().optional(),
@@ -683,6 +653,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
     pageExtensions: z.array(z.string()).min(1).optional(),
     poweredByHeader: z.boolean().optional(),
     productionBrowserSourceMaps: z.boolean().optional(),
+    publicRuntimeConfig: z.record(z.string(), z.any()).optional(),
     reactProductionProfiling: z.boolean().optional(),
     reactStrictMode: z.boolean().nullable().optional(),
     reactMaxHeadersLength: z.number().nonnegative().int().optional(),
@@ -715,6 +686,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
       .catchall(z.any())
       .optional(),
     serverExternalPackages: z.array(z.string()).optional(),
+    serverRuntimeConfig: z.record(z.string(), z.any()).optional(),
     skipMiddlewareUrlNormalize: z.boolean().optional(),
     skipTrailingSlashRedirect: z.boolean().optional(),
     staticPageGenerationTimeout: z.number().optional(),

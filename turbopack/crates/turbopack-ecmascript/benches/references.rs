@@ -1,6 +1,6 @@
 use std::{path::PathBuf, sync::Arc, time::Duration};
 
-use criterion::{Bencher, BenchmarkId, Criterion};
+use criterion::{Bencher, BenchmarkId, Criterion, criterion_group, criterion_main};
 use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, TurboTasks};
 use turbo_tasks_backend::{
@@ -18,6 +18,9 @@ use turbopack_ecmascript::{
     references::analyze_ecmascript_module_internal,
 };
 use turbopack_test_utils::noop_asset_context::NoopAssetContext;
+
+#[global_allocator]
+static ALLOC: turbo_tasks_malloc::TurboMalloc = turbo_tasks_malloc::TurboMalloc;
 
 pub fn benchmark(c: &mut Criterion) {
     let rt = tokio::runtime::Builder::new_current_thread()
@@ -132,3 +135,6 @@ where
             .unwrap()
     });
 }
+
+criterion_group!(references_benches, benchmark);
+criterion_main!(references_benches);

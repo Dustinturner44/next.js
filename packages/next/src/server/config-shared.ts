@@ -16,16 +16,15 @@ import { INFINITE_CACHE } from '../lib/constants'
 import { isStableBuild } from '../shared/lib/canary-only'
 import type { FallbackRouteParam } from '../build/static-paths/types'
 
-export type NextConfigComplete = Required<NextConfig> & {
+export type NextConfigComplete = Required<Omit<NextConfig, 'configFile'>> & {
   images: Required<ImageConfigComplete>
   typescript: TypeScriptConfig
-  configOrigin?: string
-  configFile?: string
+  configFile: string | undefined
   configFileName: string
   // override NextConfigComplete.experimental.htmlLimitedBots to string
   // because it's not defined in NextConfigComplete.experimental
   htmlLimitedBots: string | undefined
-  experimental: Omit<ExperimentalConfig, 'turbo'>
+  experimental: ExperimentalConfig
 }
 
 export type I18NDomains = readonly DomainLocale[]
@@ -89,7 +88,7 @@ export interface StyledComponentsConfig {
   cssProp?: boolean
 }
 
-type JSONValue =
+export type JSONValue =
   | string
   | number
   | boolean
@@ -180,40 +179,6 @@ export interface TurbopackOptions {
    * directory can be resolved by turbopack.
    */
   root?: string
-}
-
-export interface DeprecatedExperimentalTurboOptions extends TurbopackOptions {
-  /**
-   * (`next --turbopack` only) A list of webpack loaders to apply when running with Turbopack.
-   *
-   * @deprecated Use `rules` instead.
-   * @see [Turbopack Loaders](https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#configuring-webpack-loaders)
-   */
-  loaders?: Record<string, TurbopackLoaderItem[]>
-
-  /**
-   * A target memory limit for turbo, in bytes.
-   * @deprecated Use `experimental.turbopackMemoryLimit` instead.
-   */
-  memoryLimit?: number
-
-  /**
-   * Enable minification. Defaults to true in build mode and false in dev mode.
-   * @deprecated Use `experimental.turbopackMinify` instead.
-   */
-  minify?: boolean
-
-  /**
-   * Enable tree shaking for the turbopack dev server and build.
-   * @deprecated Use `experimental.turbopackTreeShaking` instead.
-   */
-  treeShaking?: boolean
-
-  /**
-   * Enable source maps. Defaults to true.
-   * @deprecated Use `experimental.turbopackSourceMaps` instead.
-   */
-  sourceMaps?: boolean
 }
 
 export interface WebpackConfigContext {
@@ -443,12 +408,6 @@ export interface ExperimentalConfig {
    * Optimize React APIs for server builds.
    */
   optimizeServerReact?: boolean
-
-  /**
-   * @deprecated Use `config.turbopack` instead.
-   * Run `npx @next/codemod@latest next-experimental-turbo-to-turbopack .` to migrate automatically.
-   */
-  turbo?: DeprecatedExperimentalTurboOptions
 
   /**
    * A target memory limit for turbo, in bytes.
@@ -836,6 +795,15 @@ export interface ExperimentalConfig {
    * instead of `{distDir}`.
    */
   isolatedDevBuild?: boolean
+
+  /**
+   * Enable the Model Context Protocol (MCP) server for AI-assisted development.
+   * When enabled, Next.js will expose an MCP server at `/_next/mcp` that provides
+   * code intelligence and project context to AI assistants.
+   *
+   * @default false
+   */
+  mcpServer?: boolean
 }
 
 export type ExportPathMap = {
@@ -907,7 +875,7 @@ export type ExportPathMap = {
  *
  * Read more: [Next.js Docs: `next.config.js`](https://nextjs.org/docs/app/api-reference/config/next-config-js)
  */
-export interface NextConfig extends Record<string, any> {
+export interface NextConfig {
   allowedDevOrigins?: string[]
 
   exportPathMap?: (
@@ -1148,6 +1116,20 @@ export interface NextConfig extends Record<string, any> {
   reactMaxHeadersLength?: number
 
   /**
+   * Add public (in browser) runtime configuration to your app
+   *
+   * @see [Runtime configuration](https://nextjs.org/docs/pages/api-reference/config/next-config-js/runtime-configuration
+   */
+  publicRuntimeConfig?: { [key: string]: any }
+
+  /**
+   * Add server runtime configuration to your app
+   *
+   * @see [Runtime configuration](https://nextjs.org/docs/pages/api-reference/config/next-config-js/runtime-configuration
+   */
+  serverRuntimeConfig?: { [key: string]: any }
+
+  /**
    * Next.js enables HTTP Keep-Alive by default.
    * You may want to disable HTTP Keep-Alive for certain `fetch()` calls or globally.
    *
@@ -1322,6 +1304,26 @@ export interface NextConfig extends Record<string, any> {
    * /Mediapartners-Google|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview/i
    */
   htmlLimitedBots?: RegExp
+
+  /**
+   * @internal
+   */
+  configFile?: string | undefined
+
+  /**
+   * @internal
+   */
+  configOrigin?: string | undefined
+
+  /**
+   * @internal
+   */
+  _originalRedirects?: any
+
+  /**
+   * @internal
+   */
+  _originalRewrites?: any
 }
 
 export const defaultConfig = Object.freeze({
@@ -1365,6 +1367,8 @@ export const defaultConfig = Object.freeze({
   i18n: null,
   productionBrowserSourceMaps: false,
   excludeDefaultMomentLocales: true,
+  serverRuntimeConfig: {},
+  publicRuntimeConfig: {},
   reactProductionProfiling: false,
   reactStrictMode: null,
   reactMaxHeadersLength: 6000,
@@ -1478,7 +1482,6 @@ export const defaultConfig = Object.freeze({
     disablePostcssPresetEnv: undefined,
     amp: undefined,
     urlImports: undefined,
-    turbo: undefined,
     typedEnv: false,
     clientTraceMetadata: undefined,
     parallelServerCompiles: false,
@@ -1511,7 +1514,8 @@ export const defaultConfig = Object.freeze({
     slowModuleDetection: undefined,
     globalNotFound: false,
     browserDebugInfoInTerminal: false,
-    isolatedDevBuild: false,
+    isolatedDevBuild:
+      process.env.__NEXT_EXPERIMENTAL_ISOLATED_DEV_BUILD === 'true',
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,

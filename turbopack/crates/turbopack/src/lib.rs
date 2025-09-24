@@ -622,6 +622,38 @@ async fn process_default_internal(
                                 analyze_types,
                                 options,
                             }),
+                            Some(ModuleType::Custom(custom_module_type)) => {
+                                match custom_module_type
+                                    .extend_ecmascript_transforms(
+                                        **extend_preprocess,
+                                        **extend_main,
+                                        **extend_postprocess,
+                                    )
+                                    .to_resolved()
+                                    .await
+                                {
+                                    Ok(custom_module_type) => {
+                                        Some(ModuleType::Custom(custom_module_type))
+                                    }
+                                    // TODO ideally this would print the actual error message
+                                    // returned by the CustomModuleType
+                                    Err(_) => {
+                                        ModuleIssue::new(
+                                            *ident,
+                                            rcstr!("Invalid module type"),
+                                            rcstr!(
+                                                "The custom module type didn't accept the \
+                                                 additional Ecmascript transforms"
+                                            ),
+                                            Some(IssueSource::from_source_only(current_source)),
+                                        )
+                                        .to_resolved()
+                                        .await?
+                                        .emit();
+                                        Some(ModuleType::Custom(custom_module_type))
+                                    }
+                                }
+                            }
                             Some(module_type) => {
                                 ModuleIssue::new(
                                     *ident,
@@ -688,6 +720,7 @@ pub async fn externals_tracing_module_context(
         enable_node_native_modules: true,
         emulate_environment: Some(compile_time_info.await?.environment),
         loose_errors: true,
+        collect_affecting_sources: true,
         custom_conditions: match ty {
             ExternalType::CommonJs => vec![rcstr!("require"), rcstr!("node")],
             ExternalType::EcmaScriptModule => vec![rcstr!("import"), rcstr!("node")],

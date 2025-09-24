@@ -127,7 +127,7 @@ async function exportAppImpl(
     )
   }
 
-  const customRoutes = ['rewrites', 'redirects', 'headers'].filter(
+  const customRoutes = (['rewrites', 'redirects', 'headers'] as const).filter(
     (config) => typeof nextConfig[config] === 'function'
   )
 
@@ -420,6 +420,12 @@ async function exportAppImpl(
         ? nextConfig.experimental.turbopackMinify === false
         : nextConfig.experimental.serverMinification === false) &&
       nextConfig.experimental.enablePrerenderSourceMaps === true,
+  }
+
+  const { publicRuntimeConfig } = nextConfig
+
+  if (Object.keys(publicRuntimeConfig).length > 0) {
+    renderOpts.runtimeConfig = publicRuntimeConfig
   }
 
   // We need this for server rendering the Link component.
