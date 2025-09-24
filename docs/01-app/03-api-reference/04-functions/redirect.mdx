@@ -50,7 +50,7 @@ The `type` parameter has no effect when used in Server Components.
 - In Server Actions and Route Handlers, redirect should be called **outside** the `try` block when using `try/catch` statements.
 - If you prefer to return a 308 (Permanent) HTTP redirect instead of 307 (Temporary), you can use the [`permanentRedirect` function](/docs/app/api-reference/functions/permanentRedirect) instead.
 - `redirect` throws an error so it should be called **outside** the `try` block when using `try/catch` statements.
-- `redirect` can also be called in Client Components, during the rendering process, from event handlers and effects.
+- `redirect` can also be used in Client Components.
 - `redirect` also accepts absolute URLs and can be used to redirect to external links.
 - If you'd like to redirect before the render process, use [`next.config.js`](/docs/app/guides/redirecting#redirects-in-nextconfigjs) or [Middleware](/docs/app/guides/redirecting#nextresponseredirect-in-middleware).
 
@@ -198,9 +198,9 @@ export async function navigate(data) {
 }
 ```
 
-It is also possible to call `redirect` inside event handlers.
+It is also possible to call `redirect` inside event handlers, or effects.
 
-```tsx filename="components/client-redirect-button.tsx" switcher
+```tsx filename="components/client-redirect-button.tsx"
 'use client'
 
 import { redirect } from 'next/navigation'
@@ -212,25 +212,7 @@ export function ClientRedirectButton() {
         redirect('/dashboard')
       }}
     >
-      Go to Dashboard
-    </button>
-  )
-}
-```
-
-```jsx filename="components/client-redirect-button.jsx" switcher
-'use client'
-
-import { redirect } from 'next/navigation'
-
-export function ClientRedirectButton() {
-  return (
-    <button
-      onClick={() => {
-        redirect('/dashboard')
-      }}
-    >
-      Go to Dashboard
+      Redirect to Dashboard
     </button>
   )
 }
@@ -255,7 +237,7 @@ The `redirect()` method uses a `307` by default, instead of a `302` temporary re
 
 ## Version History
 
-| Version   | Changes                                         |
-| --------- | ----------------------------------------------- |
-| `v15.0.0` | `redirect` can be called within event handlers. |
-| `v13.0.0` | `redirect` introduced.                          |
+| Version   | Changes                                     |
+| --------- | ------------------------------------------- |
+| `v15.0.0` | `redirect` can be used in Client Components |
+| `v13.0.0` | `redirect` introduced.                      |
