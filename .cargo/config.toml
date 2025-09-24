@@ -7,8 +7,8 @@ xtask = "run --package xtask --"
 
 [build]
 rustflags = [
-  "--cfg",
-  "tokio_unstable",
+  "--cfg=tokio_unstable",
+  "--cfg=tracing_unstable",
   "-Zshare-generics=y", # make the current crate share its generic instantiations
   "-Zthreads=8", # parallel frontend https://blog.rust-lang.org/2023/11/09/parallel-rustc.html
   "-Csymbol-mangling-version=v0",
@@ -18,8 +18,8 @@ rustdocflags = []
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld"
 rustflags = [
-  "--cfg",
-  "tokio_unstable",
+  "--cfg=tokio_unstable",
+  "--cfg=tracing_unstable",
   "-Zshare-generics=y",
   "-C",
   "target-feature=+crt-static"
@@ -27,8 +27,8 @@ rustflags = [
 
 [target.i686-pc-windows-msvc]
 rustflags = [
-  "--cfg",
-  "tokio_unstable",
+  "--cfg=tokio_unstable",
+  "--cfg=tracing_unstable",
   "-Zshare-generics=y",
   "-C",
   "target-feature=+crt-static"
@@ -36,8 +36,8 @@ rustflags = [
 
 [target.'cfg(all(target_os = "linux", target_env = "gnu"))']
 rustflags = [
-  "--cfg",
-  "tokio_unstable",
+  "--cfg=tokio_unstable",
+  "--cfg=tracing_unstable",
   "-Zshare-generics=y",
   "-Zthreads=8",
   "-Zunstable-options",
@@ -50,8 +50,8 @@ rustflags = [
 linker = "aarch64-linux-musl-gcc"
 # Config need to be mirrowed to .github/workflows/build_and_deploy.yml
 rustflags = [
-  "--cfg",
-  "tokio_unstable",
+  "--cfg=tokio_unstable",
+  "--cfg=tracing_unstable",
   "-Zshare-generics=y",
   "-Csymbol-mangling-version=v0",
   "-Ctarget-feature=-crt-static",
@@ -61,8 +61,8 @@ rustflags = [
 [target.x86_64-unknown-linux-musl]
 # Config need to be mirrowed to .github/workflows/build_and_deploy.yml
 rustflags = [
-  "--cfg",
-  "tokio_unstable",
+  "--cfg=tokio_unstable",
+  "--cfg=tracing_unstable",
   "-Zshare-generics=y",
   "-Zthreads=8",
   "-Csymbol-mangling-version=v0",
@@ -73,4 +73,4 @@ rustflags = [
 linker = "arm-linux-gnueabihf-gcc"
 
 [target.wasm32-unknown-unknown]
-rustflags = ["-Zshare-generics=y", "--cfg", 'getrandom_backend="wasm_js"']
+rustflags = ["-Zshare-generics=y", '--cfg=getrandom_backend="wasm_js"']

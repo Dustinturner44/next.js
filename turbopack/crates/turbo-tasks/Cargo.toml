@@ -31,6 +31,7 @@ erased-serde = { workspace = true }
 event-listener = "5.4.0"
 futures = { workspace = true }
 indexmap = { workspace = true, features = ["serde"] }
+inventory = { workspace = true }
 mopa = "0.2.0"
 once_cell = { workspace = true }
 parking_lot = { workspace = true, features = ["serde"]}
@@ -54,5 +55,5 @@ turbo-tasks-hash = { workspace = true }
 turbo-tasks-macros = { workspace = true }
 turbo-tasks-malloc = { workspace = true }
 unsize = { workspace = true }
-inventory = { workspace = true }
+valuable = { workspace = true }
 

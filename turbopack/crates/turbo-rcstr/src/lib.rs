@@ -15,6 +15,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use shrink_to_fit::ShrinkToFit;
 use triomphe::Arc;
 use turbo_tasks_hash::{DeterministicHash, DeterministicHasher};
+use valuable::Valuable;
 
 use crate::{
     dynamic::{deref_from, hash_bytes, new_atom},
@@ -266,6 +267,16 @@ impl Debug for RcStr {
 impl Display for RcStr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.as_str(), f)
+    }
+}
+
+impl Valuable for RcStr {
+    fn as_value(&self) -> valuable::Value<'_> {
+        valuable::Value::String(self.as_str())
+    }
+
+    fn visit(&self, visit: &mut dyn valuable::Visit) {
+        visit.visit_value(valuable::Value::String(self.as_str()));
     }
 }
 

@@ -55,6 +55,7 @@ swc_core = { workspace = true, features = [
   "ecma_visit",
 ] }
 modularize_imports = { workspace = true }
+valuable = { workspace = true }
 
 next-custom-transforms = { workspace = true }
 next-taskless = { workspace = true }

@@ -437,12 +437,13 @@ thread_local = "1.1.8"
 thiserror = "1.0.48"
 tokio = "1.43.0"
 tokio-util = { version = "0.7.13", features = ["io", "rt"] }
-tracing = "0.1.37"
+tracing = { version = "0.1.37", features = ["valuable"] }
 tracing-subscriber = "0.3.16"
 triomphe = { git = "https://github.com/sokra/triomphe", branch = "sokra/unstable" }
 unsize = "1.1.0"
 url = "2.2.2"
 urlencoding = "2.1.2"
+valuable = "0.1.1"
 vergen = { version = "9.0.6", features = ["cargo"] }
 vergen-gitcl = { version = "1.0.8", features = ["cargo"] }
 webbrowser = "0.8.7"

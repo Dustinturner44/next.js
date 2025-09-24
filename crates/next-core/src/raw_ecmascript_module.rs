@@ -33,6 +33,7 @@ use turbopack_ecmascript::{
     source_map::parse_source_map_comment,
     utils::StringifyJs,
 };
+use valuable::Valuable;
 
 #[turbo_tasks::value(shared)]
 pub struct RawEcmascriptModuleType {}
@@ -169,7 +170,7 @@ impl EcmascriptChunkItem for RawEcmascriptChunkItem {
     async fn content(&self) -> Result<Vc<EcmascriptChunkItemContent>> {
         let span = tracing::info_span!(
             "code generation raw module",
-            name = display(self.module.ident().to_string().await?)
+            name = &self.module.ident().to_string().await?.as_value(),
         );
 
         async {

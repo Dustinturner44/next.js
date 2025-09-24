@@ -9,6 +9,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 use turbo_tasks_hash::DeterministicHash;
+use valuable::Valuable;
 
 use crate::{
     SharedReference, Vc, VcRead, VcValueType,
@@ -51,6 +52,20 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Display::fmt(&**self, f)
+    }
+}
+
+impl<T> Valuable for ReadRef<T>
+where
+    T: VcValueType,
+    VcReadTarget<T>: Valuable,
+{
+    fn as_value(&self) -> valuable::Value<'_> {
+        VcReadTarget::<T>::as_value(&**self)
+    }
+
+    fn visit(&self, visit: &mut dyn valuable::Visit) {
+        VcReadTarget::<T>::visit(&**self, visit)
     }
 }
 
