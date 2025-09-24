@@ -591,31 +591,3 @@ bun add server-only
 Next.js handles `server-only` and `client-only` imports internally to provide clearer error messages when a module is used in the wrong environment. The contents of these packages from NPM are not used by Next.js.
 
 Next.js also provides its own type declarations for `server-only` and `client-only`, for TypeScript configurations where [`noUncheckedSideEffectImports`](https://www.typescriptlang.org/tsconfig/#noUncheckedSideEffectImports) is active.
-
-### Reading files in Server Components
-
-When a Server Component needs to read a local file, avoid relative paths like `./file.json` which depend on the current working directory. Instead, resolve paths relative to your project root using `process.cwd()` with `path.join`.
-
-```ts filename="app/example/page.tsx" switcher
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-
-export default async function Page() {
-  const filePath = join(process.cwd(), 'data', 'posts.json')
-  const contents = await readFile(filePath, 'utf8')
-  const posts = JSON.parse(contents)
-  return <pre>{JSON.stringify(posts[0], null, 2)}</pre>
-}
-```
-
-```js filename="app/example/page.js" switcher
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-
-export default async function Page() {
-  const filePath = join(process.cwd(), 'data', 'posts.json')
-  const contents = await readFile(filePath, 'utf8')
-  const posts = JSON.parse(contents)
-  return <pre>{JSON.stringify(posts[0], null, 2)}</pre>
-}
-```
