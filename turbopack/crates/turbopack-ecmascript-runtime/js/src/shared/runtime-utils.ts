@@ -128,8 +128,12 @@ function esm(exports: Exports, bindings: EsmBindings) {
     const tagOrFunction = bindings[i++]
     if (typeof tagOrFunction === 'number') {
       if (tagOrFunction === BindingTag_Value) {
+        const value = bindings[i++]
+        if (typeof value === 'function' && value.name === '') {
+          Object.defineProperty(value, 'name', { value: propName })
+        }
         defineProp(exports, propName, {
-          value: bindings[i++],
+          value,
           enumerable: true,
           writable: false,
         })
