@@ -41,7 +41,7 @@ describe.each(['default', 'babelrc'] as const)(
       // TODO: set only config instead once bundlers are consistent
       buildArgs: ['--profile'],
       dependencies: {
-        'babel-plugin-react-compiler': '0.0.0-experimental-3fde738-20250918',
+        'babel-plugin-react-compiler': '0.0.0-experimental-caf8ba5-20250925',
         ...dependencies,
       },
     })
