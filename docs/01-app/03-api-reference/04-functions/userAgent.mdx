@@ -74,14 +74,7 @@ type UserAgent = {
   browser: { name?: string; version?: string; major?: string }
   device: {
     model?: string
-    type?:
-      | 'mobile'
-      | 'tablet'
-      | 'console'
-      | 'smarttv'
-      | 'wearable'
-      | 'embedded'
-      | undefined
+    type?: string
     vendor?: string
   }
   engine: { name?: string; version?: string }
