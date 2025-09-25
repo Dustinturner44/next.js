@@ -2895,7 +2895,7 @@ export async function shared(task, opts) {
   await task
     .source('src/shared/**/*.+(js|ts|tsx)', {
       ignore: [
-        'src/shared/**/{amp,config,constants,dynamic,app-dynamic,head,runtime-config}.+(js|ts|tsx)',
+        'src/shared/**/{config,constants,dynamic,app-dynamic,head,runtime-config}.+(js|ts|tsx)',
         '**/*.test.d.ts',
         '**/*.test.+(js|ts|tsx)',
       ],
@@ -2908,7 +2908,7 @@ export async function shared_esm(task, opts) {
   await task
     .source('src/shared/**/*.+(js|ts|tsx)', {
       ignore: [
-        'src/shared/**/{amp,config,constants,dynamic,app-dynamic,head,runtime-config}.+(js|ts|tsx)',
+        'src/shared/**/{config,constants,dynamic,app-dynamic,head,runtime-config}.+(js|ts|tsx)',
         '**/*.test.d.ts',
         '**/*.test.+(js|ts|tsx)',
       ],
@@ -2920,7 +2920,7 @@ export async function shared_esm(task, opts) {
 export async function shared_re_exported(task, opts) {
   await task
     .source(
-      'src/shared/**/{amp,config,constants,dynamic,app-dynamic,head,runtime-config}.+(js|ts|tsx)',
+      'src/shared/**/{config,constants,dynamic,app-dynamic,head,runtime-config}.+(js|ts|tsx)',
       {
         ignore: ['**/*.test.d.ts', '**/*.test.+(js|ts|tsx)'],
       }
@@ -2932,7 +2932,7 @@ export async function shared_re_exported(task, opts) {
 export async function shared_re_exported_esm(task, opts) {
   await task
     .source(
-      'src/shared/**/{amp,config,constants,app-dynamic,dynamic,head}.+(js|ts|tsx)',
+      'src/shared/**/{config,constants,app-dynamic,dynamic,head}.+(js|ts|tsx)',
       {
         ignore: ['**/*.test.d.ts', '**/*.test.+(js|ts|tsx)'],
       }
