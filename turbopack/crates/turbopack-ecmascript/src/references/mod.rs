@@ -401,6 +401,10 @@ impl AnalyzeEcmascriptModuleResultBuilder {
 
         let references: Vec<_> = self.references.into_iter().collect();
 
+        if !self.analyze_mode.is_code_gen() {
+            debug_assert!(self.code_gens.is_empty());
+        }
+
         self.code_gens.shrink_to_fit();
         Ok(AnalyzeEcmascriptModuleResult::cell(
             AnalyzeEcmascriptModuleResult {
@@ -575,7 +579,12 @@ async fn analyze_ecmascript_module_internal(
         .await?;
     }
 
-    let parsed = parsed.await?;
+    let parsed = if !analyze_mode.is_code_gen() {
+        // We are never code-gening the module, so we can drop the AST after the analysis.
+        parsed.final_read_hint().await?
+    } else {
+        parsed.await?
+    };
 
     let ParseResult::Ok {
         program,
