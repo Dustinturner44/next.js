@@ -174,9 +174,6 @@ pub enum CrossOriginConfig {
     TraceRawVcs,
     NonLocalValue,
     OperationValue,
-)]
-
-#[derive(
     Clone,
     Debug,
     Default,
