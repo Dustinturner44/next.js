@@ -174,15 +174,6 @@ pub enum CrossOriginConfig {
     TraceRawVcs,
     NonLocalValue,
     OperationValue,
-    Clone,
-    Debug,
-    Default,
-    PartialEq,
-    Serialize,
-    Deserialize,
-    TraceRawVcs,
-    NonLocalValue,
-    OperationValue,
 )]
 #[serde(rename_all = "camelCase")]
 struct EslintConfig {
