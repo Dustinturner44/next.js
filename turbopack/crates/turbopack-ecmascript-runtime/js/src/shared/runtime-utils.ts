@@ -129,7 +129,11 @@ function esm(exports: Exports, bindings: EsmBindings) {
     if (typeof tagOrFunction === 'number') {
       if (tagOrFunction === BindingTag_Value) {
         const value = bindings[i++]
-        if (typeof value === 'function' && value.name === '') {
+        if (
+          typeof value === 'function' &&
+          value.name === '' &&
+          propName === 'LoginView'
+        ) {
           Object.defineProperty(value, 'name', { value: propName })
         }
         defineProp(exports, propName, {
