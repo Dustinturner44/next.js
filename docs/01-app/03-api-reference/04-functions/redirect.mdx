@@ -6,7 +6,7 @@ related:
     - app/api-reference/functions/permanentRedirect
 ---
 
-The `redirect` function allows you to redirect the user to another URL. `redirect` can be used while rendering in [Server and Client Components](/docs/app/getting-started/server-and-client-components), [Route Handlers](/docs/app/api-reference/file-conventions/route), [Server Actions](/docs/app/getting-started/updating-data), and it can also be called from Client Component event handlers and effects.
+The `redirect` function allows you to redirect the user to another URL. `redirect` can be used while rendering in [Server and Client Components](/docs/app/getting-started/server-and-client-components), [Route Handlers](/docs/app/api-reference/file-conventions/route), and [Server Actions](/docs/app/getting-started/updating-data). It can also be used from client-side callbacks (e.g. effects or event handlers) if needed.
 
 When used in a [streaming context](/docs/app/getting-started/linking-and-navigating#streaming), this will insert a meta tag to emit the redirect on the client side. When used in a server action, it will serve a 303 HTTP redirect response to the caller. Otherwise, it will serve a 307 HTTP redirect response to the caller.
 
@@ -195,26 +195,6 @@ import { redirect } from 'next/navigation'
 
 export async function navigate(data) {
   redirect(`/posts/${data.get('id')}`)
-}
-```
-
-It is also possible to call `redirect` inside event handlers, or effects.
-
-```tsx filename="components/client-redirect-button.tsx"
-'use client'
-
-import { redirect } from 'next/navigation'
-
-export function ClientRedirectButton() {
-  return (
-    <button
-      onClick={() => {
-        redirect('/dashboard')
-      }}
-    >
-      Redirect to Dashboard
-    </button>
-  )
 }
 ```
 
