@@ -8,8 +8,7 @@ export default async (page?: string) => {
     return
   }
   if (page) {
-    // in AMP the router isn't initialized on the client and
-    // client-transitions don't occur so ping initial page
+    // ping the initial page periodically
     setInterval(() => {
       sendMessage(JSON.stringify({ event: 'ping', page }))
     }, 2500)

@@ -1747,7 +1747,6 @@ export default async function build(
                           new Map()
                         ),
                         staticPages: [],
-                        hasSsrAmpPages: false,
                         buildTraceContext,
                         outputFileTracingRoot,
                       })
@@ -1852,7 +1851,6 @@ export default async function build(
       const ssgBlockingFallbackPages = new Set<string>()
       const staticPages = new Set<string>()
       const invalidPages = new Set<string>()
-      const hybridAmpPages = new Set<string>()
       const serverPropsPages = new Set<string>()
       const additionalPaths = new Map<string, PrerenderedRoute[]>()
       const staticPaths = new Map<string, PrerenderedRoute[]>()
@@ -1896,7 +1894,6 @@ export default async function build(
         customAppGetInitialProps,
         namedExports,
         isNextImageImported,
-        hasSsrAmpPages,
         hasNonStaticErrorPage,
       } = await staticCheckSpan.traceAsyncFn(async () => {
         if (isCompileMode) {
@@ -1904,7 +1901,6 @@ export default async function build(
             customAppGetInitialProps: false,
             namedExports: [],
             isNextImageImported: true,
-            hasSsrAmpPages: !!pagesDir,
             hasNonStaticErrorPage: hasUserPagesRoutes,
           }
         }
@@ -1975,8 +1971,6 @@ export default async function build(
 
         // eslint-disable-next-line @typescript-eslint/no-shadow
         let isNextImageImported: boolean | undefined
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        let hasSsrAmpPages = false
 
         const middlewareManifest: MiddlewareManifest = require(
           path.join(distDir, SERVER_DIRECTORY, MIDDLEWARE_MANIFEST)
@@ -2040,7 +2034,6 @@ export default async function build(
                 let isSSG = false
                 let isStatic = false
                 let isServerComponent = false
-                let isHybridAmp = false
                 let ssgPageRoutes: string[] | null = null
                 let pagePath = ''
 
@@ -2285,18 +2278,6 @@ export default async function build(
                           workerResult.hasStaticProps = false
                         }
 
-                        if (
-                          workerResult.isStatic === false &&
-                          (workerResult.isHybridAmp || workerResult.isAmpOnly)
-                        ) {
-                          hasSsrAmpPages = true
-                        }
-
-                        if (workerResult.isHybridAmp) {
-                          isHybridAmp = true
-                          hybridAmpPages.add(page)
-                        }
-
                         if (workerResult.isNextImageImported) {
                           isNextImageImported = true
                         }
@@ -2398,7 +2379,6 @@ export default async function build(
                   isStatic,
                   isSSG,
                   isRoutePPREnabled,
-                  isHybridAmp,
                   ssgPageRoutes,
                   initialCacheControl: undefined,
                   runtime: pageRuntime,
@@ -2419,7 +2399,6 @@ export default async function build(
           customAppGetInitialProps: await customAppGetInitialPropsPromise,
           namedExports: await namedExportsPromise,
           isNextImageImported,
-          hasSsrAmpPages,
           hasNonStaticErrorPage: nonStaticErrorPage,
         }
 
@@ -2558,22 +2537,6 @@ export default async function build(
           return serverFilesManifest
         })
 
-      if (!hasSsrAmpPages) {
-        requiredServerFilesManifest.ignore.push(
-          path.relative(
-            dir,
-            path.join(
-              path.dirname(
-                require.resolve(
-                  'next/dist/compiled/@ampproject/toolbox-optimizer'
-                )
-              ),
-              '**/*'
-            )
-          )
-        )
-      }
-
       const middlewareFile = rootPaths.find((p) =>
         p.includes(MIDDLEWARE_FILENAME)
       )
@@ -2633,7 +2596,6 @@ export default async function build(
               edgeRuntimeRoutes: collectRoutesUsingEdgeRuntime(pageInfos),
               staticPages: [...staticPages],
               nextBuildSpan,
-              hasSsrAmpPages,
               buildTraceContext,
               outputFileTracingRoot,
             }).catch((err) => {
@@ -3760,7 +3722,6 @@ export default async function build(
             const isSsg = ssgPages.has(page)
             const isStaticSsgFallback = ssgStaticFallbackPages.has(page)
             const isDynamic = isDynamicRoute(page)
-            const hasAmp = hybridAmpPages.has(page)
             const file = normalizePagePath(page)
 
             const pageInfo = pageInfos.get(page)
@@ -3789,15 +3750,6 @@ export default async function build(
 
             if (hasHtmlOutput) {
               await moveExportedPage(page, page, file, isSsg, 'html')
-            }
-
-            if (hasAmp && (!isSsg || (isSsg && !isDynamic))) {
-              const ampPage = `${file}.amp`
-              await moveExportedPage(page, ampPage, ampPage, isSsg, 'html')
-
-              if (isSsg) {
-                await moveExportedPage(page, ampPage, ampPage, isSsg, 'json')
-              }
             }
 
             if (isSsg) {
@@ -3873,26 +3825,6 @@ export default async function build(
                     'json',
                     true
                   )
-
-                  if (hasAmp) {
-                    const ampPage = `${pageFile}.amp`
-                    await moveExportedPage(
-                      page,
-                      ampPage,
-                      ampPage,
-                      isSsg,
-                      'html',
-                      true
-                    )
-                    await moveExportedPage(
-                      page,
-                      ampPage,
-                      ampPage,
-                      isSsg,
-                      'json',
-                      true
-                    )
-                  }
 
                   const cacheControl = getCacheControl(route.pathname)
 
