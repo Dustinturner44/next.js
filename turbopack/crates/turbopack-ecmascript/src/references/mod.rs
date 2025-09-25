@@ -120,7 +120,6 @@ use super::{
     },
     errors,
     parse::ParseResult,
-    special_cases::special_cases,
     utils::js_value_to_pattern,
     webpack::{
         WebpackChunkAssetReference, WebpackEntryAssetReference, WebpackRuntimeAssetReference,
@@ -129,8 +128,8 @@ use super::{
 };
 pub use crate::references::esm::export::{FollowExportsResult, follow_reexports};
 use crate::{
-    EcmascriptInputTransforms, EcmascriptModuleAsset, EcmascriptParsable, SpecifiedModuleType,
-    TreeShakingMode, TypeofWindow,
+    AnalyzeMode, EcmascriptInputTransforms, EcmascriptModuleAsset, EcmascriptParsable,
+    SpecifiedModuleType, TreeShakingMode, TypeofWindow,
     analyzer::{
         ConstantNumber, ConstantString, JsValueUrlKind, RequireContextValue,
         builtin::early_replace_builtin,
@@ -213,7 +212,7 @@ impl AnalyzeEcmascriptModuleResult {
 /// A temporary analysis result builder to pass around, to be turned into an
 /// `Vc<AnalyzeEcmascriptModuleResult>` eventually.
 pub struct AnalyzeEcmascriptModuleResultBuilder {
-    is_tracing: bool,
+    analyze_mode: AnalyzeMode,
 
     references: FxIndexSet<ResolvedVc<Box<dyn ModuleReference>>>,
 
@@ -235,9 +234,9 @@ pub struct AnalyzeEcmascriptModuleResultBuilder {
 }
 
 impl AnalyzeEcmascriptModuleResultBuilder {
-    pub fn new(is_tracing: bool) -> Self {
+    pub fn new(analyze_mode: AnalyzeMode) -> Self {
         Self {
-            is_tracing,
+            analyze_mode,
             references: Default::default(),
             esm_references: Default::default(),
             esm_local_references: Default::default(),
@@ -291,7 +290,7 @@ impl AnalyzeEcmascriptModuleResultBuilder {
     where
         C: Into<CodeGen>,
     {
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.code_gens.push(code_gen.into())
         }
     }
@@ -441,6 +440,9 @@ struct AnalysisState<'a> {
     ignore_dynamic_requests: bool,
     url_rewrite_behavior: Option<UrlRewriteBehavior>,
     free_var_references: ReadRef<FreeVarReferencesIndividual>,
+    // Whether we should collect affecting sources from referenced files. Only usedful when
+    // tracing.
+    collect_affecting_sources: bool,
 }
 
 impl AnalysisState<'_> {
@@ -478,28 +480,28 @@ where
 
 /// Analyse a provided [EcmascriptModuleAsset] and return a [AnalyzeEcmascriptModuleResult].
 #[turbo_tasks::function]
-pub(crate) async fn analyse_ecmascript_module(
+pub(crate) async fn analyze_ecmascript_module(
     module: ResolvedVc<EcmascriptModuleAsset>,
     part: Option<ModulePart>,
 ) -> Result<Vc<AnalyzeEcmascriptModuleResult>> {
-    let span = {
-        let module = module.ident().to_string().await?.to_string();
-        tracing::info_span!("analyse ecmascript module", name = module)
-    };
-    let result = analyse_ecmascript_module_internal(module, part)
+    let span = tracing::info_span!(
+        "analyze ecmascript module",
+        name = display(module.ident().to_string().await?)
+    );
+    let result = analyze_ecmascript_module_internal(module, part)
         .instrument(span)
         .await;
 
     match result {
         Ok(result) => Ok(result),
         Err(err) => Err(err.context(format!(
-            "failed to analyse ecmascript module '{}'",
+            "failed to analyze ecmascript module '{}'",
             module.ident().to_string().await?
         ))),
     }
 }
 
-pub async fn analyse_ecmascript_module_internal(
+pub async fn analyze_ecmascript_module_internal(
     module: ResolvedVc<EcmascriptModuleAsset>,
     part: Option<ModulePart>,
 ) -> Result<Vc<AnalyzeEcmascriptModuleResult>> {
@@ -511,12 +513,11 @@ pub async fn analyse_ecmascript_module_internal(
     let options = raw_module.options;
     let options = options.await?;
     let import_externals = options.import_externals;
-    let is_tracing = options.is_tracing;
+    let analyze_mode = options.analyze_mode;
 
     let origin = ResolvedVc::upcast::<Box<dyn ResolveOrigin>>(module);
-
-    let mut analysis = AnalyzeEcmascriptModuleResultBuilder::new(is_tracing);
-    let path = origin.origin_path().owned().await?;
+    let mut analysis = AnalyzeEcmascriptModuleResultBuilder::new(analyze_mode);
+    let path = &*origin.origin_path().await?;
 
     // Is this a typescript file that requires analyzing type references?
     let analyze_types = match &ty {
@@ -525,6 +526,7 @@ pub async fn analyse_ecmascript_module_internal(
         EcmascriptModuleAssetType::Ecmascript => false,
     };
 
+    // Split out our module part if we have one.
     let parsed = if let Some(part) = part {
         let split_data = split_module(*module);
         part_of_module(split_data, part)
@@ -554,7 +556,7 @@ pub async fn analyse_ecmascript_module_internal(
     if analyze_types {
         let span = tracing::info_span!("tsconfig reference");
         async {
-            match &*find_context_file(path.parent(), tsconfig()).await? {
+            match &*find_context_file(path.parent(), tsconfig(), false).await? {
                 FindContextFileResult::Found(tsconfig, _) => {
                     analysis.add_reference(
                         TsConfigReference::new(*origin, tsconfig.clone())
@@ -569,8 +571,6 @@ pub async fn analyse_ecmascript_module_internal(
         .instrument(span)
         .await?;
     }
-
-    special_cases(&path.path, &mut analysis);
 
     let parsed = parsed.await?;
 
@@ -689,7 +689,7 @@ pub async fn analyse_ecmascript_module_internal(
     let mut var_graph = {
         let _span = tracing::info_span!("analyze variable values").entered();
         set_handler_and_globals(&handler, globals, || {
-            create_graph(program, eval_context, is_tracing)
+            create_graph(program, eval_context, analyze_mode)
         })
     };
 
@@ -756,7 +756,7 @@ pub async fn analyse_ecmascript_module_internal(
                     eval_context,
                     &import_references,
                     &mut analysis,
-                    is_tracing,
+                    analyze_mode,
                 );
                 // ModuleReferencesVisitor has already called analysis.add_esm_reexport_reference
                 // for any references in esm_exports
@@ -919,6 +919,7 @@ pub async fn analyse_ecmascript_module_internal(
         .instrument(span)
         .await?;
     }
+    // TODO: we can do this when constructing the var graph
     let span = tracing::info_span!("async module handling");
     async {
         let top_level_await_span =
@@ -974,6 +975,7 @@ pub async fn analyse_ecmascript_module_internal(
                 .free_var_references
                 .individual()
                 .await?,
+            collect_affecting_sources: options.analyze_mode.is_tracing(),
         };
 
         enum Action {
@@ -1008,7 +1010,7 @@ pub async fn analyse_ecmascript_module_internal(
             match effect {
                 Effect::Unreachable { start_ast_path } => {
                     debug_assert!(
-                        !is_tracing,
+                        analyze_mode.is_code_gen(),
                         "unexpected Effect::Unreachable in tracing mode"
                     );
 
@@ -1020,7 +1022,6 @@ pub async fn analyse_ecmascript_module_internal(
                     kind,
                     ast_path: condition_ast_path,
                     span: _,
-                    in_try: _,
                 } => {
                     // Don't replace condition with it's truth-y value, if it has side effects
                     // (e.g. function calls)
@@ -1032,14 +1033,14 @@ pub async fn analyse_ecmascript_module_internal(
 
                     macro_rules! inactive {
                         ($block:ident) => {
-                            if !is_tracing {
+                            if analyze_mode.is_code_gen() {
                                 analysis.add_code_gen(Unreachable::new($block.range.clone()));
                             }
                         };
                     }
                     macro_rules! condition {
                         ($expr:expr) => {
-                            if !is_tracing && !condition_has_side_effects {
+                            if analyze_mode.is_code_gen() && !condition_has_side_effects {
                                 analysis.add_code_gen(ConstantConditionCodeGen::new(
                                     $expr,
                                     condition_ast_path.to_vec().into(),
@@ -1286,9 +1287,11 @@ pub async fn analyse_ecmascript_module_internal(
                     var,
                     ast_path,
                     span,
-                    in_try: _,
                 } => {
-                    debug_assert!(!is_tracing, "unexpected Effect::FreeVar in tracing mode");
+                    debug_assert!(
+                        analyze_mode.is_code_gen(),
+                        "unexpected Effect::FreeVar in tracing mode"
+                    );
 
                     // FreeVar("require") might be turbopackIgnore-d
                     if !analysis_state
@@ -1315,9 +1318,11 @@ pub async fn analyse_ecmascript_module_internal(
                     prop,
                     ast_path,
                     span,
-                    in_try: _,
                 } => {
-                    debug_assert!(!is_tracing, "unexpected Effect::Member in tracing mode");
+                    debug_assert!(
+                        analyze_mode.is_code_gen(),
+                        "unexpected Effect::Member in tracing mode"
+                    );
 
                     // Intentionally not awaited because `handle_member` reads this only when needed
                     let obj = analysis_state.link_value(*obj, ImportAttributes::empty_ref());
@@ -1334,7 +1339,6 @@ pub async fn analyse_ecmascript_module_internal(
                     export,
                     ast_path,
                     span: _,
-                    in_try: _,
                 } => {
                     let Some(r) = import_references.get(esm_reference_index) else {
                         continue;
@@ -1391,18 +1395,20 @@ pub async fn analyse_ecmascript_module_internal(
                     ast_path,
                     span,
                 } => {
-                    debug_assert!(!is_tracing, "unexpected Effect::TypeOf in tracing mode");
+                    debug_assert!(
+                        analyze_mode.is_code_gen(),
+                        "unexpected Effect::TypeOf in tracing mode"
+                    );
                     let arg = analysis_state
                         .link_value(*arg, ImportAttributes::empty_ref())
                         .await?;
                     handle_typeof(&ast_path, arg, span, &analysis_state, &mut analysis).await?;
                 }
-                Effect::ImportMeta {
-                    ast_path,
-                    span: _,
-                    in_try: _,
-                } => {
-                    debug_assert!(!is_tracing, "unexpected Effect::ImportMeta in tracing mode");
+                Effect::ImportMeta { ast_path, span: _ } => {
+                    debug_assert!(
+                        analyze_mode.is_code_gen(),
+                        "unexpected Effect::ImportMeta in tracing mode"
+                    );
                     if analysis_state.first_import_meta {
                         analysis_state.first_import_meta = false;
                         analysis.add_code_gen(ImportMetaBinding::new(
@@ -1599,6 +1605,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
         compile_time_info,
         ignore_dynamic_requests,
         url_rewrite_behavior,
+        collect_affecting_sources,
         ..
     } = state;
     fn explain_args(args: &[JsValue]) -> (String, String) {
@@ -1647,7 +1654,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                             span,
                             &format!("new URL({args}) is very dynamic{hints}",),
                             DiagnosticId::Lint(
-                                errors::failed_to_analyse::ecmascript::NEW_URL_IMPORT_META
+                                errors::failed_to_analyze::ecmascript::NEW_URL_IMPORT_META
                                     .to_string(),
                             ),
                         );
@@ -1679,7 +1686,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                             span,
                             &format!("new Worker({args}) is very dynamic{hints}",),
                             DiagnosticId::Lint(
-                                errors::failed_to_analyse::ecmascript::NEW_WORKER.to_string(),
+                                errors::failed_to_analyze::ecmascript::NEW_WORKER.to_string(),
                             ),
                         );
                         if ignore_dynamic_requests {
@@ -1767,7 +1774,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("import({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::DYNAMIC_IMPORT.to_string(),
+                            errors::failed_to_analyze::ecmascript::DYNAMIC_IMPORT.to_string(),
                         ),
                     );
                     if ignore_dynamic_requests {
@@ -1792,9 +1799,9 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("import({args}) is not statically analyse-able{hints}",),
+                &format!("import({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::DYNAMIC_IMPORT.to_string(),
+                    errors::failed_to_analyze::ecmascript::DYNAMIC_IMPORT.to_string(),
                 ),
             )
         }
@@ -1808,7 +1815,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("require({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::REQUIRE.to_string(),
+                            errors::failed_to_analyze::ecmascript::REQUIRE.to_string(),
                         ),
                     );
                     if ignore_dynamic_requests {
@@ -1830,8 +1837,8 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("require({args}) is not statically analyse-able{hints}",),
-                DiagnosticId::Error(errors::failed_to_analyse::ecmascript::REQUIRE.to_string()),
+                &format!("require({args}) is not statically analyze-able{hints}",),
+                DiagnosticId::Error(errors::failed_to_analyze::ecmascript::REQUIRE.to_string()),
             )
         }
         JsValue::WellKnownFunction(WellKnownFunctionKind::Define) => {
@@ -1852,7 +1859,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let args = linked_args(args).await?;
             if args.len() == 1 || args.len() == 2 {
                 // TODO error TP1003 require.resolve(???*0*, {"paths": [???*1*]}) is not statically
-                // analyse-able with ignore_dynamic_requests = true
+                // analyze-able with ignore_dynamic_requests = true
                 let pat = js_value_to_pattern(&args[0]);
                 if !pat.has_constant_parts() {
                     let (args, hints) = explain_args(&args);
@@ -1860,7 +1867,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("require.resolve({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::REQUIRE_RESOLVE.to_string(),
+                            errors::failed_to_analyze::ecmascript::REQUIRE_RESOLVE.to_string(),
                         ),
                     );
                     if ignore_dynamic_requests {
@@ -1882,9 +1889,9 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("require.resolve({args}) is not statically analyse-able{hints}",),
+                &format!("require.resolve({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::REQUIRE_RESOLVE.to_string(),
+                    errors::failed_to_analyze::ecmascript::REQUIRE_RESOLVE.to_string(),
                 ),
             )
         }
@@ -1902,7 +1909,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                             PrettyPrintError(&err)
                         ),
                         DiagnosticId::Error(
-                            errors::failed_to_analyse::ecmascript::REQUIRE_CONTEXT.to_string(),
+                            errors::failed_to_analyze::ecmascript::REQUIRE_CONTEXT.to_string(),
                         ),
                     );
                     return Ok(());
@@ -1924,7 +1931,9 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             );
         }
 
-        JsValue::WellKnownFunction(WellKnownFunctionKind::FsReadMethod(name)) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::FsReadMethod(name))
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
             if !args.is_empty() {
                 let pat = js_value_to_pattern(&args[0]);
@@ -1934,7 +1943,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("fs.{name}({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::FS_METHOD.to_string(),
+                            errors::failed_to_analyze::ecmascript::FS_METHOD.to_string(),
                         ),
                     );
                     if ignore_dynamic_requests {
@@ -1942,7 +1951,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                     }
                 }
                 analysis.add_reference(
-                    FileSourceReference::new(*source, Pattern::new(pat))
+                    FileSourceReference::new(*source, Pattern::new(pat), collect_affecting_sources)
                         .to_resolved()
                         .await?,
                 );
@@ -1951,12 +1960,14 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("fs.{name}({args}) is not statically analyse-able{hints}",),
-                DiagnosticId::Error(errors::failed_to_analyse::ecmascript::FS_METHOD.to_string()),
+                &format!("fs.{name}({args}) is not statically analyze-able{hints}",),
+                DiagnosticId::Error(errors::failed_to_analyze::ecmascript::FS_METHOD.to_string()),
             )
         }
 
-        JsValue::WellKnownFunction(WellKnownFunctionKind::PathResolve(..)) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::PathResolve(..))
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let parent_path = origin.origin_path().owned().await?.parent();
             let args = linked_args(args).await?;
 
@@ -1981,7 +1992,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                     span,
                     &format!("path.resolve({args}) is very dynamic{hints}",),
                     DiagnosticId::Lint(
-                        errors::failed_to_analyse::ecmascript::PATH_METHOD.to_string(),
+                        errors::failed_to_analyze::ecmascript::PATH_METHOD.to_string(),
                     ),
                 );
                 if ignore_dynamic_requests {
@@ -1989,14 +2000,16 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                 }
             }
             analysis.add_reference(
-                FileSourceReference::new(*source, Pattern::new(pat))
+                FileSourceReference::new(*source, Pattern::new(pat), collect_affecting_sources)
                     .to_resolved()
                     .await?,
             );
             return Ok(());
         }
 
-        JsValue::WellKnownFunction(WellKnownFunctionKind::PathJoin) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::PathJoin)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let context_path = source.ident().path().await?;
             // ignore path.join in `node-gyp`, it will includes too many files
             if context_path.path.contains("node_modules/node-gyp") {
@@ -2019,7 +2032,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                     span,
                     &format!("path.join({args}) is very dynamic{hints}",),
                     DiagnosticId::Lint(
-                        errors::failed_to_analyse::ecmascript::PATH_METHOD.to_string(),
+                        errors::failed_to_analyze::ecmascript::PATH_METHOD.to_string(),
                     ),
                 );
                 if ignore_dynamic_requests {
@@ -2033,7 +2046,9 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             );
             return Ok(());
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::ChildProcessSpawnMethod(name)) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::ChildProcessSpawnMethod(name))
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
 
             // Is this specifically `spawn(process.argv[0], ['-e', ...])`?
@@ -2074,9 +2089,13 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                 }
                 if !dynamic || !ignore_dynamic_requests {
                     analysis.add_reference(
-                        FileSourceReference::new(*source, Pattern::new(pat))
-                            .to_resolved()
-                            .await?,
+                        FileSourceReference::new(
+                            *source,
+                            Pattern::new(pat),
+                            collect_affecting_sources,
+                        )
+                        .to_resolved()
+                        .await?,
                     );
                 }
                 if show_dynamic_warning {
@@ -2085,7 +2104,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("child_process.{name}({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
+                            errors::failed_to_analyze::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
                         ),
                     );
                 }
@@ -2094,13 +2113,15 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("child_process.{name}({args}) is not statically analyse-able{hints}",),
+                &format!("child_process.{name}({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
+                    errors::failed_to_analyze::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::ChildProcessFork) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::ChildProcessFork)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
             if !args.is_empty() {
                 let first_arg = &args[0];
@@ -2111,7 +2132,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("child_process.fork({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
+                            errors::failed_to_analyze::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
                         ),
                     );
                     if ignore_dynamic_requests {
@@ -2133,13 +2154,15 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("child_process.fork({args}) is not statically analyse-able{hints}",),
+                &format!("child_process.fork({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
+                    errors::failed_to_analyze::ecmascript::CHILD_PROCESS_SPAWN.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodePreGypFind) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodePreGypFind)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             use turbopack_resolve::node_native_binding::NodePreGypConfigReference;
 
             let args = linked_args(args).await?;
@@ -2152,7 +2175,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("node-pre-gyp.find({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::NODE_PRE_GYP_FIND.to_string(),
+                            errors::failed_to_analyze::ecmascript::NODE_PRE_GYP_FIND.to_string(),
                         ),
                     );
                     // Always ignore this dynamic request
@@ -2163,6 +2186,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         origin.origin_path().await?.parent(),
                         Pattern::new(pat),
                         compile_time_info.environment().compile_target(),
+                        collect_affecting_sources,
                     )
                     .to_resolved()
                     .await?,
@@ -2174,14 +2198,16 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                 span,
                 &format!(
                     "require('@mapbox/node-pre-gyp').find({args}) is not statically \
-                     analyse-able{hints}",
+                     analyze-able{hints}",
                 ),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_PRE_GYP_FIND.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_PRE_GYP_FIND.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeGypBuild) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeGypBuild)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             use turbopack_resolve::node_native_binding::NodeGypBuildReference;
 
             let args = linked_args(args).await?;
@@ -2200,6 +2226,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                     analysis.add_reference(
                         NodeGypBuildReference::new(
                             current_context,
+                            collect_affecting_sources,
                             compile_time_info.environment().compile_target(),
                         )
                         .to_resolved()
@@ -2212,14 +2239,16 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             handler.span_warn_with_code(
                 span,
                 &format!(
-                    "require('node-gyp-build')({args}) is not statically analyse-able{hints}",
+                    "require('node-gyp-build')({args}) is not statically analyze-able{hints}",
                 ),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_GYP_BUILD.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_GYP_BUILD.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeBindings) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeBindings)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             use turbopack_resolve::node_native_binding::NodeBindingsReference;
 
             let args = linked_args(args).await?;
@@ -2229,9 +2258,13 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                     .await?;
                 if let Some(s) = first_arg.as_str() {
                     analysis.add_reference(
-                        NodeBindingsReference::new(origin.origin_path().owned().await?, s.into())
-                            .to_resolved()
-                            .await?,
+                        NodeBindingsReference::new(
+                            origin.origin_path().owned().await?,
+                            s.into(),
+                            collect_affecting_sources,
+                        )
+                        .to_resolved()
+                        .await?,
                     );
                     return Ok(());
                 }
@@ -2239,13 +2272,15 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("require('bindings')({args}) is not statically analyse-able{hints}",),
+                &format!("require('bindings')({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_BINDINGS.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_BINDINGS.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeExpressSet) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeExpressSet)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
             if args.len() == 2
                 && let Some(s) = args.first().and_then(|arg| arg.as_str())
@@ -2258,7 +2293,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                         span,
                         &format!("require('express')().set({args}) is very dynamic{hints}",),
                         DiagnosticId::Lint(
-                            errors::failed_to_analyse::ecmascript::NODE_EXPRESS.to_string(),
+                            errors::failed_to_analyze::ecmascript::NODE_EXPRESS.to_string(),
                         ),
                     );
                     // Always ignore this dynamic request
@@ -2318,13 +2353,15 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("require('express')().set({args}) is not statically analyse-able{hints}",),
+                &format!("require('express')().set({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_EXPRESS.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_EXPRESS.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeStrongGlobalizeSetRootDir) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeStrongGlobalizeSetRootDir)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
             if let Some(p) = args.first().and_then(|arg| arg.as_str()) {
                 let abs_pattern = if p.starts_with("/ROOT/") {
@@ -2359,14 +2396,16 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                 span,
                 &format!(
                     "require('strong-globalize').SetRootDir({args}) is not statically \
-                     analyse-able{hints}",
+                     analyze-able{hints}",
                 ),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_GYP_BUILD.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_GYP_BUILD.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeResolveFrom) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeResolveFrom)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
             if args.len() == 2 && args.get(1).and_then(|arg| arg.as_str()).is_some() {
                 analysis.add_reference(
@@ -2384,13 +2423,15 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
             let (args, hints) = explain_args(&args);
             handler.span_warn_with_code(
                 span,
-                &format!("require('resolve-from')({args}) is not statically analyse-able{hints}",),
+                &format!("require('resolve-from')({args}) is not statically analyze-able{hints}",),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_RESOLVE_FROM.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_RESOLVE_FROM.to_string(),
                 ),
             )
         }
-        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeProtobufLoad) => {
+        JsValue::WellKnownFunction(WellKnownFunctionKind::NodeProtobufLoad)
+            if analysis.analyze_mode.is_tracing() =>
+        {
             let args = linked_args(args).await?;
             if args.len() == 2
                 && let Some(JsValue::Object { parts, .. }) = args.get(1)
@@ -2425,10 +2466,10 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                 span,
                 &format!(
                     "require('@grpc/proto-loader').load({args}) is not statically \
-                     analyse-able{hints}",
+                     analyze-able{hints}",
                 ),
                 DiagnosticId::Error(
-                    errors::failed_to_analyse::ecmascript::NODE_PROTOBUF_LOADER.to_string(),
+                    errors::failed_to_analyze::ecmascript::NODE_PROTOBUF_LOADER.to_string(),
                 ),
             )
         }
@@ -2580,7 +2621,7 @@ async fn handle_free_var_reference(
             span,
             error_message,
             DiagnosticId::Error(
-                errors::failed_to_analyse::ecmascript::FREE_VAR_REFERENCE.to_string(),
+                errors::failed_to_analyze::ecmascript::FREE_VAR_REFERENCE.to_string(),
             ),
         ),
         FreeVarReference::Value(value) => {
@@ -2771,7 +2812,7 @@ async fn analyze_amd_define(
             handler.span_err_with_code(
                 span,
                 "unsupported AMD define() form",
-                DiagnosticId::Error(errors::failed_to_analyse::ecmascript::AMD_DEFINE.to_string()),
+                DiagnosticId::Error(errors::failed_to_analyze::ecmascript::AMD_DEFINE.to_string()),
             );
         }
     }
@@ -2802,7 +2843,7 @@ async fn analyze_amd_define_with_deps(
                         span,
                         "using \"require\" as dependency in an AMD define() is not yet supported",
                         DiagnosticId::Error(
-                            errors::failed_to_analyse::ecmascript::AMD_DEFINE.to_string(),
+                            errors::failed_to_analyze::ecmascript::AMD_DEFINE.to_string(),
                         ),
                     );
                     requests.push(AmdDefineDependencyElement::Require);
@@ -2833,7 +2874,7 @@ async fn analyze_amd_define_with_deps(
                 // `JsValue`s do not keep a hold of their original span.
                 span,
                 "unsupported AMD define() dependency element form",
-                DiagnosticId::Error(errors::failed_to_analyse::ecmascript::AMD_DEFINE.to_string()),
+                DiagnosticId::Error(errors::failed_to_analyze::ecmascript::AMD_DEFINE.to_string()),
             );
         }
     }
@@ -2842,7 +2883,7 @@ async fn analyze_amd_define_with_deps(
         handler.span_warn_with_code(
             span,
             "passing an ID to AMD define() is not yet fully supported",
-            DiagnosticId::Lint(errors::failed_to_analyse::ecmascript::AMD_DEFINE.to_string()),
+            DiagnosticId::Lint(errors::failed_to_analyze::ecmascript::AMD_DEFINE.to_string()),
         );
     }
 
@@ -3210,9 +3251,9 @@ impl StaticAnalyser {
 /// A visitor that walks the AST and collects information about the various
 /// references a module makes to other parts of the code.
 struct ModuleReferencesVisitor<'a> {
-    is_tracing: bool,
+    analyze_mode: AnalyzeMode,
     eval_context: &'a EvalContext,
-    old_analyser: StaticAnalyser,
+    old_analyzer: StaticAnalyser,
     import_references: &'a [ResolvedVc<EsmAssetReference>],
     analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
     esm_exports: BTreeMap<RcStr, EsmExport>,
@@ -3226,12 +3267,12 @@ impl<'a> ModuleReferencesVisitor<'a> {
         eval_context: &'a EvalContext,
         import_references: &'a [ResolvedVc<EsmAssetReference>],
         analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
-        is_tracing: bool,
+        analyze_mode: AnalyzeMode,
     ) -> Self {
         Self {
-            is_tracing,
+            analyze_mode,
             eval_context,
-            old_analyser: StaticAnalyser::default(),
+            old_analyzer: StaticAnalyser::default(),
             import_references,
             analysis,
             esm_exports: BTreeMap::new(),
@@ -3287,7 +3328,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
         export: &'ast ExportAll,
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.analysis
                 .add_code_gen(EsmModuleItem::new(as_parent_path(ast_path).into()));
         }
@@ -3364,7 +3405,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
             }
         }
 
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.analysis
                 .add_code_gen(EsmModuleItem::new(as_parent_path(ast_path).into()));
         }
@@ -3415,7 +3456,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
                 }
             }
         };
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.analysis
                 .add_code_gen(EsmModuleItem::new(as_parent_path(ast_path).into()));
         }
@@ -3435,7 +3476,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
                 Liveness::Constant,
             ),
         );
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.analysis
                 .add_code_gen(EsmModuleItem::new(as_parent_path(ast_path).into()));
         }
@@ -3469,7 +3510,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
                 // ignore
             }
         }
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.analysis
                 .add_code_gen(EsmModuleItem::new(as_parent_path(ast_path).into()));
         }
@@ -3491,7 +3532,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
             match specifier {
                 ImportSpecifier::Named(named) => {
                     if !named.is_type_only {
-                        self.old_analyser.imports.insert(
+                        self.old_analyzer.imports.insert(
                             named.local.sym.to_string(),
                             (
                                 src.clone(),
@@ -3505,19 +3546,19 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
                     }
                 }
                 ImportSpecifier::Default(default_import) => {
-                    self.old_analyser.imports.insert(
+                    self.old_analyzer.imports.insert(
                         default_import.local.sym.to_string(),
                         (src.clone(), vec!["default".to_string()]),
                     );
                 }
                 ImportSpecifier::Namespace(namespace) => {
-                    self.old_analyser
+                    self.old_analyzer
                         .imports
                         .insert(namespace.local.sym.to_string(), (src.clone(), Vec::new()));
                 }
             }
         }
-        if !self.is_tracing {
+        if self.analyze_mode.is_code_gen() {
             self.analysis.add_code_gen(EsmModuleItem::new(path));
         }
     }
@@ -3549,7 +3590,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
         if let Callee::Expr(expr) = &call.callee
-            && let StaticExpr::FreeVar(var) = self.old_analyser.evaluate_expr(expr)
+            && let StaticExpr::FreeVar(var) = self.old_analyzer.evaluate_expr(expr)
         {
             match &var[..] {
                 [webpack_require, property]

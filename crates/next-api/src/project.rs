@@ -815,9 +815,9 @@ impl Project {
         let node_execution_chunking_context = Vc::upcast(
             NodeJsChunkingContext::builder(
                 self.project_root_path().owned().await?,
-                node_root.clone(),
+                node_root.join("build")?,
                 self.node_root_to_root_path().owned().await?,
-                node_root.clone(),
+                node_root.join("build")?,
                 node_root.join("build/chunks")?,
                 node_root.join("build/assets")?,
                 node_build_environment().to_resolved().await?,
@@ -848,12 +848,7 @@ impl Project {
         let mut endpoints = Vec::new();
 
         let entrypoints = self.entrypoints().await?;
-
-        // Always include these basic pages endpoints regardless of `app_dir_only`. The user's
-        // page routes themselves are excluded below.
-        endpoints.push(entrypoints.pages_error_endpoint);
-        endpoints.push(entrypoints.pages_app_endpoint);
-        endpoints.push(entrypoints.pages_document_endpoint);
+        let mut is_pages_entries_added = false;
 
         if let Some(middleware) = &entrypoints.middleware {
             endpoints.push(middleware.endpoint);
@@ -872,11 +867,23 @@ impl Project {
                 } => {
                     if !app_dir_only {
                         endpoints.push(*html_endpoint);
+                        if !is_pages_entries_added {
+                            endpoints.push(entrypoints.pages_error_endpoint);
+                            endpoints.push(entrypoints.pages_app_endpoint);
+                            endpoints.push(entrypoints.pages_document_endpoint);
+                            is_pages_entries_added = true;
+                        }
                     }
                 }
                 Route::PageApi { endpoint } => {
                     if !app_dir_only {
                         endpoints.push(*endpoint);
+                        if !is_pages_entries_added {
+                            endpoints.push(entrypoints.pages_error_endpoint);
+                            endpoints.push(entrypoints.pages_app_endpoint);
+                            endpoints.push(entrypoints.pages_document_endpoint);
+                            is_pages_entries_added = true;
+                        }
                     }
                 }
                 Route::AppPage(page_routes) => {
@@ -1411,6 +1418,8 @@ impl Project {
         Ok(find_context_file(
             self.project_path().owned().await?,
             middleware_files(self.next_config().page_extensions()),
+            // our callers do not care about affecting sources
+            false,
         ))
     }
 
@@ -1570,6 +1579,8 @@ impl Project {
         Ok(find_context_file(
             self.project_path().owned().await?,
             instrumentation_files(self.next_config().page_extensions()),
+            // our callers do not care about affecting sources
+            false,
         ))
     }
 

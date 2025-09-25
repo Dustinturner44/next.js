@@ -3424,7 +3424,7 @@ function chainGestureCancellation(root, scheduledGesture, prevCancel) {
       var runningTransition = scheduledGesture.running;
       if (null !== runningTransition) {
         var pendingLanesExcludingGestureLane = root.pendingLanes & -65;
-        0 !== (pendingLanesExcludingGestureLane & 124) ||
+        0 !== (pendingLanesExcludingGestureLane & 127) ||
         0 !== (pendingLanesExcludingGestureLane & 4194048)
           ? ((runningTransition = root.stoppingGestures),
             null !== runningTransition &&
@@ -5069,7 +5069,7 @@ function updateSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
     );
     if (null === workInProgressRoot) throw Error(formatProdErrorMessage(349));
     isHydrating$jscomp$0 ||
-      0 !== (renderLanes & 124) ||
+      0 !== (renderLanes & 127) ||
       pushStoreConsistencyCheck(fiber, getSnapshot, getServerSnapshot);
   }
   return getServerSnapshot;
@@ -5991,7 +5991,7 @@ var HooksDispatcherOnMount = {
         getServerSnapshot = getSnapshot();
         if (null === workInProgressRoot)
           throw Error(formatProdErrorMessage(349));
-        0 !== (workInProgressRootRenderLanes & 124) ||
+        0 !== (workInProgressRootRenderLanes & 127) ||
           pushStoreConsistencyCheck(fiber, getSnapshot, getServerSnapshot);
       }
       hook.memoizedState = getServerSnapshot;
@@ -9426,7 +9426,7 @@ function pushViewTransitionCancelableScope() {
 }
 var viewTransitionHostInstanceIdx = 0;
 function applyViewTransitionToHostInstances(
-  child,
+  fiber,
   name,
   className,
   collectMeasurements,
@@ -9434,7 +9434,7 @@ function applyViewTransitionToHostInstances(
 ) {
   viewTransitionHostInstanceIdx = 0;
   return applyViewTransitionToHostInstancesRecursive(
-    child,
+    fiber.child,
     name,
     className,
     collectMeasurements,
@@ -9513,7 +9513,7 @@ function commitAppearingPairViewTransitions(placement) {
           props = getViewTransitionClassName(props.default, props.share);
           "none" !== props &&
             (applyViewTransitionToHostInstances(
-              placement.child,
+              placement,
               name,
               props,
               null,
@@ -9534,13 +9534,7 @@ function commitEnterViewTransitions(placement, gesture) {
         state.paired ? props.share : props.enter
       );
     "none" !== className
-      ? applyViewTransitionToHostInstances(
-          placement.child,
-          name,
-          className,
-          null,
-          !1
-        )
+      ? applyViewTransitionToHostInstances(placement, name, className, null, !1)
         ? (commitAppearingPairViewTransitions(placement),
           state.paired ||
             gesture ||
@@ -9574,7 +9568,7 @@ function commitDeletedPairViewTransitions(deletion) {
                 );
                 "none" !== className &&
                   (applyViewTransitionToHostInstances(
-                    deletion.child,
+                    deletion,
                     name,
                     className,
                     null,
@@ -9609,13 +9603,7 @@ function commitExitViewTransitions(deletion) {
         void 0 !== pair ? props.share : props.exit
       );
     "none" !== className &&
-      (applyViewTransitionToHostInstances(
-        deletion.child,
-        name,
-        className,
-        null,
-        !1
-      )
+      (applyViewTransitionToHostInstances(deletion, name, className, null, !1)
         ? void 0 !== pair
           ? ((className = deletion.stateNode),
             (pair.paired = className),
@@ -9642,7 +9630,7 @@ function commitNestedViewTransitions(changedParent) {
       changedParent.flags &= -5;
       "none" !== props &&
         applyViewTransitionToHostInstances(
-          changedParent.child,
+          changedParent,
           name,
           props,
           (changedParent.memoizedState = []),
@@ -10036,7 +10024,7 @@ function commitBeforeMutationEffects_complete(
           (flags = getViewTransitionClassName(flags.default, flags.update)),
           "none" !== flags &&
             applyViewTransitionToHostInstances(
-              current.child,
+              current,
               isViewTransitionEligible,
               flags,
               (current.memoizedState = []),
@@ -12597,7 +12585,7 @@ function performWorkOnRoot(root$jscomp$0, lanes, forceSync) {
   if (0 !== (executionContext & 6)) throw Error(formatProdErrorMessage(327));
   var shouldTimeSlice =
       (!forceSync &&
-        0 === (lanes & 124) &&
+        0 === (lanes & 127) &&
         0 === (lanes & root$jscomp$0.expiredLanes)) ||
       checkIfRootIsPrerendering(root$jscomp$0, lanes),
     exitStatus = shouldTimeSlice
@@ -12715,6 +12703,7 @@ function performWorkOnRoot(root$jscomp$0, lanes, forceSync) {
             !workInProgressRootDidSkipSuspendedSiblings
           );
           if (0 !== getNextLanes(shouldTimeSlice, 0, !0)) break a;
+          pendingEffectsLanes = lanes;
           shouldTimeSlice.timeoutHandle = scheduleTimeout(
             commitRootWhenReady.bind(
               null,
@@ -12729,7 +12718,7 @@ function performWorkOnRoot(root$jscomp$0, lanes, forceSync) {
               workInProgressSuspendedRetryLanes,
               workInProgressRootDidSkipSuspendedSiblings,
               renderWasConcurrent,
-              2,
+              "Throttled",
               -0,
               0
             ),
@@ -12749,7 +12738,7 @@ function performWorkOnRoot(root$jscomp$0, lanes, forceSync) {
           workInProgressSuspendedRetryLanes,
           workInProgressRootDidSkipSuspendedSiblings,
           renderWasConcurrent,
-          0,
+          null,
           -0,
           0
         );
@@ -12794,6 +12783,7 @@ function commitRootWhenReady(
         imgBytes: 0,
         suspenseyImages: [],
         waitingForImages: !0,
+        waitingForViewTransition: !1,
         unsuspend: noop$1
       }),
       (appearingViewTransitions = null),
@@ -12813,6 +12803,7 @@ function commitRootWhenReady(
         ).__reactViewTransition),
         null != isViewTransitionEligible &&
           (subtreeFlags.count++,
+          (subtreeFlags.waitingForViewTransition = !0),
           (subtreeFlags = onUnsuspend.bind(subtreeFlags)),
           isViewTransitionEligible.finished.then(subtreeFlags, subtreeFlags))),
       (subtreeFlags =
@@ -12827,6 +12818,7 @@ function commitRootWhenReady(
       )),
       null !== subtreeFlags)
     ) {
+      pendingEffectsLanes = lanes;
       root.cancelPendingCommit = subtreeFlags(
         commitRoot.bind(
           null,
@@ -12841,7 +12833,7 @@ function commitRootWhenReady(
           suspendedRetryLanes,
           exitStatus,
           suspendedCommitReason,
-          1,
+          null,
           completedRenderStartTime,
           completedRenderEndTime
         )
@@ -12947,6 +12939,7 @@ function prepareFreshStack(root, lanes) {
   timeoutHandle = root.cancelPendingCommit;
   null !== timeoutHandle &&
     ((root.cancelPendingCommit = null), timeoutHandle());
+  pendingEffectsLanes = 0;
   resetWorkInProgressStack();
   workInProgressRoot = root;
   workInProgress = timeoutHandle = createWorkInProgress(root.current, null);
@@ -13486,7 +13479,9 @@ function commitRoot(
             flushAfterMutationEffects,
             flushSpawnedWork,
             flushPassiveEffects,
-            reportViewTransitionError
+            reportViewTransitionError,
+            null,
+            null
           ))
         : (flushMutationEffects(), flushLayoutEffects(), flushSpawnedWork());
     }
@@ -13925,7 +13920,8 @@ function commitGestureOnRoot(
       pendingTransitionTypes,
       flushGestureMutations,
       flushGestureAnimations,
-      reportViewTransitionError
+      reportViewTransitionError,
+      null
     );
   }
 }
@@ -16819,16 +16815,16 @@ function startViewTransition(
           (forceLayout(ownerDocument),
           "loading" === ownerDocument.fonts.status &&
             blockingPromises.push(ownerDocument.fonts.ready));
-        if (null !== suspendedState) {
-          previousFontLoadingStatus = suspendedState.suspenseyImages;
+        previousFontLoadingStatus = blockingPromises.length;
+        if (null !== suspendedState)
           for (
-            var blockingIndexSnapshot = blockingPromises.length,
+            var suspenseyImages = suspendedState.suspenseyImages,
               imgBytes = 0,
               i = 0;
-            i < previousFontLoadingStatus.length;
+            i < suspenseyImages.length;
             i++
           ) {
-            var suspenseyImage = previousFontLoadingStatus[i];
+            var suspenseyImage = suspenseyImages[i];
             if (!suspenseyImage.complete) {
               var rect = suspenseyImage.getBoundingClientRect();
               if (
@@ -16839,7 +16835,7 @@ function startViewTransition(
               ) {
                 imgBytes += estimateImageBytes(suspenseyImage);
                 if (imgBytes > estimatedBytesWithinLimit) {
-                  blockingPromises.length = blockingIndexSnapshot;
+                  blockingPromises.length = previousFontLoadingStatus;
                   break;
                 }
                 suspenseyImage = new Promise(
@@ -16849,7 +16845,6 @@ function startViewTransition(
               }
             }
           }
-        }
         if (0 < blockingPromises.length)
           return (
             (ownerWindow = Promise.race([
@@ -19567,14 +19562,14 @@ ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = function (target) {
 };
 var isomorphicReactPackageVersion$jscomp$inline_2216 = React.version;
 if (
-  "19.2.0-experimental-84af9085-20250917" !==
+  "19.2.0-experimental-e2332183-20250924" !==
   isomorphicReactPackageVersion$jscomp$inline_2216
 )
   throw Error(
     formatProdErrorMessage(
       527,
       isomorphicReactPackageVersion$jscomp$inline_2216,
-      "19.2.0-experimental-84af9085-20250917"
+      "19.2.0-experimental-e2332183-20250924"
     )
   );
 ReactDOMSharedInternals.findDOMNode = function (componentOrElement) {
@@ -19596,10 +19591,10 @@ ReactDOMSharedInternals.findDOMNode = function (componentOrElement) {
 };
 var internals$jscomp$inline_2913 = {
   bundleType: 0,
-  version: "19.2.0-experimental-84af9085-20250917",
+  version: "19.2.0-experimental-e2332183-20250924",
   rendererPackageName: "react-dom",
   currentDispatcherRef: ReactSharedInternals,
-  reconcilerVersion: "19.2.0-experimental-84af9085-20250917"
+  reconcilerVersion: "19.2.0-experimental-e2332183-20250924"
 };
 if ("undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__) {
   var hook$jscomp$inline_2914 = __REACT_DEVTOOLS_GLOBAL_HOOK__;
@@ -19706,4 +19701,4 @@ exports.hydrateRoot = function (container, initialChildren, options) {
   listenToAllSupportedEvents(container);
   return new ReactDOMHydrationRoot(initialChildren);
 };
-exports.version = "19.2.0-experimental-84af9085-20250917";
+exports.version = "19.2.0-experimental-e2332183-20250924";
