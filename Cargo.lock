@@ -9563,6 +9563,7 @@ dependencies = [
  "turbo-tasks-hash",
  "turbo-tasks-testing",
  "turbo-unix-path",
+ "url",
  "urlencoding",
 ]
 
