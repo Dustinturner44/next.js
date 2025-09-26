@@ -164,22 +164,18 @@ export async function validateTurboNextConfig({
   // configuration. Otherwise the user explicitly picked turbopack and thus we expect that
   // they have configured it correctly.
   if (process.env.TURBOPACK === 'auto' && hasWebpackConfig && !hasTurboConfig) {
-    const logMethod = isDev ? Log.warn : Log.error
-    // In a production build with auto-detected Turbopack, we want to fail the build.
-    logMethod(
+    // If we defaulted to Turbopack, we want to fail the build.
+    Log.error(
       `Webpack is configured while Turbopack is not. This may be a mistake.`
     )
-    logMethod(
+    Log.error(
       `To configure Turbopack, see:\n  https://nextjs.org/docs/app/api-reference/next-config-js/turbopack`
     )
-    logMethod(
+    Log.error(
       `TIP: Silence this ${isDev ? 'warning' : 'error'} by passing the --turbopack or --webpack flag explicitly.`
     )
 
-    // For production builds we want to simply fail to prevent accidental misconfiguration.
-    if (!isDev) {
-      process.exit(1)
-    }
+    process.exit(1)
   }
 
   if (unsupportedConfig.length) {
