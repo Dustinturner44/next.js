@@ -534,13 +534,21 @@ function createServer(
   options: NextServerOptions & {
     turbo?: boolean
     turbopack?: boolean
+    webpack?: boolean
   }
 ): NextWrapperServer {
   if (
     options &&
     (options.turbo || options.turbopack || process.env.IS_TURBOPACK_TEST)
   ) {
-    process.env.TURBOPACK = '1'
+    if (options.webpack) {
+      throw new Error('Pass either `webpack` or `turbopack`, not both.')
+    }
+    process.env.TURBOPACK ??= '1'
+  } else if (!options?.webpack) {
+    // If no options are set we default to turbopack
+    // If TURBOPACK was already set we preserve it.
+    process.env.TURBOPACK ??= 'auto'
   }
   // The package is used as a TypeScript plugin.
   if (

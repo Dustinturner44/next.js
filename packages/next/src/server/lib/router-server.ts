@@ -91,6 +91,8 @@ export async function initialize(opts: {
   experimentalHttpsServer?: boolean
   startServerSpan?: Span
   quiet?: boolean
+  turbopack?: boolean
+  webpack?: boolean
 }): Promise<ServerInitResult> {
   if (!process.env.NODE_ENV) {
     // @ts-ignore not readonly
@@ -699,6 +701,8 @@ export async function initialize(opts: {
     experimentalHttpsServer: !!opts.experimentalHttpsServer,
     bundlerService: devBundlerService,
     startServerSpan: opts.startServerSpan,
+    turbopack: opts.turbopack,
+    webpack: opts.webpack,
     quiet: opts.quiet,
     onDevServerCleanup: opts.onDevServerCleanup,
   }

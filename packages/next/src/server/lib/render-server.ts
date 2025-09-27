@@ -90,6 +90,8 @@ async function initializeImpl(opts: {
   bundlerService: DevBundlerService | undefined
   startServerSpan: Span | undefined
   quiet?: boolean
+  turbopack?: boolean
+  webpack?: boolean
   onDevServerCleanup: ((listener: () => Promise<void>) => void) | undefined
 }): Promise<ServerInitResult> {
   const type = process.env.__NEXT_PRIVATE_RENDER_WORKER

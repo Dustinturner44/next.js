@@ -140,6 +140,8 @@ export async function getRequestHandlers({
   keepAliveTimeout,
   experimentalHttpsServer,
   quiet,
+  turbopack,
+  webpack,
 }: {
   dir: string
   port: number
@@ -151,6 +153,8 @@ export async function getRequestHandlers({
   keepAliveTimeout?: number
   experimentalHttpsServer?: boolean
   quiet?: boolean
+  turbopack?: boolean
+  webpack?: boolean
 }): ReturnType<typeof initialize> {
   return initialize({
     dir,
@@ -164,6 +168,8 @@ export async function getRequestHandlers({
     experimentalHttpsServer,
     startServerSpan,
     quiet,
+    turbopack,
+    webpack,
   })
 }
 
@@ -440,6 +446,9 @@ export async function startServer(
           minimalMode,
           keepAliveTimeout,
           experimentalHttpsServer: !!selfSignedCertificate,
+          // Explicitly pass the bundler flag down so it doesn't override the environment variable.
+          turbopack: process.env.TURBOPACK ? true : undefined,
+          webpack: process.env.TURBOPACK ? undefined : true,
         })
         requestHandler = initResult.requestHandler
         upgradeHandler = initResult.upgradeHandler
