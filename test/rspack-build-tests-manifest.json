@@ -7147,6 +7147,15 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/undefined-default-export/undefined-default-export.test.ts": {
+    "passed": [
+      "Undefined default export errors the build with helpful error messages"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/underscore-ignore-app-paths/underscore-ignore-app-paths.test.ts": {
     "passed": [
       "underscore-ignore-app-paths should not serve app path with underscore",
@@ -7803,9 +7812,13 @@
     "passed": [],
     "failed": [],
     "pending": [
-      "config-turbopack when webpack is configured and config.experimental.turbo is set does not warn",
-      "config-turbopack when webpack is configured and config.turbopack is set does not warn",
-      "config-turbopack when webpack is configured but Turbopack is not warns"
+      "config-turbopack when turbopack is auto selected when webpack is configured and config.experimental.turbo is set does not warn",
+      "config-turbopack when turbopack is auto selected when webpack is configured and config.turbopack is set does not warn",
+      "config-turbopack when turbopack is auto selected when webpack is configured but Turbopack is not errors",
+      "config-turbopack when turbopack is auto selected when webpack is configured but Turbopack is not warns",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured and config.experimental.turbo is set does not warn",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured and config.turbopack is set does not warn",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured but Turbopack is not does not warn"
     ],
     "flakey": [],
     "runtimeError": false
