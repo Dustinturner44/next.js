@@ -50,6 +50,7 @@ The following options are available for the `turbopack` configuration:
 | `rules`             | List of supported webpack loaders to apply when running with Turbopack. |
 | `resolveAlias`      | Map aliased imports to modules to load in their place.                  |
 | `resolveExtensions` | List of extensions to resolve when importing files.                     |
+| `debugIds`          | Enable generation of debug IDs in JavaScript bundles and source maps.   |
 
 ### Supported loaders
 
@@ -252,12 +253,45 @@ module.exports = {
 
 This overwrites the original resolve extensions with the provided list. Make sure to include the default extensions.
 
+### Debug IDs
+
+Debug IDs provide stable identifiers for JavaScript bundles and source maps that help with debugging and error tracking. When enabled, Turbopack adds debug ID comments to generated JavaScript files and includes debug ID properties in source maps, following the [TC39 Debug ID proposal](https://github.com/tc39/ecma426/blob/main/proposals/debug-id.md).
+
+To enable debug IDs, set `debugIds` to `true`:
+
+```js filename="next.config.js"
+module.exports = {
+  turbopack: {
+    debugIds: true,
+  },
+}
+```
+
+When enabled, your generated JavaScript files will include debug ID comments:
+
+```js
+// Your bundled code here...
+
+//# debugId=12345678-1234-1234-1234-123456789abc
+//# sourceMappingURL=your-bundle.js.map
+```
+
+And your source maps will include the debug ID property:
+
+```json
+{
+  "version": 3,
+  "sources": ["..."],
+  "debugId": "12345678-1234-1234-1234-123456789abc"
+}
+```
+
 For more information and guidance for how to migrate your app to Turbopack from webpack, see [Turbopack's documentation on webpack compatibility](https://turbo.build/pack/docs/migrating-from-webpack).
 
 ## Version History
 
-| Version  | Changes                                         |
-| -------- | ----------------------------------------------- |
-| `16.0.0` | `turbopack.rules.*.condition` was added.        |
-| `15.3.0` | `experimental.turbo` is changed to `turbopack`. |
-| `13.0.0` | `experimental.turbo` introduced.                |
+| Version  | Changes                                                                 |
+| -------- | ----------------------------------------------------------------------- |
+| `16.0.0` | `turbopack.rules.*.condition`and `turbopack.enableDebugIds` were added. |
+| `15.3.0` | `experimental.turbo` is changed to `turbopack`.                         |
+| `13.0.0` | `experimental.turbo` introduced.                                        |
