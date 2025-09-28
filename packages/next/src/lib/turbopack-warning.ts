@@ -7,6 +7,10 @@ import {
 } from '../shared/lib/constants'
 
 const unsupportedTurbopackNextConfigOptions = [
+  // is this supported?
+  // 'amp',
+  // 'experimental.amp',
+
   // Left to be implemented (priority)
   // 'experimental.clientRouterFilter',
   // 'experimental.optimizePackageImports',

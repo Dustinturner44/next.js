@@ -81,6 +81,7 @@ async function exportPageImpl(
     disableOptimizedLoading,
     debugOutput = false,
     enableExperimentalReact,
+    ampValidatorPath,
     trailingSlash,
     sriEnabled,
     renderOpts: commonRenderOpts,
@@ -127,6 +128,8 @@ async function exportPageImpl(
   const outDir = isAppDir ? join(distDir, 'server/app') : commonOutDir
 
   const filePath = normalizePagePath(path)
+  const ampPath = `${filePath}.amp`
+  let renderAmpPath = ampPath
 
   let updatedPath = exportPath._ssgPath || path
   let locale = exportPath._locale || commonRenderOpts.locale
@@ -137,6 +140,10 @@ async function exportPageImpl(
     if (localePathResult.detectedLocale) {
       updatedPath = localePathResult.pathname
       locale = localePathResult.detectedLocale
+
+      if (locale === commonRenderOpts.defaultLocale) {
+        renderAmpPath = `${normalizePagePath(updatedPath)}.amp`
+      }
     }
   }
 
@@ -256,6 +263,7 @@ async function exportPageImpl(
   const renderOpts: WorkerRenderOpts = {
     ...components,
     ...commonRenderOpts,
+    ampPath: renderAmpPath,
     params,
     optimizeCss,
     disableOptimizedLoading,
@@ -316,6 +324,10 @@ async function exportPageImpl(
     params,
     htmlFilepath,
     htmlFilename,
+    ampPath,
+    subFolders,
+    outDir,
+    ampValidatorPath,
     pagesDataDir,
     buildExport,
     isDynamic,
@@ -401,6 +413,8 @@ export async function exportPages(
             outDir,
             pagesDataDir,
             renderOpts,
+            ampValidatorPath:
+              nextConfig.experimental.amp?.validator || undefined,
             trailingSlash: nextConfig.trailingSlash,
             serverRuntimeConfig: nextConfig.serverRuntimeConfig,
             subFolders: nextConfig.trailingSlash && !options.buildExport,

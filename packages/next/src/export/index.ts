@@ -19,6 +19,8 @@ import { existsSync, promises as fs } from 'fs'
 import '../server/require-hook'
 
 import { dirname, join, resolve, sep, relative } from 'path'
+import { formatAmpMessages } from '../build/output/index'
+import type { AmpPageStatus } from '../build/output/index'
 import * as Log from '../build/output/log'
 import {
   RSC_SEGMENT_SUFFIX,
@@ -364,6 +366,9 @@ async function exportAppImpl(
     dev: false,
     basePath: nextConfig.basePath,
     trailingSlash: nextConfig.trailingSlash,
+    canonicalBase: nextConfig.amp?.canonicalBase || '',
+    ampSkipValidation: nextConfig.experimental.amp?.skipValidation || false,
+    ampOptimizerConfig: nextConfig.experimental.amp?.optimizer || undefined,
     locales: i18n?.locales,
     locale: i18n?.defaultLocale,
     defaultLocale: i18n?.defaultLocale,
@@ -556,6 +561,8 @@ async function exportAppImpl(
     ? outDir
     : join(outDir, '_next/data', buildId)
 
+  const ampValidations: AmpPageStatus = {}
+
   const publicDir = join(dir, CLIENT_PUBLIC_FILES_PATH)
   // Copy public directory
   if (!options.buildExport && existsSync(publicDir)) {
@@ -693,6 +700,8 @@ async function exportAppImpl(
     }
   }
 
+  let hadValidationError = false
+
   const collector: ExportAppResult = {
     byPath: new Map(),
     byPage: new Map(),
@@ -716,6 +725,14 @@ async function exportAppImpl(
           result.turborepoAccessTraceResult
         )
       )
+    }
+
+    // Capture any amp validations.
+    if (result.ampValidations) {
+      for (const validation of result.ampValidations) {
+        ampValidations[validation.page] = validation.result
+        hadValidationError ||= validation.result.errors.length > 0
+      }
     }
 
     if (options.buildExport) {
@@ -848,6 +865,10 @@ async function exportAppImpl(
             subFolders && route !== '/index' ? `${sep}index` : ''
           }.html`
         )
+        const ampHtmlDest = join(
+          outDir,
+          `${route}.amp${subFolders ? `${sep}index` : ''}.html`
+        )
         const jsonDest = isAppPath
           ? join(
               outDir,
@@ -865,6 +886,11 @@ async function exportAppImpl(
 
         await fs.copyFile(htmlSrc, htmlDest)
         await fs.copyFile(jsonSrc, jsonDest)
+
+        if (existsSync(`${orig}.amp.html`)) {
+          await fs.mkdir(dirname(ampHtmlDest), { recursive: true })
+          await fs.copyFile(`${orig}.amp.html`, ampHtmlDest)
+        }
 
         const segmentsDir = `${orig}${RSC_SEGMENTS_DIR_SUFFIX}`
 
@@ -896,6 +922,15 @@ async function exportAppImpl(
           )
         }
       })
+    )
+  }
+
+  if (Object.keys(ampValidations).length) {
+    console.log(formatAmpMessages(ampValidations))
+  }
+  if (hadValidationError) {
+    throw new ExportError(
+      `AMP Validation caused the export to fail. https://nextjs.org/docs/messages/amp-export-validation`
     )
   }
 

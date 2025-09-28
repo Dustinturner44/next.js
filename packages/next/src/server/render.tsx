@@ -61,6 +61,8 @@ import {
   STATIC_STATUS_PAGES,
 } from '../shared/lib/constants'
 import { isSerializableProps } from '../lib/is-serializable-props'
+import { isInAmpMode } from '../shared/lib/amp-mode'
+import { AmpStateContext } from '../shared/lib/amp-context.shared-runtime'
 import { defaultHead } from '../shared/lib/head'
 import { HeadManagerContext } from '../shared/lib/head-manager-context.shared-runtime'
 import Loadable from '../shared/lib/loadable.shared-runtime'
@@ -124,7 +126,7 @@ if (process.env.NEXT_RUNTIME !== 'edge') {
   ).postProcessHTML
 } else {
   warn = console.warn.bind(console)
-  postProcessHTML = async (html: string) => html
+  postProcessHTML = async (_pathname: string, html: string) => html
 }
 
 function noRouter() {
@@ -240,12 +242,17 @@ function renderPageTree(
 }
 
 export type RenderOptsPartial = {
+  canonicalBase: string
   runtimeConfig?: { [key: string]: any }
   assetPrefix?: string
   err?: Error | null
   nextExport?: boolean
   dev?: boolean
+  ampPath?: string
   ErrorDebug?: PagesDevOverlayBridgeType
+  ampValidator?: (html: string, pathname: string) => Promise<void>
+  ampSkipValidation?: boolean
+  ampOptimizerConfig?: { [key: string]: any }
   isNextDataRequest?: boolean
   params?: ParsedUrlQuery
   previewProps: __ApiPreviewProps | undefined
@@ -484,6 +491,7 @@ export async function renderToHTMLImpl(
   const {
     err,
     dev = false,
+    ampPath = '',
     pageConfig = {},
     buildManifest,
     reactLoadableManifest,
@@ -624,6 +632,14 @@ export async function renderToHTMLImpl(
     }
 
     if (isAutoExport || isFallback) {
+      // remove query values except ones that will be set during export
+      query = {
+        ...(query.amp
+          ? {
+              amp: query.amp,
+            }
+          : {}),
+      }
       asPath = `${pathname}${
         // ensure trailing slash is present for non-dynamic auto-export pages
         req.url!.endsWith('/') && pathname !== '/' && !pageIsDynamic ? '/' : ''
@@ -713,8 +729,15 @@ export async function renderToHTMLImpl(
 
   let scriptLoader: any = {}
   const jsxStyleRegistry = createStyleRegistry()
+  const ampState = {
+    ampFirst: pageConfig.amp === true,
+    hasQuery: Boolean(query.amp),
+    hybrid: pageConfig.amp === 'hybrid',
+  }
 
-  let head: JSX.Element[] = defaultHead()
+  // Disable AMP under the web environment
+  const inAmpMode = process.env.NEXT_RUNTIME !== 'edge' && isInAmpMode(ampState)
+  let head: JSX.Element[] = defaultHead(inAmpMode)
   const reactLoadableModules: string[] = []
 
   let initialScripts: any = {}
@@ -741,29 +764,33 @@ export async function renderToHTMLImpl(
         >
           <PathParamsContext.Provider value={adaptForPathParams(router)}>
             <RouterContext.Provider value={router}>
-              <HeadManagerContext.Provider
-                value={{
-                  updateHead: (state) => {
-                    head = state
-                  },
-                  updateScripts: (scripts) => {
-                    scriptLoader = scripts
-                  },
-                  scripts: initialScripts,
-                  mountedInstances: new Set(),
-                  nonce,
-                }}
-              >
-                <LoadableContext.Provider
-                  value={(moduleName) => reactLoadableModules.push(moduleName)}
+              <AmpStateContext.Provider value={ampState}>
+                <HeadManagerContext.Provider
+                  value={{
+                    updateHead: (state) => {
+                      head = state
+                    },
+                    updateScripts: (scripts) => {
+                      scriptLoader = scripts
+                    },
+                    scripts: initialScripts,
+                    mountedInstances: new Set(),
+                    nonce,
+                  }}
                 >
-                  <StyleRegistry registry={jsxStyleRegistry}>
-                    <ImageConfigContext.Provider value={images}>
-                      {children}
-                    </ImageConfigContext.Provider>
-                  </StyleRegistry>
-                </LoadableContext.Provider>
-              </HeadManagerContext.Provider>
+                  <LoadableContext.Provider
+                    value={(moduleName) =>
+                      reactLoadableModules.push(moduleName)
+                    }
+                  >
+                    <StyleRegistry registry={jsxStyleRegistry}>
+                      <ImageConfigContext.Provider value={images}>
+                        {children}
+                      </ImageConfigContext.Provider>
+                    </StyleRegistry>
+                  </LoadableContext.Provider>
+                </HeadManagerContext.Provider>
+              </AmpStateContext.Provider>
             </RouterContext.Provider>
           </PathParamsContext.Provider>
         </PathnameContextProviderAdapter>
@@ -1250,7 +1277,7 @@ export async function renderToHTMLImpl(
   }
 
   const Body = ({ children }: { children: JSX.Element }) => {
-    return <div id="__next">{children}</div>
+    return inAmpMode ? children : <div id="__next">{children}</div>
   }
 
   const renderDocument = async () => {
@@ -1454,6 +1481,7 @@ export async function renderToHTMLImpl(
     }
   }
 
+  const hybridAmp = ampState.hybrid
   const docComponentsRendered: DocumentProps['docComponentsRendered'] = {}
 
   const {
@@ -1498,7 +1526,14 @@ export async function renderToHTMLImpl(
     buildManifest: filteredBuildManifest,
     docComponentsRendered,
     dangerousAsPath: router.asPath,
+    canonicalBase:
+      !renderOpts.ampPath && getRequestMeta(req, 'didStripLocale')
+        ? `${renderOpts.canonicalBase || ''}/${renderOpts.locale}`
+        : renderOpts.canonicalBase,
+    ampPath,
+    inAmpMode,
     isDevelopment: !!dev,
+    hybridAmp,
     dynamicImports: Array.from(dynamicImports),
     dynamicCssManifest: new Set(renderOpts.dynamicCssManifest || []),
     assetPrefix,
@@ -1527,9 +1562,11 @@ export async function renderToHTMLImpl(
   }
 
   const document = (
-    <HtmlContext.Provider value={htmlProps}>
-      {documentResult.documentElement(htmlProps)}
-    </HtmlContext.Provider>
+    <AmpStateContext.Provider value={ampState}>
+      <HtmlContext.Provider value={htmlProps}>
+        {documentResult.documentElement(htmlProps)}
+      </HtmlContext.Provider>
+    </AmpStateContext.Provider>
   )
 
   const documentHTML = await getTracer().trace(
@@ -1570,10 +1607,16 @@ export async function renderToHTMLImpl(
     prefix += DOCTYPE
   }
   prefix += renderTargetPrefix
+  if (inAmpMode) {
+    prefix += '<!-- __NEXT_DATA__ -->'
+  }
 
   const content = prefix + documentResult.contentHTML + renderTargetSuffix
 
-  const optimizedHtml = await postProcessHTML(content, renderOpts)
+  const optimizedHtml = await postProcessHTML(pathname, content, renderOpts, {
+    inAmpMode,
+    hybridAmp,
+  })
 
   return new RenderResult(optimizedHtml, {
     metadata,

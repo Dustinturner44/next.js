@@ -880,6 +880,7 @@ export default class NextNodeServer extends BaseServer<
   private async findPageComponentsImpl({
     locale,
     page,
+    query,
     params,
     isAppPath,
     url: _url,
@@ -892,6 +893,12 @@ export default class NextNodeServer extends BaseServer<
     url?: string
   }): Promise<FindComponentsResult | null> {
     const pagePaths: string[] = [page]
+    if (query.amp) {
+      // try serving a static AMP version first
+      pagePaths.unshift(
+        (isAppPath ? normalizeAppPath(page) : normalizePagePath(page)) + '.amp'
+      )
+    }
 
     if (locale) {
       pagePaths.unshift(
@@ -924,6 +931,12 @@ export default class NextNodeServer extends BaseServer<
         return {
           components,
           query: {
+            ...(!this.renderOpts.isExperimentalCompile &&
+            components.getStaticProps
+              ? ({
+                  amp: query.amp,
+                } as NextParsedUrlQuery)
+              : query),
             // For appDir params is excluded.
             ...((isAppPath ? {} : params) || {}),
           },

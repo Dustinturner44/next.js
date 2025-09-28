@@ -35,6 +35,7 @@ import { APP_DIR_ALIAS, WEBPACK_LAYERS } from '../../lib/constants'
 import { recursiveDelete } from '../../lib/recursive-delete'
 import {
   BLOCKED_PAGES,
+  CLIENT_STATIC_FILES_RUNTIME_AMP,
   CLIENT_STATIC_FILES_RUNTIME_MAIN,
   CLIENT_STATIC_FILES_RUNTIME_MAIN_APP,
   CLIENT_STATIC_FILES_RUNTIME_REACT_REFRESH,
@@ -210,6 +211,7 @@ function erroredPages(compilation: webpack.Compilation) {
 }
 
 export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
+  private hasAmpEntrypoints: boolean
   private hasAppRouterEntrypoints: boolean
   private hasPagesRouterEntrypoints: boolean
   private dir: string
@@ -284,6 +286,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
       resetFetch: () => void
     }
   ) {
+    this.hasAmpEntrypoints = false
     this.hasAppRouterEntrypoints = false
     this.hasPagesRouterEntrypoints = false
     this.buildId = buildId
@@ -904,6 +907,15 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
                 })
               : undefined
 
+            if (staticInfo?.type === PAGE_TYPES.PAGES) {
+              if (
+                staticInfo.config?.config?.amp === true ||
+                staticInfo.config?.config?.amp === 'hybrid'
+              ) {
+                this.hasAmpEntrypoints = true
+              }
+            }
+
             const isServerComponent =
               isAppPath && staticInfo?.rsc !== RSC_MODULE_TYPES.client
 
@@ -1141,6 +1153,9 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
           })
         )
 
+        if (!this.hasAmpEntrypoints) {
+          delete entrypoints[CLIENT_STATIC_FILES_RUNTIME_AMP]
+        }
         if (!this.hasPagesRouterEntrypoints) {
           delete entrypoints[CLIENT_STATIC_FILES_RUNTIME_MAIN]
           delete entrypoints['pages/_app']
@@ -1149,7 +1164,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
           delete entrypoints['pages/_document']
         }
         // Remove React Refresh entrypoint chunk as `app` doesn't require it.
-        if (!this.hasPagesRouterEntrypoints) {
+        if (!this.hasAmpEntrypoints && !this.hasPagesRouterEntrypoints) {
           delete entrypoints[CLIENT_STATIC_FILES_RUNTIME_REACT_REFRESH]
         }
         if (!this.hasAppRouterEntrypoints) {
