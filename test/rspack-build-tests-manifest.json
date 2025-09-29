@@ -1843,15 +1843,8 @@
       "Cache Components Errors Build With --prerender-debug Static Route should not error the build when all routes are static",
       "Cache Components Errors Build With --prerender-debug Sync Dynamic Platform With Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
       "Cache Components Errors Build With --prerender-debug Sync Dynamic Platform Without Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request client params should not error the build when synchronously reading `params.slug`",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request client searchParams should not error the build when synchronously reading `searchParams.foo`",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request cookies at runtime should not error the build, but fail at runtime",
       "Cache Components Errors Build With --prerender-debug Sync Dynamic Request cookies should error the build with a runtime error",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request draftMode should not error the build when synchronously reading `draftMode().isEnabled`",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request headers at runtime should not error the build, but fail at runtime",
       "Cache Components Errors Build With --prerender-debug Sync Dynamic Request headers should error the build with a runtime error",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request server params should not error the build when synchronously reading `params.slug`",
-      "Cache Components Errors Build With --prerender-debug Sync Dynamic Request server searchParams should not error the build when synchronously reading `searchParams.foo`",
       "Cache Components Errors Build With --prerender-debug Sync IO - Current Time - Date() should error the build if sync IO is used in a Server Component while prerendering",
       "Cache Components Errors Build With --prerender-debug Sync IO - Current Time - Date.now() should error the build if sync IO is used in a Server Component while prerendering",
       "Cache Components Errors Build With --prerender-debug Sync IO - Current Time - new Date() should error the build if sync IO is used in a Server Component while prerendering",
@@ -1890,15 +1883,8 @@
       "Cache Components Errors Build Without --prerender-debug Static Route should not error the build when all routes are static",
       "Cache Components Errors Build Without --prerender-debug Sync Dynamic Platform With Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
       "Cache Components Errors Build Without --prerender-debug Sync Dynamic Platform Without Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request client params should not error the build when synchronously reading `params.slug`",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request client searchParams should not error the build when synchronously reading `searchParams.foo`",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request cookies at runtime should not error the build, but fail at runtime",
       "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request cookies should error the build with a runtime error",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request draftMode should not error the build when synchronously reading `draftMode().isEnabled`",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request headers at runtime should not error the build, but fail at runtime",
       "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request headers should error the build with a runtime error",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request server params should not error the build when synchronously reading `params.slug`",
-      "Cache Components Errors Build Without --prerender-debug Sync Dynamic Request server searchParams should not error the build when synchronously reading `searchParams.foo`",
       "Cache Components Errors Build Without --prerender-debug Sync IO - Current Time - Date() should error the build if sync IO is used in a Server Component while prerendering",
       "Cache Components Errors Build Without --prerender-debug Sync IO - Current Time - Date.now() should error the build if sync IO is used in a Server Component while prerendering",
       "Cache Components Errors Build Without --prerender-debug Sync IO - Current Time - new Date() should error the build if sync IO is used in a Server Component while prerendering",
@@ -7147,6 +7133,15 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/undefined-default-export/undefined-default-export.test.ts": {
+    "passed": [
+      "Undefined default export errors the build with helpful error messages"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/underscore-ignore-app-paths/underscore-ignore-app-paths.test.ts": {
     "passed": [
       "underscore-ignore-app-paths should not serve app path with underscore",
@@ -7803,9 +7798,13 @@
     "passed": [],
     "failed": [],
     "pending": [
-      "config-turbopack when webpack is configured and config.experimental.turbo is set does not warn",
-      "config-turbopack when webpack is configured and config.turbopack is set does not warn",
-      "config-turbopack when webpack is configured but Turbopack is not warns"
+      "config-turbopack when turbopack is auto selected when webpack is configured and config.experimental.turbo is set does not warn",
+      "config-turbopack when turbopack is auto selected when webpack is configured and config.turbopack is set does not warn",
+      "config-turbopack when turbopack is auto selected when webpack is configured but Turbopack is not errors",
+      "config-turbopack when turbopack is auto selected when webpack is configured but Turbopack is not warns",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured and config.experimental.turbo is set does not warn",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured and config.turbopack is set does not warn",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured but Turbopack is not does not warn"
     ],
     "flakey": [],
     "runtimeError": false
@@ -20108,7 +20107,6 @@
       "production - app dir - build output should fail the build if you use a dynamic API outside of a render context - headers",
       "production - app dir - build output should fail the build if you use a dynamic API outside of a render context - notFound",
       "production - app dir - build output should fail the build if you use a dynamic API outside of a render context - redirect",
-      "production - app dir - build output should fail the build if you use a dynamic API outside of a render context - searchParams",
       "production - app dir - build output should log errors not caught by the worker without terminating the process",
       "production - app dir - build output should match the expected output format",
       "production - app dir - build output should only log app routes"
@@ -21121,10 +21119,11 @@
   },
   "test/production/pnpm-support/index.test.ts": {
     "passed": [
-      "pnpm support should build with dependencies installed via pnpm",
+      "pnpm support should build with dependencies installed via pnpm"
+    ],
+    "failed": [
       "pnpm support should execute client-side JS on each page in output: \"standalone\""
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
