@@ -1,6 +1,7 @@
 use std::{
     collections::{BinaryHeap, HashSet, VecDeque, hash_map::Entry},
     future::Future,
+    sync::LazyLock,
 };
 
 use anyhow::{Context, Result, bail};
@@ -224,6 +225,10 @@ impl SingleModuleGraph {
         include_traced: bool,
     ) -> Result<Vc<Self>> {
         let emit_spans = tracing::enabled!(Level::INFO);
+        static EMIT_REFERENCE_SPANS: LazyLock<bool> = LazyLock::new(|| {
+            std::env::var_os("TURBOPACK_TRACE_MODULES_FLAT").is_none_or(|v| v != "1" && v != "true")
+        });
+
         let root_edges = entries
             .iter()
             .flat_map(|e| e.entries())
@@ -243,6 +248,7 @@ impl SingleModuleGraph {
                 SingleModuleGraphBuilder {
                     visited_modules,
                     emit_spans,
+                    emit_reference_spans: *EMIT_REFERENCE_SPANS,
                     include_traced,
                 },
             )
@@ -349,8 +355,7 @@ impl SingleModuleGraph {
 
         #[cfg(debug_assertions)]
         {
-            use once_cell::sync::Lazy;
-            static CHECK_FOR_DUPLICATE_MODULES: Lazy<bool> = Lazy::new(|| {
+            static CHECK_FOR_DUPLICATE_MODULES: LazyLock<bool> = LazyLock::new(|| {
                 match std::env::var_os("TURBOPACK_TEMP_DISABLE_DUPLICATE_MODULES_CHECK") {
                     Some(v) => v != "1" && v != "true",
                     None => true,
@@ -1749,7 +1754,10 @@ const COMMON_CHUNKING_TYPE: ChunkingType = ChunkingType::Parallel {
 struct SingleModuleGraphBuilder<'a> {
     visited_modules: &'a FxIndexMap<ResolvedVc<Box<dyn Module>>, GraphNodeIndex>,
 
+    // Whether to emit spans for nodes
     emit_spans: bool,
+    // Whether to emit spans for references, disabling this flattens the trace
+    emit_reference_spans: bool,
 
     /// Whether to walk ChunkingType::Traced references
     include_traced: bool,
@@ -1882,12 +1890,16 @@ impl Visit<(SingleModuleGraphBuilderNode, ExportUsage)> for SingleModuleGraphBui
                     ..
                 } => Span::current(),
                 _ => {
-                    tracing::info_span!(
-                        "chunkable reference",
-                        ty = debug(&ref_data.chunking_type),
-                        source = display(source_ident),
-                        target = display(target_ident)
-                    )
+                    if self.emit_reference_spans {
+                        tracing::info_span!(
+                            "chunkable reference",
+                            ty = debug(&ref_data.chunking_type),
+                            source = display(source_ident),
+                            target = display(target_ident)
+                        )
+                    } else {
+                        Span::current()
+                    }
                 }
             },
             SingleModuleGraphBuilderNode::VisitedModule { .. } => {
