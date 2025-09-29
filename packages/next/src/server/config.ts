@@ -664,6 +664,13 @@ function assignDefaultsAndValidate(
     configFileName,
     silent
   )
+  warnOptionHasBeenMovedOutOfExperimental(
+    result,
+    'reactCompiler',
+    'reactCompiler',
+    configFileName,
+    silent
+  )
 
   if ((result.experimental as any).outputStandalone) {
     if (!silent) {
@@ -1812,19 +1819,11 @@ function enforceExperimentalFeatures(
   if (
     process.env.__NEXT_ENABLE_REACT_COMPILER === 'true' &&
     // We do respect an explicit value in the user config.
-    (config.experimental.reactCompiler === undefined ||
-      (isDefaultConfig && !config.experimental.reactCompiler))
+    (config.reactCompiler === undefined ||
+      (isDefaultConfig && !config.reactCompiler))
   ) {
-    config.experimental.reactCompiler = true
-
-    if (configuredExperimentalFeatures) {
-      addConfiguredExperimentalFeature(
-        configuredExperimentalFeatures,
-        'reactCompiler',
-        true,
-        'enabled by `__NEXT_ENABLE_REACT_COMPILER`'
-      )
-    }
+    config.reactCompiler = true
+    // TODO: Report if we enable non-experimental features via env
   }
 
   if (
