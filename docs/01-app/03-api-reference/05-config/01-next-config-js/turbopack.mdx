@@ -270,13 +270,14 @@ module.exports = {
 When enabled, your generated JavaScript files will include debug ID comments:
 
 ```js
+// globalThis._debugIds[<this-scri[pt>] = "12345678-1234-1234-1234-123456789abc"
 // Your bundled code here...
 
 //# debugId=12345678-1234-1234-1234-123456789abc
 //# sourceMappingURL=your-bundle.js.map
 ```
 
-And your source maps will include the debug ID property:
+Source maps will also include the `debugId` property:
 
 ```json
 {
@@ -286,12 +287,14 @@ And your source maps will include the debug ID property:
 }
 ```
 
+Error handling services like Sentry can leverage this metadata to improve deobfuscation reliability.
+
 For more information and guidance for how to migrate your app to Turbopack from webpack, see [Turbopack's documentation on webpack compatibility](https://turbo.build/pack/docs/migrating-from-webpack).
 
 ## Version History
 
-| Version  | Changes                                                                 |
-| -------- | ----------------------------------------------------------------------- |
+| Version  | Changes                                                            |
+| -------- | ------------------------------------------------------------------ |
 | `16.0.0` | `turbopack.rules.*.condition` and `turbopack.debugIds` were added. |
-| `15.3.0` | `experimental.turbo` is changed to `turbopack`.                         |
-| `13.0.0` | `experimental.turbo` introduced.                                        |
+| `15.3.0` | `experimental.turbo` is changed to `turbopack`.                    |
+| `13.0.0` | `experimental.turbo` introduced.                                   |
