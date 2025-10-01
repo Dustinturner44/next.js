@@ -12,12 +12,12 @@ import type { MiddlewareRouteMatch } from '../../../shared/lib/router/utils/midd
 
 import path from 'path'
 import fs from 'fs/promises'
+import { existsSync } from 'fs'
 import * as Log from '../../../build/output/log'
 import setupDebug from 'next/dist/compiled/debug'
 import { LRUCache } from '../lru-cache'
 import loadCustomRoutes, { type Rewrite } from '../../../lib/load-custom-routes'
 import { modifyRouteRegex } from '../../../lib/redirect-status'
-import { FileType, fileExists } from '../../../lib/file-exists'
 import { recursiveReadDir } from '../../../lib/recursive-readdir'
 import { isDynamicRoute } from '../../../shared/lib/router/utils'
 import { escapeStringRegexp } from '../../../shared/lib/escape-regexp'
@@ -671,7 +671,7 @@ export async function setupFsCheck(opts: {
             ).includes(type)
 
             if (isStaticAsset && itemsRoot) {
-              let found = fsPath && (await fileExists(fsPath, FileType.File))
+              let found = fsPath && existsSync(fsPath)
 
               if (!found) {
                 try {
@@ -680,7 +680,7 @@ export async function setupFsCheck(opts: {
                   // that variation as well
                   const tempItemPath = decodeURIComponent(curItemPath)
                   fsPath = path.posix.join(itemsRoot, tempItemPath)
-                  found = await fileExists(fsPath, FileType.File)
+                  found = existsSync(fsPath)
                 } catch {}
 
                 if (!found) {

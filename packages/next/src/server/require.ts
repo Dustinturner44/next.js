@@ -41,12 +41,12 @@ export function getMaybePagePath(
         /* turbopackIgnore: true */ serverBuildPath,
         APP_PATHS_MANIFEST
       ),
-      !isDev
+      true
     ) as PagesManifest
   }
   const pagesManifest = loadManifest(
     path.join(/* turbopackIgnore: true */ serverBuildPath, PAGES_MANIFEST),
-    !isDev
+    true
   ) as PagesManifest
 
   try {
