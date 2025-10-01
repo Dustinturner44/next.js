@@ -268,26 +268,26 @@ export abstract class RouteModule<
           projectDir,
           distDir: this.distDir,
           manifest: ROUTES_MANIFEST,
-          shouldCache: true,
+          shouldCache: !this.isDev,
         }),
         loadManifestFromRelativePath<PrerenderManifest>({
           projectDir,
           distDir: this.distDir,
           manifest: PRERENDER_MANIFEST,
-          shouldCache: true,
+          shouldCache: !this.isDev,
         }),
         loadManifestFromRelativePath<BuildManifest>({
           projectDir,
           distDir: this.distDir,
           manifest: BUILD_MANIFEST,
-          shouldCache: true,
+          shouldCache: !this.isDev,
         }),
         srcPage === '/_error'
           ? loadManifestFromRelativePath<BuildManifest>({
               projectDir,
               distDir: this.distDir,
               manifest: `fallback-${BUILD_MANIFEST}`,
-              shouldCache: true,
+              shouldCache: !this.isDev,
               handleMissing: true,
             })
           : ({} as BuildManifest),
@@ -298,13 +298,13 @@ export abstract class RouteModule<
             ? `server/${router === 'app' ? 'app' : 'pages'}${normalizedPagePath}/${REACT_LOADABLE_MANIFEST}`
             : REACT_LOADABLE_MANIFEST,
           handleMissing: true,
-          shouldCache: true,
+          shouldCache: !this.isDev,
         }),
         loadManifestFromRelativePath<NextFontManifest>({
           projectDir,
           distDir: this.distDir,
           manifest: `server/${NEXT_FONT_MANIFEST}.json`,
-          shouldCache: true,
+          shouldCache: !this.isDev,
         }),
         router === 'app' && !isStaticMetadataRoute(srcPage)
           ? loadManifestFromRelativePath({
@@ -313,7 +313,7 @@ export abstract class RouteModule<
               useEval: true,
               handleMissing: true,
               manifest: `server/app${srcPage.replace(/%5F/g, '_') + '_' + CLIENT_REFERENCE_MANIFEST}.js`,
-              shouldCache: true,
+              shouldCache: !this.isDev,
             })
           : undefined,
         router === 'app'
@@ -322,7 +322,7 @@ export abstract class RouteModule<
               projectDir,
               manifest: `server/${SERVER_REFERENCE_MANIFEST}.json`,
               handleMissing: true,
-              shouldCache: true,
+              shouldCache: !this.isDev,
             })
           : {},
         loadManifestFromRelativePath<Record<string, string>>({
@@ -330,7 +330,7 @@ export abstract class RouteModule<
           distDir: this.distDir,
           manifest: `server/${SUBRESOURCE_INTEGRITY_MANIFEST}.json`,
           handleMissing: true,
-          shouldCache: true,
+          shouldCache: !this.isDev,
         }),
         this.isDev
           ? ({} as any)
