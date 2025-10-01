@@ -18,14 +18,6 @@
       ],
       "failed": []
     },
-    "test/e2e/app-dir/searchparams-reuse-loading/searchparams-reuse-loading.test.ts": {
-      "passed": [],
-      "failed": [
-        "searchparams-reuse-loading should re-use loading from \"full\" prefetch for param-full URL when navigating to param-full route",
-        "searchparams-reuse-loading should re-use loading from \"full\" prefetch for param-full URL when navigating to param-less route",
-        "searchparams-reuse-loading should re-use loading from \"full\" prefetch for param-less URL when navigating to param-full route"
-      ]
-    },
     "test/production/app-dir/browser-chunks/browser-chunks.test.ts": {
       "passed": [
         "browser-chunks must not bundle any server modules into browser chunks",

@@ -7,7 +7,7 @@ export default function Page() {
   return (
     <>
       <div>
-        <Link href="/search-params" prefetch>
+        <Link href="/search-params" prefetch="unstable_forceStale">
           /search-params (prefetch: true)
         </Link>
       </div>

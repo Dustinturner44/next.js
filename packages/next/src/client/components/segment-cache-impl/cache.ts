@@ -43,8 +43,6 @@ import type {
   NormalizedSearch,
   RouteCacheKey,
 } from './cache-key'
-// TODO: Rename this module to avoid confusion with other types of cache keys
-import { createCacheKey as createPrefetchRequestKey } from './cache-key'
 import {
   doesStaticSegmentAppearInURL,
   getCacheKeyForDynamicParam,
@@ -139,6 +137,9 @@ type RouteCacheEntryShared = {
   // See comment in scheduler.ts for context
   TODO_metadataStatus: EntryStatus.Empty | EntryStatus.Fulfilled
   TODO_isHeadDynamic: boolean
+
+  // Search params associated with the original request that produced this entry.
+  requestedSearch: NormalizedSearch
 
   // LRU-related fields
   keypath: null | Prefix<RouteCacheKeypath>
@@ -273,6 +274,45 @@ type RouteCacheKeypath = [NormalizedHref, NormalizedNextUrl]
 let routeCacheMap: TupleMap<RouteCacheKeypath, RouteCacheEntry> =
   createTupleMap()
 
+// Index of all route cache entries by their pathname (i.e. href without search
+// params) so we can look up related entries regardless of search params.
+const routeEntriesByPathname = new Map<string, Set<RouteCacheEntry>>()
+let routeEntryToPathnameKey = new WeakMap<RouteCacheEntry, string>()
+
+function getPathnameKeyFromHref(href: NormalizedHref): string {
+  const url = new URL(href)
+  return url.origin + url.pathname
+}
+
+function addRouteEntryToPathnameIndex(
+  entry: RouteCacheEntry,
+  href: NormalizedHref
+): void {
+  const pathnameKey = getPathnameKeyFromHref(href)
+  let entries = routeEntriesByPathname.get(pathnameKey)
+  if (entries === undefined) {
+    entries = new Set()
+    routeEntriesByPathname.set(pathnameKey, entries)
+  }
+  entries.add(entry)
+  routeEntryToPathnameKey.set(entry, pathnameKey)
+}
+
+function removeRouteEntryFromPathnameIndex(entry: RouteCacheEntry): void {
+  const pathnameKey = routeEntryToPathnameKey.get(entry)
+  if (pathnameKey === undefined) {
+    return
+  }
+  const entries = routeEntriesByPathname.get(pathnameKey)
+  if (entries !== undefined) {
+    entries.delete(entry)
+    if (entries.size === 0) {
+      routeEntriesByPathname.delete(pathnameKey)
+    }
+  }
+  routeEntryToPathnameKey.delete(entry)
+}
+
 // We use an LRU for memory management. We must update this whenever we add or
 // remove a new cache entry, or when an entry changes size.
 // TODO: I chose the max size somewhat arbitrarily. Consider setting this based
@@ -333,6 +373,8 @@ export function revalidateEntireCache(
   routeCacheLru = createLRU(maxRouteLruSize, onRouteLRUEviction)
   segmentCacheMap = createTupleMap()
   segmentCacheLru = createLRU(maxSegmentLruSize, onSegmentLRUEviction)
+  routeEntriesByPathname.clear()
+  routeEntryToPathnameKey = new WeakMap()
 
   // Prefetch all the currently visible links again, to re-fill the cache.
   pingVisibleLinks(nextUrl, tree)
@@ -595,6 +637,7 @@ export function readOrCreateRouteCacheEntry(
     // Similarly, we don't yet know if the route supports PPR.
     isPPREnabled: false,
     renderedSearch: null,
+    requestedSearch: key.search,
 
     TODO_metadataStatus: EntryStatus.Empty,
     TODO_isHeadDynamic: false,
@@ -608,11 +651,92 @@ export function readOrCreateRouteCacheEntry(
   const keypath: Prefix<RouteCacheKeypath> =
     key.nextUrl === null ? [key.href] : [key.href, key.nextUrl]
   routeCacheMap.set(keypath, pendingEntry)
+  addRouteEntryToPathnameIndex(pendingEntry, key.href)
   // Stash the keypath on the entry so we know how to remove it from the map
   // if it gets evicted from the LRU.
   pendingEntry.keypath = keypath
   routeCacheLru.put(pendingEntry)
   return pendingEntry
+}
+
+function doesRouteEntryMatchNextUrl(
+  entry: RouteCacheEntry,
+  nextUrl: string | null
+): boolean {
+  if (!entry.couldBeIntercepted) {
+    return true
+  }
+  const keypath = entry.keypath
+  if (keypath === null) {
+    return false
+  }
+  if (keypath.length === 1) {
+    return nextUrl === null
+  }
+  const entryNextUrl = keypath[1]
+  return entryNextUrl === nextUrl
+}
+
+function isRouteEntryEligibleForOptimisticReuse(
+  entry: RouteCacheEntry,
+  now: number
+): entry is FulfilledRouteCacheEntry {
+  if (entry.status !== EntryStatus.Fulfilled) {
+    return false
+  }
+  if (entry.staleAt <= now) {
+    return false
+  }
+  if (entry.isHeadPartial) {
+    return false
+  }
+
+  return true
+}
+
+// Attempts to locate an existing cache entry for the same pathname that can
+// seed an optimistic navigation. We iterate through every candidate stored in
+// the per-pathname index and choose:
+//   1. A fulfilled, non-stale entry that matches the requested Next-Url key,
+//   2. Preferably one that was rendered without any search params, so the
+//      caller can project its optimistic search state on top.
+// If the caller is requesting a search param value that already exists in the
+// cache, we fall back to the first eligible entry, since reusing it is no worse
+// than performing a blocking navigation.
+function findOptimisticBaseRouteCacheEntry(
+  now: number,
+  pathnameKey: string,
+  requestedSearch: NormalizedSearch,
+  nextUrl: string | null
+): FulfilledRouteCacheEntry | null {
+  const candidates = routeEntriesByPathname.get(pathnameKey)
+  if (candidates === undefined) {
+    return null
+  }
+
+  let firstEligibleEntry: FulfilledRouteCacheEntry | null = null
+  let entryWithoutSearch: FulfilledRouteCacheEntry | null = null
+
+  for (const candidate of candidates) {
+    if (!isRouteEntryEligibleForOptimisticReuse(candidate, now)) {
+      continue
+    }
+    if (!doesRouteEntryMatchNextUrl(candidate, nextUrl)) {
+      continue
+    }
+
+    if (firstEligibleEntry === null) {
+      firstEligibleEntry = candidate
+    }
+    if (candidate.renderedSearch === '') {
+      entryWithoutSearch = candidate
+      if (requestedSearch !== '') {
+        break
+      }
+    }
+  }
+
+  return entryWithoutSearch ?? firstEligibleEntry
 }
 
 export function requestOptimisticRouteCacheEntry(
@@ -637,78 +761,48 @@ export function requestOptimisticRouteCacheEntry(
   // in between the prefetch and the navigation. So the logic needs to exist
   // to handle this case regardless.
 
-  // Look for a route with the same pathname, but with an empty search string.
-  // TODO: There's nothing inherently special about the empty search string;
-  // it's chosen somewhat arbitrarily, with the rationale that it's the most
-  // likely one to exist. But we should update this to match _any_ search
-  // string. The plan is to generalize this logic alongside other improvements
-  // related to "fallback" cache entries.
   const requestedSearch = requestedUrl.search as NormalizedSearch
-  if (requestedSearch === '') {
-    // The caller would have already checked if a route with an empty search
-    // string is in the cache. So we can bail out here.
-    return null
-  }
-  const routeWithNoSearchParams = readRouteCacheEntry(
+  const pathnameKey = requestedUrl.origin + requestedUrl.pathname
+  const baseRouteEntry = findOptimisticBaseRouteCacheEntry(
     now,
-    createPrefetchRequestKey(
-      requestedUrl.origin + requestedUrl.pathname,
-      nextUrl
-    )
+    pathnameKey,
+    requestedSearch,
+    nextUrl
   )
 
-  if (
-    routeWithNoSearchParams === null ||
-    routeWithNoSearchParams.status !== EntryStatus.Fulfilled ||
-    // There's no point constructing an optimistic route tree if the metadata
-    // isn't fully available, because we'll have to do a blocking
-    // navigation anyway.
-    routeWithNoSearchParams.isHeadPartial ||
-    // We cannot reuse this route if it has dynamic metadata.
-    // TODO: Move the metadata out of the route cache entry so the route
-    // tree is reusable separately from the metadata. Then we can remove
-    // these checks.
-    routeWithNoSearchParams.TODO_metadataStatus !== EntryStatus.Empty ||
-    routeWithNoSearchParams.TODO_isHeadDynamic
-  ) {
-    // Bail out of constructing an optimistic route tree. This will result in
-    // a blocking, unprefetched navigation.
+  if (baseRouteEntry === null) {
     return null
   }
+
+  // Update the LRU since we're effectively accessing this entry when creating
+  // the optimistic tree.
+  routeCacheLru.put(baseRouteEntry)
 
   // Now we have a base route tree we can "patch" with our optimistic values.
-
-  // Optimistically assume that redirects for the requested pathname do
-  // not vary on the search string. Therefore, if the base route was
-  // redirected to a different search string, then the optimistic route
-  // should be redirected to the same search string. Otherwise, we use
-  // the requested search string.
-  const canonicalUrlForRouteWithNoSearchParams = new URL(
-    routeWithNoSearchParams.canonicalUrl,
+  const canonicalUrlForBaseRoute = new URL(
+    baseRouteEntry.canonicalUrl,
     requestedUrl.origin
   )
-  const optimisticCanonicalSearch =
-    canonicalUrlForRouteWithNoSearchParams.search !== ''
-      ? // Base route was redirected. Reuse the same redirected search string.
-        canonicalUrlForRouteWithNoSearchParams.search
-      : requestedSearch
+  const canonicalSearchFromBase = canonicalUrlForBaseRoute.search
+  const baseRequestedSearch = baseRouteEntry.requestedSearch
+  const shouldReuseCanonicalSearch =
+    baseRequestedSearch === requestedSearch &&
+    canonicalSearchFromBase !== requestedSearch
+  const optimisticCanonicalSearch = shouldReuseCanonicalSearch
+    ? canonicalSearchFromBase
+    : requestedSearch
 
-  // Similarly, optimistically assume that rewrites for the requested
-  // pathname do not vary on the search string. Therefore, if the base
-  // route was rewritten to a different search string, then the optimistic
-  // route should be rewritten to the same search string. Otherwise, we use
-  // the requested search string.
-  const optimisticRenderedSearch =
-    routeWithNoSearchParams.renderedSearch !== ''
-      ? // Base route was rewritten. Reuse the same rewritten search string.
-        routeWithNoSearchParams.renderedSearch
-      : requestedSearch
+  const baseRenderedSearch = baseRouteEntry.renderedSearch
+  const shouldReuseRenderedSearch =
+    baseRequestedSearch === requestedSearch &&
+    baseRenderedSearch !== requestedSearch
+  const optimisticRenderedSearch = shouldReuseRenderedSearch
+    ? baseRenderedSearch
+    : requestedSearch
 
-  const optimisticUrl = new URL(
-    routeWithNoSearchParams.canonicalUrl,
-    location.origin
-  )
+  const optimisticUrl = new URL(baseRouteEntry.canonicalUrl, location.origin)
   optimisticUrl.search = optimisticCanonicalSearch
+  optimisticUrl.hash = requestedUrl.hash
   const optimisticCanonicalUrl = createHrefFromUrl(optimisticUrl)
 
   // Clone the base route tree, and override the relevant fields with our
@@ -719,18 +813,19 @@ export function requestOptimisticRouteCacheEntry(
     status: EntryStatus.Fulfilled,
     // This isn't cloned because it's instance-specific
     blockedTasks: null,
-    tree: routeWithNoSearchParams.tree,
-    head: routeWithNoSearchParams.head,
-    isHeadPartial: routeWithNoSearchParams.isHeadPartial,
-    staleAt: routeWithNoSearchParams.staleAt,
-    couldBeIntercepted: routeWithNoSearchParams.couldBeIntercepted,
-    isPPREnabled: routeWithNoSearchParams.isPPREnabled,
+    tree: baseRouteEntry.tree,
+    head: baseRouteEntry.head,
+    isHeadPartial: baseRouteEntry.isHeadPartial,
+    staleAt: baseRouteEntry.staleAt,
+    couldBeIntercepted: baseRouteEntry.couldBeIntercepted,
+    isPPREnabled: baseRouteEntry.isPPREnabled,
 
     // Override the rendered search with the optimistic value.
     renderedSearch: optimisticRenderedSearch,
+    requestedSearch,
 
-    TODO_metadataStatus: routeWithNoSearchParams.TODO_metadataStatus,
-    TODO_isHeadDynamic: routeWithNoSearchParams.TODO_isHeadDynamic,
+    TODO_metadataStatus: baseRouteEntry.TODO_metadataStatus,
+    TODO_isHeadDynamic: baseRouteEntry.TODO_isHeadDynamic,
 
     // LRU-related fields
     keypath: null,
@@ -884,6 +979,7 @@ function deleteRouteFromCache(
   keypath: Prefix<RouteCacheKeypath>
 ): void {
   pingBlockedTasks(entry)
+  removeRouteEntryFromPathnameIndex(entry)
   routeCacheMap.delete(keypath)
   routeCacheLru.delete(entry)
 }
@@ -925,6 +1021,7 @@ function onRouteLRUEviction(entry: RouteCacheEntry): void {
   if (keypath !== null) {
     entry.keypath = null
     pingBlockedTasks(entry)
+    removeRouteEntryFromPathnameIndex(entry)
     routeCacheMap.delete(keypath)
   }
 }
@@ -972,6 +1069,7 @@ function fulfillRouteCacheEntry(
   couldBeIntercepted: boolean,
   canonicalUrl: string,
   renderedSearch: NormalizedSearch,
+  requestedSearch: NormalizedSearch,
   isPPREnabled: boolean,
   isHeadDynamic: boolean
 ): FulfilledRouteCacheEntry {
@@ -984,6 +1082,7 @@ function fulfillRouteCacheEntry(
   fulfilledEntry.couldBeIntercepted = couldBeIntercepted
   fulfilledEntry.canonicalUrl = canonicalUrl
   fulfilledEntry.renderedSearch = renderedSearch
+  fulfilledEntry.requestedSearch = requestedSearch
   fulfilledEntry.isPPREnabled = isPPREnabled
   fulfilledEntry.TODO_isHeadDynamic = isHeadDynamic
   pingBlockedTasks(entry)
@@ -1466,6 +1565,7 @@ export async function fetchRouteOnCacheMiss(
         couldBeIntercepted,
         canonicalUrl,
         renderedSearch,
+        key.search,
         routeIsPPREnabled,
         isHeadDynamic
       )
@@ -1849,6 +1949,7 @@ function writeDynamicTreeResponseIntoCache(
     couldBeIntercepted,
     canonicalUrl,
     renderedSearch,
+    task.key.search,
     routeIsPPREnabled,
     isHeadDynamic
   )
