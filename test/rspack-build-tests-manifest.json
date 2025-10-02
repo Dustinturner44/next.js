@@ -803,6 +803,7 @@
       "app dir - prefetching fetch priority should have an auto priority for all other fetch operations",
       "app dir - prefetching fetch priority should prefetch links in viewport with low priority",
       "app dir - prefetching fetch priority should prefetch with high priority when navigating to a page without a prefetch entry",
+      "app dir - prefetching fetch priority should respect multiple prefetch types to the same URL",
       "app dir - prefetching invalid URLs should not throw when an invalid URL is passed to Link",
       "app dir - prefetching invalid URLs should throw when an invalid URL is passed to router.prefetch",
       "app dir - prefetching prefetch cache seeding should not re-fetch the initial dynamic page if the same page is prefetched with prefetch={true}",
@@ -820,9 +821,7 @@
       "app dir - prefetching should only prefetch the loading state and not the component tree when prefetching at the same segment",
       "app dir - prefetching should show layout eagerly when prefetched with loading one level down"
     ],
-    "failed": [
-      "app dir - prefetching fetch priority should respect multiple prefetch types to the same URL"
-    ],
+    "failed": [],
     "pending": [
       "app dir - prefetching should not suppress prefetches after navigating back"
     ],
@@ -3605,6 +3604,7 @@
   "test/e2e/app-dir/metadata/metadata.test.ts": {
     "passed": [
       "app dir - metadata basic should apply metadata when navigating client-side",
+      "app dir - metadata basic should handle metadataBase as url string",
       "app dir - metadata basic should handle metadataBase for urls resolved as only URL type",
       "app dir - metadata basic should not contain query in canonical url after client navigation",
       "app dir - metadata basic should relative canonical url",
@@ -4654,6 +4654,15 @@
   "test/e2e/app-dir/next-script/next-script.test.ts": {
     "passed": [
       "Script component with crossOrigin props should be set crossOrigin also in preload link tag"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/no-double-tailwind-execution/no-double-tailwind-execution.test.ts": {
+    "passed": [
+      "no-double-tailwind-execution should run tailwind only once initially and per change"
     ],
     "failed": [],
     "pending": [],
@@ -6663,6 +6672,7 @@
       "runtime prefetching in a private cache includes dynamic params, but not dynamic content",
       "runtime prefetching in a private cache includes headers, but not dynamic content",
       "runtime prefetching in a private cache includes root params, but not dynamic content",
+      "runtime prefetching in a private cache includes search params, but not dynamic content",
       "runtime prefetching passed to a public cache can completely prefetch a page that uses cookies and no uncached IO",
       "runtime prefetching passed to a public cache includes cookies, but not dynamic content",
       "runtime prefetching passed to a public cache includes dynamic params, but not dynamic content",
@@ -6673,9 +6683,7 @@
       "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a private cache",
       "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side private caches should return new results on each request"
     ],
-    "failed": [
-      "runtime prefetching in a private cache includes search params, but not dynamic content"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -7378,6 +7386,13 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/webpack-loader-fs/webpack-loader-fs.test.ts": {
+    "passed": ["webpack-loader-fs should allow reading the input FS"],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/webpack-loader-resource-query/turbopack-loader-resource-query.test.ts": {
     "passed": ["webpack-loader-resource-query should pass query to loader"],
     "failed": [],
@@ -7752,9 +7767,13 @@
     "passed": [],
     "failed": [],
     "pending": [
-      "config-turbopack when webpack is configured and config.experimental.turbo is set does not warn",
-      "config-turbopack when webpack is configured and config.turbopack is set does not warn",
-      "config-turbopack when webpack is configured but Turbopack is not warns"
+      "config-turbopack when turbopack is auto selected when webpack is configured and config.experimental.turbo is set does not warn",
+      "config-turbopack when turbopack is auto selected when webpack is configured and config.turbopack is set does not warn",
+      "config-turbopack when turbopack is auto selected when webpack is configured but Turbopack is not errors",
+      "config-turbopack when turbopack is auto selected when webpack is configured but Turbopack is not warns",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured and config.experimental.turbo is set does not warn",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured and config.turbopack is set does not warn",
+      "config-turbopack when turbopack is explicitly configured when webpack is configured but Turbopack is not does not warn"
     ],
     "flakey": [],
     "runtimeError": false
@@ -10245,6 +10264,26 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/twoslash/index.test.ts": {
+    "passed": [
+      "twoslash should annotate twoslash types default",
+      "twoslash should annotate twoslash types esnext"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/twoslash/standalone.test.ts": {
+    "passed": [
+      "output: standalone with twoslash should annotate twoslash types default",
+      "output: standalone with twoslash should annotate twoslash types esnext"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/type-module-interop/index.test.ts": {
     "passed": [
       "Type module interop should render client-side",
@@ -11455,12 +11494,12 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/app-api.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "create-next-app --api (Headless App) should create JavaScript project with --js flag",
       "create-next-app --api (Headless App) should create TypeScript project with --ts flag",
       "create-next-app --api (Headless App) should create project inside \"src\" directory with --src-dir flag"
     ],
-    "failed": [],
     "pending": [
       "create-next-app --api (Headless App) should enable turbopack dev with --turbopack flag"
     ],
@@ -11468,7 +11507,8 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/app.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "create-next-app --app (App Router) should create JavaScript project with --js flag",
       "create-next-app --app (App Router) should create TailwindCSS project with --tailwind flag",
       "create-next-app --app (App Router) should create TypeScript project with --ts flag",
@@ -11476,7 +11516,6 @@
       "create-next-app --app (App Router) should create an empty project with --empty flag",
       "create-next-app --app (App Router) should create project inside \"src\" directory with --src-dir flag"
     ],
-    "failed": [],
     "pending": [
       "create-next-app --app (App Router) should enable turbopack dev with --turbopack flag"
     ],
@@ -11484,63 +11523,64 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/matrix.test.ts": {
-    "passed": [
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --no-src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --src-dir --no-tailwind",
-      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --no-src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --src-dir --no-tailwind",
-      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --src-dir --tailwind"
+    "passed": [],
+    "failed": [
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --js --no-import-alias --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - app --app --no-turbopack --ts --no-import-alias --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --import-alias=@acme/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --js --no-import-alias --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --import-alias=@acme/* --eslint --src-dir --react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --no-react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --no-src-dir --no-react-compiler --tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --src-dir --react-compiler --no-tailwind",
+      "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --src-dir --react-compiler --tailwind"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/pages.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "create-next-app --no-app (Pages Router) should create JavaScript project with --js flag",
       "create-next-app --no-app (Pages Router) should create TailwindCSS project with --tailwind flag",
       "create-next-app --no-app (Pages Router) should create TypeScript project with --ts flag",
@@ -11548,7 +11588,6 @@
       "create-next-app --no-app (Pages Router) should create an empty project with --empty flag",
       "create-next-app --no-app (Pages Router) should create project inside \"src\" directory with --src-dir flag"
     ],
-    "failed": [],
     "pending": [
       "create-next-app --no-app (Pages Router) should enable turbopack dev with --turbopack flag"
     ],
@@ -18187,8 +18226,6 @@
   "test/integration/page-config/test/index.test.js": {
     "passed": [
       "Page Config production mode builds without error when export const config is used outside page",
-      "Page Config production mode shows error when page config has invalid properties",
-      "Page Config production mode shows error when page config has invalid property value",
       "Page Config production mode shows error when page config has spread properties",
       "Page Config production mode shows error when page config is export from",
       "Page Config production mode shows error when page config is imported and exported",
@@ -20534,8 +20571,11 @@
   },
   "test/production/escheck-output/index.test.ts": {
     "passed": [],
-    "failed": ["ES Check .next output should emit ES2020 with default"],
-    "pending": [],
+    "failed": [],
+    "pending": [
+      "ES Check .next output should downlevel JS according to default browserslist",
+      "ES Check .next output should downlevel JS according to manual browserslist with es2020"
+    ],
     "flakey": [],
     "runtimeError": false
   },
@@ -20903,6 +20943,7 @@
       "Production Usage should navigate to page with CSS and back",
       "Production Usage should not clear custom performance marks",
       "Production Usage should not contain currentScript usage for publicPath",
+      "Production Usage should not contain rsc APIs in main chunk",
       "Production Usage should not emit stats",
       "Production Usage should not expose the compiled page file in development",
       "Production Usage should not put backslashes in pages-manifest.json",
@@ -21242,9 +21283,18 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/production/standalone-mode/tracing/tracing.test.ts": {
+  "test/production/standalone-mode/tracing-static-files/tracing-static-files.test.ts": {
     "passed": [
-      "standalone mode - tracing should trace process.cwd calls in node_modules"
+      "standalone mode - tracing-static-files should trace process.cwd calls in node_modules"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/production/standalone-mode/tracing-unparsable/tracing-unparsable.test.ts": {
+    "passed": [
+      "standalone mode - tracing-unparsable should not error when dynamic require includes non-JS files"
     ],
     "failed": [],
     "pending": [],
