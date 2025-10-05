@@ -10608,7 +10608,6 @@
       "API routes dev support should not conflict with /api routes",
       "API routes dev support should not show warning if using externalResolver flag",
       "API routes dev support should not show warning when the API resolves and the response is piped",
-      "API routes dev support should not strip .json from API route",
       "API routes dev support should not warn if response body is larger than 4MB with responseLimit config = false",
       "API routes dev support should parse JSON body",
       "API routes dev support should parse bigger body then 1mb",
@@ -10616,20 +10615,15 @@
       "API routes dev support should parse body with config",
       "API routes dev support should parse query correctly",
       "API routes dev support should parse urlencoded body",
-      "API routes dev support should prioritize a non-dynamic page",
       "API routes dev support should redirect to login",
       "API routes dev support should redirect with status code 301",
       "API routes dev support should redirect with status code 307",
       "API routes dev support should render page",
-      "API routes dev support should respond from /api/auth/[...nextauth] correctly",
       "API routes dev support should return 200 on POST on pages",
       "API routes dev support should return 404 for undefined path",
       "API routes dev support should return JSON on post on API",
       "API routes dev support should return cookies object",
       "API routes dev support should return custom error",
-      "API routes dev support should return data on dynamic nested route",
-      "API routes dev support should return data on dynamic optional nested route",
-      "API routes dev support should return data on dynamic route",
       "API routes dev support should return empty cookies object",
       "API routes dev support should return empty query object",
       "API routes dev support should return error with invalid JSON",
@@ -10649,8 +10643,6 @@
       "API routes dev support should warn if response body is larger than 4MB",
       "API routes dev support should warn with configured size if response body is larger than configured size",
       "API routes dev support should work with child_process correctly",
-      "API routes dev support should work with dynamic params and search string",
-      "API routes dev support should work with dynamic params and search string like lambda",
       "API routes dev support should work with index api",
       "API routes dev support should work with nullable payload",
       "API routes production mode should 404 on optional dynamic api page",
@@ -10703,7 +10695,16 @@
       "API routes production mode should work with index api",
       "API routes production mode should work with nullable payload"
     ],
-    "failed": [],
+    "failed": [
+      "API routes dev support should not strip .json from API route",
+      "API routes dev support should prioritize a non-dynamic page",
+      "API routes dev support should respond from /api/auth/[...nextauth] correctly",
+      "API routes dev support should return data on dynamic nested route",
+      "API routes dev support should return data on dynamic optional nested route",
+      "API routes dev support should return data on dynamic route",
+      "API routes dev support should work with dynamic params and search string",
+      "API routes dev support should work with dynamic params and search string like lambda"
+    ],
     "pending": [
       "API routes dev support should return error exceeded body limit",
       "API routes production mode should return error exceeded body limit"
@@ -10955,19 +10956,20 @@
   },
   "test/integration/auto-export/test/index.test.js": {
     "passed": [
-      "Auto Export dev Refreshes query on mount",
       "Auto Export dev Supports commonjs 1",
       "Auto Export dev Supports commonjs 2",
-      "Auto Export dev should not replace URL with page name while asPath is delayed",
-      "Auto Export dev should not show hydration warning from mismatching asPath",
-      "Auto Export dev should update asPath after mount",
       "Auto Export production mode Refreshes query on mount",
       "Auto Export production mode Supports commonjs 1",
       "Auto Export production mode Supports commonjs 2",
       "Auto Export production mode should not replace URL with page name while asPath is delayed",
       "Auto Export production mode should update asPath after mount"
     ],
-    "failed": [],
+    "failed": [
+      "Auto Export dev Refreshes query on mount",
+      "Auto Export dev should not replace URL with page name while asPath is delayed",
+      "Auto Export dev should not show hydration warning from mismatching asPath",
+      "Auto Export dev should update asPath after mount"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -11496,12 +11498,12 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/app-api.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "create-next-app --api (Headless App) should create JavaScript project with --js flag",
       "create-next-app --api (Headless App) should create TypeScript project with --ts flag",
       "create-next-app --api (Headless App) should create project inside \"src\" directory with --src-dir flag"
     ],
+    "failed": [],
     "pending": [
       "create-next-app --api (Headless App) should enable turbopack dev with --turbopack flag"
     ],
@@ -11509,8 +11511,7 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/app.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "create-next-app --app (App Router) should create JavaScript project with --js flag",
       "create-next-app --app (App Router) should create TailwindCSS project with --tailwind flag",
       "create-next-app --app (App Router) should create TypeScript project with --ts flag",
@@ -11518,6 +11519,7 @@
       "create-next-app --app (App Router) should create an empty project with --empty flag",
       "create-next-app --app (App Router) should create project inside \"src\" directory with --src-dir flag"
     ],
+    "failed": [],
     "pending": [
       "create-next-app --app (App Router) should enable turbopack dev with --turbopack flag"
     ],
@@ -11525,8 +11527,7 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/matrix.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-react-compiler --no-tailwind",
       "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --no-src-dir --no-react-compiler --tailwind",
       "CNA options matrix - app --app --no-turbopack --js --import-alias=@/* --eslint --src-dir --react-compiler --no-tailwind",
@@ -11576,13 +11577,13 @@
       "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --src-dir --react-compiler --no-tailwind",
       "CNA options matrix - pages --no-app --no-turbopack --ts --no-import-alias --eslint --src-dir --react-compiler --tailwind"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/pages.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "create-next-app --no-app (Pages Router) should create JavaScript project with --js flag",
       "create-next-app --no-app (Pages Router) should create TailwindCSS project with --tailwind flag",
       "create-next-app --no-app (Pages Router) should create TypeScript project with --ts flag",
@@ -11590,6 +11591,7 @@
       "create-next-app --no-app (Pages Router) should create an empty project with --empty flag",
       "create-next-app --no-app (Pages Router) should create project inside \"src\" directory with --src-dir flag"
     ],
+    "failed": [],
     "pending": [
       "create-next-app --no-app (Pages Router) should enable turbopack dev with --turbopack flag"
     ],
@@ -12843,12 +12845,11 @@
     "runtimeError": false
   },
   "test/integration/edge-runtime-dynamic-code/test/index.test.js": {
-    "passed": [
-      "Page using eval in development mode does not issue dynamic code evaluation warnings"
-    ],
+    "passed": [],
     "failed": [
       "Edge route usage of dynamic code evaluation production mode should have middleware warning during build",
-      "Middleware usage of dynamic code evaluation production mode should have middleware warning during build"
+      "Middleware usage of dynamic code evaluation production mode should have middleware warning during build",
+      "Page using eval in development mode does not issue dynamic code evaluation warnings"
     ],
     "pending": [
       "Edge route usage of dynamic code evaluation development mode does not show a warning when running WebAssembly.instantiate with a module parameter",
@@ -14753,13 +14754,13 @@
     "runtimeError": false
   },
   "test/integration/filesystempublicroutes/test/index.test.js": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "FileSystemPublicRoutes should not route to the index page",
       "FileSystemPublicRoutes should route to exportPathMap defined routes in development",
       "FileSystemPublicRoutes should route to public folder files",
       "FileSystemPublicRoutes should serve JavaScript files correctly"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -16873,19 +16874,20 @@
   "test/integration/jsconfig-paths/test/index.test.js": {
     "passed": [
       "jsconfig paths default behavior should alias components",
-      "jsconfig paths default behavior should have correct module not found error",
       "jsconfig paths default behavior should resolve a single matching alias",
       "jsconfig paths default behavior should resolve the first item in the array first",
       "jsconfig paths default behavior should resolve the second item as fallback",
       "jsconfig paths should build production mode should trace correctly",
-      "jsconfig paths without baseurl default behavior should alias components",
       "jsconfig paths without baseurl default behavior should have correct module not found error",
-      "jsconfig paths without baseurl default behavior should resolve a single matching alias",
-      "jsconfig paths without baseurl default behavior should resolve the first item in the array first",
-      "jsconfig paths without baseurl default behavior should resolve the second item as fallback",
       "jsconfig paths without baseurl should build production mode should trace correctly"
     ],
-    "failed": [],
+    "failed": [
+      "jsconfig paths default behavior should have correct module not found error",
+      "jsconfig paths without baseurl default behavior should alias components",
+      "jsconfig paths without baseurl default behavior should resolve a single matching alias",
+      "jsconfig paths without baseurl default behavior should resolve the first item in the array first",
+      "jsconfig paths without baseurl default behavior should resolve the second item as fallback"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -17495,10 +17497,11 @@
   },
   "test/integration/next-image-new/app-dir-image-from-node-modules/test/index.test.ts": {
     "passed": [
-      "Image Component from node_modules development mode should apply image config for node_modules",
       "Image Component from node_modules prod mode production mode should apply image config for node_modules"
     ],
-    "failed": [],
+    "failed": [
+      "Image Component from node_modules development mode should apply image config for node_modules"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -17933,10 +17936,11 @@
   },
   "test/integration/next-image-new/image-from-node-modules/test/index.test.ts": {
     "passed": [
-      "Image Component from node_modules development mode should apply image config for node_modules",
       "Image Component from node_modules prod mode production mode should apply image config for node_modules"
     ],
-    "failed": [],
+    "failed": [
+      "Image Component from node_modules development mode should apply image config for node_modules"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -18201,13 +18205,12 @@
   },
   "test/integration/ondemand/test/index.test.js": {
     "passed": [
-      "On Demand Entries should compile pages for JSON page requests",
       "On Demand Entries should compile pages for SSR",
       "On Demand Entries should dispose inactive pages",
       "On Demand Entries should navigate to pages with dynamic imports",
       "On Demand Entries should pass"
     ],
-    "failed": [],
+    "failed": ["On Demand Entries should compile pages for JSON page requests"],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -19023,7 +19026,6 @@
   "test/integration/script-loader/test/index.test.ts": {
     "passed": [
       "Next.js Script - Primary Strategies - Production Mode production mode Does not duplicate inline scripts",
-      "Next.js Script - Primary Strategies - Production Mode production mode Error message is shown if Partytown is not installed locally",
       "Next.js Script - Primary Strategies - Production Mode production mode onReady fires after load event and then on every subsequent re-mount",
       "Next.js Script - Primary Strategies - Production Mode production mode onReady should only fires once after loaded (issue #39993)",
       "Next.js Script - Primary Strategies - Production Mode production mode onload fires correctly",
@@ -19033,7 +19035,10 @@
       "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive on navigate",
       "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive with inline script",
       "Next.js Script - Primary Strategies - Production Mode production mode priority beforeInteractive with inline script should execute",
-      "Next.js Script - Primary Strategies - Production Mode production mode priority lazyOnload",
+      "Next.js Script - Primary Strategies - Production Mode production mode priority lazyOnload"
+    ],
+    "failed": [
+      "Next.js Script - Primary Strategies - Production Mode production mode Error message is shown if Partytown is not installed locally",
       "Next.js Script - Primary Strategies - Strict Mode Does not duplicate inline scripts",
       "Next.js Script - Primary Strategies - Strict Mode onReady fires after load event and then on every subsequent re-mount",
       "Next.js Script - Primary Strategies - Strict Mode onReady should only fires once after loaded (issue #39993)",
@@ -19046,7 +19051,6 @@
       "Next.js Script - Primary Strategies - Strict Mode priority beforeInteractive with inline script should execute",
       "Next.js Script - Primary Strategies - Strict Mode priority lazyOnload"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
