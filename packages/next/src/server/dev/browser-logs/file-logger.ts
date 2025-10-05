@@ -14,18 +14,17 @@ export class FileLogger {
   private isInitialized: boolean = false
   private logQueue: string[] = []
   private flushTimer: NodeJS.Timeout | null = null
-  private mcpServerEnabled: boolean = false
+  private devtoolsApiEnabled: boolean = false
 
-  public initialize(distDir: string, mcpServerEnabled: boolean): void {
+  public initialize(distDir: string, devtoolsApiEnabled: boolean): void {
     this.logFilePath = path.join(distDir, 'logs', `next-development.log`)
-    this.mcpServerEnabled = mcpServerEnabled
+    this.devtoolsApiEnabled = devtoolsApiEnabled
 
     if (this.isInitialized) {
       return
     }
 
-    // Only initialize if mcpServer is enabled
-    if (!this.mcpServerEnabled) {
+    if (!this.devtoolsApiEnabled) {
       return
     }
 
@@ -88,7 +87,7 @@ export class FileLogger {
     }
 
     // Only flush to disk if mcpServer is enabled
-    if (!this.mcpServerEnabled) {
+    if (!this.devtoolsApiEnabled) {
       this.logQueue = [] // Clear the queue without writing
       this.flushTimer = null
       return
@@ -126,7 +125,7 @@ export class FileLogger {
 
   log(source: 'Server' | 'Browser', level: string, message: string): void {
     // Don't log anything if mcpServer is disabled
-    if (!this.mcpServerEnabled) {
+    if (!this.devtoolsApiEnabled) {
       return
     }
 
@@ -162,7 +161,28 @@ export class FileLogger {
     this.flush()
   }
 
-  // Cleanup method to flush logs on process exit
+  readLogs(): string {
+    if (!this.devtoolsApiEnabled || !this.isInitialized) {
+      return ''
+    }
+
+    this.forceFlush()
+
+    try {
+      if (fs.existsSync(this.logFilePath)) {
+        return fs.readFileSync(this.logFilePath, 'utf-8')
+      }
+      return ''
+    } catch (error) {
+      console.error('Failed to read log file:', error)
+      return ''
+    }
+  }
+
+  getLogFilePath(): string {
+    return this.logFilePath
+  }
+
   destroy(): void {
     this.forceFlush()
   }

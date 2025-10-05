@@ -39,8 +39,8 @@ export const enum HMR_MESSAGE_SENT_TO_BROWSER {
 
 export const enum HMR_MESSAGE_SENT_TO_SERVER {
   // JSON messages:
-  MCP_ERROR_STATE_RESPONSE = 'mcp-error-state-response',
-  MCP_PAGE_METADATA_RESPONSE = 'mcp-page-metadata-response',
+  DEVTOOLS_ERROR_STATE_RESPONSE = 'devtools-error-state-response',
+  DEVTOOLS_PAGE_METADATA_RESPONSE = 'devtools-page-metadata-response',
   PING = 'ping',
 }
 

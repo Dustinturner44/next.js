@@ -46,7 +46,7 @@ import {
 } from './dev-overlay/segment-explorer-trie'
 import type { SegmentNodeState } from './userspace/app/segment-explorer-node'
 import type { DevToolsConfig } from './dev-overlay/shared'
-import type { SegmentTrieData } from '../shared/lib/mcp-page-metadata-types'
+import type { SegmentTrieData } from '../shared/lib/devtools-api-types'
 
 export interface Dispatcher {
   onBuildOk(): void

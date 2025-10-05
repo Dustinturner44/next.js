@@ -1,0 +1,48 @@
+{
+  "name": "next-devtools-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Next.js Devtools",
+  "keywords": [
+    "nextjs",
+    "next.js",
+    "devtools",
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "development"
+  ],
+  "main": "./dist/index.js",
+  "bin": {
+    "next-devtools-mcp-server": "./dist/index.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vercel/next.js",
+    "directory": "packages/next-devtools-mcp-server"
+  },
+  "bugs": "https://github.com/vercel/next.js/issues",
+  "homepage": "https://github.com/vercel/next.js/tree/canary/packages/next-devtools-mcp-server#readme",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ncc build ./src/index.ts -o ./dist/ --minify --no-cache --no-source-map-register",
+    "dev": "ncc build ./src/index.ts -w -o dist/",
+    "prerelease": "rm -rf dist",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.18.1",
+    "node-fetch": "^3.3.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@vercel/ncc": "0.38.4",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

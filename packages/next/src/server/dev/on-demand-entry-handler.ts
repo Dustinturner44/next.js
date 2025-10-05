@@ -46,8 +46,8 @@ import { Batcher } from '../../lib/batcher'
 import { normalizeAppPath } from '../../shared/lib/router/utils/app-paths'
 import { PAGE_TYPES } from '../../lib/page-types'
 import { getNextFlightSegmentPath } from '../../client/flight-data-helpers'
-import { handleErrorStateResponse } from '../mcp/tools/get-errors'
-import { handlePageMetadataResponse } from '../mcp/tools/get-page-metadata'
+import { handleErrorStateResponse } from '../lib/devtools-api-utils/tools/get-errors'
+import { handlePageMetadataResponse } from '../lib/devtools-api-utils/tools/get-page-metadata'
 
 const debug = createDebug('next:on-demand-entry-handler')
 
@@ -1005,7 +1005,7 @@ export function onDemandEntryHandler({
             }
           } else if (
             parsedData.event ===
-            HMR_MESSAGE_SENT_TO_SERVER.MCP_ERROR_STATE_RESPONSE
+            HMR_MESSAGE_SENT_TO_SERVER.DEVTOOLS_ERROR_STATE_RESPONSE
           ) {
             handleErrorStateResponse(
               parsedData.requestId,
@@ -1014,7 +1014,7 @@ export function onDemandEntryHandler({
             )
           } else if (
             parsedData.event ===
-            HMR_MESSAGE_SENT_TO_SERVER.MCP_PAGE_METADATA_RESPONSE
+            HMR_MESSAGE_SENT_TO_SERVER.DEVTOOLS_PAGE_METADATA_RESPONSE
           ) {
             handlePageMetadataResponse(
               parsedData.requestId,

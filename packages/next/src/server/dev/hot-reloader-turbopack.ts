@@ -115,10 +115,10 @@ import {
   getVersionInfo,
   matchNextPageBundleRequest,
 } from './hot-reloader-shared-utils'
-import { getMcpMiddleware } from '../mcp/get-mcp-middleware'
-import { handleErrorStateResponse } from '../mcp/tools/get-errors'
-import { handlePageMetadataResponse } from '../mcp/tools/get-page-metadata'
-import { setStackFrameResolver } from '../mcp/tools/utils/format-errors'
+import { getDevtoolsApiMiddleware } from './devtools-api-middleware'
+import { handleErrorStateResponse } from '../lib/devtools-api-utils/tools/get-errors'
+import { handlePageMetadataResponse } from '../lib/devtools-api-utils/tools/get-page-metadata'
+import { setStackFrameResolver } from '../lib/devtools-api-utils/tools/utils/format-errors'
 import { getFileLogger } from './browser-logs/file-logger'
 
 const wsServer = new ws.Server({ noServer: true })
@@ -216,11 +216,9 @@ export async function createHotReloaderTurbopack(
   // of the current `next dev` invocation.
   hotReloaderSpan.stop()
 
-  // Initialize log monitor for file logging
-  // Enable logging by default in development mode
-  const mcpServerEnabled = !!nextConfig.experimental.mcpServer
   const fileLogger = getFileLogger()
-  fileLogger.initialize(distDir, mcpServerEnabled)
+  const devtoolsApiEnabled = !!nextConfig.experimental.devtoolsApi
+  fileLogger.initialize(distDir, devtoolsApiEnabled)
 
   const encryptionKey = await generateEncryptionKeyBase64({
     isBuild: false,
@@ -747,9 +745,9 @@ export async function createHotReloaderTurbopack(
         })
       },
     }),
-    ...(nextConfig.experimental.mcpServer
+    ...(nextConfig.experimental.devtoolsApi
       ? [
-          getMcpMiddleware(
+          getDevtoolsApiMiddleware(
             projectPath,
             distDir,
             (message) => hotReloader.send(message),
@@ -961,7 +959,7 @@ export async function createHotReloaderTurbopack(
               break
             }
 
-            case 'mcp-error-state-response': {
+            case 'devtools-error-state-response': {
               handleErrorStateResponse(
                 parsedData.requestId,
                 parsedData.errorState,
@@ -970,7 +968,7 @@ export async function createHotReloaderTurbopack(
               break
             }
 
-            case 'mcp-page-metadata-response': {
+            case 'devtools-page-metadata-response': {
               handlePageMetadataResponse(
                 parsedData.requestId,
                 parsedData.segmentTrieData,

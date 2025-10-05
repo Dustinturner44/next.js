@@ -316,7 +316,7 @@ export function getDefineEnv({
     'process.env.__NEXT_BROWSER_DEBUG_INFO_IN_TERMINAL': JSON.stringify(
       config.experimental.browserDebugInfoInTerminal || false
     ),
-    'process.env.__NEXT_MCP_SERVER': !!config.experimental.mcpServer,
+    'process.env.__NEXT_DEVTOOLS_API': !!config.experimental.devtoolsApi,
 
     // The devtools need to know whether or not to show an option to clear the
     // bundler cache. This option may be removed later once Turbopack's

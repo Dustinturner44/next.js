@@ -43,7 +43,7 @@ bench/heavy-npm-deps/**
 packages/next-bundle-analyzer/index.d.ts
 examples/with-typescript-graphql/lib/gql/
 test/development/basic/hmr/components/parse-error.js
-test/development/mcp-server/fixtures/default-template/app/build-error/page.tsx
+test/development/devtools-api/fixtures/default-template/app/build-error/page.tsx
 packages/next-swc/docs/assets/**/*
 test/e2e/app-dir/server-source-maps/fixtures/default/internal-pkg/sourcemapped.js
 test/e2e/app-dir/server-source-maps/fixtures/default/external-pkg/sourcemapped.js

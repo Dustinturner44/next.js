@@ -791,13 +791,16 @@ export interface ExperimentalConfig {
   isolatedDevBuild?: boolean
 
   /**
-   * Enable the Model Context Protocol (MCP) server for AI-assisted development.
-   * When enabled, Next.js will expose an MCP server at `/_next/mcp` that provides
-   * code intelligence and project context to AI assistants.
+   * Enable the Next.js Devtools API for AI-assisted development and debugging.
+   * When enabled, Next.js will expose a simple HTTP/JSON API at `/_next/devtools-api`
+   * that provides tools for accessing development server information.
+   *
+   * This is a protocol-agnostic API that can be consumed by MCP servers, IDE extensions,
+   * or any other debugging tools.
    *
    * @default false
    */
-  mcpServer?: boolean
+  devtoolsApi?: boolean
 
   /**
    * The module ID strategy to use for Turbopack.

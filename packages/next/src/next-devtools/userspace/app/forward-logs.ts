@@ -255,9 +255,9 @@ export const logQueue: {
     })
   },
   onSocketReady: (socket: WebSocket) => {
-    // When MCP or terminal logging is enabled, we enable the socket connection,
+    // When devtools API or terminal logging is enabled, we enable the socket connection,
     // otherwise it will not proceed.
-    if (!isTerminalLoggingEnabled && !process.env.__NEXT_MCP_SERVER) {
+    if (!isTerminalLoggingEnabled && !process.env.__NEXT_DEVTOOLS_API) {
       return
     }
     if (socket.readyState !== WebSocket.OPEN) {

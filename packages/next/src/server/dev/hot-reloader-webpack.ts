@@ -107,8 +107,8 @@ import {
   getVersionInfo,
   matchNextPageBundleRequest,
 } from './hot-reloader-shared-utils'
-import { getMcpMiddleware } from '../mcp/get-mcp-middleware'
-import { setStackFrameResolver } from '../mcp/tools/utils/format-errors'
+import { getDevtoolsApiMiddleware } from './devtools-api-middleware'
+import { setStackFrameResolver } from '../lib/devtools-api-utils/tools/utils/format-errors'
 import { getFileLogger } from './browser-logs/file-logger'
 
 const MILLISECONDS_IN_NANOSECOND = BigInt(1_000_000)
@@ -315,11 +315,9 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     // of the current `next dev` invocation.
     this.hotReloaderSpan.stop()
 
-    // Initialize log monitor for file logging
-    // Enable logging by default in development mode
-    const mcpServerEnabled = !!config.experimental.mcpServer
     const fileLogger = getFileLogger()
-    fileLogger.initialize(this.distDir, mcpServerEnabled)
+    const devtoolsApiEnabled = !!config.experimental.devtoolsApi
+    fileLogger.initialize(this.distDir, devtoolsApiEnabled)
   }
 
   public async run(
@@ -1630,9 +1628,9 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
           })
         },
       }),
-      ...(this.config.experimental.mcpServer
+      ...(this.config.experimental.devtoolsApi
         ? [
-            getMcpMiddleware(
+            getDevtoolsApiMiddleware(
               this.dir,
               this.distDir,
               (message) => this.send(message),

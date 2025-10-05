@@ -9,32 +9,36 @@ export function normalizeConventionFilePath(
   projectDir: string,
   conventionPath: string | undefined
 ) {
-  // Turbopack project path is formed as: "<project root>/<cwd>".
-  // When project root is not the working directory, we can extract the relative project root path.
-  // This is mostly used for running Next.js inside a monorepo.
+  if (!conventionPath) return ''
+
   const cwd = process.env.NEXT_RUNTIME === 'edge' ? '' : process.cwd()
-  const relativeProjectRoot = projectDir.replace(cwd, '')
 
-  let relativePath = (conventionPath || '')
-    // remove turbopack [project] prefix
-    .replace(/^\[project\]/, '')
-    // remove turbopack relative project path, everything after [project] and before the working directory.
-    .replace(relativeProjectRoot, '')
-    // remove the project root from the path
-    .replace(projectDir, '')
-    // remove cwd prefix
-    .replace(cwd, '')
-    // remove /(src/)?app/ dir prefix
-    .replace(/^([\\/])*(src[\\/])?app[\\/]/, '')
+  let relativePath = conventionPath
+    .replace(/^\[project\][\\/]?/, '')
+    .replace(/\\/g, '/')
 
-  // If it's internal file only keep the filename, strip nextjs internal prefix
+  if (cwd && projectDir) {
+    const normalizedCwd = cwd.replace(/\\/g, '/')
+    const normalizedProjectDir = projectDir.replace(/\\/g, '/')
+    let relativeProjectDir = normalizedProjectDir.replace(normalizedCwd, '')
+    relativeProjectDir = relativeProjectDir.replace(/^\/+/, '')
+
+    if (
+      relativeProjectDir &&
+      relativePath.startsWith(relativeProjectDir + '/')
+    ) {
+      relativePath = relativePath.substring(relativeProjectDir.length + 1)
+    }
+  }
+
+  relativePath = relativePath.replace(/^(src\/)?app\//, '')
+
   if (nextInternalPrefixRegex.test(relativePath)) {
     relativePath = relativePath.replace(nextInternalPrefixRegex, '')
-    // Add a special prefix to let segment explorer know it's a built-in component
     relativePath = `${BUILTIN_PREFIX}${relativePath}`
   }
 
-  return relativePath.replace(/\\/g, '/')
+  return relativePath
 }
 
 // if a filepath is a builtin file. e.g.

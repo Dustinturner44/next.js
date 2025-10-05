@@ -1117,10 +1117,10 @@ function assignDefaultsAndValidate(
   }
 
   if (
-    typeof result.experimental.mcpServer === 'undefined' &&
+    typeof result.experimental.devtoolsApi === 'undefined' &&
     process.env.__NEXT_EXPERIMENTAL_MCP_SERVER === 'true'
   ) {
-    result.experimental.mcpServer = true
+    result.experimental.devtoolsApi = true
   }
 
   // "use cache" was originally implicitly enabled with the cacheComponents flag, so

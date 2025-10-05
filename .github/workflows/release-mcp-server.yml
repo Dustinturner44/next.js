@@ -1,0 +1,104 @@
+name: Release MCP Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.0, 0.2.0-beta.1)'
+        required: true
+        type: string
+      npm-tag:
+        description: 'NPM tag for publishing'
+        required: false
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - beta
+          - alpha
+          - canary
+      dry-run:
+        description: 'Run in dry-run mode (no actual publishing)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: npm
+    name: Release
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify branch
+        if: ${{ inputs.dry-run == false }}
+        run: |
+          if [ "${{ github.ref_name }}" != "canary" ]; then
+            echo "❌ Error: Releases must be triggered from the 'canary' branch"
+            echo "   Current branch: ${{ github.ref_name }}"
+            exit 1
+          fi
+
+      - name: Display release configuration
+        run: |
+          echo "🚀 Release Configuration:"
+          echo "  - Version: ${{ inputs.version }}"
+          echo "  - NPM tag: ${{ inputs.npm-tag }}"
+          echo "  - Dry-run mode: ${{ inputs.dry-run }}"
+          if [ "${{ inputs.dry-run }}" == "true" ]; then
+            echo "  - ⚠️  This is a DRY RUN - no packages will be published"
+          else
+            echo "  - 📦 This will PUBLISH to npm"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Setup pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --filter=next-devtools-mcp-server
+
+      - name: Build package
+        run: pnpm build --filter=next-devtools-mcp-server
+
+      - name: Update version
+        run: |
+          cd packages/next-devtools-mcp-server
+          npm version ${{ inputs.version }} --no-git-tag-version
+
+      - name: Configure npm authentication
+        if: ${{ inputs.dry-run == false }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm
+        run: |
+          cd packages/next-devtools-mcp-server
+          if [ "${{ inputs.dry-run }}" == "true" ]; then
+            npm publish --tag ${{ inputs.npm-tag }} --access public --dry-run
+          else
+            npm publish --tag ${{ inputs.npm-tag }} --access public --provenance
+          fi
+
+      - name: Create Git tag
+        if: ${{ inputs.dry-run == false && inputs.npm-tag == 'latest' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "mcp-server-v${{ inputs.version }}" -m "Release MCP Server v${{ inputs.version }}"
+          git push origin "mcp-server-v${{ inputs.version }}"

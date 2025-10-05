@@ -26,8 +26,8 @@ import type {
   HmrMessageSentToBrowser,
   TurbopackMessageSentToBrowser,
 } from '../../../../server/dev/hot-reloader-types'
-import type { McpErrorStateResponse } from '../../../../shared/lib/mcp-error-types'
-import type { McpPageMetadataResponse } from '../../../../shared/lib/mcp-page-metadata-types'
+import type { DevtoolsErrorStateResponse } from '../../../../shared/lib/devtools-error-types'
+import type { DevtoolsPageMetadataResponse } from '../../../../shared/lib/devtools-api-types'
 import { useUntrackedPathname } from '../../../components/navigation-untracked'
 import reportHmrLatency from '../../report-hmr-latency'
 import { TurbopackHmr } from '../turbopack-hot-reloader-common'
@@ -480,8 +480,8 @@ export function processMessage(
     }
     case HMR_MESSAGE_SENT_TO_BROWSER.REQUEST_CURRENT_ERROR_STATE: {
       const errorState = getSerializedOverlayState()
-      const response: McpErrorStateResponse = {
-        event: HMR_MESSAGE_SENT_TO_SERVER.MCP_ERROR_STATE_RESPONSE,
+      const response: DevtoolsErrorStateResponse = {
+        event: HMR_MESSAGE_SENT_TO_SERVER.DEVTOOLS_ERROR_STATE_RESPONSE,
         requestId: message.requestId,
         errorState,
         url: window.location.href,
@@ -491,8 +491,8 @@ export function processMessage(
     }
     case HMR_MESSAGE_SENT_TO_BROWSER.REQUEST_PAGE_METADATA: {
       const segmentTrieData = getSegmentTrieData()
-      const response: McpPageMetadataResponse = {
-        event: HMR_MESSAGE_SENT_TO_SERVER.MCP_PAGE_METADATA_RESPONSE,
+      const response: DevtoolsPageMetadataResponse = {
+        event: HMR_MESSAGE_SENT_TO_SERVER.DEVTOOLS_PAGE_METADATA_RESPONSE,
         requestId: message.requestId,
         segmentTrieData,
         url: window.location.href,
