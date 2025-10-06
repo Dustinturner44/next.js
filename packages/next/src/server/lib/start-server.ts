@@ -364,11 +364,6 @@ export async function startServer(
         process.env.__NEXT_EXPERIMENTAL_HTTPS = '1'
       }
 
-      if (isDev) {
-        const { registerDevServer } = require('../mcp/standalone-mcp-server')
-        registerDevServer(dir, port, formattedHostname)
-      }
-
       // Only load env and config in dev to for logging purposes
       let envInfo: string[] | undefined
       let experimentalFeatures: ConfiguredExperimentalFeature[] | undefined
