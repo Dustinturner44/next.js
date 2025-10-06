@@ -438,6 +438,15 @@ program
   )
   .usage('[directory] [options]')
 
+program
+  .command('mcp')
+  .description(
+    'Starts an MCP server using stdio transport. Manages sessions for all Next.js dev servers on this machine.'
+  )
+  .action(() => {
+    import('../cli/next-mcp-stdio.js')
+  })
+
 const internal = program
   .command('internal')
   .description(
