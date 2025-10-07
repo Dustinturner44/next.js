@@ -110,7 +110,7 @@ export const MiddlewareConfigInputSchema = z.object({
    */
   unstable_allowDynamic: z.union([GlobSchema, z.array(GlobSchema)]).optional(),
 
-  runtime: z.union([z.literal('nodejs'), z.literal('edge')]),
+  runtime: z.union([z.literal('nodejs'), z.literal('edge')]).optional(),
 }) satisfies zod.ZodType<MiddlewareConfigInput>
 
 export type MiddlewareConfigInput = {
