@@ -56,7 +56,6 @@ use turbopack_core::{
     diagnostics::DiagnosticExt,
     environment::NodeJsVersion,
     file_source::FileSource,
-    ident::Layer,
     issue::{
         CollectibleIssuesExt, Issue, IssueExt, IssueSeverity, IssueStage, OptionStyledString,
         StyledString,
@@ -67,6 +66,7 @@ use turbopack_core::{
         chunk_group_info::ChunkGroupEntry,
         export_usage::{OptionExportUsageInfo, compute_export_usage_info},
     },
+    new_layer,
     output::{OutputAsset, OutputAssets},
     resolve::{FindContextFileResult, find_context_file},
     source_map::OptionStringifiedSourceMap,
@@ -536,6 +536,15 @@ impl ProjectContainer {
         }
     }
 }
+
+new_layer!(MIDDLEWARE_LAYER, "middleware", "Middleware");
+new_layer!(MIDDLEWARE_EDGE_LAYER, "middleware-edge", "Edge Middleware");
+new_layer!(INSTRUMENTATION_LAYER, "instrumentation", "Instrumentation");
+new_layer!(
+    INSTRUMENTATION_EDGE_LAYER,
+    "instrumentation-edge",
+    "Edge Instrumentation"
+);
 
 #[turbo_tasks::value]
 pub struct Project {
@@ -1357,10 +1366,7 @@ impl Project {
                 self.execution_context(),
                 None, // root params can't be used in middleware
             ),
-            Layer::new_with_user_friendly_name(
-                rcstr!("middleware-edge"),
-                rcstr!("Edge Middleware"),
-            ),
+            *MIDDLEWARE_EDGE_LAYER,
         )))
     }
 
@@ -1419,7 +1425,7 @@ impl Project {
                 self.execution_context(),
                 None, // root params can't be used in middleware
             ),
-            Layer::new_with_user_friendly_name(rcstr!("middleware"), rcstr!("Middleware")),
+            *MIDDLEWARE_LAYER,
         )))
     }
 
@@ -1536,10 +1542,7 @@ impl Project {
                 self.execution_context(),
                 None, // root params can't be used in instrumentation
             ),
-            Layer::new_with_user_friendly_name(
-                rcstr!("instrumentation"),
-                rcstr!("Instrumentation"),
-            ),
+            *INSTRUMENTATION_LAYER,
         )))
     }
 
@@ -1599,10 +1602,7 @@ impl Project {
                 self.execution_context(),
                 None, // root params can't be used in instrumentation
             ),
-            Layer::new_with_user_friendly_name(
-                rcstr!("instrumentation-edge"),
-                rcstr!("Edge Instrumentation"),
-            ),
+            *INSTRUMENTATION_EDGE_LAYER,
         )))
     }
 
