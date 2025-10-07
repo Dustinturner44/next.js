@@ -9,6 +9,8 @@ import { createNext, FileRef } from 'e2e-utils'
 
 const urlsError = 'Please use only absolute URLs'
 
+console.log('noop, see if this passes in CI')
+
 describe('Middleware Runtime', () => {
   let next: NextInstance
 
