@@ -107,7 +107,7 @@ pub struct NextConfig {
     pub i18n: Option<I18NConfig>,
     cross_origin: Option<CrossOriginConfig>,
     pub dev_indicators: Option<DevIndicatorsConfig>,
-    output: Option<OutputType>,
+    pub output: Option<OutputType>,
     pub turbopack: Option<TurbopackConfig>,
     production_browser_source_maps: bool,
     output_file_tracing_includes: Option<serde_json::Value>,
@@ -287,16 +287,13 @@ pub struct I18NConfig {
 }
 
 #[derive(
-    Clone, Debug, PartialEq, Eq, Serialize, Deserialize, TraceRawVcs, NonLocalValue, OperationValue,
+    Clone, Debug, PartialEq, Serialize, Deserialize, TraceRawVcs, NonLocalValue, OperationValue,
 )]
 #[serde(rename_all = "kebab-case")]
 pub enum OutputType {
     Standalone,
     Export,
 }
-
-#[turbo_tasks::value(transparent)]
-pub struct OptionOutputType(Option<OutputType>);
 
 #[derive(
     Debug,
@@ -1866,11 +1863,6 @@ impl NextConfig {
     #[turbo_tasks::function]
     pub fn cross_origin(&self) -> Vc<OptionCrossOriginConfig> {
         Vc::cell(self.cross_origin.clone())
-    }
-
-    #[turbo_tasks::function]
-    pub fn output(&self) -> Vc<OptionOutputType> {
-        Vc::cell(self.output.clone())
     }
 
     #[turbo_tasks::function]
