@@ -1,5 +1,4 @@
-use turbo_rcstr::RcStr;
-use turbo_tasks::{ResolvedVc, TaskInput, ValueToString, Vc};
+use turbo_tasks::{ResolvedVc, TaskInput, Vc};
 
 use crate::{asset::Asset, ident::AssetIdent, reference::ModuleReferences};
 
@@ -18,13 +17,6 @@ pub trait Module: Asset {
     /// all properties of the [Module].
     #[turbo_tasks::function]
     fn ident(&self) -> Vc<AssetIdent>;
-
-    /// The identifier of the [Module] as string. It's expected to be unique and capture
-    /// all properties of the [Module].
-    #[turbo_tasks::function]
-    fn ident_string(self: Vc<Self>) -> Vc<RcStr> {
-        self.ident().to_string()
-    }
 
     /// Other [Module]s or [OutputAsset]s referenced from this [Module].
     // TODO refactor to avoid returning [OutputAsset]s here
