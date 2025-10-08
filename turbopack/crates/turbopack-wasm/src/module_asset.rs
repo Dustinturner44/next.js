@@ -63,7 +63,8 @@ impl WebAssemblyModuleAsset {
     #[turbo_tasks::function]
     async fn loader_as_module(self: Vc<Self>) -> Result<Vc<Box<dyn Module>>> {
         let this = self.await?;
-        let query = &this.source.ident().await?.query;
+        let ident = this.source.ident().await?;
+        let query = ident.query();
 
         let loader_source = if query == "?module" {
             compiling_loader_source(*this.source)

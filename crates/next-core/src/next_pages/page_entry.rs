@@ -91,7 +91,7 @@ pub async fn create_page_ssr_entry_module(
     // for PagesData we apply a ?server-data query parameter to avoid conflicts with the Page
     // module.
     // We need to copy that to all the modules we create.
-    let source_query = source_ident.query.clone();
+    let source_query: RcStr = source_ident.query().into();
 
     // Load the file from the next.js codebase.
     let mut source =

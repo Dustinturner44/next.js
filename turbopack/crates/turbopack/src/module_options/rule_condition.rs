@@ -246,13 +246,12 @@ impl RuleCondition {
                         return Ok(path.is_inside_ref(parent_path));
                     }
                     RuleCondition::ContentTypeStartsWith(start) => {
-                        let content_type = &source.ident().await?.content_type;
-                        return Ok(content_type
-                            .as_ref()
-                            .is_some_and(|ct| ct.starts_with(start.as_str())));
+                        let ident = source.ident().await?;
+                        let content_type = ident.content_type();
+                        return Ok(content_type.is_some_and(|ct| ct.starts_with(start.as_str())));
                     }
                     RuleCondition::ContentTypeEmpty => {
-                        return Ok(source.ident().await?.content_type.is_none());
+                        return Ok(source.ident().await?.content_type().is_none());
                     }
                     RuleCondition::ResourcePathGlob { glob, base } => {
                         return Ok(if let Some(rel_path) = base.get_relative_path_to(path) {
@@ -285,7 +284,7 @@ impl RuleCondition {
                     }
                     RuleCondition::ResourceQueryContains(query) => {
                         let ident = source.ident().await?;
-                        return Ok(ident.query.contains(query));
+                        return Ok(ident.query().contains(query));
                     }
                 }
             }

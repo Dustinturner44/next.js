@@ -62,8 +62,8 @@ impl Transition for NextEcmascriptClientReferenceTransition {
                 .join(&ident.path.path.replace("next/dist/esm/", "next/dist/"))?;
             Vc::upcast(FileSource::new_with_query_and_fragment(
                 path,
-                ident.query.clone(),
-                ident.fragment.clone(),
+                ident.query().into(),
+                ident.fragment().into(),
             ))
         } else {
             source

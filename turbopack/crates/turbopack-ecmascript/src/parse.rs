@@ -247,7 +247,7 @@ async fn parse_internal(
                             string,
                             &fs_path,
                             ident,
-                            source.ident().await?.query.clone(),
+                            source.ident().await?.query().into(),
                             file_path_hash,
                             source,
                             ty,

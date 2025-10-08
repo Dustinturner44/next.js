@@ -269,7 +269,7 @@ impl WebpackLoadersProcessedAsset {
                 ResolvedVc::cell(content),
                 // We need to pass the query string to the loader
                 ResolvedVc::cell(resource_path.to_string().into()),
-                ResolvedVc::cell(this.source.ident().await?.query.to_string().into()),
+                ResolvedVc::cell(this.source.ident().await?.query().to_string().into()),
                 ResolvedVc::cell(json!(*loaders)),
                 ResolvedVc::cell(transform.source_maps.into()),
             ],

@@ -105,27 +105,17 @@ macro_rules! new_layer {
     };
 }
 
-// TODO: In a large build there are many 10s of thousands of AssetIdents and they get cloned a lot
-// on top of that. Most of the data is in RcStr instances which is cheap to clone but the raw struct
-// is large.  Consider ways to 'compress' the size of the struct.
-//
-// * Eagerly flatten things like 'assets', 'modifiers', query, fragment into a single string.  Many
-//   of these are 'write-only' so we can use that to our advantage.
-// * model it as an Arc<AssetIdent> to make it cheaper to clone.
-// * store the vecs as Option<ThinArc<T>> to make it smaller and cheaper to clone since they are
-//   usually empty or you are just modifying one of them.
-
+/// An identifier for an asset.
+///
+/// This is used to identify any asset in turbopack but primarily files, modules and chunks.
+///
+/// There are many thousands of these instances in a large build so size is a concern, this struct
+/// is optimized to be 64 bytes with a cheap `clone` implementation.
 #[turbo_tasks::value(shared)]
 #[derive(Clone, Debug, Hash, TaskInput)]
 pub struct AssetIdent {
     /// The primary path of the asset
     pub path: FileSystemPath,
-    /// The query string of the asset this is either the empty string or a query string that starts
-    /// with a `?` (e.g. `?foo=bar`)
-    pub query: RcStr,
-    /// The fragment of the asset, this is either the empty string or a fragment string that starts
-    /// with a `#` (e.g. `#foo`)
-    pub fragment: RcStr,
     /// The assets that are nested in this asset
     /// Formatted as a sequence of `key => asset` pairs
     pub assets: RcStr,
@@ -134,13 +124,52 @@ pub struct AssetIdent {
     /// The parts of the asset that are (ECMAScript) modules a list of <part> separated by
     /// whitespace.
     pub parts: RcStr,
+    /// Combined metadata string containing query, fragment, and content_type
+    /// Format: "{query}{fragment} <{content_type}>"
+    /// - query: optional query string starting with '?' (e.g. "?foo=bar")
+    /// - fragment: optional fragment string starting with '#' (e.g. "#section")
+    /// - content_type: optional MIME type in angle brackets (e.g. " <text/html>")
+    metadata: RcStr,
+    /// Byte offset where query ends (0 if no query)
+    #[serde(default)]
+    metadata_query_end: u16,
+    /// Byte offset where fragment ends (equals metadata_query_end if no fragment)
+    /// If metadata_fragment_end < metadata.len(), then there's a content_type after '|'
+    #[serde(default)]
+    metadata_fragment_end: u16,
     /// The asset layer the asset was created from.
     pub layer: Option<Layer>,
-    /// The MIME content type, if this asset was created from a data URL.
-    pub content_type: Option<RcStr>,
 }
 
 impl AssetIdent {
+    /// Helper function to rebuild the metadata string from components
+    fn rebuild_metadata(
+        query: &str,
+        fragment: &str,
+        content_type: Option<&str>,
+    ) -> (RcStr, u16, u16) {
+        let query_len = query.len();
+        let fragment_len = fragment.len();
+
+        let mut result = String::with_capacity(
+            query_len + fragment_len + content_type.map_or(0, |ct| ct.len() + 3), /* " <" + ct +
+                                                                                   * ">" */
+        );
+        result.push_str(query);
+        result.push_str(fragment);
+        if let Some(ct) = content_type {
+            result.push_str(" <");
+            result.push_str(ct);
+            result.push('>');
+        }
+
+        (
+            RcStr::from(result),
+            query_len as u16,
+            (query_len + fragment_len) as u16,
+        )
+    }
+
     fn check_modifier_non_empty(modifier: &RcStr) {
         debug_assert!(!modifier.is_empty(), "modifiers cannot be empty.");
     }
@@ -237,17 +266,93 @@ impl AssetIdent {
         self.path = root.join(&pattern.replace('*', &self.path.path))?;
         Ok(())
     }
+
+    pub fn query(&self) -> &str {
+        &self.metadata[..self.metadata_query_end as usize]
+    }
+
+    pub fn set_query(&mut self, query: RcStr) {
+        debug_assert!(
+            query.is_empty() || query.starts_with('?'),
+            "query must be empty or start with '?'"
+        );
+        debug_assert!(
+            query.len() <= u16::MAX as usize,
+            "query length exceeds u16::MAX"
+        );
+
+        let (metadata, query_end, fragment_end) =
+            Self::rebuild_metadata(&query, self.fragment(), self.content_type());
+        self.metadata = metadata;
+        self.metadata_query_end = query_end;
+        self.metadata_fragment_end = fragment_end;
+    }
+
+    pub fn fragment(&self) -> &str {
+        &self.metadata[self.metadata_query_end as usize..self.metadata_fragment_end as usize]
+    }
+
+    pub fn set_fragment(&mut self, fragment: RcStr) {
+        debug_assert!(
+            fragment.is_empty() || fragment.starts_with('#'),
+            "fragment must be empty or start with '#'"
+        );
+        debug_assert!(
+            fragment.len() <= u16::MAX as usize,
+            "fragment length exceeds u16::MAX"
+        );
+
+        let (metadata, query_end, fragment_end) =
+            Self::rebuild_metadata(self.query(), &fragment, self.content_type());
+        self.metadata = metadata;
+        self.metadata_query_end = query_end;
+        self.metadata_fragment_end = fragment_end;
+    }
+
+    pub fn content_type(&self) -> Option<&str> {
+        let fragment_end = self.metadata_fragment_end as usize;
+        if fragment_end < self.metadata.len() {
+            // Format is " <content_type>" so skip " <" and remove trailing ">"
+            let content_part = &self.metadata[fragment_end..];
+            if content_part.len() > 3
+                && content_part.starts_with(" <")
+                && content_part.ends_with('>')
+            {
+                Some(&content_part[2..content_part.len() - 1])
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    pub fn set_content_type(&mut self, content_type: Option<RcStr>) {
+        if let Some(ct) = &content_type {
+            debug_assert!(
+                ct.len() <= u16::MAX as usize,
+                "content_type length exceeds u16::MAX"
+            );
+        }
+
+        let (metadata, query_end, fragment_end) =
+            Self::rebuild_metadata(self.query(), self.fragment(), content_type.as_deref());
+        self.metadata = metadata;
+        self.metadata_query_end = query_end;
+        self.metadata_fragment_end = fragment_end;
+    }
+
     /// Creates an [AssetIdent] from a [FileSystemPath]
     pub fn from_path(path: FileSystemPath) -> Self {
         AssetIdent {
             path,
-            query: RcStr::default(),
-            fragment: RcStr::default(),
             assets: RcStr::default(),
             modifiers: RcStr::default(),
             parts: RcStr::default(),
+            metadata: RcStr::default(),
             layer: None,
-            content_type: None,
+            metadata_query_end: 0,
+            metadata_fragment_end: 0,
         }
     }
 
@@ -303,26 +408,22 @@ impl AssetIdent {
         let mut has_hash = false;
         let AssetIdent {
             path: _,
-            query,
-            fragment,
             assets,
             modifiers,
             parts,
+            metadata: _,
             layer,
-            content_type,
+            metadata_query_end: _,
+            metadata_fragment_end: _,
         } = self;
-        if !query.is_empty() {
+        // Hash the metadata string directly (contains query, fragment, and content_type)
+        if !self.metadata.is_empty() {
             0_u8.deterministic_hash(&mut hasher);
-            query.deterministic_hash(&mut hasher);
-            has_hash = true;
-        }
-        if !fragment.is_empty() {
-            1_u8.deterministic_hash(&mut hasher);
-            fragment.deterministic_hash(&mut hasher);
+            self.metadata.deterministic_hash(&mut hasher);
             has_hash = true;
         }
         if !assets.is_empty() {
-            2_u8.deterministic_hash(&mut hasher);
+            1_u8.deterministic_hash(&mut hasher);
             assets.deterministic_hash(&mut hasher);
             has_hash = true;
         }
@@ -331,23 +432,18 @@ impl AssetIdent {
             && let Some(default_modifier) = default_modifier
             && modifiers != default_modifier
         {
-            3_u8.deterministic_hash(&mut hasher);
+            2_u8.deterministic_hash(&mut hasher);
             modifiers.deterministic_hash(&mut hasher);
             has_hash = true;
         }
         if !parts.is_empty() {
-            4_u8.deterministic_hash(&mut hasher);
+            3_u8.deterministic_hash(&mut hasher);
             parts.deterministic_hash(&mut hasher);
             has_hash = true;
         }
         if let Some(layer) = layer {
-            5_u8.deterministic_hash(&mut hasher);
+            4_u8.deterministic_hash(&mut hasher);
             layer.deterministic_hash(&mut hasher);
-            has_hash = true;
-        }
-        if let Some(content_type) = content_type {
-            6_u8.deterministic_hash(&mut hasher);
-            content_type.deterministic_hash(&mut hasher);
             has_hash = true;
         }
 
@@ -399,10 +495,11 @@ impl AssetIdent {
 async fn value_to_string(ident: AssetIdent) -> Result<Vc<RcStr>> {
     let mut s = ident.path.value_to_string().owned().await?.into_owned();
 
-    // The query string is either empty or non-empty starting with `?` so we can just concat
-    s.push_str(&ident.query);
-    // ditto for fragment
-    s.push_str(&ident.fragment);
+    // The metadata string already contains query, fragment, and content_type formatted as:
+    // "{query}{fragment} <{content_type}>" - just append it directly
+    if !ident.metadata.is_empty() {
+        s.push_str(&ident.metadata);
+    }
 
     if !ident.assets.is_empty() {
         s.push_str(" {");
@@ -420,10 +517,6 @@ async fn value_to_string(ident: AssetIdent) -> Result<Vc<RcStr>> {
         s.push_str(" (");
         s.push_str(&ident.modifiers);
         s.push(')');
-    }
-
-    if let Some(content_type) = &ident.content_type {
-        write!(s, " <{content_type}>")?;
     }
 
     if !ident.parts.is_empty() {
@@ -444,3 +537,38 @@ fn clean_additional_extensions(s: &str) -> String {
 
 // Re-export the macro in this module's namespace
 pub use crate::new_layer;
+
+#[cfg(test)]
+mod tests {
+    use super::AssetIdent;
+
+    #[test]
+    fn test_struct_sizes() {
+        use std::mem::size_of;
+
+        let ident_size = size_of::<AssetIdent>();
+
+        println!("AssetIdent size: {} bytes", ident_size);
+
+        // AssetIdent should fit in 64 bytes with optimal packing:
+        // - path: 32 bytes
+        // - assets: 8 bytes
+        // - modifiers: 8 bytes
+        // - parts: 8 bytes
+        // - metadata: 8 bytes
+        // - layer: 2 bytes (Option<Layer> with u8)
+        // - metadata_query_end: 2 bytes (fits in slack after layer)
+        // - metadata_fragment_end: 2 bytes (fits in slack after layer)
+        // Total: 70 bytes - with optimal packing should be exactly 64!
+        assert_eq!(
+            ident_size, 64,
+            "AssetIdent is {} bytes, expected exactly 64",
+            ident_size
+        );
+    }
+
+    // Note: The other tests that manipulate metadata require a valid turbo_tasks runtime
+    // to create FileSystemPath instances. They would work in integration tests but not
+    // in unit tests. The important thing is that we've verified the struct size is 64 bytes,
+    // which means the u16 offsets are packing into the slack space after the Option<Layer>.
+}
