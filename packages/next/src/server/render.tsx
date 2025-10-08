@@ -257,7 +257,7 @@ export type RenderOptsPartial = {
   assetQueryString?: string
   resolvedUrl?: string
   resolvedAsPath?: string
-  setIsrStatus?: (key: string, value: boolean) => void
+  setIsrStatus?: (key: string, value: boolean | undefined) => void
   clientReferenceManifest?: DeepReadonly<ClientReferenceManifest>
   nextFontManifest?: DeepReadonly<NextFontManifest>
   distDir?: string
