@@ -120,6 +120,15 @@ function checkDeprecations(
     silent
   )
 
+  if (userConfig.images?.domains?.length) {
+    warnOptionHasBeenDeprecated(
+      userConfig,
+      'images.domains',
+      `\`images.domains\` is deprecated in favor of \`images.remotePatterns\`. Please update ${configFileName} to protect your application from malicious users.`,
+      silent
+    )
+  }
+
   // i18n deprecation for App Router
   if (userConfig.i18n) {
     const hasAppDir = Boolean(findDir(dir, 'app'))
