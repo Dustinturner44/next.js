@@ -42,7 +42,7 @@ impl DataUriSource {
 impl Source for DataUriSource {
     #[turbo_tasks::function]
     async fn ident(&self) -> Result<Vc<AssetIdent>> {
-        let content_type = self.media_type.split(";").next().unwrap().into();
+        let content_type = self.media_type.split(";").next().unwrap();
         let filename = format!(
             "data:{}",
             &encode_hex(hash_xxh3_hash64((
@@ -52,7 +52,7 @@ impl Source for DataUriSource {
             )))[0..6]
         );
         let mut ident = AssetIdent::from_path(self.lookup_path.join(&filename)?);
-        ident.set_content_type(Some(content_type));
+        ident.set_content_type(content_type);
         Ok(ident.cell())
     }
 }

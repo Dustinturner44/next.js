@@ -134,7 +134,8 @@ pub struct AssetIdent {
     #[serde(default)]
     metadata_query_end: u16,
     /// Byte offset where fragment ends (equals metadata_query_end if no fragment)
-    /// If metadata_fragment_end < metadata.len(), then there's a content_type after '|'
+    /// If metadata_fragment_end < metadata.len(), then there's a content_type after it " <
+    /// content_type >"
     #[serde(default)]
     metadata_fragment_end: u16,
     /// The asset layer the asset was created from.
@@ -152,8 +153,8 @@ impl AssetIdent {
         let fragment_len = fragment.len();
 
         let mut result = String::with_capacity(
-            query_len + fragment_len + content_type.map_or(0, |ct| ct.len() + 3), /* " <" + ct +
-                                                                                   * ">" */
+            // +3 for the " <" + ct + ">"
+            query_len + fragment_len + content_type.map_or(0, |ct| ct.len() + 3),
         );
         result.push_str(query);
         result.push_str(fragment);
@@ -327,16 +328,14 @@ impl AssetIdent {
         }
     }
 
-    pub fn set_content_type(&mut self, content_type: Option<RcStr>) {
-        if let Some(ct) = &content_type {
-            debug_assert!(
-                ct.len() <= u16::MAX as usize,
-                "content_type length exceeds u16::MAX"
-            );
-        }
+    pub fn set_content_type(&mut self, content_type: &str) {
+        debug_assert!(
+            content_type.len() <= u16::MAX as usize,
+            "content_type length exceeds u16::MAX"
+        );
 
         let (metadata, query_end, fragment_end) =
-            Self::rebuild_metadata(self.query(), self.fragment(), content_type.as_deref());
+            Self::rebuild_metadata(self.query(), self.fragment(), Some(content_type));
         self.metadata = metadata;
         self.metadata_query_end = query_end;
         self.metadata_fragment_end = fragment_end;
@@ -493,13 +492,28 @@ impl AssetIdent {
 #[turbo_tasks::function]
 
 async fn value_to_string(ident: AssetIdent) -> Result<Vc<RcStr>> {
-    let mut s = ident.path.value_to_string().owned().await?.into_owned();
+    let path = ident.path.value_to_string().await?;
+    let mut s = String::with_capacity(
+        path.len()
+            + ident.metadata.len()
+            + ident.parts.len()
+            + if ident.assets.is_empty() {
+                0
+            } else {
+                ident.assets.len() + 3
+            }
+            + if ident.modifiers.is_empty() {
+                0
+            } else {
+                ident.modifiers.len() + 3
+            }
+            + ident.layer.map_or(0, |layer| layer.name().len() + 3),
+    );
+    s.push_str(&path);
 
     // The metadata string already contains query, fragment, and content_type formatted as:
     // "{query}{fragment} <{content_type}>" - just append it directly
-    if !ident.metadata.is_empty() {
-        s.push_str(&ident.metadata);
-    }
+    s.push_str(&ident.metadata);
 
     if !ident.assets.is_empty() {
         s.push_str(" {");
@@ -519,9 +533,7 @@ async fn value_to_string(ident: AssetIdent) -> Result<Vc<RcStr>> {
         s.push(')');
     }
 
-    if !ident.parts.is_empty() {
-        s.push_str(&ident.parts);
-    }
+    s.push_str(&ident.parts);
 
     Ok(Vc::cell(s.into()))
 }
