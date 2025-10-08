@@ -541,7 +541,7 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
 
         Ok(EcmascriptModuleContent::new_without_analysis(
             parsed,
-            self.ident().owned().await?,
+            self.ident().await?,
             this.options.await?.specified_module_type,
             generate_source_map,
         ))
@@ -1062,7 +1062,7 @@ impl EcmascriptModuleContent {
 
         let content = process_parse_result(
             *parsed,
-            module.ident().owned().await?,
+            module.ident().await?,
             *specified_module_type,
             *generate_source_map,
             *original_source_map,
@@ -1078,7 +1078,7 @@ impl EcmascriptModuleContent {
     #[turbo_tasks::function]
     pub async fn new_without_analysis(
         parsed: Vc<ParseResult>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         specified_module_type: SpecifiedModuleType,
         generate_source_map: bool,
     ) -> Result<Vc<Self>> {
@@ -1148,7 +1148,7 @@ impl EcmascriptModuleContent {
 
                     let result = process_parse_result(
                         *parsed,
-                        module.ident().owned().await?,
+                        module.ident().await?,
                         *specified_module_type,
                         *generate_source_map,
                         *original_source_map,
@@ -1718,7 +1718,7 @@ struct ScopeHoistingOptions<'a> {
 
 async fn process_parse_result(
     parsed: Option<ResolvedVc<ParseResult>>,
-    ident: AssetIdent,
+    ident: ReadRef<AssetIdent>,
     specified_module_type: SpecifiedModuleType,
     generate_source_map: bool,
     original_source_map: Option<ResolvedVc<Box<dyn GenerateSourceMap>>>,

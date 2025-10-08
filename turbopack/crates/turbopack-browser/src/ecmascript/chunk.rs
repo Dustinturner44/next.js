@@ -42,7 +42,7 @@ impl EcmascriptBrowserChunk {
         let this = self.await?;
         Ok(SourceMapAsset::new(
             Vc::upcast(*this.chunking_context),
-            self.ident_for_path().owned().await?,
+            self.ident_for_path().await?,
             Vc::upcast(self),
         ))
     }
@@ -101,7 +101,7 @@ impl OutputAsset for EcmascriptBrowserChunk {
         let this = self.await?;
         Ok(this.chunking_context.chunk_path(
             Some(Vc::upcast(self)),
-            self.ident_for_path().owned().await?,
+            self.ident_for_path().await?,
             None,
             rcstr!(".js"),
         ))

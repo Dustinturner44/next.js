@@ -15,8 +15,8 @@ use swc_core::{
 };
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
-    NonLocalValue, ResolvedVc, TaskInput, TryJoinIterExt, ValueDefault, Vc, trace::TraceRawVcs,
-    util::WrapFuture,
+    NonLocalValue, ReadRef, ResolvedVc, TaskInput, TryJoinIterExt, ValueDefault, Vc,
+    trace::TraceRawVcs, util::WrapFuture,
 };
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
@@ -190,7 +190,7 @@ impl NextSegmentConfig {
 /// An issue that occurred while parsing the app segment config.
 #[turbo_tasks::value(shared)]
 pub struct NextSegmentConfigParsingIssue {
-    ident: AssetIdent,
+    ident: ReadRef<AssetIdent>,
     key: RcStr,
     error: RcStr,
     detail: Option<ResolvedVc<StyledString>>,
@@ -202,7 +202,7 @@ pub struct NextSegmentConfigParsingIssue {
 impl NextSegmentConfigParsingIssue {
     #[turbo_tasks::function]
     pub fn new(
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         key: RcStr,
         error: RcStr,
         detail: Option<ResolvedVc<StyledString>>,
@@ -548,7 +548,7 @@ async fn invalid_config(
     };
 
     NextSegmentConfigParsingIssue::new(
-        source.ident().owned().await?,
+        source.ident().await?,
         key.into(),
         error,
         detail,

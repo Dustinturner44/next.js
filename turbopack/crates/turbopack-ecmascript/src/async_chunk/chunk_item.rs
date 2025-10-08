@@ -55,7 +55,7 @@ impl AsyncLoaderChunkItem {
             }
         }
         Ok(self.chunking_context.chunk_group_assets(
-            module.inner.ident().owned().await?,
+            module.inner.ident().await?,
             ChunkGroup::Async(ResolvedVc::upcast(module.inner)),
             *self.module_graph,
             module.availability_info,

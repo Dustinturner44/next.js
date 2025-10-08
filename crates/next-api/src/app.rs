@@ -1237,7 +1237,7 @@ impl AppEndpoint {
         // We only need the client runtime entries for pages not for Route Handlers
         let (availability_info, client_shared_chunks) = if is_app_page {
             let client_shared_chunk_group = get_app_client_shared_chunk_group(
-                client_shared_chunks_ident(project).owned().await?,
+                client_shared_chunks_ident(project).await?,
                 this.app_project.client_runtime_entries(),
                 *module_graphs.full,
                 *client_chunking_context,
@@ -1329,7 +1329,7 @@ impl AppEndpoint {
         let polyfill_output_path = client_chunking_context
             .chunk_path(
                 Some(Vc::upcast(polyfill_source)),
-                polyfill_source.ident().owned().await?,
+                polyfill_source.ident().await?,
                 None,
                 rcstr!(".js"),
             )
@@ -1741,7 +1741,7 @@ impl AppEndpoint {
                     availability_info,
                 } = *chunking_context
                     .chunk_group(
-                        server_action_manifest_loader.ident().owned().await?,
+                        server_action_manifest_loader.ident().await?,
                         ChunkGroup::Entry(
                             [ResolvedVc::upcast(server_action_manifest_loader)]
                                 .into_iter()
@@ -1754,7 +1754,7 @@ impl AppEndpoint {
 
                 let chunk_group = chunking_context
                     .evaluated_chunk_group_assets(
-                        app_entry.rsc_entry.ident().owned().await?,
+                        app_entry.rsc_entry.ident().await?,
                         ChunkGroup::Entry(vec![app_entry.rsc_entry]),
                         module_graph,
                         availability_info,
@@ -1799,9 +1799,7 @@ impl AppEndpoint {
                             availability_info,
                         } = *chunking_context
                             .chunk_group(
-                                server_utils_ident(this.app_project.project())
-                                    .owned()
-                                    .await?,
+                                server_utils_ident(this.app_project.project()).await?,
                                 // TODO this should be ChunkGroup::Shared
                                 ChunkGroup::Entry(server_utils),
                                 module_graph,
@@ -1851,7 +1849,7 @@ impl AppEndpoint {
                                 availability_info,
                             } = *chunking_context
                                 .chunk_group(
-                                    server_component.ident().owned().await?,
+                                    server_component.ident().await?,
                                     // TODO this should be ChunkGroup::Shared
                                     ChunkGroup::Entry(vec![ResolvedVc::upcast(
                                         server_component.await?.module,
@@ -1881,7 +1879,7 @@ impl AppEndpoint {
                             availability_info,
                         } = *chunking_context
                             .chunk_group(
-                                server_action_manifest_loader.ident().owned().await?,
+                                server_action_manifest_loader.ident().await?,
                                 ChunkGroup::Entry(vec![ResolvedVc::upcast(
                                     server_action_manifest_loader,
                                 )]),

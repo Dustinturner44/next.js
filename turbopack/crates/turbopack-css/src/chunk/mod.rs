@@ -314,7 +314,7 @@ impl OutputAsset for CssChunk {
 
         Ok(self.await?.chunking_context.chunk_path(
             Some(Vc::upcast(self)),
-            ident.owned().await?,
+            ident.await?,
             None,
             rcstr!(".css"),
         ))

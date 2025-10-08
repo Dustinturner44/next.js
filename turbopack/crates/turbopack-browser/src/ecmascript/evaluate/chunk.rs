@@ -38,7 +38,7 @@ use crate::{
 #[turbo_tasks::value(shared)]
 pub(crate) struct EcmascriptBrowserEvaluateChunk {
     chunking_context: ResolvedVc<BrowserChunkingContext>,
-    ident: AssetIdent,
+    ident: ReadRef<AssetIdent>,
     other_chunks: ResolvedVc<OutputAssets>,
     evaluatable_assets: ResolvedVc<EvaluatableAssets>,
     // TODO(sokra): It's weird to use ModuleGraph here, we should convert evaluatable_assets to a
@@ -52,7 +52,7 @@ impl EcmascriptBrowserEvaluateChunk {
     #[turbo_tasks::function]
     pub fn new(
         chunking_context: ResolvedVc<BrowserChunkingContext>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         other_chunks: ResolvedVc<OutputAssets>,
         evaluatable_assets: ResolvedVc<EvaluatableAssets>,
         module_graph: ResolvedVc<ModuleGraph>,
@@ -202,7 +202,7 @@ impl EcmascriptBrowserEvaluateChunk {
 
     #[turbo_tasks::function]
     async fn ident_for_path(&self) -> Result<Vc<AssetIdent>> {
-        let mut ident = self.ident.clone();
+        let mut ident = ReadRef::into_owned(self.ident.clone());
 
         let mut modifiers = vec![rcstr!("ecmascript browser evaluate chunk")];
 
@@ -234,7 +234,7 @@ impl EcmascriptBrowserEvaluateChunk {
         let this = self.await?;
         Ok(SourceMapAsset::new(
             Vc::upcast(*this.chunking_context),
-            self.ident_for_path().owned().await?,
+            self.ident_for_path().await?,
             Vc::upcast(self),
         ))
     }
@@ -253,7 +253,7 @@ impl OutputAsset for EcmascriptBrowserEvaluateChunk {
     #[turbo_tasks::function]
     async fn path(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
         let this = self.await?;
-        let ident = self.ident_for_path().owned().await?;
+        let ident = self.ident_for_path().await?;
         Ok(this.chunking_context.chunk_path(
             Some(Vc::upcast(self)),
             ident,

@@ -5,6 +5,7 @@ use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     asset::{Asset, AssetContent},
     chunk::{Chunk, ChunkingContext},
+    ident::AssetIdent,
     introspect::{Introspectable, IntrospectableChildren},
     output::{OutputAsset, OutputAssets},
     source_map::{GenerateSourceMap, OptionStringifiedSourceMap, SourceMapAsset},
@@ -39,16 +40,18 @@ impl EcmascriptBuildNodeChunk {
 
     #[turbo_tasks::function]
     async fn source_map(self: Vc<Self>) -> Result<Vc<SourceMapAsset>> {
-        let this = self.await?;
         Ok(SourceMapAsset::new(
-            Vc::upcast(*this.chunking_context),
-            {
-                let mut ident = this.chunk.ident().owned().await?;
-                ident.add_modifier(modifier());
-                ident
-            },
+            Vc::upcast(*self.await?.chunking_context),
+            self.ident_for_path().await?,
             Vc::upcast(self),
         ))
+    }
+
+    #[turbo_tasks::function]
+    async fn ident_for_path(&self) -> Result<Vc<AssetIdent>> {
+        let mut ident = self.chunk.ident().owned().await?;
+        ident.add_modifier(rcstr!("ecmascript build node chunk"));
+        Ok(ident.cell())
     }
 }
 
@@ -58,10 +61,6 @@ impl ValueToString for EcmascriptBuildNodeChunk {
     fn to_string(&self) -> Vc<RcStr> {
         Vc::cell(rcstr!("Ecmascript Build Node Chunk"))
     }
-}
-
-fn modifier() -> RcStr {
-    rcstr!("ecmascript build node chunk")
 }
 
 #[turbo_tasks::value_impl]
@@ -83,11 +82,13 @@ impl OutputAsset for EcmascriptBuildNodeChunk {
     #[turbo_tasks::function]
     async fn path(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
         let this = self.await?;
-        let mut ident = this.chunk.ident().owned().await?;
-        ident.add_modifier(modifier());
-        Ok(this
-            .chunking_context
-            .chunk_path(Some(Vc::upcast(self)), ident, None, rcstr!(".js")))
+        let ident = self.ident_for_path();
+        Ok(this.chunking_context.chunk_path(
+            Some(Vc::upcast(self)),
+            ident.await?,
+            None,
+            rcstr!(".js"),
+        ))
     }
 
     #[turbo_tasks::function]

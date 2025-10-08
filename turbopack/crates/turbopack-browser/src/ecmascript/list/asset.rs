@@ -1,7 +1,9 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use turbo_rcstr::{RcStr, rcstr};
-use turbo_tasks::{NonLocalValue, ResolvedVc, TaskInput, ValueToString, Vc, trace::TraceRawVcs};
+use turbo_tasks::{
+    NonLocalValue, ReadRef, ResolvedVc, TaskInput, ValueToString, Vc, trace::TraceRawVcs,
+};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -28,7 +30,7 @@ use crate::BrowserChunkingContext;
 #[turbo_tasks::value(shared)]
 pub(crate) struct EcmascriptDevChunkList {
     pub(super) chunking_context: ResolvedVc<BrowserChunkingContext>,
-    pub(super) ident: AssetIdent,
+    pub(super) ident: ReadRef<AssetIdent>,
     pub(super) evaluatable_assets: ResolvedVc<EvaluatableAssets>,
     pub(super) chunks: ResolvedVc<OutputAssets>,
     pub(super) source: EcmascriptDevChunkListSource,
@@ -40,7 +42,7 @@ impl EcmascriptDevChunkList {
     #[turbo_tasks::function]
     pub fn new(
         chunking_context: ResolvedVc<BrowserChunkingContext>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         evaluatable_assets: ResolvedVc<EvaluatableAssets>,
         chunks: ResolvedVc<OutputAssets>,
         source: EcmascriptDevChunkListSource,
@@ -74,7 +76,7 @@ impl OutputAsset for EcmascriptDevChunkList {
     #[turbo_tasks::function]
     async fn path(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
         let this = self.await?;
-        let mut ident = this.ident.clone();
+        let mut ident = ReadRef::into_owned(this.ident.clone());
         ident.add_modifier(rcstr!("ecmascript dev chunk list"));
 
         match this.source {
@@ -87,9 +89,12 @@ impl OutputAsset for EcmascriptDevChunkList {
         // We must not include the actual chunks idents as part of the chunk list's
         // ident, because it must remain stable whenever a chunk is added or
         // removed from the list.
-        Ok(this
-            .chunking_context
-            .chunk_path(Some(Vc::upcast(self)), ident, None, rcstr!(".js")))
+        Ok(this.chunking_context.chunk_path(
+            Some(Vc::upcast(self)),
+            ReadRef::new_owned(ident),
+            None,
+            rcstr!(".js"),
+        ))
     }
 
     #[turbo_tasks::function]

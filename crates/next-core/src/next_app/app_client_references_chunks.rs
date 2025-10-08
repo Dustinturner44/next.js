@@ -1,7 +1,7 @@
 use anyhow::Result;
 use tracing::Instrument;
 use turbo_rcstr::rcstr;
-use turbo_tasks::{FxIndexMap, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, Vc};
+use turbo_tasks::{FxIndexMap, ReadRef, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, Vc};
 use turbopack_core::{
     chunk::{ChunkGroupResult, ChunkingContext, availability_info::AvailabilityInfo},
     module::Module,
@@ -215,7 +215,7 @@ pub async fn get_app_client_references_chunks(
                             {
                                 let mut ident = (*base_ident).clone();
                                 ident.add_modifier(rcstr!("ssr modules"));
-                                ident
+                                ReadRef::new_owned(ident)
                             },
                             ChunkGroup::IsolatedMerged {
                                 parent: parent_chunk_group,
@@ -257,7 +257,7 @@ pub async fn get_app_client_references_chunks(
                         {
                             let mut ident = (*base_ident).clone();
                             ident.add_modifier(rcstr!("client modules"));
-                            ident
+                            ReadRef::new_owned(ident)
                         },
                         ChunkGroup::IsolatedMerged {
                             parent: parent_chunk_group,

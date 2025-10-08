@@ -1,6 +1,6 @@
 use anyhow::Result;
 use turbo_rcstr::{RcStr, rcstr};
-use turbo_tasks::{ResolvedVc, Vc};
+use turbo_tasks::{ReadRef, ResolvedVc, Vc};
 use turbo_tasks_fs::FileSystemPath;
 
 use super::{Issue, IssueSeverity, IssueSource, IssueStage, OptionStyledString, StyledString};
@@ -9,7 +9,7 @@ use crate::{ident::AssetIdent, issue::OptionIssueSource};
 #[turbo_tasks::value(shared)]
 pub struct AnalyzeIssue {
     pub severity: IssueSeverity,
-    pub source_ident: AssetIdent,
+    pub source_ident: ReadRef<AssetIdent>,
     pub title: ResolvedVc<RcStr>,
     pub message: ResolvedVc<StyledString>,
     pub code: Option<RcStr>,
@@ -21,7 +21,7 @@ impl AnalyzeIssue {
     #[turbo_tasks::function]
     pub fn new(
         severity: IssueSeverity,
-        source_ident: AssetIdent,
+        source_ident: ReadRef<AssetIdent>,
         title: ResolvedVc<RcStr>,
         message: ResolvedVc<StyledString>,
         code: Option<RcStr>,

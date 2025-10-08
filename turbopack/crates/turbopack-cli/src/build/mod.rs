@@ -9,7 +9,9 @@ use anyhow::{Context, Result, bail};
 use rustc_hash::FxHashSet;
 use tracing::Instrument;
 use turbo_rcstr::RcStr;
-use turbo_tasks::{ResolvedVc, TransientInstance, TryJoinIterExt, TurboTasks, Vc, apply_effects};
+use turbo_tasks::{
+    ReadRef, ResolvedVc, TransientInstance, TryJoinIterExt, TurboTasks, Vc, apply_effects,
+};
 use turbo_tasks_backend::{
     BackendOptions, NoopBackingStorage, TurboTasksBackend, noop_backing_storage,
 };
@@ -426,7 +428,7 @@ async fn build_internal(
                             Target::Browser => {
                                 *chunking_context
                                     .evaluated_chunk_group_assets(
-                                        AssetIdent::from_path(
+                                        ReadRef::new_owned(AssetIdent::from_path(
                                             build_output_root
                                                 .join(
                                                     ecmascript
@@ -437,7 +439,7 @@ async fn build_internal(
                                                         .unwrap(),
                                                 )?
                                                 .with_extension("entry.js"),
-                                        ),
+                                        )),
                                         ChunkGroup::Entry(
                                             [ResolvedVc::upcast(ecmascript)].into_iter().collect(),
                                         ),

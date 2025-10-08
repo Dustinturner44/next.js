@@ -2,7 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
-    FxIndexSet, NonLocalValue, ResolvedVc, ValueToString, Vc, debug::ValueDebugFormat,
+    FxIndexSet, NonLocalValue, ReadRef, ResolvedVc, ValueToString, Vc, debug::ValueDebugFormat,
     trace::TraceRawVcs,
 };
 use turbo_tasks_fs::{File, FileSystemPath};
@@ -23,7 +23,7 @@ enum PathType {
     },
     FromIdent {
         chunking_context: ResolvedVc<Box<dyn ChunkingContext>>,
-        ident_for_path: AssetIdent,
+        ident_for_path: ReadRef<AssetIdent>,
     },
 }
 
@@ -39,7 +39,7 @@ impl SourceMapAsset {
     #[turbo_tasks::function]
     pub fn new(
         chunking_context: ResolvedVc<Box<dyn ChunkingContext>>,
-        ident_for_path: AssetIdent,
+        ident_for_path: ReadRef<AssetIdent>,
         generate_source_map: ResolvedVc<Box<dyn GenerateSourceMap>>,
     ) -> Vc<Self> {
         SourceMapAsset {

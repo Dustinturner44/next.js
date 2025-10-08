@@ -33,7 +33,7 @@ impl IssueCollector {
                 } else {
                     issue.severity
                 },
-                issue.source.ident().owned().await?,
+                issue.source.ident().await?,
                 Vc::cell(issue.title),
                 issue.message.cell(),
                 issue.code,
@@ -55,7 +55,7 @@ impl IssueCollector {
         Ok(match issue {
             Some(issue) => Some(AnalyzeIssue::new(
                 issue.severity,
-                issue.source.ident().owned().await?,
+                issue.source.ident().await?,
                 Vc::cell(issue.title),
                 issue.message.cell(),
                 issue.code,

@@ -653,7 +653,7 @@ async fn process_default_internal(
                                     // returned by the CustomModuleType
                                     Err(_) => {
                                         ModuleIssue::new(
-                                            (*ident).clone(),
+                                            ident.clone(),
                                             rcstr!("Invalid module type"),
                                             rcstr!(
                                                 "The custom module type didn't accept the \
@@ -670,7 +670,7 @@ async fn process_default_internal(
                             }
                             Some(module_type) => {
                                 ModuleIssue::new(
-                                    (*ident).clone(),
+                                    ident.clone(),
                                     rcstr!("Invalid module type"),
                                     rcstr!(
                                         "The module type must be Ecmascript or Typescript to add \
@@ -685,7 +685,7 @@ async fn process_default_internal(
                             }
                             None => {
                                 ModuleIssue::new(
-                                    (*ident).clone(),
+                                    ident.clone(),
                                     rcstr!("Missing module type"),
                                     rcstr!(
                                         "The module type effect must be applied before adding \

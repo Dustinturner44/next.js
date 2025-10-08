@@ -1,6 +1,6 @@
 use anyhow::Result;
 use turbo_rcstr::rcstr;
-use turbo_tasks::{ResolvedVc, Vc};
+use turbo_tasks::{ReadRef, ResolvedVc, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -40,9 +40,12 @@ impl OutputAsset for WebAssemblyAsset {
         let this = self.await?;
         let mut ident = this.source.ident().owned().await?;
         ident.add_modifier(rcstr!("wasm"));
-        Ok(this
-            .chunking_context
-            .chunk_path(Some(Vc::upcast(self)), ident, None, rcstr!(".wasm")))
+        Ok(this.chunking_context.chunk_path(
+            Some(Vc::upcast(self)),
+            ReadRef::new_owned(ident),
+            None,
+            rcstr!(".wasm"),
+        ))
     }
 }
 

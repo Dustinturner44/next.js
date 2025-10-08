@@ -1,6 +1,6 @@
 use anyhow::Result;
 use tracing::Instrument;
-use turbo_tasks::{ResolvedVc, Vc};
+use turbo_tasks::{ReadRef, ResolvedVc, Vc};
 use turbopack_core::{
     chunk::{
         ChunkGroupResult, ChunkingContext, EvaluatableAssets, availability_info::AvailabilityInfo,
@@ -12,7 +12,7 @@ use turbopack_core::{
 
 #[turbo_tasks::function]
 pub async fn get_app_client_shared_chunk_group(
-    ident: AssetIdent,
+    ident: ReadRef<AssetIdent>,
     app_client_runtime_entries: Vc<EvaluatableAssets>,
     module_graph: Vc<ModuleGraph>,
     client_chunking_context: Vc<Box<dyn ChunkingContext>>,

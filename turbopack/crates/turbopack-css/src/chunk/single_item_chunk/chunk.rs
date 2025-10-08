@@ -101,7 +101,7 @@ impl OutputAsset for SingleItemCssChunk {
     async fn path(self: Vc<Self>) -> Result<Vc<FileSystemPath>> {
         Ok(self.await?.chunking_context.chunk_path(
             Some(Vc::upcast(self)),
-            self.ident_for_path().owned().await?,
+            self.ident_for_path().await?,
             None,
             rcstr!(".single.css"),
         ))

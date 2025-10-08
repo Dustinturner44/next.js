@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::Instrument;
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
-    NonLocalValue, ResolvedVc, TaskInput, TryJoinIterExt, Upcast, Vc, trace::TraceRawVcs,
+    NonLocalValue, ReadRef, ResolvedVc, TaskInput, TryJoinIterExt, Upcast, Vc, trace::TraceRawVcs,
 };
 use turbo_tasks_fs::FileSystemPath;
 use turbo_tasks_hash::{DeterministicHash, hash_xxh3_hash64};
@@ -303,7 +303,7 @@ impl BrowserChunkingContext {
     #[turbo_tasks::function]
     fn generate_evaluate_chunk(
         self: Vc<Self>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         other_chunks: Vc<OutputAssets>,
         evaluatable_assets: Vc<EvaluatableAssets>,
         // TODO(sokra) remove this argument and pass chunk items instead
@@ -321,7 +321,7 @@ impl BrowserChunkingContext {
     #[turbo_tasks::function]
     fn generate_chunk_list_register_chunk(
         self: Vc<Self>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         evaluatable_assets: Vc<EvaluatableAssets>,
         other_chunks: Vc<OutputAssets>,
         source: EcmascriptDevChunkListSource,
@@ -448,7 +448,7 @@ impl ChunkingContext for BrowserChunkingContext {
     async fn chunk_path(
         self: Vc<Self>,
         asset: Option<Vc<Box<dyn Asset>>>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         prefix: Option<RcStr>,
         extension: RcStr,
     ) -> Result<Vc<FileSystemPath>> {
@@ -527,7 +527,7 @@ impl ChunkingContext for BrowserChunkingContext {
     async fn asset_path(
         &self,
         content_hash: RcStr,
-        original_asset_ident: AssetIdent,
+        original_asset_ident: ReadRef<AssetIdent>,
     ) -> Result<Vc<FileSystemPath>> {
         let source_path = &original_asset_ident.path;
         let basename = source_path.file_name();
@@ -583,7 +583,7 @@ impl ChunkingContext for BrowserChunkingContext {
     #[turbo_tasks::function]
     async fn chunk_group(
         self: ResolvedVc<Self>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         chunk_group: ChunkGroup,
         module_graph: Vc<ModuleGraph>,
         availability_info: AvailabilityInfo,
@@ -612,7 +612,7 @@ impl ChunkingContext for BrowserChunkingContext {
                 .await?;
 
             if this.enable_hot_module_replacement {
-                let mut ident = ident;
+                let mut ident = ReadRef::into_owned(ident);
                 match input_availability_info {
                     AvailabilityInfo::Root => {}
                     AvailabilityInfo::Untracked => {
@@ -625,7 +625,7 @@ impl ChunkingContext for BrowserChunkingContext {
                 let other_assets = Vc::cell(assets.clone());
                 assets.push(
                     self.generate_chunk_list_register_chunk(
-                        ident,
+                        ReadRef::new_owned(ident),
                         EvaluatableAssets::empty(),
                         other_assets,
                         EcmascriptDevChunkListSource::Dynamic,
@@ -649,7 +649,7 @@ impl ChunkingContext for BrowserChunkingContext {
     #[turbo_tasks::function]
     async fn evaluated_chunk_group(
         self: ResolvedVc<Self>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         chunk_group: ChunkGroup,
         module_graph: Vc<ModuleGraph>,
         input_availability_info: AvailabilityInfo,
@@ -693,7 +693,7 @@ impl ChunkingContext for BrowserChunkingContext {
             );
 
             if this.enable_hot_module_replacement {
-                let mut ident = ident.clone();
+                let mut ident = ReadRef::into_owned(ident.clone());
                 match input_availability_info {
                     AvailabilityInfo::Root => {}
                     AvailabilityInfo::Untracked => {
@@ -705,7 +705,7 @@ impl ChunkingContext for BrowserChunkingContext {
                 }
                 assets.push(
                     self.generate_chunk_list_register_chunk(
-                        ident,
+                        ReadRef::new_owned(ident),
                         entries,
                         other_assets,
                         EcmascriptDevChunkListSource::Entry,

@@ -1,7 +1,7 @@
 use anyhow::{Context, Result, bail};
 use tracing::Instrument;
 use turbo_rcstr::{RcStr, rcstr};
-use turbo_tasks::{ResolvedVc, TaskInput, TryJoinIterExt, Upcast, Vc};
+use turbo_tasks::{ReadRef, ResolvedVc, TaskInput, TryJoinIterExt, Upcast, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
     asset::Asset,
@@ -320,7 +320,7 @@ impl ChunkingContext for NodeJsChunkingContext {
     async fn chunk_path(
         &self,
         _asset: Option<Vc<Box<dyn Asset>>>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         prefix: Option<RcStr>,
         extension: RcStr,
     ) -> Result<Vc<FileSystemPath>> {
@@ -361,7 +361,7 @@ impl ChunkingContext for NodeJsChunkingContext {
     async fn asset_path(
         &self,
         content_hash: RcStr,
-        original_asset_ident: AssetIdent,
+        original_asset_ident: ReadRef<AssetIdent>,
     ) -> Result<Vc<FileSystemPath>> {
         let source_path = &original_asset_ident.path;
         let basename = source_path.file_name();
@@ -382,7 +382,7 @@ impl ChunkingContext for NodeJsChunkingContext {
     #[turbo_tasks::function]
     async fn chunk_group(
         self: ResolvedVc<Self>,
-        ident: AssetIdent,
+        ident: ReadRef<AssetIdent>,
         chunk_group: ChunkGroup,
         module_graph: Vc<ModuleGraph>,
         availability_info: AvailabilityInfo,
@@ -494,7 +494,7 @@ impl ChunkingContext for NodeJsChunkingContext {
     #[turbo_tasks::function]
     fn evaluated_chunk_group(
         self: Vc<Self>,
-        _ident: AssetIdent,
+        _ident: ReadRef<AssetIdent>,
         _chunk_group: ChunkGroup,
         _module_graph: Vc<ModuleGraph>,
         _availability_info: AvailabilityInfo,

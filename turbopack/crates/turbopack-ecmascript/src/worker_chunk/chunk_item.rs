@@ -1,7 +1,7 @@
 use anyhow::Result;
 use indoc::formatdoc;
 use turbo_rcstr::rcstr;
-use turbo_tasks::{ResolvedVc, TryJoinIterExt, Vc};
+use turbo_tasks::{ReadRef, ResolvedVc, TryJoinIterExt, Vc};
 use turbopack_core::{
     chunk::{
         ChunkData, ChunkItem, ChunkType, ChunkingContext, ChunkingContextExt, ChunksData,
@@ -40,7 +40,7 @@ impl WorkerLoaderChunkItem {
             {
                 let mut ident = module.inner.ident().owned().await?;
                 ident.add_modifier(rcstr!("worker"));
-                ident
+                ReadRef::new_owned(ident)
             },
             ChunkGroup::Isolated(ResolvedVc::upcast(module.inner)),
             *self.module_graph,
