@@ -141,13 +141,12 @@ pub struct AssetIdent {
 }
 
 impl AssetIdent {
-    fn check_non_empty_and_no_commas(modifier: &RcStr) {
+    fn check_modifier_non_empty(modifier: &RcStr) {
         debug_assert!(!modifier.is_empty(), "modifiers cannot be empty.");
-        debug_assert!(!modifier.contains(","), "modifiers cannot contain commas.");
     }
     pub fn add_modifier(&mut self, modifier: RcStr) {
         if self.modifiers.is_empty() {
-            Self::check_non_empty_and_no_commas(&modifier);
+            Self::check_modifier_non_empty(&modifier);
             self.modifiers = modifier;
             return;
         }
@@ -157,7 +156,7 @@ impl AssetIdent {
     pub fn add_modifiers(&mut self, new_modifiers: impl IntoIterator<Item = RcStr>) {
         let mut modifiers = take(&mut self.modifiers).into_owned();
         for modifier in new_modifiers {
-            Self::check_non_empty_and_no_commas(&modifier);
+            Self::check_modifier_non_empty(&modifier);
             if !modifiers.is_empty() {
                 modifiers.push_str(", ");
             }
