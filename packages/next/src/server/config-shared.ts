@@ -1235,6 +1235,12 @@ export interface NextConfig {
 
   skipMiddlewareUrlNormalize?: boolean
 
+  /**
+   * Skip Next.js internals route `/_next` from middleware.
+   * @default true
+   */
+  skipMiddlewareNextInternalRoutes?: boolean
+
   skipTrailingSlashRedirect?: boolean
 
   modularizeImports?: Record<
@@ -1511,6 +1517,7 @@ export const defaultConfig = Object.freeze({
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,
+  skipMiddlewareNextInternalRoutes: true,
 } satisfies NextConfig)
 
 export async function normalizeConfig(phase: string, config: any) {
