@@ -1185,7 +1185,7 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
         if new_items {
             let elapsed = start.elapsed();
             turbo_tasks().send_compilation_event(Arc::new(TimingEvent::new(
-                "Finished writing to persistent cache".to_string(),
+                "Finished writing to filesystem cache".to_string(),
                 elapsed,
             )));
         }
@@ -1747,7 +1747,7 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
             return true;
         };
 
-        // When restoring from persistent caching the following might not be executed (since we can
+        // When restoring from filesystem cache the following might not be executed (since we can
         // suspend in `CleanupOldEdgesOperation`), but that's ok as the task is still dirty and
         // would be executed again.
 
