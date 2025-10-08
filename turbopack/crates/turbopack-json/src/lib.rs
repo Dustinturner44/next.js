@@ -153,7 +153,7 @@ impl EcmascriptChunkItem for JsonChunkItem {
                     // `uri_from_file`) need to handle percent encoding correctly first.
                     //
                     // See turbopack/crates/turbopack-core/src/source_map/utils.rs as well
-                    "sources": [format!("turbopack:///{}", self.module.ident().path().to_string().await?)],
+                    "sources": [format!("turbopack:///{}", self.module.ident().path().await?.value_to_string().await?)],
                     "sourcesContent": [&data_str],
                     "names": [],
                     // Maps 0:0 in the output code to 0:0 in the `source_code`. Sufficient for

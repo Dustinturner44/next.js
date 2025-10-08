@@ -13,14 +13,15 @@ pub struct VirtualSource {
     pub ident: AssetIdent,
     pub content: ResolvedVc<AssetContent>,
 }
-impl VirtualSource {
-    pub fn new(path: FileSystemPath, content: Vc<AssetContent>) -> Vc<Self> {
-        VirtualSource::new_with_ident(AssetIdent::from_path(path), content)
-    }
-}
 
 #[turbo_tasks::value_impl]
 impl VirtualSource {
+    #[turbo_tasks::function]
+    pub fn new(path: FileSystemPath, content: ResolvedVc<AssetContent>) -> Vc<Self> {
+        let ident = AssetIdent::from_path(path);
+        Self::cell(VirtualSource { ident, content })
+    }
+
     #[turbo_tasks::function]
     pub fn new_with_ident(ident: AssetIdent, content: ResolvedVc<AssetContent>) -> Vc<Self> {
         Self::cell(VirtualSource { ident, content })
