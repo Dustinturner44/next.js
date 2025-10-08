@@ -135,8 +135,10 @@ fn do_compact(
     })?;
     if ran {
         let elapsed = start.elapsed();
-        turbo_tasks()
-            .send_compilation_event(Arc::new(TimingEvent::new(message.to_string(), elapsed)));
+        if elapsed.as_secs() >= 1 {
+            turbo_tasks()
+                .send_compilation_event(Arc::new(TimingEvent::new(message.to_string(), elapsed)));
+        }
     }
     Ok(())
 }
