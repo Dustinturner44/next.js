@@ -499,12 +499,20 @@ impl<T: KeyValueDatabase + Send + Sync + 'static> BackingStorageSealed
             tx: &D::ReadTransaction<'_>,
             task_type: &CachedTaskType,
         ) -> Result<Option<TaskId>> {
+            let span = tracing::trace_span!(
+                "forward_lookup_task_cache",
+                task_type = debug(task_type),
+                success = tracing::field::Empty
+            )
+            .entered();
             let task_type = POT_CONFIG.serialize(task_type)?;
             let Some(bytes) = database.get(tx, KeySpace::ForwardTaskCache, &task_type)? else {
+                span.record("success", false);
                 return Ok(None);
             };
             let bytes = bytes.borrow().try_into()?;
             let id = TaskId::try_from(u32::from_le_bytes(bytes)).unwrap();
+            span.record("success", *id);
             Ok(Some(id))
         }
         if inner.database.is_empty() {

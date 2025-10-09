@@ -33,6 +33,12 @@ impl AvailableModules {
         self: ResolvedVc<Self>,
         modules: ResolvedVc<AvailableModulesSet>,
     ) -> Result<Vc<Self>> {
+        let _span = tracing::trace_span!(
+            "AvailabilityInfo::with_modules",
+            this = debug(self),
+            modules = debug(&modules)
+        )
+        .entered();
         Ok(AvailableModules {
             parent: Some(self),
             modules,
