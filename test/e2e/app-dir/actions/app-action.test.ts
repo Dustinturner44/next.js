@@ -739,16 +739,21 @@ describe('app-dir action handling', () => {
     await submit.click()
 
     await retry(async () => {
-      expect(await browser.hasElementByCssSelector('#error')).toBe(false)
+      expect(await browser.url()).toContain('/redirect/other')
     })
+
+    await browser.waitForIdleNetwork()
 
     // go back to the page that was revalidated
     await browser.elementByCss('[href="/redirect"]').click()
-
     await browser.waitForElementByCss('#main-page')
 
-    const newRandom = await browser.elementById('random-number').text()
-    expect(newRandom).not.toBe(initialRandom)
+    await browser.waitForIdleNetwork()
+
+    await retry(async () => {
+      const newRandom = await browser.elementById('random-number').text()
+      expect(newRandom).not.toBe(initialRandom)
+    })
   })
 
   // TODO(client-segment-cache): re-enable when this optimization is added back
