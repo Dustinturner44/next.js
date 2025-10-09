@@ -4,18 +4,12 @@ import { check, retry, withQuery } from 'next-test-utils'
 import { nextTestSetup } from 'e2e-utils'
 import type { Response } from 'node-fetch'
 
-describe('app-dir with middleware', () => {
+describe('app-dir with proxy', () => {
   const { next, isNextDeploy } = nextTestSetup({
     files: __dirname,
   })
 
-  it('should warn when deprecated middleware file is used', async () => {
-    expect(next.cliOutput).toContain(
-      'The "middleware" file convention is deprecated. Please use "proxy" instead.'
-    )
-  })
-
-  it('should filter correctly after middleware rewrite', async () => {
+  it('should filter correctly after proxy rewrite', async () => {
     const browser = await next.browser('/start')
 
     await browser.eval('window.beforeNav = 1')
@@ -54,7 +48,7 @@ describe('app-dir with middleware', () => {
       })
       expect(await toJson(res)).toMatchObject({
         'x-from-client': 'hello-from-client',
-        'x-from-middleware': 'hello-from-middleware',
+        'x-from-proxy': 'hello-from-proxy',
       })
     })
 
@@ -75,14 +69,12 @@ describe('app-dir with middleware', () => {
       expect(json).not.toHaveProperty('x-from-client1')
       expect(json).not.toHaveProperty('X-From-Client2')
       expect(json).toMatchObject({
-        'x-from-middleware': 'hello-from-middleware',
+        'x-from-proxy': 'hello-from-proxy',
       })
 
       // Should not be included in response headers.
       expect(res.headers.get('x-middleware-override-headers')).toBeNull()
-      expect(
-        res.headers.get('x-middleware-request-x-from-middleware')
-      ).toBeNull()
+      expect(res.headers.get('x-middleware-request-x-from-proxy')).toBeNull()
       expect(res.headers.get('x-middleware-request-x-from-client1')).toBeNull()
       expect(res.headers.get('x-middleware-request-x-from-client2')).toBeNull()
     })
@@ -105,14 +97,12 @@ describe('app-dir with middleware', () => {
         'x-from-client1': 'new-value1',
         'x-from-client2': 'new-value2',
         'x-from-client3': 'old-value3',
-        'x-from-middleware': 'hello-from-middleware',
+        'x-from-proxy': 'hello-from-proxy',
       })
 
       // Should not be included in response headers.
       expect(res.headers.get('x-middleware-override-headers')).toBeNull()
-      expect(
-        res.headers.get('x-middleware-request-x-from-middleware')
-      ).toBeNull()
+      expect(res.headers.get('x-middleware-request-x-from-proxy')).toBeNull()
       expect(res.headers.get('x-middleware-request-x-from-client1')).toBeNull()
       expect(res.headers.get('x-middleware-request-x-from-client2')).toBeNull()
       expect(res.headers.get('x-middleware-request-x-from-client3')).toBeNull()
@@ -128,7 +118,7 @@ describe('app-dir with middleware', () => {
     })
   })
 
-  it('retains a link response header from the middleware', async () => {
+  it('retains a link response header from the proxy', async () => {
     const res = await next.fetch('/preloads')
     expect(res.headers.get('link')).toContain(
       '<https://example.com/page>; rel="alternate"; hreflang="en"'
@@ -142,7 +132,7 @@ describe('app-dir with middleware', () => {
     const initialRandom2 = await browser.elementById('rsc-cookie-2').text()
     const totalCookies = await browser.elementById('total-cookies').text()
 
-    // cookies were set in middleware, assert they are present and match the Math.random() pattern
+    // cookies were set in proxy, assert they are present and match the Math.random() pattern
     expect(initialRandom1).toMatch(/Cookie 1: \d+\.\d+/)
     expect(initialRandom2).toMatch(/Cookie 2: \d+\.\d+/)
     expect(totalCookies).toBe('Total Cookie Length: 2')
@@ -173,12 +163,12 @@ describe('app-dir with middleware', () => {
     await browser.deleteCookies()
   })
 
-  it('should respect cookie options of merged middleware cookies', async () => {
+  it('should respect cookie options of merged proxy cookies', async () => {
     const browser = await next.browser('/rsc-cookies/cookie-options')
 
     const totalCookies = await browser.elementById('total-cookies').text()
 
-    // a secure cookie was set in middleware
+    // a secure cookie was set in proxy
     expect(totalCookies).toBe('Total Cookie Length: 1')
 
     // we don't expect to be able to read it
@@ -199,7 +189,7 @@ describe('app-dir with middleware', () => {
     await browser.deleteCookies()
   })
 
-  it('should omit internal headers for middleware cookies', async () => {
+  it('should omit internal headers for proxy cookies', async () => {
     const response = await next.fetch('/rsc-cookies/cookie-options')
     expect(response.status).toBe(200)
     expect(response.headers.get('x-middleware-set-cookie')).toBeNull()
@@ -225,13 +215,13 @@ describe('app-dir with middleware', () => {
     expect($('#cookies').text()).toBe('cookies: 0')
   })
 
-  it('should be possible to read cookies that are set during the middleware handling of a server action', async () => {
+  it('should be possible to read cookies that are set during the proxy handling of a server action', async () => {
     const browser = await next.browser('/rsc-cookies')
     const initialRandom1 = await browser.elementById('rsc-cookie-1').text()
     const initialRandom2 = await browser.elementById('rsc-cookie-2').text()
     const totalCookies = await browser.elementById('total-cookies').text()
 
-    // cookies were set in middleware, assert they are present and match the Math.random() pattern
+    // cookies were set in proxy, assert they are present and match the Math.random() pattern
     expect(initialRandom1).toMatch(/Cookie 1: \d+\.\d+/)
     expect(initialRandom2).toMatch(/Cookie 2: \d+\.\d+/)
     expect(totalCookies).toBe('Total Cookie Length: 2')
