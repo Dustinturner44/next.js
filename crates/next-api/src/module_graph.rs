@@ -490,7 +490,7 @@ impl Issue for CssGlobalImportIssue {
     }
 
     fn severity(&self) -> IssueSeverity {
-        IssueSeverity::Error
+        IssueSeverity::Fatal
     }
 
     #[turbo_tasks::function]
@@ -511,7 +511,7 @@ type FxModuleNameMap = FxIndexMap<ResolvedVc<Box<dyn Module>>, RcStr>;
 #[turbo_tasks::value(transparent)]
 struct ModuleNameMap(pub FxModuleNameMap);
 
-#[tracing::instrument(level = tracing::Level::INFO, name = "validate pages css imports", skip_all)]
+#[tracing::instrument(level = "info", name = "validate pages css imports", skip_all)]
 #[turbo_tasks::function]
 async fn validate_pages_css_imports(
     graph: Vc<SingleModuleGraph>,

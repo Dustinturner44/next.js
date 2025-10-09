@@ -168,17 +168,18 @@ export interface TurbopackOptions {
   rules?: Record<string, TurbopackRuleConfigCollection>
 
   /**
-   * The module ID strategy to use for Turbopack.
-   * If not set, the default is `'named'` for development and `'deterministic'`
-   * for production.
-   */
-  moduleIds?: 'named' | 'deterministic'
-
-  /**
    * This is the repo root usually and only files above this
    * directory can be resolved by turbopack.
    */
   root?: string
+
+  /**
+   * Enables generation of debug IDs in JavaScript bundles and source maps.
+   * These debug IDs help with debugging and error tracking by providing stable identifiers.
+   *
+   * @see https://github.com/tc39/ecma426/blob/main/proposals/debug-id.md TC39 Debug ID Proposal
+   */
+  debugIds?: boolean
 }
 
 export interface WebpackConfigContext {
@@ -368,12 +369,6 @@ export interface ExperimentalConfig {
   nextScriptWorkers?: boolean
   scrollRestoration?: boolean
   externalDir?: boolean
-  /** @deprecated built-in amp support will be removed in Next 16 */
-  amp?: {
-    optimizer?: any
-    validator?: string
-    skipValidation?: boolean
-  }
   disableOptimizedLoading?: boolean
 
   /** @deprecated A no-op as of Next 16, size metrics were removed from the build output. */
@@ -430,9 +425,14 @@ export interface ExperimentalConfig {
   turbopackScopeHoisting?: boolean
 
   /**
-   * Enable persistent caching for the turbopack dev server and build.
+   * Enable filesystem cache for the turbopack dev server.
    */
-  turbopackPersistentCaching?: boolean
+  turbopackFileSystemCacheForDev?: boolean
+
+  /**
+   * Enable filesystem cache for the turbopack build.
+   */
+  turbopackFileSystemCacheForBuild?: boolean
 
   /**
    * Enable source maps. Defaults to true.
@@ -478,10 +478,10 @@ export interface ExperimentalConfig {
    * Set this to `false` to disable the automatic configuration of the babel loader when a Babel
    * configuration file is present. This option is enabled by default.
    *
-   * If this is set to `false`, but `experimental.reactCompiler` is `true`, the built-in Babel will
+   * If this is set to `false`, but `reactCompiler` is `true`, the built-in Babel will
    * still be configured, but any Babel configuration files on disk will be ignored. If you wish to
    * use React Compiler with a different manually-configured `babel-loader`, you should disable both
-   * this and `experimental.reactCompiler`.
+   * this and `reactCompiler`.
    */
   turbopackUseBuiltinBabel?: boolean
 
@@ -490,6 +490,13 @@ export interface ExperimentalConfig {
    * configuration is enabled by default.
    */
   turbopackUseBuiltinSass?: boolean
+
+  /**
+   * The module ID strategy to use for Turbopack.
+   * If not set, the default is `'named'` for development and `'deterministic'`
+   * for production.
+   */
+  turbopackModuleIds?: 'named' | 'deterministic'
 
   /**
    * For use with `@next/mdx`. Compile MDX files using the new Rust compiler.
@@ -653,7 +660,7 @@ export interface ExperimentalConfig {
   useLightningcss?: boolean
 
   /**
-   * Enables view transitions by using the {@link https://github.com/facebook/react/pull/31975 unstable_ViewTransition} Component.
+   * Enables view transitions by using the {@link https://react.dev/reference/react/ViewTransition ViewTransition} Component.
    */
   viewTransition?: boolean
 
@@ -680,12 +687,6 @@ export interface ExperimentalConfig {
    *
    */
   serverComponentsExternalPackages?: string[]
-  /**
-   * Enable experimental React compiler optimization.
-   * Configuration accepts partial config object to the compiler, if provided
-   * compiler will be enabled.
-   */
-  reactCompiler?: boolean | ReactCompilerOptions
 
   /**
    * When enabled, in dev mode, Next.js will send React's debug info through the
@@ -797,6 +798,12 @@ export interface ExperimentalConfig {
   isolatedDevBuild?: boolean
 
   /**
+   * Body size limit for request bodies with middleware configured.
+   * Defaults to 10MB. Can be specified as a number (bytes) or string (e.g. '5mb').
+   */
+  middlewareClientMaxBodySize?: SizeLimit
+
+  /**
    * Enable the Model Context Protocol (MCP) server for AI-assisted development.
    * When enabled, Next.js will expose an MCP server at `/_next/mcp` that provides
    * code intelligence and project context to AI assistants.
@@ -804,6 +811,19 @@ export interface ExperimentalConfig {
    * @default false
    */
   mcpServer?: boolean
+
+  /**
+   * Acquires a lockfile at `<distDir>/lock` when starting `next dev` or `next
+   * build`. Failing to acquire the lock causes the process to exit with an
+   * error message.
+   *
+   * This is because if multiple processes write to the same `distDir` at the
+   * same time, it can mangle the state of the directory. Disabling this option
+   * is not recommended.
+   *
+   * @default true
+   */
+  lockDistDir?: boolean
 }
 
 export type ExportPathMap = {
@@ -1062,14 +1082,6 @@ export interface NextConfig {
   }
 
   /**
-   * @deprecated built-in amp support will be removed in Next 16
-   * @see [`next/amp`](https://nextjs.org/docs/api-reference/next/amp)
-   */
-  amp?: {
-    canonicalBase?: string
-  }
-
-  /**
    * A unique identifier for a deployment that will be included in each request's query string or header.
    */
   deploymentId?: string
@@ -1095,6 +1107,13 @@ export interface NextConfig {
   productionBrowserSourceMaps?: boolean
 
   /**
+   * Enable {@link https://nextjs.org/docs/app/api-reference/config/next-config-js/reactCompiler React Compiler in Next.js}.
+   * Configuration accepts partial config object of the Compiler.
+   * If provided, the Compiler will be enabled.
+   */
+  reactCompiler?: boolean | ReactCompilerOptions
+
+  /**
    * Enable react profiling in production
    *
    */
@@ -1114,20 +1133,6 @@ export interface NextConfig {
    * @see [React Max Headers Length](https://nextjs.org/docs/app/api-reference/config/next-config-js/reactMaxHeadersLength)
    */
   reactMaxHeadersLength?: number
-
-  /**
-   * Add public (in browser) runtime configuration to your app
-   *
-   * @see [Runtime configuration](https://nextjs.org/docs/pages/api-reference/config/next-config-js/runtime-configuration
-   */
-  publicRuntimeConfig?: { [key: string]: any }
-
-  /**
-   * Add server runtime configuration to your app
-   *
-   * @see [Runtime configuration](https://nextjs.org/docs/pages/api-reference/config/next-config-js/runtime-configuration
-   */
-  serverRuntimeConfig?: { [key: string]: any }
 
   /**
    * Next.js enables HTTP Keep-Alive by default.
@@ -1235,6 +1240,12 @@ export interface NextConfig {
   turbopack?: TurbopackOptions
 
   skipMiddlewareUrlNormalize?: boolean
+
+  /**
+   * Skip Next.js internals route `/_next` from middleware.
+   * @default true
+   */
+  skipMiddlewareNextInternalRoutes?: boolean
 
   skipTrailingSlashRedirect?: boolean
 
@@ -1358,17 +1369,12 @@ export const defaultConfig = Object.freeze({
     maxInactiveAge: 60 * 1000,
     pagesBufferLength: 5,
   },
-  amp: {
-    canonicalBase: '',
-  },
   basePath: '',
   sassOptions: {},
   trailingSlash: false,
   i18n: null,
   productionBrowserSourceMaps: false,
   excludeDefaultMomentLocales: true,
-  serverRuntimeConfig: {},
-  publicRuntimeConfig: {},
   reactProductionProfiling: false,
   reactStrictMode: null,
   reactMaxHeadersLength: 6000,
@@ -1440,7 +1446,7 @@ export const defaultConfig = Object.freeze({
     serverSourceMaps: false,
     linkNoTouchStart: false,
     caseSensitiveRoutes: false,
-    clientSegmentCache: false,
+    clientSegmentCache: true,
     rdcForNavigations: false,
     clientParamParsing: false,
     clientParamParsingOrigins: undefined,
@@ -1480,7 +1486,6 @@ export const defaultConfig = Object.freeze({
     swcPlugins: undefined,
     largePageDataBytes: 128 * 1000, // 128KB by default
     disablePostcssPresetEnv: undefined,
-    amp: undefined,
     urlImports: undefined,
     typedEnv: false,
     clientTraceMetadata: undefined,
@@ -1502,7 +1507,6 @@ export const defaultConfig = Object.freeze({
       static: 300,
     },
     allowDevelopmentBuild: undefined,
-    reactCompiler: undefined,
     reactDebugChannel: false,
     staticGenerationRetryCount: undefined,
     serverComponentsHmrCache: true,
@@ -1514,11 +1518,12 @@ export const defaultConfig = Object.freeze({
     slowModuleDetection: undefined,
     globalNotFound: false,
     browserDebugInfoInTerminal: false,
-    isolatedDevBuild:
-      process.env.__NEXT_EXPERIMENTAL_ISOLATED_DEV_BUILD === 'true',
+    lockDistDir: true,
+    isolatedDevBuild: true,
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,
+  skipMiddlewareNextInternalRoutes: true,
 } satisfies NextConfig)
 
 export async function normalizeConfig(phase: string, config: any) {
