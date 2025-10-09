@@ -15,3 +15,5 @@ export { ImageResponse } from 'next/dist/server/web/spec-extension/image-respons
 export type { ImageResponseOptions } from 'next/dist/compiled/@vercel/og/types'
 export { after } from 'next/dist/server/after'
 export { connection } from 'next/dist/server/request/connection'
+export { network } from 'next/dist/server/request/network'
+export type { NetworkProfile } from 'next/dist/server/app-render/network-profile'

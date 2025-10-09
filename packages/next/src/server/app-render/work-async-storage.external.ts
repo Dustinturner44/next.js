@@ -5,6 +5,7 @@ import type { DeepReadonly } from '../../shared/lib/deep-readonly'
 import type { AppSegmentConfig } from '../../build/segment-config/app/app-segment-config'
 import type { AfterContext } from '../after/after-context'
 import type { CacheLife } from '../use-cache/cache-life'
+import type { NetworkProfile } from './network-profile'
 
 // Share the instance module in the next-shared layer
 import { workAsyncStorageInstance } from './work-async-storage-instance' with { 'turbopack-transition': 'next-shared' }
@@ -99,6 +100,12 @@ export interface WorkStore {
 
   cacheComponentsEnabled: boolean
   dev: boolean
+
+  /**
+   * Network profile information for the current request.
+   * Contains network quality hints and whether the connection is considered slow.
+   */
+  readonly networkProfile?: NetworkProfile
 
   /**
    * Run the given function inside a clean AsyncLocalStorage snapshot. This is

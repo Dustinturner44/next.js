@@ -41,6 +41,8 @@
     "link.d.ts",
     "form.js",
     "form.d.ts",
+    "low-priority.js",
+    "low-priority.d.ts",
     "router.js",
     "router.d.ts",
     "jest.js",

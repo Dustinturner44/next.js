@@ -18,6 +18,7 @@ import type {
   PrerenderStoreModernRuntime,
   RequestStore,
 } from '../app-render/work-unit-async-storage.external'
+import { extractNetworkHints, createNetworkProfile } from './network-profile'
 import type { NextParsedUrlQuery } from '../request-meta'
 import type { LoaderTree } from '../lib/app-dir-module'
 import type { AppPageModule } from '../route-modules/app-page/module'
@@ -2069,6 +2070,55 @@ export const renderToHTMLOrFlight: AppPageRender = (
     )
   }
 
+  // Extract network profile from request headers (Client Hints)
+  const networkHints = extractNetworkHints(req.headers)
+  const networkProfile = createNetworkProfile(networkHints)
+
+  // Advertise support for Network Information API Client Hints
+  // This tells browsers to send ECT, RTT, Downlink, and Save-Data headers
+  if (!res.hasHeader('Accept-CH')) {
+    res.setHeader('Accept-CH', 'ECT, RTT, Downlink, Save-Data')
+  } else {
+    const existingAcceptCH = res.getHeader('Accept-CH')
+    const hints = ['ECT', 'RTT', 'Downlink', 'Save-Data']
+    const existingHints = existingAcceptCH
+      ? String(existingAcceptCH)
+          .split(',')
+          .map((h) => h.trim())
+      : []
+    const newHints = hints.filter((h) => !existingHints.includes(h))
+    if (newHints.length > 0) {
+      res.setHeader('Accept-CH', [...existingHints, ...newHints].join(', '))
+    }
+  }
+
+  // Mark as critical so browsers send hints on first request
+  if (!res.hasHeader('Critical-CH')) {
+    res.setHeader('Critical-CH', 'ECT, RTT, Downlink')
+  }
+
+  // Add Vary header to ensure proper caching based on network hints
+  if (!res.hasHeader('Vary')) {
+    res.setHeader('Vary', 'ECT, RTT, Downlink, Save-Data')
+  } else {
+    const existingVary = res.getHeader('Vary')
+    const varyHeaders = ['ECT', 'RTT', 'Downlink', 'Save-Data']
+    const existingVaryHeaders = existingVary
+      ? String(existingVary)
+          .split(',')
+          .map((h) => h.trim())
+      : []
+    const newVaryHeaders = varyHeaders.filter(
+      (h) => !existingVaryHeaders.includes(h)
+    )
+    if (newVaryHeaders.length > 0) {
+      res.setHeader(
+        'Vary',
+        [...existingVaryHeaders, ...newVaryHeaders].join(', ')
+      )
+    }
+  }
+
   const workStore = createWorkStore({
     page: renderOpts.routeModule.definition.page,
     renderOpts,
@@ -2077,6 +2127,7 @@ export const renderToHTMLOrFlight: AppPageRender = (
     buildId: sharedContext.buildId,
     previouslyRevalidatedTags,
     nonce,
+    networkProfile,
   })
 
   return workAsyncStorage.run(

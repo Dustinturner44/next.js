@@ -5,6 +5,7 @@ import type { FetchMetric } from '../base-http'
 import type { RequestLifecycleOpts } from '../base-server'
 import type { AppSegmentConfig } from '../../build/segment-config/app/app-segment-config'
 import type { CacheLife } from '../use-cache/cache-life'
+import type { NetworkProfile } from '../app-render/network-profile'
 
 import { AfterContext } from '../after/after-context'
 
@@ -71,6 +72,11 @@ export type WorkStoreContext = {
   // Tags that were previously revalidated (e.g. by a redirecting server action)
   // and have already been sent to cache handlers.
   previouslyRevalidatedTags: string[]
+
+  /**
+   * Network profile information for the current request.
+   */
+  networkProfile?: NetworkProfile
 }
 
 export function createWorkStore({
@@ -80,6 +86,7 @@ export function createWorkStore({
   buildId,
   previouslyRevalidatedTags,
   nonce,
+  networkProfile,
 }: WorkStoreContext): WorkStore {
   /**
    * Rules of Static & Dynamic HTML:
@@ -144,6 +151,7 @@ export function createWorkStore({
     refreshTagsByCacheKind: createRefreshTagsByCacheKind(),
     runInCleanSnapshot: createSnapshot(),
     shouldTrackFetchMetrics,
+    networkProfile,
   }
 
   // TODO: remove this when we resolve accessing the store outside the execution context
