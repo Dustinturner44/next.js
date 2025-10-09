@@ -1,10 +1,5 @@
-/**
- * @type {import('next').NextConfig}
- */
 const nextConfig = {
-  output: 'standalone',
   experimental: {
-    useCache: true,
     cacheLife: {
       expireNow: {
         stale: 0,
@@ -14,5 +9,4 @@ const nextConfig = {
     },
   },
 }
-
-module.exports = nextConfig
+export default nextConfig

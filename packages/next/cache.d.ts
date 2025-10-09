@@ -3,8 +3,7 @@ export { unstable_cache } from 'next/dist/server/web/spec-extension/unstable-cac
 export {
   revalidatePath,
   revalidateTag,
-  unstable_expirePath,
-  unstable_expireTag,
+  updateTag,
   refresh,
 } from 'next/dist/server/web/spec-extension/revalidate'
 
