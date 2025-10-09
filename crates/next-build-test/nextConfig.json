@@ -30,6 +30,8 @@
     "disableStaticImages": false,
     "minimumCacheTTL": 60,
     "formats": ["image/avif", "image/webp"],
+    "maximumRedirects": 3,
+    "dangerouslyAllowLocalIP": false,
     "dangerouslyAllowSVG": false,
     "contentSecurityPolicy": "script-src 'none'; frame-src 'none'; sandbox;",
     "contentDispositionType": "inline",

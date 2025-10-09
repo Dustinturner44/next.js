@@ -551,6 +551,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
         contentSecurityPolicy: z.string().optional(),
         contentDispositionType: z.enum(['inline', 'attachment']).optional(),
         dangerouslyAllowSVG: z.boolean().optional(),
+        dangerouslyAllowLocalIP: z.boolean().optional(),
         deviceSizes: z
           .array(z.number().int().gte(1).lte(10000))
           .max(25)
@@ -568,6 +569,7 @@ export const configSchema: zod.ZodType<NextConfig> = z.lazy(() =>
           .optional(),
         loader: z.enum(VALID_LOADERS).optional(),
         loaderFile: z.string().optional(),
+        maximumRedirects: z.number().int().min(0).max(20).optional(),
         minimumCacheTTL: z.number().int().gte(0).optional(),
         path: z.string().optional(),
         qualities: z
