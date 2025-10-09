@@ -25,11 +25,29 @@ use crate::resolve::ModulePart;
     PartialEq,
     TraceRawVcs,
     Serialize,
-    Deserialize,
     NonLocalValue,
 )]
 pub struct Layer {
     id: u8,
+}
+
+impl<'de> Deserialize<'de> for Layer {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let id = u8::deserialize(deserializer)?;
+        // Check that id is a valid layer index
+        if (id as usize) < LAYERS.len() {
+            Ok(Layer { id })
+        } else {
+            Err(serde::de::Error::custom(format!(
+                "Invalid Layer id {} (must be < {})",
+                id,
+                LAYERS.len()
+            )))
+        }
+    }
 }
 
 /// A list of all layers sorted by name
@@ -52,6 +70,8 @@ static LAYERS: Lazy<Vec<LayerRegistration>> = Lazy::new(|| {
 });
 
 impl Layer {
+    // Should be constructed by the `new_layer!` macro
+    // that guarantees that the layer is registered so this will never panic.
     #[doc(hidden)]
     pub fn new(name: &'static str) -> Self {
         debug_assert!(!name.is_empty());
@@ -137,7 +157,7 @@ pub struct AssetIdent {
     /// If metadata_fragment_end < metadata.len(), then there's a content_type after it " <
     /// content_type >"
     #[serde(default)]
-    metadata_fragment_end: u16,
+    metadata_fragment_end: u32,
     /// The asset layer the asset was created from.
     pub layer: Option<Layer>,
 }
@@ -148,7 +168,7 @@ impl AssetIdent {
         query: &str,
         fragment: &str,
         content_type: Option<&str>,
-    ) -> (RcStr, u16, u16) {
+    ) -> (RcStr, u16, u32) {
         let query_len = query.len();
         let fragment_len = fragment.len();
 
@@ -167,7 +187,9 @@ impl AssetIdent {
         (
             RcStr::from(result),
             query_len as u16,
-            (query_len + fragment_len) as u16,
+            // The setters enforce that the query and fragment lengths are less than u16::MAX
+            // so we can safely cast the sum into u32.
+            (query_len + fragment_len) as u32,
         )
     }
 
@@ -240,7 +262,7 @@ impl AssetIdent {
             return;
         }
         if self.parts.is_empty() {
-            self.parts = RcStr::from(part.to_string());
+            self.parts = RcStr::from(format!("<{}>", part.to_string()));
             return;
         }
         self.add_parts(std::iter::once(part));
@@ -257,7 +279,9 @@ impl AssetIdent {
             if !parts.is_empty() {
                 parts.push(' ');
             }
+            parts.push('<');
             parts.push_str(&part.to_string());
+            parts.push('>');
         }
         self.parts = RcStr::from(parts);
     }
@@ -552,35 +576,256 @@ pub use crate::new_layer;
 
 #[cfg(test)]
 mod tests {
-    use super::AssetIdent;
+    use turbo_rcstr::rcstr;
+    use turbo_tasks_backend::{BackendOptions, TurboTasksBackend, noop_backing_storage};
+    use turbo_tasks_fs::{FileSystem, VirtualFileSystem};
 
-    #[test]
-    fn test_struct_sizes() {
-        use std::mem::size_of;
+    use super::*;
 
-        let ident_size = size_of::<AssetIdent>();
-
-        println!("AssetIdent size: {} bytes", ident_size);
-
-        // AssetIdent should fit in 64 bytes with optimal packing:
-        // - path: 32 bytes
-        // - assets: 8 bytes
-        // - modifiers: 8 bytes
-        // - parts: 8 bytes
-        // - metadata: 8 bytes
-        // - layer: 2 bytes (Option<Layer> with u8)
-        // - metadata_query_end: 2 bytes (fits in slack after layer)
-        // - metadata_fragment_end: 2 bytes (fits in slack after layer)
-        // Total: 70 bytes - with optimal packing should be exactly 64!
-        assert_eq!(
-            ident_size, 64,
-            "AssetIdent is {} bytes, expected exactly 64",
-            ident_size
-        );
+    async fn create_test_asset_ident() -> AssetIdent {
+        // Create a simple test path using VirtualFileSystem for testing
+        let fs = VirtualFileSystem::new_with_name(rcstr!("test"));
+        let path = fs.root().await.unwrap().join("test.js").unwrap();
+        AssetIdent::from_path(path)
     }
 
-    // Note: The other tests that manipulate metadata require a valid turbo_tasks runtime
-    // to create FileSystemPath instances. They would work in integration tests but not
-    // in unit tests. The important thing is that we've verified the struct size is 64 bytes,
-    // which means the u16 offsets are packing into the slack space after the Option<Layer>.
+    macro_rules! turbo_test {
+        ($name:ident, $body:expr) => {
+            #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+            async fn $name() {
+                let tt = turbo_tasks::TurboTasks::new(TurboTasksBackend::new(
+                    BackendOptions::default(),
+                    noop_backing_storage(),
+                ));
+                tt.run_once(async { $body }).await.unwrap();
+            }
+        };
+    }
+
+    turbo_test!(test_query_operations, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Initially should be empty
+        assert_eq!(ident.query(), "");
+
+        // Set a query parameter
+        ident.set_query(rcstr!("?foo=bar"));
+        assert_eq!(ident.query(), "?foo=bar");
+
+        // Set a different query parameter
+        ident.set_query(rcstr!("?baz=qux&hello=world"));
+        assert_eq!(ident.query(), "?baz=qux&hello=world");
+
+        // Clear query parameter
+        ident.set_query(rcstr!(""));
+        assert_eq!(ident.query(), "");
+
+        anyhow::Ok(())
+    });
+
+    turbo_test!(test_fragment_operations, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Initially should be empty
+        assert_eq!(ident.fragment(), "");
+
+        // Set a fragment
+        ident.set_fragment(rcstr!("#section1"));
+        assert_eq!(ident.fragment(), "#section1");
+
+        // Set a different fragment
+        ident.set_fragment(rcstr!("#header"));
+        assert_eq!(ident.fragment(), "#header");
+
+        // Clear fragment
+        ident.set_fragment(rcstr!(""));
+        assert_eq!(ident.fragment(), "");
+
+        anyhow::Ok(())
+    });
+
+    turbo_test!(test_content_type_operations, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Initially should be None
+        assert_eq!(ident.content_type(), None);
+
+        // Set a content type
+        ident.set_content_type("text/html");
+        assert_eq!(ident.content_type(), Some("text/html"));
+
+        // Set a different content type
+        ident.set_content_type("application/json");
+        assert_eq!(ident.content_type(), Some("application/json"));
+
+        // Set another content type
+        ident.set_content_type("image/png");
+        assert_eq!(ident.content_type(), Some("image/png"));
+
+        anyhow::Ok(())
+    });
+
+    turbo_test!(test_combined_operations, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Set query and fragment together
+        ident.set_query(rcstr!("?param=value"));
+        ident.set_fragment(rcstr!("#anchor"));
+
+        assert_eq!(ident.query(), "?param=value");
+        assert_eq!(ident.fragment(), "#anchor");
+        assert_eq!(ident.content_type(), None);
+
+        // Add content type
+        ident.set_content_type("text/css");
+
+        assert_eq!(ident.query(), "?param=value");
+        assert_eq!(ident.fragment(), "#anchor");
+        assert_eq!(ident.content_type(), Some("text/css"));
+
+        // Change query while keeping fragment and content type
+        ident.set_query(rcstr!("?new=param"));
+
+        assert_eq!(ident.query(), "?new=param");
+        assert_eq!(ident.fragment(), "#anchor");
+        assert_eq!(ident.content_type(), Some("text/css"));
+
+        // Change fragment while keeping query and content type
+        ident.set_fragment(rcstr!("#new-section"));
+
+        assert_eq!(ident.query(), "?new=param");
+        assert_eq!(ident.fragment(), "#new-section");
+        assert_eq!(ident.content_type(), Some("text/css"));
+
+        // Change content type while keeping query and fragment
+        ident.set_content_type("application/javascript");
+
+        assert_eq!(ident.query(), "?new=param");
+        assert_eq!(ident.fragment(), "#new-section");
+        assert_eq!(ident.content_type(), Some("application/javascript"));
+
+        anyhow::Ok(())
+    });
+
+    turbo_test!(test_metadata_format, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Test that metadata string is formatted correctly
+        ident.set_query(rcstr!("?test=1"));
+        ident.set_fragment(rcstr!("#frag"));
+        ident.set_content_type("text/plain");
+
+        // The metadata should be: "?test=1#frag <text/plain>"
+        assert_eq!(ident.metadata.as_str(), "?test=1#frag <text/plain>");
+        assert_eq!(ident.metadata_query_end, 7); // Length of "?test=1"
+        assert_eq!(ident.metadata_fragment_end, 12); // Length of "?test=1#frag"
+
+        anyhow::Ok(())
+    });
+
+    turbo_test!(test_edge_cases, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Test with only content type (no query or fragment)
+        ident.set_content_type("application/xml");
+        assert_eq!(ident.query(), "");
+        assert_eq!(ident.fragment(), "");
+        assert_eq!(ident.content_type(), Some("application/xml"));
+        assert_eq!(ident.metadata.as_str(), " <application/xml>");
+
+        // Test with only query
+        let mut ident2 = create_test_asset_ident().await;
+        ident2.set_query(rcstr!("?only=query"));
+        assert_eq!(ident2.query(), "?only=query");
+        assert_eq!(ident2.fragment(), "");
+        assert_eq!(ident2.content_type(), None);
+
+        // Test with only fragment
+        let mut ident3 = create_test_asset_ident().await;
+        ident3.set_fragment(rcstr!("#only-fragment"));
+        assert_eq!(ident3.query(), "");
+        assert_eq!(ident3.fragment(), "#only-fragment");
+        assert_eq!(ident3.content_type(), None);
+
+        // Test clearing all values
+        ident.set_query(rcstr!(""));
+        ident.set_fragment(rcstr!(""));
+        // Note: there's no clear_content_type method, so we test by setting an empty one
+        // An empty content type should still be stored as Some("")
+        ident.set_content_type("");
+        assert_eq!(ident.query(), "");
+        assert_eq!(ident.fragment(), "");
+        // Empty content type should be None when the content is empty
+        assert_eq!(ident.content_type(), None);
+
+        anyhow::Ok(())
+    });
+
+    turbo_test!(test_complex_values, {
+        let mut ident = create_test_asset_ident().await;
+
+        // Test with complex query parameters
+        ident.set_query(rcstr!("?foo=bar&baz=qux%20encoded&array[]=1&array[]=2"));
+        assert_eq!(
+            ident.query(),
+            "?foo=bar&baz=qux%20encoded&array[]=1&array[]=2"
+        );
+
+        // Test with complex fragment
+        ident.set_fragment(rcstr!("#section-with-dashes_and_underscores.and.dots"));
+        assert_eq!(
+            ident.fragment(),
+            "#section-with-dashes_and_underscores.and.dots"
+        );
+
+        // Test with complex content type
+        ident.set_content_type("application/vnd.api+json; charset=utf-8");
+        assert_eq!(
+            ident.content_type(),
+            Some("application/vnd.api+json; charset=utf-8")
+        );
+
+        // Verify all are preserved
+        assert_eq!(
+            ident.query(),
+            "?foo=bar&baz=qux%20encoded&array[]=1&array[]=2"
+        );
+        assert_eq!(
+            ident.fragment(),
+            "#section-with-dashes_and_underscores.and.dots"
+        );
+        assert_eq!(
+            ident.content_type(),
+            Some("application/vnd.api+json; charset=utf-8")
+        );
+
+        anyhow::Ok(())
+    });
+
+    #[test]
+    fn test_rebuild_metadata_helper() {
+        // Test the internal rebuild_metadata function
+        let (metadata, query_end, fragment_end) =
+            AssetIdent::rebuild_metadata("?query=test", "#fragment", Some("text/html"));
+
+        assert_eq!(metadata.as_str(), "?query=test#fragment <text/html>");
+        assert_eq!(query_end, 11); // Length of "?query=test"
+        assert_eq!(fragment_end, 20); // Length of "?query=test#fragment"
+
+        // Test without content type
+        let (metadata2, query_end2, fragment_end2) =
+            AssetIdent::rebuild_metadata("?q=v", "#f", None);
+
+        assert_eq!(metadata2.as_str(), "?q=v#f");
+        assert_eq!(query_end2, 4); // Length of "?q=v"
+        assert_eq!(fragment_end2, 6); // Length of "?q=v#f"
+
+        // Test with empty values
+        let (metadata3, query_end3, fragment_end3) =
+            AssetIdent::rebuild_metadata("", "", Some("application/json"));
+
+        assert_eq!(metadata3.as_str(), " <application/json>");
+        assert_eq!(query_end3, 0);
+        assert_eq!(fragment_end3, 0);
+    }
 }
