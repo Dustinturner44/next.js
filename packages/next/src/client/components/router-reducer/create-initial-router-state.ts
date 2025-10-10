@@ -1,5 +1,7 @@
-import type { CacheNode } from '../../../shared/lib/app-router-context.shared-runtime'
-import type { FlightDataPath } from '../../../server/app-render/types'
+import type {
+  CacheNode,
+  FlightDataPath,
+} from '../../../shared/lib/app-router-types'
 
 import { createHrefFromUrl } from './create-href-from-url'
 import { fillLazyItemsTillLeafWithHead } from './fill-lazy-items-till-leaf-with-head'
@@ -108,6 +110,7 @@ export function createInitialRouterState({
       // the || operator is intentional, the pathname can be an empty string
       (extractPathFromFlightRouterState(initialTree) || location?.pathname) ??
       null,
+    previousNextUrl: null,
   }
 
   if (process.env.NODE_ENV !== 'development' && location) {
