@@ -1,13 +1,6 @@
 {
   "version": 2,
   "suites": {
-    "test/e2e/app-dir/actions/app-action.test.ts": {
-      "failed": [
-        "app-dir action handling fetch actions should invalidate client cache when path is revalidated",
-        "app-dir action handling fetch actions should invalidate client cache when tag is revalidated",
-        "app-dir action handling fetch actions should handle revalidateTag"
-      ]
-    },
     "test/e2e/app-dir/actions/app-action-node-middleware.test.ts": {
       "failed": [
         "app-dir action handling fetch actions should handle revalidateTag"
