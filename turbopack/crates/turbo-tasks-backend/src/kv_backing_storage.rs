@@ -665,7 +665,7 @@ fn serialize_task_type(
     POT_CONFIG
         .serialize_into(&**task_type, &mut task_type_bytes)
         .with_context(|| anyhow!("Unable to serialize task {task_id} cache key {task_type:?}"))?;
-    #[cfg(feature = "verify_serialization")]
+    #[cfg(feature = "verify_serialization3")]
     {
         let deserialize: Result<CachedTaskType, _> = serde_path_to_error::deserialize(
             &mut pot_de_symbol_list().deserializer_for_slice(&*task_type_bytes)?,
@@ -749,7 +749,7 @@ where
 
 fn serialize(task: TaskId, data: &Vec<CachedDataItem>) -> Result<SmallVec<[u8; 16]>> {
     Ok(match pot_serialize_small_vec(data) {
-        #[cfg(not(feature = "verify_serialization"))]
+        #[cfg(not(feature = "verify_serialization1"))]
         Ok(value) => value,
         _ => {
             let mut error = Ok(());
@@ -760,7 +760,7 @@ fn serialize(task: TaskId, data: &Vec<CachedDataItem>) -> Result<SmallVec<[u8; 1
                 let mut serializer = symbol_map.serializer_for(&mut buf).unwrap();
                 if let Err(err) = serde_path_to_error::serialize(&item, &mut serializer) {
                     if item.is_optional() {
-                        #[cfg(feature = "verify_serialization")]
+                        #[cfg(feature = "verify_serialization1")]
                         println!("Skipping non-serializable optional item for {task}: {item:?}");
                     } else {
                         error = Err(err).context({
@@ -769,7 +769,7 @@ fn serialize(task: TaskId, data: &Vec<CachedDataItem>) -> Result<SmallVec<[u8; 1
                     }
                     false
                 } else {
-                    #[cfg(feature = "verify_serialization")]
+                    #[cfg(feature = "verify_serialization1")]
                     {
                         let deserialize: Result<CachedDataItem, _> =
                             serde_path_to_error::deserialize(
