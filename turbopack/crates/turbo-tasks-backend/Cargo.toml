@@ -13,7 +13,7 @@ bench = false
 workspace = true
 
 [features]
-default = ["trace_task_dirty", "verify_immutable", "verify_serialization3"]
+default = ["trace_task_dirty", "verify_immutable", "verify_serialization2"]
 print_cache_item_size = []
 no_fast_stale = []
 verify_serialization3 = []

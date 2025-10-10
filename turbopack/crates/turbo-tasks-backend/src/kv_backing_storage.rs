@@ -759,7 +759,7 @@ where
 
 fn serialize(task: TaskId, data: &Vec<CachedDataItem>) -> Result<SmallVec<[u8; 16]>> {
     Ok(match pot_serialize_small_vec(data) {
-        #[cfg(not(feature = "verify_serialization1"))]
+        #[cfg(not(feature = "verify_serialization2"))]
         Ok(value) => value,
         _ => {
             let mut error = Ok(());
