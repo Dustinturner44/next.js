@@ -360,7 +360,10 @@ impl<T: KeyValueDatabase + Send + Sync + 'static> BackingStorageSealed
                                 let task_id: u32 = *task_id;
                                 serialize_task_type(&task_type, &mut task_type_bytes, task_id)?;
                                 if task_type.get_name().contains("with_modules") {
-                                    println!("Stored task type: {task_type:?} => {task_id}");
+                                    println!(
+                                        "Stored task type: {task_type:?} => {task_id} \
+                                         ({task_type_bytes:?})"
+                                    );
                                 }
 
                                 batch
@@ -508,13 +511,20 @@ impl<T: KeyValueDatabase + Send + Sync + 'static> BackingStorageSealed
                 success = tracing::field::Empty
             )
             .entered();
-            let task_type = POT_CONFIG.serialize(task_type)?;
-            let Some(bytes) = database.get(tx, KeySpace::ForwardTaskCache, &task_type)? else {
+            let task_type_bytes = POT_CONFIG.serialize(task_type)?;
+            let result = database.get(tx, KeySpace::ForwardTaskCache, &task_type_bytes)?;
+            let Some(bytes) = result else {
+                if task_type.get_name().contains("with_modules") {
+                    println!("Restored task type: {task_type:?} => None ({task_type_bytes:?})");
+                }
                 span.record("success", false);
                 return Ok(None);
             };
             let bytes = bytes.borrow().try_into()?;
             let id = TaskId::try_from(u32::from_le_bytes(bytes)).unwrap();
+            if task_type.get_name().contains("with_modules") {
+                println!("Restored task type: {task_type:?} => {id} ({task_type_bytes:?})");
+            }
             span.record("success", *id);
             Ok(Some(id))
         }
