@@ -357,8 +357,12 @@ impl<T: KeyValueDatabase + Send + Sync + 'static> BackingStorageSealed
 
                             let mut task_type_bytes = Vec::new();
                             for (task_type, task_id) in updates {
+                                serialize_task_type(
+                                    &task_type,
+                                    &mut task_type_bytes,
+                                    Some(task_id),
+                                )?;
                                 let task_id: u32 = *task_id;
-                                serialize_task_type(&task_type, &mut task_type_bytes, task_id)?;
                                 if task_type.get_name().contains("with_modules") {
                                     println!(
                                         "Stored task type: {task_type:?} => {task_id} \
@@ -447,8 +451,8 @@ impl<T: KeyValueDatabase + Send + Sync + 'static> BackingStorageSealed
                     .entered();
                     let mut task_type_bytes = Vec::new();
                     for (task_type, task_id) in task_cache_updates.into_iter().flatten() {
+                        serialize_task_type(&task_type, &mut task_type_bytes, Some(task_id))?;
                         let task_id = *task_id;
-                        serialize_task_type(&task_type, &mut task_type_bytes, task_id)?;
 
                         batch
                             .put(
@@ -511,7 +515,8 @@ impl<T: KeyValueDatabase + Send + Sync + 'static> BackingStorageSealed
                 success = tracing::field::Empty
             )
             .entered();
-            let task_type_bytes = POT_CONFIG.serialize(task_type)?;
+            let mut task_type_bytes = Vec::new();
+            serialize_task_type(&task_type, &mut task_type_bytes, None)?;
             let result = database.get(tx, KeySpace::ForwardTaskCache, &task_type_bytes)?;
             let Some(bytes) = result else {
                 if task_type.get_name().contains("with_modules") {
@@ -666,15 +671,22 @@ where
     Ok(())
 }
 
+#[inline(never)]
 fn serialize_task_type(
-    task_type: &Arc<CachedTaskType>,
+    task_type: &CachedTaskType,
     mut task_type_bytes: &mut Vec<u8>,
-    task_id: u32,
+    task_id: Option<TaskId>,
 ) -> Result<()> {
     task_type_bytes.clear();
     POT_CONFIG
-        .serialize_into(&**task_type, &mut task_type_bytes)
-        .with_context(|| anyhow!("Unable to serialize task {task_id} cache key {task_type:?}"))?;
+        .serialize_into(&*task_type, &mut task_type_bytes)
+        .with_context(|| {
+            if let Some(task_id) = task_id {
+                anyhow!("Unable to serialize task {task_id} cache key {task_type:?}")
+            } else {
+                anyhow!("Unable to serialize task cache key {task_type:?}")
+            }
+        })?;
     #[cfg(feature = "verify_serialization3")]
     {
         let deserialize: Result<CachedTaskType, _> = serde_path_to_error::deserialize(
@@ -682,19 +694,19 @@ fn serialize_task_type(
         );
         match deserialize {
             Ok(value) => {
-                if value != **task_type {
+                if value != *task_type {
                     println!(
-                        "Task type would not round-trip {task_id}:\nOriginal: \
+                        "Task type would not round-trip {task_id:?}:\nOriginal: \
                          {task_type:#?}\nRound-tripped: {value:#?}"
                     );
-                    panic!("Task type would not round-trip {task_id}");
+                    panic!("Task type would not round-trip {task_id:?}");
                 }
             }
             Err(err) => {
                 println!(
-                    "Task type would not be deserializable {task_id}: {err:?}\n{task_type:#?}"
+                    "Task type would not be deserializable {task_id:?}: {err:?}\n{task_type:#?}"
                 );
-                panic!("Task type would not be deserializable {task_id}: {err:?}");
+                panic!("Task type would not be deserializable {task_id:?}: {err:?}");
             }
         }
     }
