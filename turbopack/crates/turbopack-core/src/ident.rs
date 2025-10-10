@@ -131,6 +131,10 @@ macro_rules! new_layer {
 ///
 /// There are many thousands of these instances in a large build so size is a concern, this struct
 /// is optimized to be 64 bytes with a cheap `clone` implementation.
+///
+/// Consider merging the `assets`, parts and metadata fields into the metadata field with more
+/// offsets.  This would would reduce the size even more and make `value_to_string` so cheap we
+/// could remove the turbo_tasks annotation from it.
 #[turbo_tasks::value(shared)]
 #[derive(Clone, Debug, Hash, TaskInput)]
 pub struct AssetIdent {
@@ -262,7 +266,7 @@ impl AssetIdent {
             return;
         }
         if self.parts.is_empty() {
-            self.parts = RcStr::from(format!("<{}>", part.to_string()));
+            self.parts = RcStr::from(format!("<{part}>"));
             return;
         }
         self.add_parts(std::iter::once(part));
