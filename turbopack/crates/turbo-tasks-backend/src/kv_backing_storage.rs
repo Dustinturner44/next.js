@@ -667,9 +667,22 @@ fn serialize_task_type(
         let deserialize: Result<CachedTaskType, _> = serde_path_to_error::deserialize(
             &mut pot_de_symbol_list().deserializer_for_slice(&*task_type_bytes)?,
         );
-        if let Err(err) = deserialize {
-            println!("Task type would not be deserializable {task_id}: {err:?}\n{task_type:#?}");
-            panic!("Task type would not be deserializable {task_id}: {err:?}");
+        match deserialize {
+            Ok(value) => {
+                if value != **task_type {
+                    println!(
+                        "Task type would not round-trip {task_id}:\nOriginal: \
+                         {task_type:#?}\nRound-tripped: {value:#?}"
+                    );
+                    panic!("Task type would not round-trip {task_id}");
+                }
+            }
+            Err(err) => {
+                println!(
+                    "Task type would not be deserializable {task_id}: {err:?}\n{task_type:#?}"
+                );
+                panic!("Task type would not be deserializable {task_id}: {err:?}");
+            }
         }
     }
     Ok(())
