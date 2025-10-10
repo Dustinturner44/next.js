@@ -777,6 +777,12 @@ export interface ExperimentalConfig {
    * @default false
    */
   optimizeRouterScrolling?: boolean
+
+  /**
+   * Body size limit for request bodies with middleware configured.
+   * Defaults to 10MB. Can be specified as a number (bytes) or string (e.g. '5mb').
+   */
+  middlewareClientMaxBodySize?: SizeLimit
 }
 
 export type ExportPathMap = {
@@ -1501,6 +1507,7 @@ export const defaultConfig = {
     browserDebugInfoInTerminal: false,
     optimizeRouterScrolling: false,
     strictNextHead: true,
+    middlewareClientMaxBodySize: 10_485_760, // 10MB
   },
   htmlLimitedBots: undefined,
   bundlePagesRouterDependencies: false,
