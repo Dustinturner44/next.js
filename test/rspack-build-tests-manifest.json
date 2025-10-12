@@ -1750,6 +1750,19 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/cache-components-console/cache-components.console.test.ts": {
+    "passed": [
+      "cache-components - Console Dimming - Validation dims console calls during prospective rendering",
+      "cache-components - Logging after Abort (default) With Dimming - Client dims console calls after a prerender has aborted",
+      "cache-components - Logging after Abort (default) With Dimming - Server dims console calls after a prerender has aborted",
+      "cache-components - Logging after Abort With Hiding - Client hides console calls after a prerender has aborted",
+      "cache-components - Logging after Abort With Hiding - Server hides console calls after a prerender has aborted"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/cache-components-create-component-tree/cache-components-create-component-tree.test.ts": {
     "passed": [
       "hello-world should not indicate there is an error when incidental math.random calls occur during component tree generation during build"
@@ -1946,17 +1959,6 @@
     "passed": [
       "cache-components should be able to pass connection as a promise to another component and trigger an intermediate Suspense boundary",
       "cache-components should partially prerender pages that use connection"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/e2e/app-dir/cache-components/cache-components.console.test.ts": {
-    "passed": [
-      "cache-components - Console Dimming - Logging after Abort in Client dims console calls after a prerender has aborted",
-      "cache-components - Console Dimming - Logging after Abort in Server dims console calls after a prerender has aborted",
-      "cache-components - Console Dimming - Validation dims console calls during prospective rendering"
     ],
     "failed": [],
     "pending": [],
@@ -5549,13 +5551,14 @@
       "PPR - partial hydration No static shell, streaming metadata should hydrate the shell without waiting for slow suspense boundaries",
       "PPR - partial hydration No static shell, streaming metadata should produce a valid HTML document",
       "PPR - partial hydration Static shell, no streaming metadata should display the shell without JS",
-      "PPR - partial hydration Static shell, no streaming metadata should hydrate the shell without waiting for slow suspense boundaries",
       "PPR - partial hydration Static shell, no streaming metadata should produce a valid HTML document",
       "PPR - partial hydration Static shell, streaming metadata should display the shell without JS",
       "PPR - partial hydration Static shell, streaming metadata should hydrate the shell without waiting for slow suspense boundaries",
       "PPR - partial hydration Static shell, streaming metadata should produce a valid HTML document"
     ],
-    "failed": [],
+    "failed": [
+      "PPR - partial hydration Static shell, no streaming metadata should hydrate the shell without waiting for slow suspense boundaries"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -5631,6 +5634,15 @@
   "test/e2e/app-dir/prerender-encoding/prerender-encoding.test.ts": {
     "passed": [
       "prerender-encoding should respond with the prerendered page correctly"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/proxy-with-middleware/proxy-with-middleware.test.ts": {
+    "passed": [
+      "proxy-with-middleware should error when both middleware and proxy files are detected"
     ],
     "failed": [],
     "pending": [],
@@ -19025,8 +19037,7 @@
     "runtimeError": false
   },
   "test/integration/required-server-files-ssr-404/test/index.test.js": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "Required Server Files production mode partial optional catch-all route should render /partial-catch-all/hello.com",
       "Required Server Files production mode partial optional catch-all route should render /partial-catch-all/hello.com/hello",
       "Required Server Files production mode partial optional catch-all route should render /partial-catch-all/hello.com/hello/world",
@@ -19052,9 +19063,10 @@
       "Required Server Files production mode should return data correctly with x-matched-path",
       "Required Server Files production mode should return data correctly with x-matched-path for optional catch-all route"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
-    "runtimeError": true
+    "runtimeError": false
   },
   "test/integration/revalidate-as-path/test/index.test.js": {
     "passed": [
@@ -20485,15 +20497,6 @@
       "ppr-use-server-inserted-html should insert the html insertion into html body",
       "ppr-use-server-inserted-html should mark the route as ppr rendered",
       "ppr-use-server-inserted-html should not log insertion in build"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/production/app-dir/proxy-with-middleware/proxy-with-middleware.test.ts": {
-    "passed": [
-      "proxy-with-middleware should error when both middleware and proxy files are detected"
     ],
     "failed": [],
     "pending": [],
