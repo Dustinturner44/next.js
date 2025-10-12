@@ -551,10 +551,19 @@ export async function handleAction({
   // When running actions the default is no-store, you can still `cache: 'force-cache'`
   workStore.fetchCache = 'default-no-store'
 
-  const originDomain =
-    typeof req.headers['origin'] === 'string'
-      ? new URL(req.headers['origin']).host
-      : undefined
+  let originDomain: string | undefined
+
+  if (typeof req.headers.origin === 'string') {
+    // RFC 6454 says that "Origin: null" is an allowed value
+    if (req.headers.origin !== 'null') {
+      try {
+        originDomain = new URL(req.headers.origin).host
+      } catch {
+        // malformed origin
+      }
+    }
+  }
+
   const host = parseHostHeader(req.headers)
 
   let warning: string | undefined = undefined
