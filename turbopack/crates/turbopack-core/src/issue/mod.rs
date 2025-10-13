@@ -6,7 +6,6 @@ pub mod resolve;
 use std::{
     cmp::min,
     fmt::{Display, Formatter},
-    sync::Arc,
 };
 
 use anyhow::{Result, anyhow};
@@ -164,9 +163,7 @@ pub trait ImportTracer {
     fn get_traces(self: Vc<Self>, path: FileSystemPath) -> Vc<ImportTraces>;
 }
 
-#[derive(
-    Debug, Clone, TaskInput, TraceRawVcs, Hash, Eq, PartialEq, Serialize, Deserialize, NonLocalValue,
-)]
+#[turbo_tasks::value]
 pub struct DelegatingImportTracer {
     delegates: AutoSet<ResolvedVc<Box<dyn ImportTracer>>>,
 }
@@ -220,7 +217,7 @@ pub struct Issues(Vec<ResolvedVc<Box<dyn Issue>>>);
 #[derive(Debug)]
 pub struct CapturedIssues {
     issues: AutoSet<ResolvedVc<Box<dyn Issue>>>,
-    tracer: Arc<DelegatingImportTracer>,
+    tracer: ResolvedVc<DelegatingImportTracer>,
 }
 
 #[turbo_tasks::value_impl]
@@ -250,14 +247,12 @@ impl CapturedIssues {
 
     // Returns all the issues as formatted `PlainIssues`.
     pub async fn get_plain_issues(&self) -> Result<Vec<ReadRef<PlainIssue>>> {
-        let mut list =
-            self.issues
-                .iter()
-                .map(|issue| async move {
-                    PlainIssue::from_issue(**issue, Some(self.tracer.clone())).await
-                })
-                .try_join()
-                .await?;
+        let mut list = self
+            .issues
+            .iter()
+            .map(|issue| async move { PlainIssue::from_issue(**issue, Some(*self.tracer)).await })
+            .try_join()
+            .await?;
         list.sort();
         Ok(list)
     }
@@ -716,7 +711,7 @@ impl PlainIssue {
     #[turbo_tasks::function]
     pub async fn from_issue(
         issue: ResolvedVc<Box<dyn Issue>>,
-        import_tracer: Option<Arc<DelegatingImportTracer>>,
+        import_tracer: Option<ResolvedVc<DelegatingImportTracer>>,
     ) -> Result<Vc<Self>> {
         let description: Option<StyledString> = match *issue.description().await? {
             Some(description) => Some(description.owned().await?),
@@ -747,8 +742,13 @@ impl PlainIssue {
             },
             import_traces: match import_tracer {
                 Some(tracer) => {
-                    into_plain_trace(tracer.get_traces(issue.file_path().owned().await?).await?)
-                        .await?
+                    into_plain_trace(
+                        tracer
+                            .await?
+                            .get_traces(issue.file_path().owned().await?)
+                            .await?,
+                    )
+                    .await?
                 }
                 None => vec![],
             },
@@ -835,9 +835,10 @@ where
         CapturedIssues {
             issues: self.peek_collectibles(),
 
-            tracer: Arc::new(DelegatingImportTracer {
+            tracer: DelegatingImportTracer {
                 delegates: self.peek_collectibles(),
-            }),
+            }
+            .resolved_cell(),
         }
     }
 
@@ -845,9 +846,10 @@ where
         CapturedIssues {
             issues: self.take_collectibles(),
 
-            tracer: Arc::new(DelegatingImportTracer {
+            tracer: DelegatingImportTracer {
                 delegates: self.take_collectibles(),
-            }),
+            }
+            .resolved_cell(),
         }
     }
 }

@@ -19,6 +19,11 @@ use crate::{
 
 /// Trait to implement in order for a type to be accepted as a
 /// [`#[turbo_tasks::function]`][crate::function] argument.
+///
+/// Note that in addition to the trait bounds, the type must also be deterministic serializable when
+/// used for a persisted task (is_transient = false). This means serialization of equal values
+/// should lead to byte-identical results. This is not enforced by the trait itself, but is required
+/// for correct behavior.
 pub trait TaskInput: Send + Sync + Clone + Debug + PartialEq + Eq + Hash + TraceRawVcs {
     fn resolve_input(&self) -> impl Future<Output = Result<Self>> + Send + '_ {
         async { Ok(self.clone()) }
@@ -323,19 +328,6 @@ where
         Ok(new_map)
     }
 
-    fn is_resolved(&self) -> bool {
-        self.iter().all(TaskInput::is_resolved)
-    }
-
-    fn is_transient(&self) -> bool {
-        self.iter().any(TaskInput::is_transient)
-    }
-}
-
-impl<T> TaskInput for auto_hash_map::AutoSet<T>
-where
-    T: TaskInput,
-{
     fn is_resolved(&self) -> bool {
         self.iter().all(TaskInput::is_resolved)
     }
