@@ -5,6 +5,8 @@ import { join } from 'path'
 import cheerio from 'cheerio'
 import webdriver from 'next-webdriver'
 
+console.log('does test-deploy pass?')
+
 describe('skip-trailing-slash-redirect', () => {
   let next: NextInstance
 
