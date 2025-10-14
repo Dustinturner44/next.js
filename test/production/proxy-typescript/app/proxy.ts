@@ -1,6 +1,6 @@
 import { NextProxy, NextResponse, URLPattern, ProxyConfig } from 'next/server'
 
-export const middleware: NextProxy = function (request) {
+export const proxy: NextProxy = function (request) {
   const pattern = new URLPattern({
     pathname: '/:path',
   })
@@ -9,7 +9,7 @@ export const middleware: NextProxy = function (request) {
   if (request.nextUrl.pathname === '/static') {
     return new NextResponse(null, {
       headers: {
-        data: 'hello from middleware',
+        data: 'hello from proxy',
         'req-url-basepath': request.nextUrl.basePath,
         'req-url-pathname': request.nextUrl.pathname,
         'req-url-query': request.nextUrl.searchParams.get('foo') || '',
