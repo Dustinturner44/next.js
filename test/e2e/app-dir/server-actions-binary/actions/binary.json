@@ -1,0 +1,376 @@
+{
+  "version": "1",
+  "width": 1280,
+  "height": 720,
+  "slides": [
+    {
+      "id": "135db2e3-419d-443f-83e9-80de8d5d8a68",
+      "name": "SS_COVER",
+      "type": "COVER",
+      "shapes": [
+        {
+          "x": 77.46813648293963,
+          "y": 683.2635170603675,
+          "id": "98c4b64e-f8ca-4871-a1ae-961fc7c493a5",
+          "name": "SS_PRESENTATION_TITLE__TEXT",
+          "type": "TEXT",
+          "style": {
+            "color": {
+              "a": 1,
+              "b": 128,
+              "g": 128,
+              "r": 128
+            },
+            "fontName": "Podkova",
+            "fontSize": 10.66666666666667,
+            "themeFont": "BODY",
+            "lineHeight": 1.08,
+            "paddingLeft": 0,
+            "firstLineIndent": 0,
+            "verticalAlignment": "CENTER",
+            "horizontalAlignment": "LEFT",
+            "paragraphSpaceBefore": 13.33333333333333
+          },
+          "width": 604.8,
+          "height": 19.2,
+          "paragraphs": [
+            {
+              "strings": [
+                {
+                  "content": {
+                    "type": "VARIABLE",
+                    "variableName": "PRESENTATION_TITLE",
+                    "value": "Understanding and Addressing Climate Change"
+                  }
+                }
+              ]
+            }
+          ],
+          "placeholderType": "PRESENTATION_TITLE",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "layoutShapeId": "ee34905cba280b6b0c63bc282f8a7d01e1b63c73"
+        },
+        {
+          "x": 48,
+          "y": 683.2635170603675,
+          "id": "2109800d-712c-47a8-8d81-f3b9bd4ead6c",
+          "name": "SS_PAGE__TEXT",
+          "type": "TEXT",
+          "style": {
+            "color": {
+              "a": 0.5,
+              "b": 128,
+              "g": 128,
+              "r": 128
+            },
+            "fontName": "Podkova",
+            "fontSize": 10.66666666666667,
+            "themeFont": "BODY",
+            "lineHeight": 1.08,
+            "paddingLeft": 0,
+            "firstLineIndent": 0,
+            "verticalAlignment": "CENTER",
+            "horizontalAlignment": "LEFT",
+            "paragraphSpaceBefore": 13.33333333333333
+          },
+          "width": 19.2,
+          "height": 19.2,
+          "paragraphs": [
+            {
+              "strings": [
+                {
+                  "content": {
+                    "type": "VARIABLE",
+                    "variableName": "SLIDE_NUMBER",
+                    "value": "1"
+                  }
+                }
+              ]
+            }
+          ],
+          "placeholderType": "SLIDE_NUMBER",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "layoutShapeId": "ec28b8e428a6b87fcc2efde294048ac901a86422"
+        },
+        {
+          "x": 37.46362204724409,
+          "y": 181.1793175853018,
+          "id": "2ac78104-2301-44af-8cbb-f217eb3be045",
+          "name": "Rectangle 4__VECTOR",
+          "type": "VECTOR",
+          "style": {
+            "fill": {
+              "type": "SOLID",
+              "color": {
+                "a": 1,
+                "b": 59,
+                "g": 74,
+                "r": 18,
+                "themeColor": "ACCENT1",
+                "themeColorModifications": [
+                  {
+                    "type": "LIGHTNESS_FACTOR",
+                    "value": 0.5
+                  }
+                ]
+              }
+            }
+          },
+          "width": 741.7363779527559,
+          "height": 410.4724409448819,
+          "pathType": "RECTANGLE",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "layoutShapeId": "82c2f7f2d0113c764a9f37d986c3b9599f386077"
+        },
+        {
+          "x": 84,
+          "y": 263.2155380577428,
+          "id": "e6632eb7-a407-46a1-b11c-05b09c559fb9",
+          "name": "SS_TITLE__TEXT",
+          "type": "TEXT",
+          "style": {
+            "bold": false,
+            "color": {
+              "a": 1,
+              "b": 255,
+              "g": 255,
+              "r": 255
+            },
+            "fontName": "Forum",
+            "fontSize": 53.62962962962963,
+            "lineHeight": 1.2,
+            "paddingLeft": 0,
+            "firstLineIndent": 0,
+            "verticalAlignment": "BOTTOM",
+            "horizontalAlignment": "LEFT",
+            "paragraphSpaceBefore": 11.172839506172838
+          },
+          "width": 625.3333333333334,
+          "height": 193.0666666666667,
+          "paragraphs": [
+            {
+              "strings": [
+                {
+                  "content": {
+                    "type": "STRING",
+                    "value": "Understanding and Addressing Climate Change"
+                  }
+                }
+              ]
+            }
+          ],
+          "placeholderType": "TITLE",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "layoutShapeId": "a4d3deb5e8092897f0d7a8c1e7c926a9dc19fbfb"
+        },
+        {
+          "x": 84,
+          "y": 480.1190551181102,
+          "id": "87e01988-dc4d-41ff-9cb9-775bf0ac97bb",
+          "name": "SS_SUBTITLE__TEXT",
+          "type": "TEXT",
+          "style": {
+            "color": {
+              "a": 1,
+              "b": 255,
+              "g": 255,
+              "r": 255
+            },
+            "fontName": "Podkova",
+            "fontSize": 21.33333333333333,
+            "themeFont": "BODY",
+            "lineHeight": 1.32,
+            "paddingLeft": 0,
+            "firstLineIndent": 0,
+            "verticalAlignment": "TOP",
+            "horizontalAlignment": "LEFT",
+            "paragraphSpaceBefore": 13.33333333333333
+          },
+          "width": 625.3333333333334,
+          "height": 49.62015748031496,
+          "paragraphs": [
+            {
+              "strings": [
+                {
+                  "content": {
+                    "type": "STRING",
+                    "value": "Exploring Causes, Impacts, and Solutions for a Sustainable Future"
+                  }
+                }
+              ]
+            }
+          ],
+          "placeholderType": "SUBTITLE",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "layoutShapeId": "97273b86b337b7aa32de04f911bc6deedb4ae867"
+        },
+        {
+          "x": 756.2666666666667,
+          "y": 14.4,
+          "id": "b050c405-979b-4a47-a499-dec55ca75abd",
+          "name": "SS_IMAGE__VECTOR",
+          "type": "VECTOR",
+          "style": {
+            "fill": {
+              "type": "IMAGE",
+              "url": "https://slidespeak-image-registry.s3.amazonaws.com/PIXABAY_2370285.jpg",
+              "fillMode": "COVER",
+              "opacity": 1
+            }
+          },
+          "width": 508.8,
+          "height": 691.2,
+          "pathType": "RECTANGLE",
+          "placeholderType": "IMAGE",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "paragraphs": [],
+          "layoutShapeId": "8f19ed678fd6f4bfc4344a995eac577d15c14817"
+        },
+        {
+          "x": 708.2666666666667,
+          "y": 181.1793175853018,
+          "id": "e2c42601-5128-49e2-a56f-22abc3e97acf",
+          "name": "Rectangle 9__VECTOR",
+          "type": "VECTOR",
+          "style": {
+            "fill": {
+              "type": "SOLID",
+              "color": {
+                "a": 1,
+                "b": 93,
+                "g": 206,
+                "r": 58,
+                "themeColor": "ACCENT3",
+                "themeColorModifications": []
+              }
+            }
+          },
+          "width": 48,
+          "height": 40.96020997375328,
+          "pathType": "RECTANGLE",
+          "isFlippedVertically": true,
+          "isFlippedHorizontally": false,
+          "layoutShapeId": "4fb279ee0ca9c7db78aef7d59d59dfb54278270b"
+        },
+        {
+          "x": 37.46362204724409,
+          "y": 48,
+          "id": "9f735098-d51c-4fde-b466-d4c65482d054",
+          "name": "SS_LOGO__VECTOR",
+          "type": "VECTOR",
+          "style": {},
+          "width": 76.8,
+          "height": 76.8,
+          "pathType": "RECTANGLE",
+          "placeholderType": "LOGO",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "paragraphs": [],
+          "layoutShapeId": "3f2746a1a3549cef72a66df6210e91d70ce04e65"
+        }
+      ],
+      "background": {
+        "type": "SOLID",
+        "color": {
+          "a": 1,
+          "b": 255,
+          "g": 255,
+          "r": 255
+        }
+      },
+      "layoutId": "ddbb4679b79dca3f8c7e93350e9d4ac7e422c1e1",
+      "hash": "mgqbl4mw.9cc"
+    },
+    {
+      "id": "5598c81a-4371-46da-8799-9f118a5d90c2",
+      "name": "SS_ITEMS_4_C",
+      "type": "ITEMS",
+      "shapes": [
+        {
+          "x": 37.46362204724409,
+          "y": 48,
+          "id": "4537be87-3aa7-4e3b-9826-fdc10a7b0a77",
+          "name": "SS_LOGO__VECTOR",
+          "type": "VECTOR",
+          "style": {},
+          "width": 57.6,
+          "height": 57.6,
+          "pathType": "RECTANGLE",
+          "placeholderType": "LOGO",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "paragraphs": [],
+          "layoutShapeId": "c44ed17c9b6b8de53fb22ca1847ccb0073a54495"
+        }
+      ],
+      "background": {
+        "type": "SOLID",
+        "color": {
+          "a": 1,
+          "b": 255,
+          "g": 255,
+          "r": 255
+        }
+      },
+      "itemsCount": 4,
+      "layoutId": "c7103ed61568b630bc852532f247e17f2d0f3df5",
+      "hash": "mgqbmafc.dl"
+    },
+    {
+      "id": "0ef63d10-a3a5-426b-b9f3-ea93409f1978",
+      "name": "SS_DEFAULT_IMG_A",
+      "type": "DEFAULT",
+      "shapes": [
+        {
+          "x": 766.1246587182274,
+          "y": 43.16057554242393,
+          "id": "251207b8-d52e-4686-82bf-31a5b674f983",
+          "name": "SS_IMAGE__VECTOR",
+          "type": "VECTOR",
+          "style": {
+            "fill": {
+              "type": "IMAGE",
+              "url": "https://slidespeak-files.s3.us-east-2.amazonaws.com/charts/2ddad7c1-1ac2-4a1f-91d9-fd8b6283aa2d.png",
+              "fillMode": "CONTAIN",
+              "opacity": 1
+            }
+          },
+          "width": 432,
+          "height": 624.0001049868766,
+          "pathType": "RECTANGLE",
+          "placeholderType": "IMAGE",
+          "isFlippedVertically": false,
+          "isFlippedHorizontally": false,
+          "paragraphs": [],
+          "layoutShapeId": "def2197315bf69fef228dccb515cbd80e80d02f3"
+        }
+      ],
+      "background": {
+        "type": "SOLID",
+        "color": {
+          "a": 1,
+          "b": 255,
+          "g": 255,
+          "r": 255
+        }
+      },
+      "layoutId": "c5feed24279d1b3bfed69487f309aeec57c626b3",
+      "hash": "mgqc3r25.sll"
+    }
+  ],
+  "theme": {
+    "colors": {},
+    "fonts": {}
+  },
+  "variables": {
+    "PRESENTATION_TITLE": "Understanding and Addressing Climate Change"
+  },
+  "templateId": "CREATIVA",
+  "hash": "726d68b07c03f8033a1800946e0cf096"
+}
