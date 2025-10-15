@@ -81,7 +81,7 @@ pub struct JavaScriptStreamSender {
     get: Box<dyn Fn() -> UnboundedSender<Result<Bytes, SharedError>> + Send + Sync>,
 }
 
-#[turbo_tasks::value(transparent)]
+#[turbo_tasks::value(transparent, serialization = "none")]
 #[derive(Clone, Debug)]
 pub struct JavaScriptEvaluation(#[turbo_tasks(trace_ignore)] JavaScriptStream);
 
