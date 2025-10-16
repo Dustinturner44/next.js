@@ -16,6 +16,7 @@ import {
   type WorkStore,
 } from '../app-render/work-async-storage.external'
 import type {
+  DevStoreModernPartial,
   PrerenderStoreModernRuntime,
   RequestStore,
 } from '../app-render/work-unit-async-storage.external'
@@ -2847,18 +2848,20 @@ async function renderWithRestartOnCacheMissInDev(
     initialHangingPromiseController.signal
   )
 
-  requestStore.prerenderResumeDataCache = prerenderResumeDataCache
   // `getRenderResumeDataCache` will fall back to using `prerenderResumeDataCache` as `renderResumeDataCache`,
   // so not having a resume data cache won't break any expectations in case we don't need to restart.
   requestStore.renderResumeDataCache = null
-  requestStore.stagedRendering = initialStageController
-  requestStore.asyncApiPromises = createAsyncApiPromisesInDev(
-    initialStageController,
-    requestStore.cookies,
-    requestStore.mutableCookies,
-    requestStore.headers
-  )
-  requestStore.cacheSignal = cacheSignal
+  Object.assign(requestStore, {
+    stagedRendering: initialStageController,
+    asyncApiPromises: createAsyncApiPromisesInDev(
+      initialStageController,
+      requestStore.cookies,
+      requestStore.mutableCookies,
+      requestStore.headers
+    ),
+    prerenderResumeDataCache,
+    cacheSignal,
+  } satisfies DevStoreModernPartial)
 
   let debugChannel = setReactDebugChannel && createDebugChannel()
 
@@ -2963,18 +2966,20 @@ async function renderWithRestartOnCacheMissInDev(
 
   // We've filled the caches, so now we can render as usual,
   // without any cache-filling mechanics.
-  requestStore.prerenderResumeDataCache = null
   requestStore.renderResumeDataCache = createRenderResumeDataCache(
     prerenderResumeDataCache
   )
-  requestStore.stagedRendering = finalStageController
-  requestStore.cacheSignal = null
-  requestStore.asyncApiPromises = createAsyncApiPromisesInDev(
-    finalStageController,
-    requestStore.cookies,
-    requestStore.mutableCookies,
-    requestStore.headers
-  )
+  Object.assign(requestStore, {
+    stagedRendering: finalStageController,
+    asyncApiPromises: createAsyncApiPromisesInDev(
+      finalStageController,
+      requestStore.cookies,
+      requestStore.mutableCookies,
+      requestStore.headers
+    ),
+    prerenderResumeDataCache: null,
+    cacheSignal: null,
+  } satisfies DevStoreModernPartial)
 
   // The initial render already wrote to its debug channel.
   // We're not using it, so we need to create a new one.
