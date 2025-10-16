@@ -7,6 +7,7 @@ import {
   red,
   white,
   yellow,
+  dim,
 } from '../../lib/picocolors'
 import { stripNextRscUnionQuery } from '../../lib/url'
 import type { FetchMetric } from '../base-http'
@@ -43,14 +44,18 @@ export function logRequests(
   response: NodeNextResponse,
   loggingConfig: LoggingConfig,
   requestStartTime: bigint,
-  requestEndTime: bigint
+  requestEndTime: bigint,
+  devRequestTimingMiddlewareStart: bigint | undefined,
+  devRequestTimingMiddlewareEnd: bigint | undefined
 ): void {
   if (!ignoreLoggingIncomingRequests(request, loggingConfig)) {
     logIncomingRequests(
       request,
       requestStartTime,
       requestEndTime,
-      response.statusCode
+      response.statusCode,
+      devRequestTimingMiddlewareStart,
+      devRequestTimingMiddlewareEnd
     )
   }
 
@@ -65,9 +70,15 @@ function logIncomingRequests(
   request: NodeNextRequest,
   requestStartTime: bigint,
   requestEndTime: bigint,
-  statusCode: number
+  statusCode: number,
+  devRequestTimingMiddlewareStart: bigint | undefined,
+  devRequestTimingMiddlewareEnd: bigint | undefined
 ): void {
   const isRSC = getRequestMeta(request, 'isRSCRequest')
+  const devRequestTimingInternalsEnd = getRequestMeta(
+    request,
+    'devRequestTimingInternalsEnd'
+  )
   const url = isRSC ? stripNextRscUnionQuery(request.url) : request.url
 
   const statusCodeColor =
@@ -83,8 +94,31 @@ function logIncomingRequests(
 
   const coloredStatus = statusCodeColor(statusCode.toString())
 
+  const totalRequestTime = requestEndTime - requestStartTime
+
+  const times: Array<[label: string, time: bigint]> = []
+
+  let middlewareTime: bigint | undefined
+  if (devRequestTimingMiddlewareStart && devRequestTimingMiddlewareEnd) {
+    middlewareTime =
+      devRequestTimingMiddlewareEnd - devRequestTimingMiddlewareStart
+    times.push(['proxy.ts', middlewareTime])
+  }
+
+  if (devRequestTimingInternalsEnd) {
+    let frameworkTime = devRequestTimingInternalsEnd - requestStartTime
+
+    /* Middleware runs during the internals so we have to subtract it from the framework time */
+    if (middlewareTime) {
+      frameworkTime -= middlewareTime
+    }
+    // Insert as the first item to be rendered in the list
+    times.unshift(['compile', frameworkTime])
+    times.push(['render', requestEndTime - devRequestTimingInternalsEnd])
+  }
+
   return writeLine(
-    `${request.method} ${url} ${coloredStatus} in ${hrtimeBigIntDurationToString(requestEndTime - requestStartTime)}`
+    `${request.method} ${url} ${coloredStatus} in ${hrtimeBigIntDurationToString(totalRequestTime)}${times.length > 0 ? dim(` (${times.map(([label, time]) => `${label}: ${hrtimeBigIntDurationToString(time)}`).join(', ')})`) : ''}`
   )
 }
 
