@@ -216,10 +216,10 @@
   },
   "test/development/acceptance-app/rsc-build-errors.test.ts": {
     "passed": [
+      "Error overlay - RSC build errors importing 'next/cache' APIs in a client component cacheLife is not allowed",
       "Error overlay - RSC build errors importing 'next/cache' APIs in a client component revalidatePath is not allowed",
       "Error overlay - RSC build errors importing 'next/cache' APIs in a client component revalidateTag is not allowed",
       "Error overlay - RSC build errors importing 'next/cache' APIs in a client component unstable_cache is allowed",
-      "Error overlay - RSC build errors importing 'next/cache' APIs in a client component cacheLife is not allowed",
       "Error overlay - RSC build errors importing 'next/cache' APIs in a client component unstable_cacheTag is not allowed",
       "Error overlay - RSC build errors importing 'next/cache' APIs in a client component unstable_noStore is allowed",
       "Error overlay - RSC build errors next/root-params importing 'next/root-params' in a client component",
@@ -460,10 +460,10 @@
   },
   "test/development/acceptance/server-component-compiler-errors-in-pages.test.ts": {
     "passed": [
+      "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages cacheLife is not allowed",
       "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages revalidatePath is not allowed",
       "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages revalidateTag is not allowed",
       "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages unstable_cache is allowed",
-      "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages cacheLife is not allowed",
       "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages unstable_cacheTag is not allowed",
       "Error Overlay for server components compiler errors in pages importing 'next/cache' APIs in pages unstable_noStore is allowed",
       "Error Overlay for server components compiler errors in pages importing 'next/headers' in pages",
@@ -566,10 +566,12 @@
   },
   "test/development/app-dir/cache-components-dev-warmup/cache-components.dev-warmup.test.ts": {
     "passed": [
+      "cache-components-dev-warmup initial load cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup initial load cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup navigation cached data resolves in the correct phase cached data + short-lived cached data",
@@ -4001,15 +4003,15 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/cache-components-console/cache-components.console.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [],
+    "pending": [
       "cache-components - Console Dimming - Validation dims console calls during prospective rendering",
       "cache-components - Logging after Abort (default) With Dimming - Client dims console calls after a prerender has aborted",
       "cache-components - Logging after Abort (default) With Dimming - Server dims console calls after a prerender has aborted",
       "cache-components - Logging after Abort With Hiding - Client hides console calls after a prerender has aborted",
       "cache-components - Logging after Abort With Hiding - Server hides console calls after a prerender has aborted"
     ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
@@ -4120,14 +4122,15 @@
       "Cache Components Errors Dev Sync IO - Random - Math.random() should show a collapsed redbox error",
       "Cache Components Errors Dev Sync IO - Web Crypto - getRandomValue() should show a collapsed redbox error",
       "Cache Components Errors Dev Sync IO - Web Crypto - randomUUID() should show a collapsed redbox error",
-      "Cache Components Errors Dev Unhandled Rejection Suppression should suppress unhandled rejections during prerender validation in dev",
       "Cache Components Errors Dev With `use cache: private` in `unstable_cache` should show a redbox error",
       "Cache Components Errors Dev With `use cache: private` in `use cache` should show a redbox error",
-      "Cache Components Errors Dev With `use cache: private` with `connection()` should show a redbox error",
       "Cache Components Errors Dev With `use cache: private` without Suspense should show a redbox error"
     ],
     "failed": [],
-    "pending": [],
+    "pending": [
+      "Cache Components Errors Dev Unhandled Rejection Suppression should suppress unhandled rejections during prerender validation in dev",
+      "Cache Components Errors Dev With `use cache: private` with `connection()` should show a redbox error"
+    ],
     "flakey": [],
     "runtimeError": false
   },
@@ -7410,6 +7413,27 @@
     "pending": [
       "parallel-routes-revalidation server action revalidation should not trigger a refresh for the page that is being redirected to"
     ],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/parallel-routes-root-param-dynamic-child/parallel-routes-root-param-dynamic-child.test.ts": {
+    "passed": [
+      "parallel-routes-root-param-dynamic-child Base Routes should render a 200 for /en (in generateStaticParams)",
+      "parallel-routes-root-param-dynamic-child Base Routes should render a 200 for /fr (in generateStaticParams)",
+      "parallel-routes-root-param-dynamic-child Base Routes should render a 404 for /es (not in generateStaticParams)",
+      "parallel-routes-root-param-dynamic-child With generateStaticParams (gsp) Dynamic params (dynamic-123) should render a 404 for /en/gsp/stories/dynamic-123 (slug not in generateStaticParams)",
+      "parallel-routes-root-param-dynamic-child With generateStaticParams (gsp) Dynamic params (dynamic-123) should render a 404 for /es/gsp/stories/dynamic-123 (both locale and slug not allowed)",
+      "parallel-routes-root-param-dynamic-child With generateStaticParams (gsp) Dynamic params (dynamic-123) should render a 404 for /fr/gsp/stories/dynamic-123 (slug not in generateStaticParams)",
+      "parallel-routes-root-param-dynamic-child With generateStaticParams (gsp) Static params (static-123) should render a 200 for /en/gsp/stories/static-123",
+      "parallel-routes-root-param-dynamic-child With generateStaticParams (gsp) Static params (static-123) should render a 200 for /fr/gsp/stories/static-123",
+      "parallel-routes-root-param-dynamic-child With generateStaticParams (gsp) Static params (static-123) should render a 404 for /es/gsp/stories/static-123 (locale not in generateStaticParams)",
+      "parallel-routes-root-param-dynamic-child Without generateStaticParams (no-gsp) should allow dynamic params even with /es locale",
+      "parallel-routes-root-param-dynamic-child Without generateStaticParams (no-gsp) should render a 200 for /en/no-gsp/stories/dynamic-123",
+      "parallel-routes-root-param-dynamic-child Without generateStaticParams (no-gsp) should render a 200 for /es/no-gsp/stories/dynamic-123",
+      "parallel-routes-root-param-dynamic-child Without generateStaticParams (no-gsp) should render a 200 for /fr/no-gsp/stories/dynamic-123"
+    ],
+    "failed": [],
+    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
@@ -12304,6 +12328,56 @@
     ],
     "failed": [],
     "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/url-imports/url-imports.test.ts": {
+    "passed": [
+      "Handle url imports should allow url import in css",
+      "Handle url imports should client-render the /ssg page",
+      "Handle url imports should client-render the /ssr page",
+      "Handle url imports should client-render the /static page",
+      "Handle url imports should render a static url image import",
+      "Handle url imports should render the /ssg page",
+      "Handle url imports should render the /ssr page",
+      "Handle url imports should render the /static page",
+      "Handle url imports should respond on value api"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/url/url.test.ts": {
+    "passed": [
+      "Handle new URL asset references app router should client-render the /client page",
+      "Handle new URL asset references app router should client-render the /rsc page",
+      "Handle new URL asset references app router should render the /client page",
+      "Handle new URL asset references app router should render the /rsc page",
+      "Handle new URL asset references app router should respond on API",
+      "Handle new URL asset references app router should respond on opengraph-image",
+      "Handle new URL asset references app router should respond on webmanifest",
+      "Handle new URL asset references pages router should client-render the /pages/ssg page",
+      "Handle new URL asset references pages router should client-render the /pages/ssr page",
+      "Handle new URL asset references pages router should client-render the /pages/static page",
+      "Handle new URL asset references pages router should render the /pages/ssg page",
+      "Handle new URL asset references pages router should render the /pages/ssr page",
+      "Handle new URL asset references pages router should render the /pages/static page",
+      "Handle new URL asset references pages router should respond on API",
+      "Handle new URL asset references pages router should respond on edge API",
+      "Handle new URL asset references should respond on middleware api"
+    ],
+    "failed": [],
+    "pending": [
+      "Handle new URL asset references app router should client-render the /client-edge page",
+      "Handle new URL asset references app router should client-render the /rsc-edge page",
+      "Handle new URL asset references app router should render the /client-edge page",
+      "Handle new URL asset references app router should render the /rsc-edge page",
+      "Handle new URL asset references pages router should client-render the /pages-edge/ssr page",
+      "Handle new URL asset references pages router should client-render the /pages-edge/static page",
+      "Handle new URL asset references pages router should render the /pages-edge/ssr page",
+      "Handle new URL asset references pages router should render the /pages-edge/static page"
+    ],
     "flakey": [],
     "runtimeError": false
   },
@@ -21789,56 +21863,6 @@
     "pending": [
       "undefined webpack config error production mode should show in production mode"
     ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/url-imports/test/index.test.js": {
-    "passed": [
-      "Handle url imports with next build should allow url import in css",
-      "Handle url imports with next build should client-render the /ssg page",
-      "Handle url imports with next build should client-render the /ssr page",
-      "Handle url imports with next build should client-render the /static page",
-      "Handle url imports with next build should render a static url image import",
-      "Handle url imports with next build should render the /ssg page",
-      "Handle url imports with next build should render the /ssr page",
-      "Handle url imports with next build should render the /static page",
-      "Handle url imports with next build should respond on value api",
-      "Handle url imports with next dev should allow url import in css",
-      "Handle url imports with next dev should client-render the /ssg page",
-      "Handle url imports with next dev should client-render the /ssr page",
-      "Handle url imports with next dev should client-render the /static page",
-      "Handle url imports with next dev should render a static url image import",
-      "Handle url imports with next dev should render the /ssg page",
-      "Handle url imports with next dev should render the /ssr page",
-      "Handle url imports with next dev should render the /static page",
-      "Handle url imports with next dev should respond on value api"
-    ],
-    "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/url/test/index.test.js": {
-    "passed": [
-      "Handle new URL asset references in next build should client-render the /ssg page",
-      "Handle new URL asset references in next build should client-render the /ssr page",
-      "Handle new URL asset references in next build should client-render the /static page",
-      "Handle new URL asset references in next build should render the /ssg page",
-      "Handle new URL asset references in next build should render the /ssr page",
-      "Handle new URL asset references in next build should render the /static page",
-      "Handle new URL asset references in next build should respond on basename api",
-      "Handle new URL asset references in next build should respond on size api",
-      "Handle new URL asset references in next dev should client-render the /ssg page",
-      "Handle new URL asset references in next dev should client-render the /ssr page",
-      "Handle new URL asset references in next dev should client-render the /static page",
-      "Handle new URL asset references in next dev should render the /ssg page",
-      "Handle new URL asset references in next dev should render the /ssr page",
-      "Handle new URL asset references in next dev should render the /static page",
-      "Handle new URL asset references in next dev should respond on basename api",
-      "Handle new URL asset references in next dev should respond on size api"
-    ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
