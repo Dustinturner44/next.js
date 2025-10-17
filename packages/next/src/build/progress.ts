@@ -49,6 +49,10 @@ export const createProgress = (total: number, label: string) => {
       interval: 200,
     },
   })
+  if (process.stdout.isTTY) {
+    // createSpinner logs the initial state, but doesn't do anything afterwards anyway.
+    progressSpinner = undefined
+  }
 
   const run = () => {
     curProgress++
@@ -72,7 +76,7 @@ export const createProgress = (total: number, label: string) => {
 
     const isFinished = curProgress === total
     const message = `${label} (${curProgress}/${total})`
-    if (process.stdout.isTTY && progressSpinner && !isFinished) {
+    if (progressSpinner && !isFinished) {
       progressSpinner.setText(message)
     } else {
       progressSpinner?.stop()
@@ -87,7 +91,6 @@ export const createProgress = (total: number, label: string) => {
 
   const clear = () => {
     if (
-      process.stdout.isTTY &&
       progressSpinner &&
       // Ensure only reset and clear once to avoid set operation overflow in ora
       progressSpinner.isSpinning
