@@ -38,8 +38,8 @@ import {
 } from '../app-render/work-unit-async-storage.external'
 
 import {
-  makeDevtoolsIOAwarePromise,
   makeHangingPromise,
+  makeRejectedHangingPromise,
 } from '../dynamic-rendering-utils'
 
 import type { ClientReferenceManifestForRsc } from '../../build/webpack/plugins/flight-manifest-plugin'
@@ -71,7 +71,10 @@ import { createLazyResult, isResolvedLazyResult } from '../lib/lazy-result'
 import { dynamicAccessAsyncStorage } from '../app-render/dynamic-access-async-storage.external'
 import { isReactLargeShellError } from '../app-render/react-large-shell-error'
 import type { CacheLife } from './cache-life'
-import { RenderStage } from '../app-render/staged-rendering'
+import {
+  RenderStage,
+  type NonStaticRenderStage,
+} from '../app-render/staged-rendering'
 
 interface PrivateCacheContext {
   readonly kind: 'private'
@@ -1015,10 +1018,9 @@ export function cache(
             if (process.env.NODE_ENV === 'development') {
               // Similar to runtime prerenders, private caches should not resolve in the static stage
               // of a dev request, so we delay them.
-              await makeDevtoolsIOAwarePromise(
-                undefined,
-                outerWorkUnitStore,
-                RenderStage.Runtime
+              await delayBeforeCacheReadStartInDev(
+                RenderStage.Runtime,
+                outerWorkUnitStore
               )
             }
             break
@@ -1280,14 +1282,19 @@ export function cache(
                     // We delay the cache here so that it doesn't resolve in the static task --
                     // in a regular static prerender, it'd be a hanging promise, and we need to reflect that,
                     // so it has to resolve later.
-                    // TODO(restart-on-cache-miss): Optimize this to avoid unnecessary restarts.
-                    // We don't end the cache read here, so this will always appear as a cache miss in the static stage,
-                    // and thus will cause a restart even if all caches are filled.
-                    await makeDevtoolsIOAwarePromise(
-                      undefined,
+                    // TODO(restart-on-cache-miss): This can fallthrough to the `RUNTIME_PREFETCH_DYNAMIC_STALE`
+                    // check below, and try to delay again. This is not incorrect, but it's unnecessary.
+                    // refactor this to avoid it.
+                    const hang = await delayOrHangStartedCacheReadInDev(
+                      RenderStage.Runtime,
                       workUnitStore,
-                      RenderStage.Runtime
+                      cacheSignal,
+                      workStore.route,
+                      'dynamic "use cache"'
                     )
+                    if (hang) {
+                      return hang.hangingPromise
+                    }
                   }
                   break
                 }
@@ -1322,14 +1329,16 @@ export function cache(
                     // We delay the cache here so that it doesn't resolve in the runtime phase --
                     // in a regular runtime prerender, it'd be a hanging promise, and we need to reflect that,
                     // so it has to resolve later.
-                    // TODO(restart-on-cache-miss): Optimize this to avoid unnecessary restarts.
-                    // We don't end the cache read here, so this will always appear as a cache miss in the runtime stage,
-                    // and thus will cause a restart even if all caches are filled.
-                    await makeDevtoolsIOAwarePromise(
-                      undefined,
+                    const hang = await delayOrHangStartedCacheReadInDev(
+                      RenderStage.Dynamic,
                       workUnitStore,
-                      RenderStage.Dynamic
+                      cacheSignal,
+                      workStore.route,
+                      'dynamic "use cache"'
                     )
+                    if (hang) {
+                      return hang.hangingPromise
+                    }
                   }
                   break
                 }
@@ -1496,14 +1505,16 @@ export function cache(
                 // We delay the cache here so that it doesn't resolve in the static task --
                 // in a regular static prerender, it'd be a hanging promise, and we need to reflect that,
                 // so it has to resolve later.
-                // TODO(restart-on-cache-miss): Optimize this to avoid unnecessary restarts.
-                // We don't end the cache read here, so this will always appear as a cache miss in the static stage,
-                // and thus will cause a restart even if all caches are filled.
-                await makeDevtoolsIOAwarePromise(
-                  undefined,
+                const hang = await delayOrHangStartedCacheReadInDev(
+                  RenderStage.Dynamic,
                   workUnitStore,
-                  RenderStage.Runtime
+                  cacheSignal,
+                  workStore.route,
+                  'dynamic "use cache"'
                 )
+                if (hang) {
+                  return hang.hangingPromise
+                }
               }
               break
             }
@@ -1847,4 +1858,76 @@ function isRecentlyRevalidatedTag(tag: string, workStore: WorkStore): boolean {
   }
 
   return false
+}
+
+async function delayBeforeCacheReadStartInDev(
+  stage: NonStaticRenderStage,
+  requestStore: RequestStore
+): Promise<void> {
+  const { stagedRendering } = requestStore
+  if (stagedRendering && stagedRendering.currentStage < stage) {
+    await stagedRendering.waitForStage(stage)
+  }
+}
+
+/** Note: Only call this after a `cacheSignal.beginRead()`. */
+async function delayOrHangStartedCacheReadInDev(
+  stage: NonStaticRenderStage,
+  requestStore: RequestStore,
+  cacheSignal: CacheSignal | null,
+  route: string,
+  expression: string
+): Promise<{ hangingPromise: Promise<never> } | null> {
+  const { stagedRendering } = requestStore
+  // No staging, so we don't need to delay.
+  if (!stagedRendering) {
+    return null
+  }
+
+  // We're already at or beyond the target stage, so we shouldn't hang or delay.
+  if (stagedRendering.currentStage >= stage) {
+    return null
+  }
+
+  // We've got an ongoing cache read that can only resolve in a future stage.
+
+  if (cacheSignal) {
+    // We're filling caches, and might need to omit this one if we can't reach its target stage.
+    // This can happen e.g. if a cache only resolves in the Dynamic stage --
+    // we never advance to it in a cache filling render.
+
+    // Hide the cache read.
+    // It won't resolve in the current stage anyway,
+    // so we don't want it to show up when we check if there's pending reads
+    // (i.e. cache misses) at the beginning of the next stage.
+    // Otherwise, the render might be bailed out and used as a warmup,
+    // and we'd stop advancing stages (e.g. we would never reach Dynamic)
+    // so this read would never end, and `cacheSignal.cacheReady()` would deadlock.
+    cacheSignal.endRead()
+
+    // We haven't reached the target stage yet, so we wait for one of these two things:
+    try {
+      await stagedRendering.waitForStage(stage)
+      // 1. We reach the target stage, and we can unblock the cacke
+
+      // We need to restart the read that we hid before, since it hasn't actually finished.
+      cacheSignal.beginRead()
+
+      return null
+    } catch {
+      // 2. The render is aborted before we reached the target stage.
+
+      // The render was already aborted, so we can just return a rejected promise instead of a hanging one.
+      const hangingPromise = makeRejectedHangingPromise(route, expression)
+      // Wrapped in an object so that we can return it without it being awaited by the runtime.
+      return { hangingPromise }
+    }
+  }
+
+  cacheSignal satisfies null
+
+  // Otherwise, we're in the restarted render, after caches have been filled.
+  // This render should finish completely, without aborting, so we should only delay.
+  await stagedRendering.waitForStage(stage)
+  return null
 }

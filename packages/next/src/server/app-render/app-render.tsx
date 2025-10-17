@@ -2782,7 +2782,7 @@ async function renderWithRestartOnCacheMissInDev(
   initialRequestStore: RequestStore,
   createRequestStore: () => RequestStore,
   getPayload: (requestStore: RequestStore) => Promise<RSCPayload>,
-  onError: (error: unknown) => void
+  onError: (err: unknown) => string | undefined
 ) {
   const {
     htmlRequestId,
@@ -2842,9 +2842,9 @@ async function renderWithRestartOnCacheMissInDev(
   const prerenderResumeDataCache = createPrerenderResumeDataCache()
 
   const initialReactController = new AbortController()
-  const initialDataController = new AbortController() // Controls hanging promises we create
+  const initialHangingPromiseController = new AbortController()
   const initialStageController = new StagedRenderingController(
-    initialDataController.signal
+    initialHangingPromiseController.signal
   )
 
   requestStore.prerenderResumeDataCache = prerenderResumeDataCache
@@ -2873,7 +2873,13 @@ async function renderWithRestartOnCacheMissInDev(
             initialRscPayload,
             clientReferenceManifest.clientModules,
             {
-              onError,
+              onError: (err) => {
+                if (initialReactController.signal.aborted) {
+                  return undefined
+                } else {
+                  return onError(err)
+                }
+              },
               environmentName,
               filterStackFrame,
               debugChannel: debugChannel?.serverSide,
@@ -2884,7 +2890,8 @@ async function renderWithRestartOnCacheMissInDev(
           // Note that we want to install this listener after the render is started
           // so that it runs after react is finished running its abort code.
           initialReactController.signal.addEventListener('abort', () => {
-            initialDataController.abort(initialReactController.signal.reason)
+            const { reason } = initialReactController.signal
+            initialHangingPromiseController.abort(reason)
           })
           return stream
         },
