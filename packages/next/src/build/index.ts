@@ -210,7 +210,7 @@ import { turbopackBuild } from './turbopack-build'
 import { isFileSystemCacheEnabledForBuild } from '../shared/lib/turbopack/utils'
 import { inlineStaticEnv } from '../lib/inline-static-env'
 import { populateStaticEnv } from '../lib/static-env'
-import { durationToString, hrtimeDurationToString } from './duration-to-string'
+import { durationToString } from './duration-to-string'
 import { traceGlobals } from '../trace/shared'
 import { extractNextErrorCode } from '../lib/error-telemetry-utils'
 import { runAfterProductionCompile } from './after-production-compile'
@@ -1857,7 +1857,6 @@ export default async function build(
         traceMemoryUsage('Finished type checking', nextBuildSpan)
       }
 
-      const collectingPageDataStart = process.hrtime()
       const postCompileSpinner = createSpinner('Collecting page data')
 
       const buildManifestPath = path.join(distDir, BUILD_MANIFEST)
@@ -2419,10 +2418,6 @@ export default async function build(
       })
 
       if (postCompileSpinner) {
-        const collectingPageDataEnd = process.hrtime(collectingPageDataStart)
-        postCompileSpinner.setText(
-          `Collecting page data in ${hrtimeDurationToString(collectingPageDataEnd)}`
-        )
         postCompileSpinner.stopAndPersist()
       }
       traceMemoryUsage('Finished collecting page data', nextBuildSpan)
@@ -3931,12 +3926,9 @@ export default async function build(
           .traceAsyncFn(() => writeManifest(routesManifestPath, routesManifest))
       }
 
-      const finalizingPageOptimizationStart = process.hrtime()
       const postBuildSpinner = createSpinner('Finalizing page optimization')
       let buildTracesSpinner
-      let buildTracesStart
       if (buildTracesPromise) {
-        buildTracesStart = process.hrtime()
         buildTracesSpinner = createSpinner('Collecting build traces')
       }
 
@@ -4088,14 +4080,7 @@ export default async function build(
       await buildTracesPromise
 
       if (buildTracesSpinner) {
-        if (buildTracesStart) {
-          const buildTracesEnd = process.hrtime(buildTracesStart)
-          buildTracesSpinner.setText(
-            `Collecting build traces in ${hrtimeDurationToString(buildTracesEnd)}`
-          )
-        }
         buildTracesSpinner.stopAndPersist()
-        buildTracesSpinner = undefined
       }
 
       if (isCompileMode) {
@@ -4172,12 +4157,6 @@ export default async function build(
       }
 
       if (postBuildSpinner) {
-        const finalizingPageOptimizationEnd = process.hrtime(
-          finalizingPageOptimizationStart
-        )
-        postBuildSpinner.setText(
-          `Finalizing page optimization in ${hrtimeDurationToString(finalizingPageOptimizationEnd)}`
-        )
         postBuildSpinner.stopAndPersist()
       }
       console.log()

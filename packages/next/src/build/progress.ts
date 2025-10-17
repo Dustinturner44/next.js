@@ -72,7 +72,7 @@ export const createProgress = (total: number, label: string) => {
 
     const isFinished = curProgress === total
     const message = `${label} (${curProgress}/${total})`
-    if (progressSpinner && !isFinished) {
+    if (process.stdout.isTTY && progressSpinner && !isFinished) {
       progressSpinner.setText(message)
     } else {
       progressSpinner?.stop()
@@ -87,6 +87,7 @@ export const createProgress = (total: number, label: string) => {
 
   const clear = () => {
     if (
+      process.stdout.isTTY &&
       progressSpinner &&
       // Ensure only reset and clear once to avoid set operation overflow in ora
       progressSpinner.isSpinning
