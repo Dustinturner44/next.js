@@ -1,6 +1,6 @@
 import ora from 'next/dist/compiled/ora'
 import * as Log from './output/log'
-import { hrtimeDurationToString } from './duration-to-string'
+import { hrtimeBigIntDurationToString } from './duration-to-string'
 
 const dotsSpinner = {
   frames: ['.', '..', '...'],
@@ -13,7 +13,7 @@ export default function createSpinner(
   logFn: (...data: any[]) => void = console.log
 ) {
   let prefixText = ` ${Log.prefixes.info} ${text} `
-  const progressStart = process.hrtime()
+  const progressStart = process.hrtime.bigint()
 
   if (process.stdout.isTTY) {
     let spinner = ora({
@@ -70,8 +70,8 @@ export default function createSpinner(
       return spinner
     }
     spinner.stopAndPersist = () => {
-      const progressEnd = process.hrtime(progressStart)
-      text = `${text} in ${hrtimeDurationToString(progressEnd)}`
+      const duration = process.hrtime.bigint() - progressStart
+      text = `${text} in ${hrtimeBigIntDurationToString(duration)}`
       prefixText = ` ${Log.prefixes.info} ${text} `
       spinner.prefixText = prefixText
       origStopAndPersist()
@@ -93,9 +93,9 @@ export default function createSpinner(
       },
       stop: () => spinner,
       stopAndPersist: () => {
-        const progressEnd = process.hrtime(progressStart)
+        const duration = process.hrtime.bigint() - progressStart
         logFn(
-          ` ${Log.prefixes.event} ${text} in ${hrtimeDurationToString(progressEnd)}`
+          ` ${Log.prefixes.event} ${text} in ${hrtimeBigIntDurationToString(duration)}`
         )
         return spinner!
       },
