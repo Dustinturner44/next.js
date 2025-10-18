@@ -1248,110 +1248,14 @@ export function cache(
         if (cachedEntry !== undefined) {
           const existingEntry = await cachedEntry
           if (workUnitStore !== undefined && existingEntry !== undefined) {
-            if (
-              existingEntry.revalidate === 0 ||
-              existingEntry.expire < DYNAMIC_EXPIRE
-            ) {
-              switch (workUnitStore.type) {
-                case 'prerender':
-                  // In a Dynamic I/O prerender, if the cache entry has
-                  // revalidate: 0 or if the expire time is under 5 minutes,
-                  // then we consider this cache entry dynamic as it's not worth
-                  // generating static pages for such data. It's better to leave
-                  // a dynamic hole that can be filled in during the resume with
-                  // a potentially cached entry.
-                  if (cacheSignal) {
-                    cacheSignal.endRead()
-                  }
-                  return makeHangingPromise(
-                    workUnitStore.renderSignal,
-                    workStore.route,
-                    'dynamic "use cache"'
-                  )
-                case 'prerender-runtime': {
-                  // In the final phase of a runtime prerender, we have to make
-                  // sure that APIs that would hang during a static prerender
-                  // are resolved with a delay, in the runtime stage.
-                  if (workUnitStore.runtimeStagePromise) {
-                    await workUnitStore.runtimeStagePromise
-                  }
-                  break
-                }
-                case 'request': {
-                  if (process.env.NODE_ENV === 'development') {
-                    // We delay the cache here so that it doesn't resolve in the static task --
-                    // in a regular static prerender, it'd be a hanging promise, and we need to reflect that,
-                    // so it has to resolve later.
-                    // TODO(restart-on-cache-miss): This can fallthrough to the `RUNTIME_PREFETCH_DYNAMIC_STALE`
-                    // check below, and try to delay again. This is not incorrect, but it's unnecessary.
-                    // refactor this to avoid it.
-                    const hang = await delayOrHangStartedCacheReadInDev(
-                      RenderStage.Runtime,
-                      workUnitStore,
-                      cacheSignal,
-                      workStore.route,
-                      'dynamic "use cache"'
-                    )
-                    if (hang) {
-                      return hang.hangingPromise
-                    }
-                  }
-                  break
-                }
-                case 'prerender-ppr':
-                case 'prerender-legacy':
-                case 'cache':
-                case 'private-cache':
-                case 'unstable-cache':
-                  break
-                default:
-                  workUnitStore satisfies never
-              }
-            }
-
-            if (existingEntry.stale < RUNTIME_PREFETCH_DYNAMIC_STALE) {
-              switch (workUnitStore.type) {
-                case 'prerender-runtime':
-                  // In a runtime prerender, if the cache entry will become
-                  // stale in less then 30 seconds, we consider this cache entry
-                  // dynamic as it's not worth prefetching. It's better to leave
-                  // a dynamic hole that can be filled during the navigation.
-                  if (cacheSignal) {
-                    cacheSignal.endRead()
-                  }
-                  return makeHangingPromise(
-                    workUnitStore.renderSignal,
-                    workStore.route,
-                    'dynamic "use cache"'
-                  )
-                case 'request': {
-                  if (process.env.NODE_ENV === 'development') {
-                    // We delay the cache here so that it doesn't resolve in the runtime phase --
-                    // in a regular runtime prerender, it'd be a hanging promise, and we need to reflect that,
-                    // so it has to resolve later.
-                    const hang = await delayOrHangStartedCacheReadInDev(
-                      RenderStage.Dynamic,
-                      workUnitStore,
-                      cacheSignal,
-                      workStore.route,
-                      'dynamic "use cache"'
-                    )
-                    if (hang) {
-                      return hang.hangingPromise
-                    }
-                  }
-                  break
-                }
-                case 'prerender':
-                case 'prerender-ppr':
-                case 'prerender-legacy':
-                case 'cache':
-                case 'private-cache':
-                case 'unstable-cache':
-                  break
-                default:
-                  workUnitStore satisfies never
-              }
+            const hang = await delayOrHangStartedCacheReadIfTooDynamic(
+              workStore,
+              workUnitStore,
+              existingEntry,
+              cacheSignal
+            )
+            if (hang) {
+              return hang.hangingPromise
             }
           }
 
@@ -1479,54 +1383,15 @@ export function cache(
         }
 
         const currentTime = performance.timeOrigin + performance.now()
-        if (
-          workUnitStore !== undefined &&
-          entry !== undefined &&
-          (entry.revalidate === 0 || entry.expire < DYNAMIC_EXPIRE)
-        ) {
-          switch (workUnitStore.type) {
-            case 'prerender':
-              // In a Dynamic I/O prerender, if the cache entry has revalidate:
-              // 0 or if the expire time is under 5 minutes, then we consider
-              // this cache entry dynamic as it's not worth generating static
-              // pages for such data. It's better to leave a dynamic hole that
-              // can be filled in during the resume with a potentially cached
-              // entry.
-              if (cacheSignal) {
-                cacheSignal.endRead()
-              }
-              return makeHangingPromise(
-                workUnitStore.renderSignal,
-                workStore.route,
-                'dynamic "use cache"'
-              )
-            case 'request': {
-              if (process.env.NODE_ENV === 'development') {
-                // We delay the cache here so that it doesn't resolve in the static task --
-                // in a regular static prerender, it'd be a hanging promise, and we need to reflect that,
-                // so it has to resolve later.
-                const hang = await delayOrHangStartedCacheReadInDev(
-                  RenderStage.Dynamic,
-                  workUnitStore,
-                  cacheSignal,
-                  workStore.route,
-                  'dynamic "use cache"'
-                )
-                if (hang) {
-                  return hang.hangingPromise
-                }
-              }
-              break
-            }
-            case 'prerender-runtime':
-            case 'prerender-ppr':
-            case 'prerender-legacy':
-            case 'cache':
-            case 'private-cache':
-            case 'unstable-cache':
-              break
-            default:
-              workUnitStore satisfies never
+        if (workUnitStore !== undefined && entry !== undefined) {
+          const hang = await delayOrHangStartedCacheReadIfTooDynamic(
+            workStore,
+            workUnitStore,
+            entry,
+            cacheSignal
+          )
+          if (hang) {
+            return hang.hangingPromise
           }
         }
 
@@ -1715,6 +1580,127 @@ export function cache(
   }[name]
 
   return React.cache(cachedFn)
+}
+
+/**
+ * If we're in a prerender-like environment, caches that would expire
+ * or go stale too quickly should be omitted from the rendered result.
+ * In multi-stage renders, they should be delayed to the appropriate stage.
+ */
+async function delayOrHangStartedCacheReadIfTooDynamic(
+  workStore: WorkStore,
+  workUnitStore: WorkUnitStore,
+  entry: CacheEntry,
+  cacheSignal: CacheSignal | null
+): Promise<{ hangingPromise: Promise<never> } | null> {
+  if (entry.revalidate === 0 || entry.expire < DYNAMIC_EXPIRE) {
+    switch (workUnitStore.type) {
+      case 'prerender':
+        // In a Dynamic I/O prerender, if the cache entry has
+        // revalidate: 0 or if the expire time is under 5 minutes,
+        // then we consider this cache entry dynamic as it's not worth
+        // generating static pages for such data. It's better to leave
+        // a dynamic hole that can be filled in during the resume with
+        // a potentially cached entry.
+        if (cacheSignal) {
+          cacheSignal.endRead()
+        }
+        const hangingPromise = makeHangingPromise<never>(
+          workUnitStore.renderSignal,
+          workStore.route,
+          'dynamic "use cache"'
+        )
+        return { hangingPromise }
+      case 'prerender-runtime': {
+        // In the final phase of a runtime prerender, we have to make
+        // sure that APIs that would hang during a static prerender
+        // are resolved with a delay, in the runtime stage.
+        if (workUnitStore.runtimeStagePromise) {
+          await workUnitStore.runtimeStagePromise
+        }
+        break
+      }
+      case 'request': {
+        if (process.env.NODE_ENV === 'development') {
+          // We delay the cache here so that it doesn't resolve in the static task --
+          // in a regular static prerender, it'd be a hanging promise, and we need to reflect that,
+          // so it has to resolve later.
+          // TODO(restart-on-cache-miss): This can fallthrough to the `RUNTIME_PREFETCH_DYNAMIC_STALE`
+          // check below, and try to delay again. This is not incorrect, but it's unnecessary.
+          // refactor this to avoid it.
+          const hang = await delayOrHangStartedCacheReadInDev(
+            RenderStage.Runtime,
+            workUnitStore,
+            cacheSignal,
+            workStore.route,
+            'dynamic "use cache"'
+          )
+          if (hang) {
+            return hang
+          }
+        }
+        break
+      }
+      case 'prerender-client':
+      case 'prerender-ppr':
+      case 'prerender-legacy':
+      case 'cache':
+      case 'private-cache':
+      case 'unstable-cache':
+        break
+      default:
+        workUnitStore satisfies never
+    }
+  }
+
+  if (entry.stale < RUNTIME_PREFETCH_DYNAMIC_STALE) {
+    switch (workUnitStore.type) {
+      case 'prerender-runtime':
+        // In a runtime prerender, if the cache entry will become
+        // stale in less then 30 seconds, we consider this cache entry
+        // dynamic as it's not worth prefetching. It's better to leave
+        // a dynamic hole that can be filled during the navigation.
+        if (cacheSignal) {
+          cacheSignal.endRead()
+        }
+        const hangingPromise = makeHangingPromise<never>(
+          workUnitStore.renderSignal,
+          workStore.route,
+          'dynamic "use cache"'
+        )
+        return { hangingPromise }
+      case 'request': {
+        if (process.env.NODE_ENV === 'development') {
+          // We delay the cache here so that it doesn't resolve in the runtime phase --
+          // in a regular runtime prerender, it'd be a hanging promise, and we need to reflect that,
+          // so it has to resolve later.
+          const hang = await delayOrHangStartedCacheReadInDev(
+            RenderStage.Dynamic,
+            workUnitStore,
+            cacheSignal,
+            workStore.route,
+            'dynamic "use cache"'
+          )
+          if (hang) {
+            return hang
+          }
+        }
+        break
+      }
+      case 'prerender':
+      case 'prerender-client':
+      case 'prerender-ppr':
+      case 'prerender-legacy':
+      case 'cache':
+      case 'private-cache':
+      case 'unstable-cache':
+        break
+      default:
+        workUnitStore satisfies never
+    }
+  }
+
+  return null
 }
 
 /**
