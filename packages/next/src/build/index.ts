@@ -3945,12 +3945,6 @@ export default async function build(
           .traceAsyncFn(() => writeManifest(routesManifestPath, routesManifest))
       }
 
-      const postBuildSpinner = createSpinner('Finalizing page optimization')
-      let buildTracesSpinner
-      if (buildTracesPromise) {
-        buildTracesSpinner = createSpinner('Collecting build traces')
-      }
-
       // ensure the worker is not left hanging
       worker.end()
 
@@ -4096,6 +4090,11 @@ export default async function build(
           })
       }
 
+      let buildTracesSpinner
+      if (buildTracesPromise) {
+        buildTracesSpinner = createSpinner('Collecting build traces')
+      }
+
       await buildTracesPromise
 
       if (buildTracesSpinner) {
@@ -4109,6 +4108,7 @@ export default async function build(
       }
 
       if (config.output === 'export') {
+        const spinner = createSpinner('Outputting static export')
         await nextBuildSpan
           .traceChild('output-export-full-static-export')
           .traceAsyncFn(async () => {
@@ -4121,6 +4121,8 @@ export default async function build(
               appDirOnly
             )
           })
+
+        spinner.stopAndPersist()
       }
 
       // This should come after output: export handling but before
@@ -4128,6 +4130,7 @@ export default async function build(
       // not be allowed if an adapter with onBuildComplete is configured
       const adapterPath = config.experimental.adapterPath
       if (adapterPath) {
+        const spinner = createSpinner('Finalizing build with adapter')
         await nextBuildSpan
           .traceChild('adapter-handle-build-complete')
           .traceAsyncFn(async () => {
@@ -4152,9 +4155,11 @@ export default async function build(
               requiredServerFiles: requiredServerFilesManifest.files,
             })
           })
+        spinner.stopAndPersist()
       }
 
       if (config.output === 'standalone') {
+        const spinner = createSpinner('Generating standalone output')
         await nextBuildSpan
           .traceChild('output-standalone')
           .traceAsyncFn(async () => {
@@ -4173,12 +4178,8 @@ export default async function build(
               appDir
             )
           })
+        spinner.stopAndPersist()
       }
-
-      if (postBuildSpinner) {
-        postBuildSpinner.stopAndPersist()
-      }
-      console.log()
 
       if (debugOutput) {
         nextBuildSpan

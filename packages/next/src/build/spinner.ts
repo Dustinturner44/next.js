@@ -13,6 +13,7 @@ export default function createSpinner(
   logFn: (...data: any[]) => void = console.log
 ) {
   let prefixText = ` ${Log.prefixes.info} ${text} `
+  const progressStart = process.hrtime()
 
   if (process.stdout.isTTY) {
     let spinner = ora({
@@ -34,8 +35,8 @@ export default function createSpinner(
     const logHandle = (method: any, args: any[]) => {
       // Enter a new line before logging new message, to avoid
       // the new message shows up right after the spinner in the same line.
-      const isInProgress = spinner?.isSpinning
-      if (spinner && isInProgress) {
+      const isInProgress = spinner.isSpinning
+      if (isInProgress) {
         // Reset the current running spinner to empty line by `\r`
         spinner.prefixText = '\r'
         spinner.text = '\r'
@@ -43,7 +44,7 @@ export default function createSpinner(
         origStop()
       }
       method(...args)
-      if (spinner && isInProgress) {
+      if (isInProgress) {
         spinner.start()
       }
     }
@@ -60,31 +61,26 @@ export default function createSpinner(
     spinner.setText = (newText) => {
       text = newText
       prefixText = ` ${Log.prefixes.info} ${newText} `
-      spinner!.prefixText = prefixText
-      return spinner!
+      spinner.prefixText = prefixText
+      return spinner
     }
     spinner.stop = () => {
       origStop()
       resetLog()
-      return spinner!
+      return spinner
     }
     spinner.stopAndPersist = () => {
-      // Add \r at beginning to reset the current line of loading status text
-      const suffixText = `\r ${Log.prefixes.event} ${text} `
-      if (spinner) {
-        spinner.text = suffixText
-      } else {
-        logFn(suffixText)
-      }
+      const progressEnd = process.hrtime(progressStart)
+      text = `${text} in ${hrtimeDurationToString(progressEnd)}`
+      prefixText = ` ${Log.prefixes.info} ${text} `
+      spinner.prefixText = prefixText
       origStopAndPersist()
       resetLog()
-      return spinner!
+      return spinner
     }
     return spinner
-  } else if (prefixText || text) {
+  } else {
     logFn(prefixText ? prefixText + '...' : text)
-
-    const progressStart = process.hrtime()
 
     // @ts-ignore
     let spinner = {
