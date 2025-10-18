@@ -15,7 +15,6 @@ use std::{
         Arc,
         atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering},
     },
-    thread::available_parallelism,
 };
 
 use anyhow::{Result, bail};
@@ -67,7 +66,7 @@ use crate::{
     },
     utils::{
         bi_map::BiMap, chunked_vec::ChunkedVec, dash_map_drop_contents::drop_contents,
-        ptr_eq_arc::PtrEqArc, sharded::Sharded, swap_retain,
+        ptr_eq_arc::PtrEqArc, shard_amount::compute_shard_amount, sharded::Sharded, swap_retain,
     },
 };
 
@@ -134,6 +133,10 @@ pub struct BackendOptions {
     /// Enables the backing storage.
     pub storage_mode: Option<StorageMode>,
 
+    /// Number of tokio worker threads. It will be used to compute the shard amount of parallel
+    /// datastructures. If `None`, it will use the available parallelism.
+    pub num_workers: Option<usize>,
+
     /// Avoid big preallocations for faster startup. Should only be used for testing purposes.
     pub small_preallocation: bool,
 }
@@ -144,6 +147,7 @@ impl Default for BackendOptions {
             dependency_tracking: true,
             active_tracking: true,
             storage_mode: Some(StorageMode::ReadWrite),
+            num_workers: None,
             small_preallocation: false,
         }
     }
@@ -228,8 +232,7 @@ impl<B: BackingStorage> TurboTasksBackend<B> {
 
 impl<B: BackingStorage> TurboTasksBackendInner<B> {
     pub fn new(mut options: BackendOptions, backing_storage: B) -> Self {
-        let shard_amount =
-            (available_parallelism().map_or(4, |v| v.get()) * 64).next_power_of_two();
+        let shard_amount = compute_shard_amount(options.num_workers, options.small_preallocation);
         let need_log = matches!(options.storage_mode, Some(StorageMode::ReadWrite));
         if !options.dependency_tracking {
             options.active_tracking = false;
@@ -256,7 +259,7 @@ impl<B: BackingStorage> TurboTasksBackendInner<B> {
             task_cache: BiMap::new(),
             transient_tasks: FxDashMap::default(),
             local_is_partial: AtomicBool::new(next_task_id != TaskId::MIN),
-            storage: Storage::new(small_preallocation),
+            storage: Storage::new(shard_amount, small_preallocation),
             in_progress_operations: AtomicUsize::new(0),
             snapshot_request: Mutex::new(SnapshotRequest::new()),
             operations_suspended: Condvar::new(),
