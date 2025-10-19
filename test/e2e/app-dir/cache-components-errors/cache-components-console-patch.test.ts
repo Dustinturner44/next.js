@@ -62,8 +62,7 @@ describe('Cache Components Errors', () => {
           if (isTurbopack) {
             expect(output).toMatchInlineSnapshot(`
              "[<timestamp>] This is a console log from a server component page
-             [<timestamp>] This is a console log from a server component page
-             [<timestamp>]"
+             [<timestamp>] This is a console log from a server component page"
             `)
           } else {
             expect(output).toMatchInlineSnapshot(`
