@@ -370,6 +370,9 @@ pub fn project_new(
     }
     let mut compress = Compression::None;
     if let Some(mut trace) = trace {
+        println!("Turbopack tracing enabled with targets: {trace}");
+        println!("  Note that this might have a small performance impact.");
+
         trace = trace
             .split(",")
             .filter_map(|item| {
