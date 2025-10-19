@@ -80,7 +80,8 @@ export default function createSpinner(
     }
     return spinner
   } else {
-    logFn(prefixText ? prefixText + '...' : text)
+    text = ` ${Log.prefixes.info} ${text} `
+    logFn(text)
 
     // @ts-ignore
     let spinner = {
@@ -89,14 +90,13 @@ export default function createSpinner(
       text: '',
       clear: '',
       setText(newText: string) {
-        logFn(` ${Log.prefixes.info} ${newText} `)
+        text = ` ${Log.prefixes.info} ${newText}`
+        logFn(text)
       },
       stop: () => spinner,
       stopAndPersist: () => {
         const duration = process.hrtime.bigint() - progressStart
-        logFn(
-          ` ${Log.prefixes.event} ${text} in ${hrtimeBigIntDurationToString(duration)}`
-        )
+        logFn(`${text} in ${hrtimeBigIntDurationToString(duration)}`)
         return spinner!
       },
     } as ora.Ora & { setText: (text: string) => void }
