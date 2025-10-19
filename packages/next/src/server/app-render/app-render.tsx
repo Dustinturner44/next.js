@@ -212,7 +212,11 @@ import { createPromiseWithResolvers } from '../../shared/lib/promise-with-resolv
 import { ImageConfigContext } from '../../shared/lib/image-config-context.shared-runtime'
 import { imageConfigDefault } from '../../shared/lib/image-config'
 import { RenderStage, StagedRenderingController } from './staged-rendering'
-import { anySegmentHasRuntimePrefetchEnabled } from './staged-validation'
+import {
+  anySegmentHasRuntimePrefetchEnabled,
+  collectStageChunksFromStagedRender,
+  type StageChunks,
+} from './staged-validation'
 
 export type GetDynamicParamFromSegment = (
   // [slug] / [[slug]] / [...slug]
@@ -2808,8 +2812,9 @@ async function renderWithRestartOnCacheMissInDev(
   // If the render is restarted, we'll recreate a fresh request store
   let requestStore: RequestStore = initialRequestStore
 
+  const getCurrentStage = () => requestStore.stagedRendering!.currentStage
   const environmentName = () => {
-    const currentStage = requestStore.stagedRendering!.currentStage
+    const currentStage = getCurrentStage()
     switch (currentStage) {
       case RenderStage.Static:
         return 'Prerender'
@@ -2822,6 +2827,8 @@ async function renderWithRestartOnCacheMissInDev(
         throw new InvariantError(`Invalid render stage: ${currentStage}`)
     }
   }
+
+  let stageChunksPromise: Promise<StageChunks> = null!
 
   //===============================================
   // Initial render
@@ -2869,7 +2876,7 @@ async function renderWithRestartOnCacheMissInDev(
       pipelineInSequentialTasks(
         () => {
           // Static stage
-          const stream = ComponentMod.renderToReadableStream(
+          let stream = ComponentMod.renderToReadableStream(
             initialRscPayload,
             clientReferenceManifest.clientModules,
             {
@@ -2886,6 +2893,15 @@ async function renderWithRestartOnCacheMissInDev(
               signal: initialReactController.signal,
             }
           )
+
+          let teedStream: typeof stream
+          ;[stream, teedStream] = stream.tee()
+          stageChunksPromise = collectStageChunksFromStagedRender(
+            teedStream,
+            getCurrentStage
+          )
+          stageChunksPromise.catch(ignoreReject)
+
           // If we abort the render, we want to reject the stage-dependent promises as well.
           // Note that we want to install this listener after the render is started
           // so that it runs after react is finished running its abort code.
@@ -2985,7 +3001,7 @@ async function renderWithRestartOnCacheMissInDev(
     pipelineInSequentialTasks(
       () => {
         // Static stage
-        return ComponentMod.renderToReadableStream(
+        let stream = ComponentMod.renderToReadableStream(
           finalRscPayload,
           clientReferenceManifest.clientModules,
           {
@@ -2995,6 +3011,16 @@ async function renderWithRestartOnCacheMissInDev(
             debugChannel: debugChannel?.serverSide,
           }
         )
+
+        let teedStream: typeof stream
+        ;[stream, teedStream] = stream.tee()
+        stageChunksPromise = collectStageChunksFromStagedRender(
+          teedStream,
+          getCurrentStage
+        )
+        stageChunksPromise.catch(ignoreReject)
+
+        return stream
       },
       (stream) => {
         // Runtime stage
@@ -3017,8 +3043,11 @@ async function renderWithRestartOnCacheMissInDev(
     stream: finalServerStream,
     debugChannel,
     requestStore,
+    stageChunksPromise,
   }
 }
+
+function ignoreReject() {}
 
 function createAsyncApiPromisesInDev(
   stagedRendering: StagedRenderingController,

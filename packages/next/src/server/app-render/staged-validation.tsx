@@ -2,6 +2,7 @@ import { getLayoutOrPageModule } from '../lib/app-dir-module'
 import type { LoaderTree } from '../lib/app-dir-module'
 import { parseLoaderTree } from '../../shared/lib/router/utils/parse-loader-tree'
 import type { AppSegmentConfig } from '../../build/segment-config/app/app-segment-config'
+import { RenderStage } from './staged-rendering'
 
 export async function anySegmentHasRuntimePrefetchEnabled(
   tree: LoaderTree
@@ -29,4 +30,46 @@ export async function anySegmentHasRuntimePrefetchEnabled(
   }
 
   return false
+}
+
+export type StageChunks = Record<RenderStage, Uint8Array[]>
+
+export function collectStageChunksFromStagedRender(
+  stream: ReadableStream<Uint8Array>,
+  getCurrentStage: () => RenderStage
+): Promise<StageChunks> {
+  let lastChunkStage: RenderStage | null = null
+  const chunks: StageChunks = {
+    [RenderStage.Static]: [],
+    [RenderStage.Runtime]: [],
+    [RenderStage.Dynamic]: [],
+  }
+
+  // Gather the chunks and group them into stages.
+  return new Promise<StageChunks>(async (resolve, reject) => {
+    const reader = stream.getReader()
+    while (true) {
+      let item: ReadableStreamReadResult<Uint8Array<ArrayBufferLike>>
+      try {
+        item = await reader.read()
+      } catch (err) {
+        return reject(err)
+      }
+      if (!item.done) {
+        const currentStage = getCurrentStage()
+
+        // If we changed to a new stage, we have to copy over the chunks emitted in the previous stage --
+        // stage N+1 is a superset of stage N.
+        if (lastChunkStage !== null && lastChunkStage !== currentStage) {
+          chunks[currentStage].push(...chunks[lastChunkStage])
+        }
+
+        chunks[currentStage].push(item.value)
+        lastChunkStage = currentStage
+      } else {
+        // TODO: we should consider an API that allows yielding a stage's chunks as soon as it completes
+        return resolve(chunks)
+      }
+    }
+  })
 }
