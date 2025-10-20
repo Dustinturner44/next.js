@@ -32,14 +32,15 @@ export async function anySegmentHasRuntimePrefetchEnabled(
   return false
 }
 
-export type StageChunks = Record<RenderStage, Uint8Array[]>
+export type StageChunks = { chunks: ChunksByStage; finishedIn: RenderStage }
+export type ChunksByStage = Record<RenderStage, Uint8Array[]>
 
 export function collectStageChunksFromStagedRender(
   stream: ReadableStream<Uint8Array>,
   getCurrentStage: () => RenderStage
 ): Promise<StageChunks> {
   let lastChunkStage: RenderStage | null = null
-  const chunks: StageChunks = {
+  const chunks: ChunksByStage = {
     [RenderStage.Static]: [],
     [RenderStage.Runtime]: [],
     [RenderStage.Dynamic]: [],
@@ -55,9 +56,8 @@ export function collectStageChunksFromStagedRender(
       } catch (err) {
         return reject(err)
       }
+      const currentStage = getCurrentStage()
       if (!item.done) {
-        const currentStage = getCurrentStage()
-
         // If we changed to a new stage, we have to copy over the chunks emitted in the previous stage --
         // stage N+1 is a superset of stage N.
         if (lastChunkStage !== null && lastChunkStage !== currentStage) {
@@ -68,8 +68,37 @@ export function collectStageChunksFromStagedRender(
         lastChunkStage = currentStage
       } else {
         // TODO: we should consider an API that allows yielding a stage's chunks as soon as it completes
-        return resolve(chunks)
+        return resolve({ chunks, finishedIn: currentStage })
       }
     }
+  })
+}
+
+export function recreateServerStreamInStage(
+  stageChunks: StageChunks,
+  stage: RenderStage
+) {
+  // If we're recreating a stream for a stage before the stream ended,
+  // then it won't be a complete RSC stream.
+  // (i.e. it'll contain references to rows that never appear).
+  // In that case, the stream should stay unclosed to avoid "Connection Closed" from Fizz.
+  // (see `createUnclosingPrefetchStream` for more explanation)
+  const shouldClose = stage < stageChunks.finishedIn ? false : true
+  return streamFromChunks(stageChunks.chunks[stage], shouldClose)
+}
+
+function streamFromChunks(
+  chunks: Uint8Array[],
+  shouldClose: boolean = true
+): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(controller) {
+      for (const chunk of chunks) {
+        controller.enqueue(chunk)
+      }
+      if (shouldClose) {
+        controller.close()
+      }
+    },
   })
 }
