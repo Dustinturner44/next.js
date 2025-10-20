@@ -64,27 +64,43 @@ export function createRouterAct(
      * provided, all error status codes are disallowed (400+).
      */
     allowErrorStatusCodes?: number[]
+    /**
+     * Enable verbose logging for debugging test flakes
+     */
+    debug?: boolean
   }
 ): <T>(scope: () => Promise<T> | T, config?: ActConfig) => Promise<T> {
+  const debug = options?.debug ?? false
+  const log = (...args: any[]) => {
+    if (debug) {
+      const timestamp = new Date().toISOString()
+      console.log(`[router-act ${timestamp}]`, ...args)
+    }
+  }
+
   /**
    * Helper function to wait for requestIdleCallback with retry logic.
-   * Retries up to 3 times if "Execution context was destroyed" error occurs.
+   * Retries up to 5 times if "Execution context was destroyed" error occurs.
    */
   async function waitForIdleCallback(): Promise<void> {
-    const maxRetries = 3
-    const retryDelayMs = 100
+    const maxRetries = 5
+    const retryDelayMs = 200
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
+        log(`waitForIdleCallback: attempt ${attempt + 1}/${maxRetries}`)
         await page.evaluate(
           () => new Promise<void>((res) => requestIdleCallback(() => res()))
         )
+        log(`waitForIdleCallback: success on attempt ${attempt + 1}`)
         return
       } catch (err) {
         const isLastAttempt = attempt === maxRetries - 1
         const isExecutionContextError =
           err instanceof Error &&
           err.message.includes('Execution context was destroyed')
+
+        log(`waitForIdleCallback: error on attempt ${attempt + 1}:`, err)
 
         if (isExecutionContextError && !isLastAttempt) {
           await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
@@ -111,6 +127,61 @@ export function createRouterAct(
     const error = new Error()
     if (Error.captureStackTrace) {
       Error.captureStackTrace(error, act)
+    }
+
+    const actStartTime = Date.now()
+    let isActComplete = false
+
+    // Set up periodic status logging for debugging long-running acts
+    const statusInterval = setInterval(() => {
+      if (!isActComplete) {
+        const elapsed = Date.now() - actStartTime
+        console.log(`[router-act] Still running after ${elapsed}ms...`)
+        if (batch && batch.pendingRequests.size > 0) {
+          console.log(
+            `[router-act] ${batch.pendingRequests.size} requests pending:`
+          )
+          Array.from(batch.pendingRequests).forEach((r) => {
+            console.log(`  - ${r.url} (processed: ${r.didProcess})`)
+          })
+        }
+      }
+    }, 10000) // Log every 10 seconds
+
+    // Helper to dump current state for debugging
+    const dumpState = (reason: string) => {
+      console.error(`\n========================================`)
+      console.error(`[router-act] STATE DUMP - ${reason}`)
+      console.error(`========================================`)
+      console.error(`Timestamp: ${new Date().toISOString()}`)
+      console.error(`Page URL: ${page.url()}`)
+
+      if (currentBatch) {
+        console.error(`\nCurrent Batch State:`)
+        console.error(
+          `  - Pending requests: ${currentBatch.pendingRequests.size}`
+        )
+        if (currentBatch.pendingRequests.size > 0) {
+          console.error(`  - Request details:`)
+          Array.from(currentBatch.pendingRequests).forEach((r, i) => {
+            console.error(`    ${i + 1}. URL: ${r.url}`)
+            console.error(`       Processed: ${r.didProcess}`)
+            console.error(`       Has route: ${r.route !== null}`)
+          })
+        }
+        console.error(
+          `  - Pending checks: ${currentBatch.pendingRequestChecks.size}`
+        )
+      } else {
+        console.error(`\nNo current batch`)
+      }
+
+      console.error(`\nAct Configuration:`)
+      console.error(`  Config: ${JSON.stringify(config, null, 2)}`)
+
+      console.error(`\nCall Stack:`)
+      console.error(error.stack)
+      console.error(`========================================\n`)
     }
 
     let expectedResponses: Array<ExpectedResponseConfig> | null
@@ -174,6 +245,10 @@ export function createRouterAct(
     let onDidIssueFirstRequest: (() => void) | null = null
     const routeHandler = async (route: Playwright.Route) => {
       const request = route.request()
+      const url = request.url()
+      const method = request.method()
+
+      log(`Route handler triggered: ${method} ${url}`)
 
       const pendingRequests = batch.pendingRequests
       const pendingRequestChecks = batch.pendingRequestChecks
@@ -194,6 +269,7 @@ export function createRouterAct(
           headers['next-action'] !== undefined // Matches Server Actions
 
         if (isRouterRequest) {
+          log(`Intercepted router request: ${request.url()}`)
           // This request was initiated by the Next.js Router. Intercept it and
           // add it to the current batch.
           pendingRequests.add({
@@ -203,9 +279,13 @@ export function createRouterAct(
             // but it should not affect the timing of when requests reach the
             // server; we pass the request to the server the immediately.
             result: (async () => {
+              log(`Fetching from server: ${request.url()}`)
               const originalResponse = await page.request.fetch(request, {
                 maxRedirects: 0,
               })
+              log(
+                `Server response received: ${request.url()} (status: ${originalResponse.status()})`
+              )
 
               // WORKAROUND:
               // intercepting responses with 'Transfer-Encoding: chunked' (used for streaming)
@@ -243,11 +323,20 @@ export function createRouterAct(
 
     let didHardNavigate = false
     const hardNavigationHandler = async () => {
+      log('HARD NAVIGATION DETECTED - cleaning up orphaned requests')
       // If a hard navigation occurs, the current batch of requests is no longer
       // valid. In fact, Playwright will hang indefinitely if we attempt to
       // await the response of an orphaned request. Reset the batch and unblock
       // all the orphaned requests.
       const orphanedRequests = batch.pendingRequests
+      log(`Cleaning up ${orphanedRequests.size} orphaned requests`)
+
+      if (orphanedRequests.size > 0) {
+        Array.from(orphanedRequests).forEach((item) => {
+          log(`  Orphaned request: ${item.url}`)
+        })
+      }
+
       batch.pendingRequests = new Set()
       batch.pendingRequestChecks = new Set()
       await Promise.all(
@@ -276,12 +365,16 @@ export function createRouterAct(
 
       // Wait until the first request is initiated, up to some timeout.
       if (expectedResponses !== null && batch.pendingRequests.size === 0) {
+        log('Waiting for first request to be initiated...')
         await new Promise<void>((resolve, reject) => {
           const timerId = setTimeout(() => {
+            log('ERROR: Timed out waiting for a request to be initiated')
+            dumpState('timeout waiting for first request')
             error.message = 'Timed out waiting for a request to be initiated.'
             reject(error)
-          }, 500)
+          }, 1000) // Increased from 500ms to 1000ms
           onDidIssueFirstRequest = () => {
+            log('First request initiated')
             clearTimeout(timerId)
             resolve()
           }
@@ -312,23 +405,54 @@ export function createRouterAct(
 
       // Track when the queue was last empty to implement a settling period
       let queueEmptyStartTime: number | null = null
-      const SETTLING_PERIOD_MS = 500 // Wait 500ms after queue empties
+      const SETTLING_PERIOD_MS = 1000 // Increased from 500ms to help with flaky tests
+      let loopIteration = 0
+      const MAX_ITERATIONS = 2000 // Safety limit to prevent infinite loops
+      const loopStartTime = Date.now()
+
+      log(
+        `Starting request processing loop (settling period: ${SETTLING_PERIOD_MS}ms)`
+      )
 
       while (
         batch.pendingRequests.size > 0 ||
         queueEmptyStartTime === null ||
         Date.now() - queueEmptyStartTime < SETTLING_PERIOD_MS
       ) {
+        loopIteration++
+        const queueSize = batch.pendingRequests.size
+
+        if (loopIteration % 10 === 0 || debug) {
+          const elapsed = Date.now() - loopStartTime
+          log(
+            `Loop iteration ${loopIteration}: queue size=${queueSize}, settling=${queueEmptyStartTime !== null}, elapsed=${elapsed}ms`
+          )
+        }
+
+        // Safety check to prevent infinite loops
+        if (loopIteration > MAX_ITERATIONS) {
+          dumpState(`exceeded max iterations (${MAX_ITERATIONS})`)
+          error.message = `router-act exceeded maximum iterations (${MAX_ITERATIONS}). This likely indicates a bug in the test or router-act itself.`
+          throw error
+        }
+
         if (batch.pendingRequests.size > 0) {
           // Queue has requests, reset settling timer
+          log(`Queue has ${batch.pendingRequests.size} pending requests`)
           queueEmptyStartTime = null
         } else if (queueEmptyStartTime === null) {
           // Queue just became empty, start settling timer
+          log('Queue empty, starting settling period...')
           queueEmptyStartTime = Date.now()
         }
 
         if (batch.pendingRequests.size === 0) {
           // Queue is empty during settling period, wait a bit and check again
+          const remainingTime =
+            SETTLING_PERIOD_MS - (Date.now() - queueEmptyStartTime!)
+          if (remainingTime > 0) {
+            log(`Settling... ${remainingTime}ms remaining`)
+          }
           await new Promise((resolve) => setTimeout(resolve, 50))
           await waitForIdleCallback()
           await waitForPendingRequestChecks()
@@ -578,7 +702,15 @@ ${fulfilled.body}
         }
       }
 
+      isActComplete = true
+      clearInterval(statusInterval)
+      log(`Act completed successfully after ${Date.now() - actStartTime}ms`)
       return returnValue
+    } catch (err) {
+      isActComplete = true
+      clearInterval(statusInterval)
+      log(`Act failed after ${Date.now() - actStartTime}ms`)
+      throw err
     } finally {
       // Clean up
       currentBatch = prevBatch

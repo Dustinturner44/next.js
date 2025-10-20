@@ -30,7 +30,7 @@ describe('app dir - prefetching', () => {
     const timeController = createTimeController()
     const browser = await next.browser('/', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
@@ -116,7 +116,7 @@ describe('app dir - prefetching', () => {
     const timeController = createTimeController()
     const browser = await next.browser('/404', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
@@ -305,7 +305,7 @@ describe('app dir - prefetching', () => {
     let act: ReturnType<typeof createRouterAct>
     const browser = await next.browser('/', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 

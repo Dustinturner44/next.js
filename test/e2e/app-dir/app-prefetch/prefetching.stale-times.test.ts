@@ -28,7 +28,7 @@ describe('app dir - prefetching (custom staleTime)', () => {
     let act: ReturnType<typeof createRouterAct>
     const browser = await next.browser('/', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
@@ -79,7 +79,7 @@ describe('app dir - prefetching (custom staleTime)', () => {
     const timeController = createTimeController()
     const browser = await next.browser('/', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
@@ -135,7 +135,7 @@ describe('app dir - prefetching (custom staleTime)', () => {
     let act: ReturnType<typeof createRouterAct>
     const browser = await next.browser('/prefetch-auto-route-groups', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
@@ -181,7 +181,7 @@ describe('app dir - prefetching (custom staleTime)', () => {
     const timeController = createTimeController()
     const browser = await next.browser('/static-page-no-prefetch', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
@@ -238,7 +238,7 @@ describe('app dir - prefetching (custom staleTime)', () => {
     const timeController = createTimeController()
     const browser = await next.browser('/', {
       beforePageLoad(page) {
-        act = createRouterAct(page)
+        act = createRouterAct(page, { debug: true })
       },
     })
 
