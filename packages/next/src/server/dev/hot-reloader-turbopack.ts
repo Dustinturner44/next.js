@@ -119,6 +119,7 @@ import { getMcpMiddleware } from '../mcp/get-mcp-middleware'
 import { handleErrorStateResponse } from '../mcp/tools/get-errors'
 import { handlePageMetadataResponse } from '../mcp/tools/get-page-metadata'
 import { setStackFrameResolver } from '../mcp/tools/utils/format-errors'
+import { recordMcpTelemetry } from '../mcp/mcp-telemetry-tracker'
 import { getFileLogger } from './browser-logs/file-logger'
 import type { ServerCacheStatus } from '../../next-devtools/dev-overlay/cache-indicator'
 import type { Lockfile } from '../../build/lockfile'
@@ -1393,6 +1394,9 @@ export async function createHotReloaderTurbopack(
         })
     },
     close() {
+      // Report MCP telemetry if MCP server is enabled
+      recordMcpTelemetry(opts.telemetry)
+
       for (const wsClient of [
         ...clientsWithoutRequestId,
         ...clientsByRequestId.values(),
