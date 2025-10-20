@@ -14,10 +14,9 @@ use turbo_dyn_eq_hash::{
 };
 
 use crate::{
-    FxIndexMap, FxIndexSet, TaskId, TurboTasksApi,
+    FxIndexMap, FxIndexSet, StaticOrArc, TaskId, TurboTasksApi,
     manager::{current_task_if_available, mark_invalidator, with_turbo_tasks},
     trace::TraceRawVcs,
-    util::StaticOrArc,
 };
 
 /// Get an [`Invalidator`] that can be used to invalidate the current task

@@ -128,6 +128,7 @@ pub use task::{SharedReference, TypedSharedReference, task_input::TaskInput};
 pub use task_execution_reason::TaskExecutionReason;
 pub use trait_ref::{IntoTraitRef, TraitRef};
 pub use turbo_tasks_macros::{TaskInput, function, value_impl};
+pub use util::{StaticOrArc, StaticOrWeak};
 pub use value::{TransientInstance, TransientValue};
 pub use value_type::{TraitMethod, TraitType, ValueType};
 pub use vc::{

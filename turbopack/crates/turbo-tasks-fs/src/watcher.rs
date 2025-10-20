@@ -21,8 +21,8 @@ use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
-    FxIndexSet, InvalidationReason, InvalidationReasonKind, Invalidator, parallel, spawn_thread,
-    util::StaticOrArc,
+    FxIndexSet, InvalidationReason, InvalidationReasonKind, Invalidator, StaticOrArc, parallel,
+    spawn_thread,
 };
 
 use crate::{

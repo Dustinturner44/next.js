@@ -7,7 +7,7 @@ use std::{
     mem::ManuallyDrop,
     ops::Deref,
     pin::Pin,
-    sync::{Arc, LazyLock},
+    sync::{Arc, LazyLock, Weak},
     task::{Context, Poll},
     thread::available_parallelism,
     time::Duration,
@@ -17,7 +17,7 @@ use anyhow::{Error, anyhow};
 use pin_project_lite::pin_project;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-pub use super::{
+pub use crate::{
     id_factory::{IdFactory, IdFactoryWithReuse},
     once_map::*,
 };
@@ -237,6 +237,64 @@ impl<T: ?Sized + Debug + 'static> Debug for StaticOrArc<T> {
     }
 }
 
+/// Weak pointer that stores data either in a [Weak] or as a static reference.
+/// Can be upgraded to [StaticOrArc].
+pub enum StaticOrWeak<T: ?Sized + 'static> {
+    Static(&'static T),
+    Weak(Weak<T>),
+}
+
+impl<T: ?Sized + 'static> StaticOrWeak<T> {
+    /// Attempts to upgrade the weak pointer to a [StaticOrArc].
+    ///
+    /// Returns [None] if the inner value has been dropped (for the [Weak] variant).
+    /// Always succeeds for the [Static] variant.
+    pub fn upgrade(&self) -> Option<StaticOrArc<T>> {
+        match self {
+            Self::Static(s) => Some(StaticOrArc::Static(s)),
+            Self::Weak(w) => w.upgrade().map(StaticOrArc::Shared),
+        }
+    }
+
+    /// Returns true if the two weak pointers point to the same allocation.
+    /// For static references, this compares pointer equality.
+    pub fn ptr_eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Static(a), Self::Static(b)) => std::ptr::eq(*a, *b),
+            (Self::Weak(a), Self::Weak(b)) => Weak::ptr_eq(a, b),
+            _ => false,
+        }
+    }
+}
+
+impl<T: ?Sized + 'static> StaticOrArc<T> {
+    /// Creates a weak pointer to this allocation.
+    pub fn downgrade(&self) -> StaticOrWeak<T> {
+        match self {
+            Self::Static(s) => StaticOrWeak::Static(s),
+            Self::Shared(arc) => StaticOrWeak::Weak(Arc::downgrade(arc)),
+        }
+    }
+}
+
+impl<T: ?Sized + 'static> Clone for StaticOrWeak<T> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Static(s) => Self::Static(s),
+            Self::Weak(w) => Self::Weak(w.clone()),
+        }
+    }
+}
+
+impl<T: ?Sized + Debug + 'static> Debug for StaticOrWeak<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Static(s) => f.debug_tuple("Static").field(s).finish(),
+            Self::Weak(w) => f.debug_tuple("Weak").field(w).finish(),
+        }
+    }
+}
+
 pin_project! {
     /// A future that wraps another future and applies a function on every poll call.
     pub struct WrapFuture<F, W> {
@@ -390,5 +448,57 @@ mod tests {
         for arc in data {
             assert_eq!(Arc::strong_count(&arc), 1);
         }
+    }
+
+    #[test]
+    fn test_static_or_weak_arc_upgrade_downgrade() {
+        let arc: StaticOrArc<i32> = Arc::new(42).into();
+        let weak: StaticOrWeak<i32> = arc.downgrade();
+
+        // Upgrade should succeed while Arc is alive
+        assert_eq!(*weak.upgrade().unwrap(), 42);
+
+        // Clone the weak pointer
+        let weak2 = weak.clone();
+
+        // Drop the Arc
+        drop(arc);
+
+        // Upgrade should fail after Arc is dropped
+        assert!(weak.upgrade().is_none());
+        assert!(weak2.upgrade().is_none());
+    }
+
+    #[test]
+    fn test_static_or_weak_static_references() {
+        static VALUE: i32 = 100;
+        let static_arc: StaticOrArc<i32> = StaticOrArc::Static(&VALUE);
+        let static_weak = static_arc.downgrade();
+
+        // Upgrade should always succeed for static references
+        assert_eq!(*static_weak.upgrade().unwrap(), 100);
+
+        // Even after dropping the StaticOrArc, upgrade should still work
+        drop(static_arc);
+        assert_eq!(*static_weak.upgrade().unwrap(), 100);
+    }
+
+    #[test]
+    fn test_static_or_weak_ptr_eq() {
+        // Test pointer equality with Arc
+        let arc: StaticOrArc<i32> = Arc::new(42).into();
+        let weak1 = arc.downgrade();
+        let weak2 = weak1.clone();
+        assert!(weak1.ptr_eq(&weak2));
+
+        // Test pointer equality with static references
+        static VALUE: i32 = 100;
+        let static_arc: StaticOrArc<i32> = StaticOrArc::Static(&VALUE);
+        let static_weak1 = static_arc.downgrade();
+        let static_weak2 = static_weak1.clone();
+        assert!(static_weak1.ptr_eq(&static_weak2));
+
+        // Different types should not be equal
+        assert!(!weak1.ptr_eq(&static_weak1));
     }
 }

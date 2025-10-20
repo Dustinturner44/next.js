@@ -4,7 +4,7 @@ use std::{
 };
 
 use hyper::{Method, Uri};
-use turbo_tasks::{FxIndexSet, InvalidationReason, InvalidationReasonKind, util::StaticOrArc};
+use turbo_tasks::{FxIndexSet, InvalidationReason, InvalidationReasonKind, StaticOrArc};
 
 /// Computation was caused by a request to the server.
 #[derive(PartialEq, Eq, Hash)]

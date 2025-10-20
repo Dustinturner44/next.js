@@ -5,7 +5,7 @@ use std::{
 };
 
 use turbo_rcstr::RcStr;
-use turbo_tasks::{FxIndexSet, InvalidationReason, InvalidationReasonKind, util::StaticOrArc};
+use turbo_tasks::{FxIndexSet, InvalidationReason, InvalidationReasonKind, StaticOrArc};
 
 /// Invalidation was caused by a file change detected by the file watcher
 #[derive(PartialEq, Eq, Hash)]

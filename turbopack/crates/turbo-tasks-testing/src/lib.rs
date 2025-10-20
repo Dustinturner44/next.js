@@ -17,12 +17,13 @@ use rustc_hash::FxHashMap;
 use tokio::sync::mpsc::Receiver;
 use turbo_tasks::{
     CellId, ExecutionId, InvalidationReason, LocalTaskId, MagicAny, RawVc, ReadCellOptions,
-    ReadOutputOptions, TaskId, TaskPersistence, TraitTypeId, TurboTasksApi, TurboTasksCallApi,
+    ReadOutputOptions, StaticOrArc, TaskId, TaskPersistence, TraitTypeId, TurboTasksApi,
+    TurboTasksCallApi,
     backend::{CellContent, TaskCollectiblesMap, TypedCellContent},
     event::{Event, EventListener},
     message_queue::CompilationEvent,
     test_helpers::with_turbo_tasks_for_testing,
-    util::{SharedError, StaticOrArc},
+    util::SharedError,
 };
 
 pub use crate::run::{
@@ -164,7 +165,7 @@ impl TurboTasksApi for VcStorage {
     fn invalidate_with_reason(
         &self,
         _task: TaskId,
-        _reason: turbo_tasks::util::StaticOrArc<dyn turbo_tasks::InvalidationReason>,
+        _reason: turbo_tasks::StaticOrArc<dyn turbo_tasks::InvalidationReason>,
     ) {
         unreachable!()
     }
