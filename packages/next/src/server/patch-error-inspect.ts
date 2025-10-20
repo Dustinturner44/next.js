@@ -13,6 +13,7 @@ import { parseStack, type StackFrame } from './lib/parse-stack'
 import { getOriginalCodeFrame } from '../next-devtools/server/shared'
 import { workUnitAsyncStorage } from './app-render/work-unit-async-storage.external'
 import { dim, italic } from '../lib/picocolors'
+import { deobfuscateText } from '../shared/lib/magic-identifier'
 
 type FindSourceMapPayload = (
   sourceURL: string
@@ -443,11 +444,13 @@ function sourceMapError(
 ): Error {
   // Create a new Error object with the source mapping applied and then use native
   // Node.js formatting on the result.
+  // The vm may reference mangled symbols in error messages, so deobfuscate it.
+  const message = deobfuscateText(error.message)
   const newError =
     error.cause !== undefined
       ? // Setting an undefined `cause` would print `[cause]: undefined`
-        new Error(error.message, { cause: error.cause })
-      : new Error(error.message)
+        new Error(message, { cause: error.cause })
+      : new Error(message)
 
   // TODO: Ensure `class MyError extends Error {}` prints `MyError` as the name
   newError.stack = parseAndSourceMap(error, inspectOptions)
