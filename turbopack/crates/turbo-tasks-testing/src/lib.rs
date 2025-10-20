@@ -63,7 +63,7 @@ impl VcStorage {
         let task_id = TaskId::try_from(u32::try_from(i + 1).unwrap()).unwrap();
         let execution_id = ExecutionId::try_from(u16::try_from(i + 1).unwrap()).unwrap();
         handle.spawn(with_turbo_tasks_for_testing(
-            this.clone(),
+            StaticOrArc::Shared(this.clone()),
             task_id,
             execution_id,
             async move {
@@ -322,10 +322,10 @@ impl TurboTasksApi for VcStorage {
 impl VcStorage {
     pub fn with<T>(f: impl Future<Output = T>) -> impl Future<Output = T> {
         with_turbo_tasks_for_testing(
-            Arc::new_cyclic(|weak| VcStorage {
+            StaticOrArc::Shared(Arc::new_cyclic(|weak| VcStorage {
                 this: weak.clone(),
                 ..Default::default()
-            }),
+            })),
             TaskId::MAX,
             ExecutionId::MIN,
             f,

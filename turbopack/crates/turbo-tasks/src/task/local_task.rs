@@ -1,4 +1,4 @@
-use std::{fmt, sync::Arc};
+use std::fmt;
 
 use anyhow::{Result, anyhow};
 
@@ -9,6 +9,7 @@ use crate::{
     event::Event,
     macro_helpers::NativeFunction,
     registry,
+    util::StaticOrArc,
 };
 
 /// A potentially in-flight local task stored in `CurrentGlobalTaskState::local_tasks`.
@@ -106,7 +107,7 @@ impl LocalTaskType {
         mut this: Option<RawVc>,
         arg: &dyn MagicAny,
         persistence: TaskPersistence,
-        turbo_tasks: Arc<dyn TurboTasksBackendApi<B>>,
+        turbo_tasks: StaticOrArc<dyn TurboTasksBackendApi<B>>,
     ) -> Result<RawVc> {
         if let Some(this) = this.as_mut() {
             *this = this.resolve().await?;
@@ -120,7 +121,7 @@ impl LocalTaskType {
         this: RawVc,
         arg: &dyn MagicAny,
         persistence: TaskPersistence,
-        turbo_tasks: Arc<dyn TurboTasksBackendApi<B>>,
+        turbo_tasks: StaticOrArc<dyn TurboTasksBackendApi<B>>,
     ) -> Result<RawVc> {
         let this = this.resolve().await?;
         let TypedCellContent(this_ty, _) = this.into_read().await?;

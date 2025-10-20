@@ -33,7 +33,8 @@ use tokio::task::JoinHandle;
 use tracing::{Instrument, Level, Span, event, info_span};
 use turbo_tasks::{
     NonLocalValue, OperationVc, TurboTasksApi, Vc, apply_effects, run_once_with_reason,
-    trace::TraceRawVcs, util::FormatDuration,
+    trace::TraceRawVcs,
+    util::{FormatDuration, StaticOrArc},
 };
 use turbopack_core::{
     error::PrettyPrintError,
@@ -171,7 +172,7 @@ impl DevServerBuilder {
                             method: request.method().clone(),
                             uri: request.uri().clone(),
                         };
-                        run_once_with_reason(tt.clone(), reason, async move {
+                        run_once_with_reason(StaticOrArc::Shared(tt.clone()), reason, async move {
                             // TODO: `get_issue_reporter` should be an `OperationVc`, as there's a
                             // risk it could be a task-local Vc, which is not safe for us to await.
                             let issue_reporter = get_issue_reporter();
@@ -252,7 +253,7 @@ impl DevServerBuilder {
                             }
                             if !side_effects.is_empty() {
                                 let join_handle = tokio::spawn(run_once_with_reason(
-                                    tt.clone(),
+                                    StaticOrArc::Shared(tt.clone()),
                                     side_effects_reason,
                                     async move {
                                         for side_effect in side_effects {

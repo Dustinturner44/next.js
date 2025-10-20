@@ -1,17 +1,16 @@
-use std::{
-    hash::Hash,
-    sync::{Arc, Weak},
-};
+use std::hash::Hash;
 
 use serde::{Deserialize, Serialize, de::Visitor};
 use tokio::runtime::Handle;
 
-use crate::{TaskId, TurboTasksApi, manager::with_turbo_tasks, trace::TraceRawVcs};
+use crate::{
+    TaskId, TurboTasksApi, manager::with_turbo_tasks, trace::TraceRawVcs, util::StaticOrWeak,
+};
 
 #[derive(Clone)]
 pub struct SerializationInvalidator {
     task: TaskId,
-    turbo_tasks: Weak<dyn TurboTasksApi>,
+    turbo_tasks: StaticOrWeak<dyn TurboTasksApi>,
     handle: Handle,
 }
 
@@ -45,7 +44,7 @@ impl SerializationInvalidator {
     pub(crate) fn new(task_id: TaskId) -> Self {
         Self {
             task: task_id,
-            turbo_tasks: with_turbo_tasks(Arc::downgrade),
+            turbo_tasks: with_turbo_tasks(|tt| tt.downgrade()),
             handle: Handle::current(),
         }
     }
@@ -86,7 +85,7 @@ impl<'de> Deserialize<'de> for SerializationInvalidator {
             {
                 Ok(SerializationInvalidator {
                     task: TaskId::deserialize(deserializer)?,
-                    turbo_tasks: with_turbo_tasks(Arc::downgrade),
+                    turbo_tasks: with_turbo_tasks(|tt| tt.downgrade()),
                     handle: tokio::runtime::Handle::current(),
                 })
             }

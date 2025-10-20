@@ -5,7 +5,7 @@ use std::{
     mem::take,
     pin::Pin,
     sync::{
-        Arc, Mutex, RwLock, Weak,
+        Arc, Mutex, RwLock,
         atomic::{AtomicBool, AtomicUsize, Ordering},
     },
     time::{Duration, Instant},
@@ -40,7 +40,7 @@ use crate::{
     task::local_task::{LocalTask, LocalTaskSpec, LocalTaskType},
     task_statistics::TaskStatisticsApi,
     trace::TraceRawVcs,
-    util::{IdFactory, StaticOrArc},
+    util::{IdFactory, StaticOrArc, StaticOrWeak},
 };
 
 /// Common base trait for [`TurboTasksApi`] and [`TurboTasksBackendApi`]. Provides APIs for creating
@@ -217,7 +217,7 @@ impl<T> Unused<T> {
 
 /// A subset of the [`TurboTasks`] API that's exposed to [`Backend`] implementations.
 pub trait TurboTasksBackendApi<B: Backend + 'static>: TurboTasksCallApi + Sync + Send {
-    fn pin(&self) -> Arc<dyn TurboTasksBackendApi<B>>;
+    fn pin(&self) -> StaticOrArc<dyn TurboTasksBackendApi<B>>;
 
     fn get_fresh_persistent_task_id(&self) -> Unused<TaskId>;
     fn get_fresh_transient_task_id(&self) -> Unused<TaskId>;
@@ -336,7 +336,7 @@ impl Display for ReadTracking {
 }
 
 pub struct TurboTasks<B: Backend + 'static> {
-    this: Weak<Self>,
+    this: StaticOrWeak<Self>,
     backend: B,
     task_id_factory: IdFactoryWithReuse<TaskId>,
     transient_task_id_factory: IdFactoryWithReuse<TaskId>,
@@ -447,7 +447,7 @@ impl CurrentTaskState {
 // TODO implement our own thread pool and make these thread locals instead
 task_local! {
     /// The current TurboTasks instance
-    static TURBO_TASKS: Arc<dyn TurboTasksApi>;
+    static TURBO_TASKS: StaticOrArc<dyn TurboTasksApi>;
 
     static CURRENT_TASK_STATE: Arc<RwLock<CurrentTaskState>>;
 }
@@ -466,8 +466,8 @@ impl<B: Backend + 'static> TurboTasks<B> {
         let transient_task_id_factory =
             IdFactoryWithReuse::new(TaskId::try_from(TRANSIENT_TASK_BIT).unwrap(), TaskId::MAX);
         let execution_id_factory = IdFactory::new(ExecutionId::MIN, ExecutionId::MAX);
-        let this = Arc::new_cyclic(|this| Self {
-            this: this.clone(),
+        let this = Arc::new_cyclic(|weak_this| Self {
+            this: StaticOrWeak::Weak(weak_this.clone()),
             backend,
             task_id_factory,
             transient_task_id_factory,
@@ -494,8 +494,67 @@ impl<B: Backend + 'static> TurboTasks<B> {
         this
     }
 
-    pub fn pin(&self) -> Arc<Self> {
+    /// Creates a new TurboTasks instance with a static self-reference.
+    ///
+    /// This uses `Box::leak` to create a static reference, which means the memory
+    /// will never be deallocated. This is useful for long-lived TurboTasks instances
+    /// that should exist for the entire program lifetime.
+    pub fn new_static(backend: B) -> &'static Self {
+        use std::sync::OnceLock;
+
+        let task_id_factory = IdFactoryWithReuse::new(
+            TaskId::MIN,
+            TaskId::try_from(TRANSIENT_TASK_BIT - 1).unwrap(),
+        );
+        let transient_task_id_factory =
+            IdFactoryWithReuse::new(TaskId::try_from(TRANSIENT_TASK_BIT).unwrap(), TaskId::MAX);
+        let execution_id_factory = IdFactory::new(ExecutionId::MIN, ExecutionId::MAX);
+
+        // Create the OnceLock for the cyclic reference
+        let this_lock: &'static OnceLock<&'static Self> = Box::leak(Box::new(OnceLock::new()));
+
+        let boxed = Box::new(Self {
+            this: StaticOrWeak::Static(this_lock),
+            backend,
+            task_id_factory,
+            transient_task_id_factory,
+            execution_id_factory,
+            stopped: AtomicBool::new(false),
+            currently_scheduled_foreground_jobs: AtomicUsize::new(0),
+            currently_scheduled_background_jobs: AtomicUsize::new(0),
+            scheduled_tasks: AtomicUsize::new(0),
+            start: Mutex::new(None),
+            aggregated_update: Mutex::new((None, InvalidationReasonSet::default())),
+            event_foreground_done: Event::new(|| {
+                || "TurboTasks::event_foreground_done".to_string()
+            }),
+            event_foreground_start: Event::new(|| {
+                || "TurboTasks::event_foreground_start".to_string()
+            }),
+            event_background_done: Event::new(|| {
+                || "TurboTasks::event_background_done".to_string()
+            }),
+            program_start: Instant::now(),
+            compilation_events: CompilationEventQueue::default(),
+        });
+
+        let leaked: &'static Self = Box::leak(boxed);
+        // Initialize the OnceLock with the leaked reference
+        let _ = this_lock.set(leaked);
+        leaked.backend.startup(leaked);
+        leaked
+    }
+
+    pub fn pin(&self) -> StaticOrArc<Self> {
         self.this.upgrade().unwrap()
+    }
+
+    /// Returns a reference to this TurboTasks instance as a trait object.
+    pub fn as_api(&self) -> StaticOrArc<dyn TurboTasksApi> {
+        match self.pin() {
+            StaticOrArc::Static(s) => StaticOrArc::Static(s),
+            StaticOrArc::Shared(arc) => StaticOrArc::Shared(arc),
+        }
     }
 
     /// Creates a new root task
@@ -570,7 +629,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
 
         let result = TURBO_TASKS
             .scope(
-                self.pin(),
+                self.as_api(),
                 CURRENT_TASK_STATE.scope(current_task_state, async {
                     let (result, _duration, _alloc_info) = CaptureFuture::new(future).await;
 
@@ -772,7 +831,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
             anyhow::Ok(())
         };
 
-        let future = TURBO_TASKS.scope(self.pin(), future).in_current_span();
+        let future = TURBO_TASKS.scope(self.as_api(), future).in_current_span();
 
         #[cfg(feature = "tokio_tracing")]
         {
@@ -864,7 +923,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
             .local_task_tracker
             .track_future(future);
         let future = CURRENT_TASK_STATE.scope(global_task_state, future);
-        let future = TURBO_TASKS.scope(self.pin(), future).in_current_span();
+        let future = TURBO_TASKS.scope(self.as_api(), future).in_current_span();
 
         #[cfg(feature = "tokio_tracing")]
         tokio::task::Builder::new()
@@ -1059,7 +1118,7 @@ impl<B: Backend + 'static> TurboTasks<B> {
     }
 
     pub async fn stop_and_wait(&self) {
-        turbo_tasks_future_scope(self.pin(), async move {
+        turbo_tasks_future_scope(self.as_api(), async move {
             self.backend.stopping(self);
             self.stopped.store(true, Ordering::Release);
             {
@@ -1092,14 +1151,15 @@ impl<B: Backend + 'static> TurboTasks<B> {
     #[track_caller]
     pub(crate) fn schedule_foreground_job<T>(&self, func: T)
     where
-        T: AsyncFnOnce(Arc<TurboTasks<B>>) -> Arc<TurboTasks<B>> + Send + 'static,
+        T: AsyncFnOnce(StaticOrArc<TurboTasks<B>>) -> StaticOrArc<TurboTasks<B>> + Send + 'static,
         T::CallOnceFuture: Send,
     {
         let mut this = self.pin();
         this.begin_foreground_job();
+        let this_api = this.as_api();
         tokio::spawn(
             TURBO_TASKS
-                .scope(this.clone(), async move {
+                .scope(this_api, async move {
                     if !this.stopped.load(Ordering::Acquire) {
                         this = func(this.clone()).await;
                     }
@@ -1112,14 +1172,15 @@ impl<B: Backend + 'static> TurboTasks<B> {
     #[track_caller]
     pub(crate) fn schedule_background_job<T>(&self, func: T)
     where
-        T: AsyncFnOnce(Arc<TurboTasks<B>>) -> Arc<TurboTasks<B>> + Send + 'static,
+        T: AsyncFnOnce(StaticOrArc<TurboTasks<B>>) -> StaticOrArc<TurboTasks<B>> + Send + 'static,
         T::CallOnceFuture: Send,
     {
         let mut this = self.pin();
         self.begin_background_job();
+        let this_api = this.as_api();
         tokio::spawn(
             TURBO_TASKS
-                .scope(this.clone(), async move {
+                .scope(this_api, async move {
                     if !this.stopped.load(Ordering::Acquire) {
                         this = func(this).await;
                     }
@@ -1425,8 +1486,11 @@ impl<B: Backend + 'static> TurboTasksApi for TurboTasks<B> {
 }
 
 impl<B: Backend + 'static> TurboTasksBackendApi<B> for TurboTasks<B> {
-    fn pin(&self) -> Arc<dyn TurboTasksBackendApi<B>> {
-        self.pin()
+    fn pin(&self) -> StaticOrArc<dyn TurboTasksBackendApi<B>> {
+        match self.pin() {
+            StaticOrArc::Static(s) => StaticOrArc::Static(s),
+            StaticOrArc::Shared(arc) => StaticOrArc::Shared(arc),
+        }
     }
     fn backend(&self) -> &B {
         &self.backend
@@ -1502,7 +1566,7 @@ pub(crate) fn current_task(from: &str) -> TaskId {
 }
 
 pub async fn run<T: Send + 'static>(
-    tt: Arc<dyn TurboTasksApi>,
+    tt: StaticOrArc<dyn TurboTasksApi>,
     future: impl Future<Output = Result<T>> + Send + 'static,
 ) -> Result<T> {
     let (tx, rx) = tokio::sync::oneshot::channel();
@@ -1519,7 +1583,7 @@ pub async fn run<T: Send + 'static>(
 }
 
 pub async fn run_once<T: Send + 'static>(
-    tt: Arc<dyn TurboTasksApi>,
+    tt: StaticOrArc<dyn TurboTasksApi>,
     future: impl Future<Output = Result<T>> + Send + 'static,
 ) -> Result<T> {
     let (tx, rx) = tokio::sync::oneshot::channel();
@@ -1536,7 +1600,7 @@ pub async fn run_once<T: Send + 'static>(
 }
 
 pub async fn run_once_with_reason<T: Send + 'static>(
-    tt: Arc<dyn TurboTasksApi>,
+    tt: StaticOrArc<dyn TurboTasksApi>,
     reason: impl InvalidationReason,
     future: impl Future<Output = Result<T>> + Send + 'static,
 ) -> Result<T> {
@@ -1576,31 +1640,31 @@ pub fn trait_call(
     with_turbo_tasks(|tt| tt.trait_call(trait_method, this, arg, persistence))
 }
 
-pub fn turbo_tasks() -> Arc<dyn TurboTasksApi> {
+pub fn turbo_tasks() -> StaticOrArc<dyn TurboTasksApi> {
     TURBO_TASKS.with(|arc| arc.clone())
 }
 
-pub fn try_turbo_tasks() -> Option<Arc<dyn TurboTasksApi>> {
+pub fn try_turbo_tasks() -> Option<StaticOrArc<dyn TurboTasksApi>> {
     TURBO_TASKS.try_with(|arc| arc.clone()).ok()
 }
 
-pub fn with_turbo_tasks<T>(func: impl FnOnce(&Arc<dyn TurboTasksApi>) -> T) -> T {
+pub fn with_turbo_tasks<T>(func: impl FnOnce(&StaticOrArc<dyn TurboTasksApi>) -> T) -> T {
     TURBO_TASKS.with(|arc| func(arc))
 }
 
-pub fn turbo_tasks_scope<T>(tt: Arc<dyn TurboTasksApi>, f: impl FnOnce() -> T) -> T {
+pub fn turbo_tasks_scope<T>(tt: StaticOrArc<dyn TurboTasksApi>, f: impl FnOnce() -> T) -> T {
     TURBO_TASKS.sync_scope(tt, f)
 }
 
 pub fn turbo_tasks_future_scope<T>(
-    tt: Arc<dyn TurboTasksApi>,
+    tt: StaticOrArc<dyn TurboTasksApi>,
     f: impl Future<Output = T>,
 ) -> impl Future<Output = T> {
     TURBO_TASKS.scope(tt, f)
 }
 
 pub fn with_turbo_tasks_for_testing<T>(
-    tt: Arc<dyn TurboTasksApi>,
+    tt: StaticOrArc<dyn TurboTasksApi>,
     current_task: TaskId,
     execution_id: ExecutionId,
     f: impl Future<Output = T>,

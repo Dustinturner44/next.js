@@ -1,7 +1,7 @@
 use std::{fmt::Debug, future::Future, sync::Arc};
 
 use anyhow::Result;
-use turbo_tasks::{TurboTasksApi, trace::TraceRawVcs};
+use turbo_tasks::{TurboTasksApi, trace::TraceRawVcs, util::StaticOrArc};
 
 pub struct Registration {
     create_turbo_tasks: fn(&str, bool) -> Arc<dyn TurboTasksApi>,
@@ -44,7 +44,7 @@ where
 {
     let name = closure_to_name(&fut);
     let tt = registration.create_turbo_tasks(&name, true);
-    turbo_tasks::run_once(tt, async move { Ok(fut.await) })
+    turbo_tasks::run_once(StaticOrArc::Shared(tt), async move { Ok(fut.await) })
         .await
         .unwrap()
 }
@@ -58,7 +58,7 @@ where
 {
     let name = closure_to_name(&fut);
     let tt = registration.create_turbo_tasks(&name, true);
-    turbo_tasks::run(tt, async move { Ok(fut.await) })
+    turbo_tasks::run(StaticOrArc::Shared(tt), async move { Ok(fut.await) })
         .await
         .unwrap()
 }
@@ -76,7 +76,10 @@ where
     F: Future<Output = Result<T>> + Send + 'static,
     T: Debug + PartialEq + Eq + TraceRawVcs + Send + 'static,
 {
-    run_with_tt(registration, move |tt| turbo_tasks::run_once(tt, fut())).await
+    run_with_tt(registration, move |tt| {
+        turbo_tasks::run_once(StaticOrArc::Shared(tt), fut())
+    })
+    .await
 }
 
 pub async fn run<T, F>(
@@ -87,7 +90,10 @@ where
     F: Future<Output = Result<T>> + Send + 'static,
     T: Debug + PartialEq + Eq + TraceRawVcs + Send + 'static,
 {
-    run_with_tt(registration, move |tt| turbo_tasks::run(tt, fut())).await
+    run_with_tt(registration, move |tt| {
+        turbo_tasks::run(StaticOrArc::Shared(tt), fut())
+    })
+    .await
 }
 
 pub async fn run_with_tt<T, F>(

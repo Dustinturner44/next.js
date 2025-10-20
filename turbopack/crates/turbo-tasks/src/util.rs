@@ -7,7 +7,7 @@ use std::{
     mem::ManuallyDrop,
     ops::Deref,
     pin::Pin,
-    sync::{Arc, LazyLock, Weak},
+    sync::{Arc, LazyLock, OnceLock, Weak},
     task::{Context, Poll},
     thread::available_parallelism,
     time::Duration,
@@ -240,7 +240,7 @@ impl<T: ?Sized + Debug + 'static> Debug for StaticOrArc<T> {
 /// Weak pointer that stores data either in a [Weak] or as a static reference.
 /// Can be upgraded to [StaticOrArc].
 pub enum StaticOrWeak<T: ?Sized + 'static> {
-    Static(&'static T),
+    Static(&'static OnceLock<&'static T>),
     Weak(Weak<T>),
 }
 
@@ -248,16 +248,16 @@ impl<T: ?Sized + 'static> StaticOrWeak<T> {
     /// Attempts to upgrade the weak pointer to a [StaticOrArc].
     ///
     /// Returns [None] if the inner value has been dropped (for the [Weak] variant).
-    /// Always succeeds for the [Static] variant.
+    /// For the [Static] variant, returns [None] if the OnceLock hasn't been initialized yet.
     pub fn upgrade(&self) -> Option<StaticOrArc<T>> {
         match self {
-            Self::Static(s) => Some(StaticOrArc::Static(s)),
+            Self::Static(lock) => lock.get().copied().map(StaticOrArc::Static),
             Self::Weak(w) => w.upgrade().map(StaticOrArc::Shared),
         }
     }
 
     /// Returns true if the two weak pointers point to the same allocation.
-    /// For static references, this compares pointer equality.
+    /// For static references, this compares pointer equality of the OnceLock.
     pub fn ptr_eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::Static(a), Self::Static(b)) => std::ptr::eq(*a, *b),
@@ -271,7 +271,12 @@ impl<T: ?Sized + 'static> StaticOrArc<T> {
     /// Creates a weak pointer to this allocation.
     pub fn downgrade(&self) -> StaticOrWeak<T> {
         match self {
-            Self::Static(s) => StaticOrWeak::Static(s),
+            Self::Static(s) => {
+                // Create a OnceLock that's already initialized with the static reference
+                let lock = Box::leak(Box::new(OnceLock::new()));
+                let _ = lock.set(*s);
+                StaticOrWeak::Static(lock)
+            }
             Self::Shared(arc) => StaticOrWeak::Weak(Arc::downgrade(arc)),
         }
     }

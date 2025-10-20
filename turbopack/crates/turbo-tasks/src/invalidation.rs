@@ -1,9 +1,4 @@
-use std::{
-    fmt::Display,
-    hash::Hash,
-    mem::replace,
-    sync::{Arc, Weak},
-};
+use std::{fmt::Display, hash::Hash, mem::replace, sync::Arc};
 
 use anyhow::Result;
 use indexmap::map::Entry;
@@ -17,6 +12,7 @@ use crate::{
     FxIndexMap, FxIndexSet, StaticOrArc, TaskId, TurboTasksApi,
     manager::{current_task_if_available, mark_invalidator, with_turbo_tasks},
     trace::TraceRawVcs,
+    util::StaticOrWeak,
 };
 
 /// Get an [`Invalidator`] that can be used to invalidate the current task
@@ -29,7 +25,7 @@ pub fn get_invalidator() -> Option<Invalidator> {
         let handle = Handle::current();
         Some(Invalidator {
             task,
-            turbo_tasks: with_turbo_tasks(Arc::downgrade),
+            turbo_tasks: with_turbo_tasks(|tt| tt.downgrade()),
             handle,
         })
     } else {
@@ -39,7 +35,7 @@ pub fn get_invalidator() -> Option<Invalidator> {
 
 pub struct Invalidator {
     task: TaskId,
-    turbo_tasks: Weak<dyn TurboTasksApi>,
+    turbo_tasks: StaticOrWeak<dyn TurboTasksApi>,
     handle: Handle,
 }
 
@@ -134,7 +130,7 @@ impl<'de> Deserialize<'de> for Invalidator {
             {
                 Ok(Invalidator {
                     task: TaskId::deserialize(deserializer)?,
-                    turbo_tasks: with_turbo_tasks(Arc::downgrade),
+                    turbo_tasks: with_turbo_tasks(|tt| tt.downgrade()),
                     handle: tokio::runtime::Handle::current(),
                 })
             }

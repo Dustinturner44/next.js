@@ -18,7 +18,7 @@ use parking_lot::{Condvar, Mutex};
 use tokio::{runtime::Handle, task::block_in_place};
 use tracing::{Span, info_span};
 
-use crate::{TurboTasksApi, manager::try_turbo_tasks, turbo_tasks_scope};
+use crate::{TurboTasksApi, manager::try_turbo_tasks, turbo_tasks_scope, util::StaticOrArc};
 
 /// Number of worker tasks to spawn that process jobs. It's 1 less than the number of cpus as we
 /// also use the current task as worker.
@@ -153,7 +153,7 @@ pub struct Scope<'scope, 'env: 'scope, R: Send + 'env> {
     index: AtomicUsize,
     inner: Arc<ScopeInner>,
     handle: Handle,
-    turbo_tasks: Option<Arc<dyn TurboTasksApi>>,
+    turbo_tasks: Option<StaticOrArc<dyn TurboTasksApi>>,
     span: Span,
     /// Invariance over 'env, to make sure 'env cannot shrink,
     /// which is necessary for soundness.
