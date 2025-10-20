@@ -1177,7 +1177,7 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.cookies)(...).get is not a function",
+                   "description": "<turbopack-module-id>.cookies(...).get is not a function",
                    "environmentLabel": "Prerender",
                    "label": "Runtime TypeError",
                    "source": "app/sync-cookies/page.tsx (18:36) @ CookiesReadingComponent
@@ -1359,13 +1359,14 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.cookies)(...).get is not a function",
+                   "description": "<turbopack-module-id>.cookies(...).get is not a function",
                    "environmentLabel": "Server",
                    "label": "Runtime TypeError",
                    "source": "app/sync-cookies-runtime/page.tsx (24:36) @ CookiesReadingComponent
                > 24 |   const token = (cookies() as any).get('token')
                     |                                    ^",
                    "stack": [
+                     "TypeError: {imported module ./nodemodules/.pnpm/next file+..+next-repo-0b36d073ae925c4eba722eaa190867133223877e8e123b2c4d00309ed9b3f21fdbdc34df3c435a7ad1512e006943e153/nodemodules/next/headers.js}.cookies(...).get is not a function",
                      "CookiesReadingComponent app/sync-cookies-runtime/page.tsx (24:36)",
                    ],
                  },
@@ -1528,13 +1529,14 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.headers)(...).get is not a function",
+                   "description": "<turbopack-module-id>.headers(...).get is not a function",
                    "environmentLabel": "Prerender",
                    "label": "Runtime TypeError",
                    "source": "app/sync-headers/page.tsx (18:40) @ HeadersReadingComponent
                > 18 |   const userAgent = (headers() as any).get('user-agent')
                     |                                        ^",
                    "stack": [
+                     "TypeError: {imported module ./nodemodules/.pnpm/next file+..+next-repo-0b36d073ae925c4eba722eaa190867133223877e8e123b2c4d00309ed9b3f21fdbdc34df3c435a7ad1512e006943e153/nodemodules/next/headers.js}.headers(...).get is not a function",
                      "HeadersReadingComponent app/sync-headers/page.tsx (18:40)",
                    ],
                  },
@@ -1710,13 +1712,14 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.headers)(...).get is not a function",
+                   "description": "<turbopack-module-id>.headers(...).get is not a function",
                    "environmentLabel": "Server",
                    "label": "Runtime TypeError",
                    "source": "app/sync-headers-runtime/page.tsx (24:40) @ HeadersReadingComponent
                > 24 |   const userAgent = (headers() as any).get('user-agent')
                     |                                        ^",
                    "stack": [
+                     "TypeError: {imported module ./nodemodules/.pnpm/next file+..+next-repo-0b36d073ae925c4eba722eaa190867133223877e8e123b2c4d00309ed9b3f21fdbdc34df3c435a7ad1512e006943e153/nodemodules/next/headers.js}.headers(...).get is not a function",
                      "HeadersReadingComponent app/sync-headers-runtime/page.tsx (24:40)",
                    ],
                  },
