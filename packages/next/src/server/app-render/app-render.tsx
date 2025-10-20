@@ -168,7 +168,10 @@ import {
   prerenderAndAbortInSequentialTasks,
 } from './app-render-prerender-utils'
 import { printDebugThrownValueForProspectiveRender } from './prospective-render-utils'
-import { pipelineInSequentialTasks } from './app-render-render-utils'
+import {
+  pipelineInSequentialTasks,
+  scheduleInSequentialTasks,
+} from './app-render-render-utils'
 import { waitAtLeastOneReactRenderTask } from '../../lib/scheduler'
 import {
   workUnitAsyncStorage,
@@ -580,7 +583,7 @@ async function generateDynamicFlightRenderResult(
 ): Promise<RenderResult> {
   const {
     clientReferenceManifest,
-    componentMod: { renderToReadableStream, createElement },
+    componentMod: { renderToReadableStream },
     htmlRequestId,
     renderOpts,
     requestId,
@@ -605,26 +608,6 @@ async function generateDynamicFlightRenderResult(
     onFlightDataRenderError
   )
 
-  const RSCPayload: RSCPayload & {
-    /** Only available during cacheComponents development builds. Used for logging errors. */
-    _validation?: Promise<ReactNode>
-    _bypassCachesInDev?: React.ReactNode
-  } = await workUnitAsyncStorage.run(
-    requestStore,
-    generateDynamicRSCPayload,
-    ctx,
-    options
-  )
-
-  if (
-    process.env.NODE_ENV === 'development' &&
-    isBypassingCachesInDev(renderOpts, requestStore)
-  ) {
-    RSCPayload._bypassCachesInDev = createElement(WarnForBypassCachesInDev, {
-      route: workStore.route,
-    })
-  }
-
   const debugChannel = setReactDebugChannel && createDebugChannel()
 
   if (debugChannel) {
@@ -633,10 +616,17 @@ async function generateDynamicFlightRenderResult(
 
   // For app dir, use the bundled version of Flight server renderer (renderToReadableStream)
   // which contains the subset React.
+  const rscPayload = await workUnitAsyncStorage.run(
+    requestStore,
+    generateDynamicRSCPayload,
+    ctx,
+    options
+  )
+
   const flightReadableStream = workUnitAsyncStorage.run(
     requestStore,
     renderToReadableStream,
-    RSCPayload,
+    rscPayload,
     clientReferenceManifest.clientModules,
     {
       onError,
@@ -651,30 +641,97 @@ async function generateDynamicFlightRenderResult(
   })
 }
 
+type RenderToReadableStreamServerOptions = NonNullable<
+  Parameters<
+    (typeof import('react-server-dom-webpack/server.node'))['renderToReadableStream']
+  >[2]
+>
+
+async function stagedRenderToReadableStreamWithoutCachesInDev(
+  ctx: AppRenderContext,
+  requestStore: RequestStore,
+  getPayload: (requestStore: RequestStore) => Promise<RSCPayload>,
+  clientReferenceManifest: NonNullable<RenderOpts['clientReferenceManifest']>,
+  options: Omit<RenderToReadableStreamServerOptions, 'environmentName'>
+) {
+  const {
+    componentMod: { renderToReadableStream },
+  } = ctx
+  // We're rendering while bypassing caches,
+  // so we have no hope of showing a useful runtime stage.
+  // But we still want things like `params` to show up in devtools correctly,
+  // which relies on mechanisms we've set up for staged rendering,
+  // so we do a 2-task version (Static -> Dynamic) instead.
+
+  const stageController = new StagedRenderingController()
+  const environmentName = () => {
+    const currentStage = stageController.currentStage
+    switch (currentStage) {
+      case RenderStage.Static:
+        return 'Prerender'
+      case RenderStage.Runtime:
+      case RenderStage.Dynamic:
+        return 'Server'
+      default:
+        currentStage satisfies never
+        throw new InvariantError(`Invalid render stage: ${currentStage}`)
+    }
+  }
+
+  requestStore.stagedRendering = stageController
+  requestStore.asyncApiPromises = createAsyncApiPromisesInDev(
+    stageController,
+    requestStore.cookies,
+    requestStore.mutableCookies,
+    requestStore.headers
+  )
+
+  const rscPayload = await getPayload(requestStore)
+
+  return await workUnitAsyncStorage.run(
+    requestStore,
+    scheduleInSequentialTasks,
+    () => {
+      return renderToReadableStream(
+        rscPayload,
+        clientReferenceManifest.clientModules,
+        {
+          ...options,
+          environmentName,
+        }
+      )
+    },
+    () => {
+      stageController.advanceStage(RenderStage.Dynamic)
+    }
+  )
+}
+
 /**
  * Fork of `generateDynamicFlightRenderResult` that renders using `renderWithRestartOnCacheMissInDev`
  * to ensure correct separation of environments Prerender/Server (for use in Cache Components)
  */
-async function generateDynamicFlightRenderResultWithCachesInDev(
+async function generateDynamicFlightRenderResultWithStagesInDev(
   req: BaseNextRequest,
   ctx: AppRenderContext,
   initialRequestStore: RequestStore,
-  createRequestStore: () => RequestStore
+  createRequestStore: (() => RequestStore) | undefined
 ): Promise<RenderResult> {
-  const { htmlRequestId, renderOpts, requestId, workStore } = ctx
+  const {
+    htmlRequestId,
+    renderOpts,
+    requestId,
+    workStore,
+    componentMod: { createElement },
+  } = ctx
 
   const {
     dev = false,
     onInstrumentationRequestError,
     setReactDebugChannel,
     setCacheStatus,
+    clientReferenceManifest,
   } = renderOpts
-
-  // Before we kick off the render, we set the cache status back to it's initial state
-  // in case a previous render bypassed the cache.
-  if (process.env.NODE_ENV === 'development' && setCacheStatus) {
-    setCacheStatus('ready', htmlRequestId, requestId)
-  }
 
   function onFlightDataRenderError(err: DigestedError) {
     return onInstrumentationRequestError?.(
@@ -688,21 +745,77 @@ async function generateDynamicFlightRenderResultWithCachesInDev(
     onFlightDataRenderError
   )
 
-  const getPayload = (requestStore: RequestStore) =>
-    workUnitAsyncStorage.run(
-      requestStore,
-      generateDynamicRSCPayload,
-      ctx,
-      undefined
-    )
+  const getPayload = async (requestStore: RequestStore) => {
+    const payload: RSCPayload & RSCPayloadDevProperties =
+      await workUnitAsyncStorage.run(
+        requestStore,
+        generateDynamicRSCPayload,
+        ctx,
+        undefined
+      )
 
-  const { stream, debugChannel } = await renderWithRestartOnCacheMissInDev(
-    ctx,
-    initialRequestStore,
-    createRequestStore,
-    getPayload,
-    onError
-  )
+    if (isBypassingCachesInDev(renderOpts, requestStore)) {
+      // Mark the RSC payload to indicate that caches were bypassed in dev.
+      // This lets the client know not to cache anything based on this render.
+      payload._bypassCachesInDev = createElement(WarnForBypassCachesInDev, {
+        route: workStore.route,
+      })
+    }
+
+    return payload
+  }
+
+  let debugChannel: DebugChannelPair | undefined
+  let stream: ReadableStream<Uint8Array>
+
+  if (
+    // We only do this flow if we can safely recreate the store from scratch
+    // (which is not the case for renders after an action)
+    createRequestStore &&
+    // We only do this flow if we're not bypassing caches in dev using
+    // "disable cache" in devtools or a hard refresh (cache-control: "no-store")
+    !isBypassingCachesInDev(renderOpts, initialRequestStore)
+  ) {
+    // Before we kick off the render, we set the cache status back to it's initial state
+    // in case a previous render bypassed the cache.
+    if (setCacheStatus) {
+      setCacheStatus('ready', htmlRequestId, requestId)
+    }
+
+    const result = await renderWithRestartOnCacheMissInDev(
+      ctx,
+      initialRequestStore,
+      createRequestStore,
+      getPayload,
+      onError
+    )
+    debugChannel = result.debugChannel
+    stream = result.stream
+  } else {
+    // We're either bypassing caches or we can't restart the render.
+    // Do a dynamic render, but with (basic) environment labels.
+
+    assertClientReferenceManifest(clientReferenceManifest)
+
+    // Set cache status to bypass when specifically bypassing caches in dev
+    if (setCacheStatus) {
+      setCacheStatus('bypass', htmlRequestId, requestId)
+    }
+
+    debugChannel = setReactDebugChannel && createDebugChannel()
+
+    stream = await stagedRenderToReadableStreamWithoutCachesInDev(
+      ctx,
+      initialRequestStore,
+      getPayload,
+      clientReferenceManifest,
+      {
+        onError: onError,
+        filterStackFrame,
+        debugChannel: debugChannel?.serverSide,
+      }
+    )
+  }
 
   if (debugChannel && setReactDebugChannel) {
     setReactDebugChannel(debugChannel.clientSide, htmlRequestId, requestId)
@@ -1882,32 +1995,18 @@ async function renderToHTMLOrFlightImpl(
       if (isRuntimePrefetchRequest) {
         return generateRuntimePrefetchResult(req, res, ctx, requestStore)
       } else {
-        const bypassCachesInDev = isBypassingCachesInDev(
-          renderOpts,
-          requestStore
-        )
         if (
           process.env.NODE_ENV === 'development' &&
           process.env.NEXT_RUNTIME !== 'edge' &&
-          cacheComponents &&
-          !bypassCachesInDev
+          cacheComponents
         ) {
-          return generateDynamicFlightRenderResultWithCachesInDev(
+          return generateDynamicFlightRenderResultWithStagesInDev(
             req,
             ctx,
             requestStore,
             createRequestStore
           )
         } else {
-          // Set cache status to bypass when specifically bypassing caches in dev
-          if (
-            process.env.NODE_ENV === 'development' &&
-            bypassCachesInDev &&
-            renderOpts.setCacheStatus
-          ) {
-            const { setCacheStatus } = renderOpts
-            setCacheStatus('bypass', htmlRequestId, requestId)
-          }
           return generateDynamicFlightRenderResult(req, ctx, requestStore)
         }
       }
@@ -2193,6 +2292,12 @@ function applyMetadataFromPrerenderResult(
   }
 }
 
+type RSCPayloadDevProperties = {
+  /** Only available during cacheComponents development builds. Used for logging errors. */
+  _validation?: Promise<ReactNode>
+  _bypassCachesInDev?: ReactNode
+}
+
 async function renderToStream(
   requestStore: RequestStore,
   req: BaseNextRequest,
@@ -2335,26 +2440,15 @@ async function renderToStream(
       // Edge routes never prerender so we don't have a Prerender environment for anything in edge runtime
       process.env.NEXT_RUNTIME !== 'edge' &&
       // We only have a Prerender environment for projects opted into cacheComponents
-      cacheComponents &&
-      // We only do this flow if we can safely recreate the store from scratch
-      // (which is not the case for renders after an action)
-      createRequestStore &&
-      // We only do this flow if we're not bypassing caches in dev using
-      // "disable cache" in devtools or a hard refresh (cache-control: "no-store")
-      !isBypassingCachesInDev(renderOpts, requestStore)
+      cacheComponents
     ) {
-      type RSCPayloadWithValidation = InitialRSCPayload & {
-        /** Only available during cacheComponents development builds. Used for logging errors. */
-        _validation?: Promise<ReactNode>
-      }
-
       const [resolveValidation, validationOutlet] = createValidationOutlet()
-
+      let debugChannel: DebugChannelPair | undefined
       const getPayload = async (
         // eslint-disable-next-line @typescript-eslint/no-shadow
         requestStore: RequestStore
-      ): Promise<RSCPayloadWithValidation> => {
-        const payload: RSCPayloadWithValidation =
+      ) => {
+        const payload: InitialRSCPayload & RSCPayloadDevProperties =
           await workUnitAsyncStorage.run(
             requestStore,
             getRSCPayload,
@@ -2367,23 +2461,61 @@ async function renderToStream(
         // because we're not going to wait for the stream to complete,
         // so leaving the validation unresolved is fine.
         payload._validation = validationOutlet
+
+        if (isBypassingCachesInDev(renderOpts, requestStore)) {
+          // Mark the RSC payload to indicate that caches were bypassed in dev.
+          // This lets the client know not to cache anything based on this render.
+          payload._bypassCachesInDev = createElement(WarnForBypassCachesInDev, {
+            route: workStore.route,
+          })
+        }
+
         return payload
       }
 
-      const {
-        stream: serverStream,
-        debugChannel,
-        requestStore: finalRequestStore,
-      } = await renderWithRestartOnCacheMissInDev(
-        ctx,
-        requestStore,
-        createRequestStore,
-        getPayload,
-        serverComponentsErrorHandler
-      )
+      if (
+        // We only do this flow if we can safely recreate the store from scratch
+        // (which is not the case for renders after an action)
+        createRequestStore &&
+        // We only do this flow if we're not bypassing caches in dev using
+        // "disable cache" in devtools or a hard refresh (cache-control: "no-store")
+        !isBypassingCachesInDev(renderOpts, requestStore)
+      ) {
+        const {
+          stream: serverStream,
+          debugChannel: returnedDebugChannel,
+          requestStore: finalRequestStore,
+        } = await renderWithRestartOnCacheMissInDev(
+          ctx,
+          requestStore,
+          createRequestStore,
+          getPayload,
+          serverComponentsErrorHandler
+        )
 
-      reactServerResult = new ReactServerResult(serverStream)
-      requestStore = finalRequestStore
+        reactServerResult = new ReactServerResult(serverStream)
+        requestStore = finalRequestStore
+        debugChannel = returnedDebugChannel
+      } else {
+        // We're either bypassing caches or we can't restart the render.
+        // Do a dynamic render, but with (basic) environment labels.
+
+        debugChannel = setReactDebugChannel && createDebugChannel()
+
+        const serverStream =
+          await stagedRenderToReadableStreamWithoutCachesInDev(
+            ctx,
+            requestStore,
+            getPayload,
+            clientReferenceManifest,
+            {
+              onError: serverComponentsErrorHandler,
+              filterStackFrame,
+              debugChannel: debugChannel?.serverSide,
+            }
+          )
+        reactServerResult = new ReactServerResult(serverStream)
+      }
 
       if (debugChannel && setReactDebugChannel) {
         const [readableSsr, readableBrowser] =
@@ -2414,24 +2546,14 @@ async function renderToStream(
       )
     } else {
       // This is a dynamic render. We don't do dynamic tracking because we're not prerendering
-      const RSCPayload: RSCPayload & {
-        _bypassCachesInDev?: React.ReactNode
-      } = await workUnitAsyncStorage.run(
-        requestStore,
-        getRSCPayload,
-        tree,
-        ctx,
-        res.statusCode === 404
-      )
-
-      if (isBypassingCachesInDev(renderOpts, requestStore)) {
-        // Mark the RSC payload to indicate that caches were bypassed in dev.
-        // This lets the client know not to cache anything based on this render.
-        RSCPayload._bypassCachesInDev = createElement(
-          WarnForBypassCachesInDev,
-          { route: workStore.route }
+      const RSCPayload: RSCPayload & RSCPayloadDevProperties =
+        await workUnitAsyncStorage.run(
+          requestStore,
+          getRSCPayload,
+          tree,
+          ctx,
+          res.statusCode === 404
         )
-      }
 
       const debugChannel = setReactDebugChannel && createDebugChannel()
 
