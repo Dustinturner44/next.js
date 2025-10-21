@@ -1151,6 +1151,25 @@ export async function createHotReloaderTurbopack(
       }
     },
 
+    // sendValidationError(
+    //   chunk: Uint8Array,
+    //   htmlRequestId: string,
+    //   requestId: string
+    // ) {
+    //   // Legacy clients don't have Cache Components.
+    //   const client = clientsByRequestId.get(htmlRequestId)
+    //   if (client !== undefined) {
+    //     sendToClient(client, {
+    //       type: HMR_MESSAGE_SENT_TO_BROWSER.VALIDATION_ERROR,
+    //       chunk,
+    //     })
+    //   } else {
+    //     // If the client is not connected, store the status so that we can send it
+    //     // when the client connects.
+    //     validationErrorByRequestId.set(requestId, chunk)
+    //   }
+    // },
+
     setReactDebugChannel(debugChannel, htmlRequestId, requestId) {
       // Store the debug channel, regardless of whether the client is connected.
       setReactDebugChannel(requestId, debugChannel)

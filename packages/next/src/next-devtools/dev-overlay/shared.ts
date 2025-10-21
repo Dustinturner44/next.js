@@ -75,6 +75,7 @@ type DevtoolsPanelName = string
 export type OverlayDispatch = React.Dispatch<DispatcherEvent>
 
 export const ACTION_CACHE_INDICATOR = 'cache-indicator'
+export const ACTION_VALIDATION_ERROR = 'validation-error'
 export const ACTION_STATIC_INDICATOR = 'static-indicator'
 export const ACTION_BUILD_OK = 'build-ok'
 export const ACTION_BUILD_ERROR = 'build-error'

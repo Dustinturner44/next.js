@@ -49,6 +49,9 @@ import {
 import type { SegmentNodeState } from './userspace/app/segment-explorer-node'
 import type { DevToolsConfig } from './dev-overlay/shared'
 import type { SegmentTrieData } from '../shared/lib/mcp-page-metadata-types'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { createFromReadableStream } from 'react-server-dom-webpack/client'
+import { findSourceMapURL } from '../client/app-find-source-map-url'
 
 export interface Dispatcher {
   onBuildOk(): void
@@ -58,6 +61,7 @@ export interface Dispatcher {
   onBeforeRefresh(): void
   onRefresh(): void
   onCacheIndicator(status: CacheIndicatorState): void
+  onValidationError(chunk: Uint8Array): void
   onStaticIndicator(status: 'pending' | 'static' | 'dynamic' | 'disabled'): void
   onDevIndicator(devIndicator: DevIndicatorServerState): void
   onDevToolsConfig(config: DevToolsConfig): void
@@ -155,6 +159,9 @@ export const dispatcher: Dispatcher = {
       dispatch({ type: ACTION_CACHE_INDICATOR, cacheIndicator: status })
     }
   ),
+  onValidationError: createQueuable((_: Dispatch, chunk: Uint8Array) => {
+    processValidationEvent(chunk)
+  }),
   onStaticIndicator: createQueuable(
     (
       dispatch: Dispatch,
@@ -452,4 +459,19 @@ export function renderPagesDevOverlay(
 
     isPagesMounted = true
   }
+}
+
+async function processValidationEvent(bypassCachesInDevchunk: Uint8Array) {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(bypassCachesInDevchunk)
+      controller.close()
+    },
+  })
+
+  // @ts-expect-error -- thinks this is node types or something
+  const error = await createFromReadableStream<Error>(stream, {
+    findSourceMapURL,
+  })
+  console.error(error)
 }

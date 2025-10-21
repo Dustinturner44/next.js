@@ -33,6 +33,7 @@ export const enum HMR_MESSAGE_SENT_TO_BROWSER {
   TURBOPACK_CONNECTED = 'turbopack-connected',
   ISR_MANIFEST = 'isrManifest',
   CACHE_INDICATOR = 'cacheIndicator',
+  // VALIDATION_ERROR = 'validationError',
   DEV_INDICATOR = 'devIndicator',
   DEVTOOLS_CONFIG = 'devtoolsConfig',
   REQUEST_CURRENT_ERROR_STATE = 'requestCurrentErrorState',
@@ -172,6 +173,11 @@ export interface CacheIndicatorMessage {
   state: CacheIndicatorState
 }
 
+// export interface ValidationErrorMessage {
+//   type: HMR_MESSAGE_SENT_TO_BROWSER.VALIDATION_ERROR
+//   chunk: Uint8Array
+// }
+
 export type HmrMessageSentToBrowser =
   | TurbopackMessage
   | TurbopackConnectedMessage
@@ -193,6 +199,7 @@ export type HmrMessageSentToBrowser =
   | RequestCurrentErrorStateMessage
   | RequestPageMetadataMessage
   | CacheIndicatorMessage
+// | ValidationErrorMessage
 
 export type BinaryHmrMessageSentToBrowser = Extract<
   HmrMessageSentToBrowser,

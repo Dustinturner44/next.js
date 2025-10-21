@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { Suspense } from 'react'
+import { unstable_noStore } from 'next/cache'
 import { connection } from 'next/server'
 
 // export const unstable_prefetch = {
@@ -7,28 +8,30 @@ import { connection } from 'next/server'
 //   samples: [{}],
 // }
 
-export async function generateViewport() {
-  // cookies().then(() => console.log('~~~ cookies resolved ~~~'))
-  await cookies()
-  // await connection()
-  return {}
-}
+// export async function generateViewport() {
+//   // cookies().then(() => console.log('~~~ cookies resolved ~~~'))
+//   await cookies()
+//   // await connection()
+//   return {}
+// }
 
-export default function Page() {
+export default function Page({ params }) {
+  unstable_noStore()
   return (
     <main>
       <div>this is static</div>
       {/* <Sync /> */}
-      {/* <SyncAfterCookies /> */}
-      <Dynamicc />
-      <Runtime />
+      {/* <SyncAfterCookies />
+      <Dynamic /> */}
+      {/* <Runtime /> */}
       {/* <Suspense fallback="loading...">
         <Dynamic />
       </Suspense> */}
+      <Suspense fallback="loading...">{/* <Runtime /> */}</Suspense>
+      {/* <Cached />
       <Suspense fallback="loading...">
-        <Runtime />
-      </Suspense>
-      <Cached />
+        <Params params={params} />
+      </Suspense> */}
     </main>
   )
 }
@@ -46,7 +49,7 @@ async function Sync() {
   return <p>hello sync after cookies</p>
 }
 
-async function Dynamicc() {
+async function Dynamic() {
   await fetch('https://example.com')
   return <p>hello dynamic</p>
 }
@@ -54,6 +57,11 @@ async function Dynamicc() {
 async function Runtime() {
   await cookies()
   return <p>hello runtime</p>
+}
+
+async function Params({ params }) {
+  await params
+  return <p>hello params {JSON.stringify(await params)}</p>
 }
 
 async function Cached() {
