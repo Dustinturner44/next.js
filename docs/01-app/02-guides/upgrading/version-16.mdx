@@ -182,7 +182,7 @@ In some projects, client-side code may import files containing Node.js native mo
 
 When this happens, you should refactor your code so that your client-side bundles do not reference these Node.js native modules.
 
-However, in some cases, this might not be possible. In Webpack the `resolve.fallback` option was typically used to **silence** the error. Turbopack offers a similar option, using `turbopack.resolveAlias`. In this case, tell Turbopack to load an empty module when `fs` is requested for the browser.
+However, in some cases, this might not be possible. In Webpack the `resolve.fallback` option was typically used to **silence** the error. Turbopack offers a similar option, using `turbopack.resolveAlias`. In this case, create an `empty.ts` file with no contents, and tell Turbopack to load it when `fs` is requested for the browser.
 
 ```ts filename="next.config.ts"
 import type { NextConfig } from 'next'
