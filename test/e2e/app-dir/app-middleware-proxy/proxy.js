@@ -95,3 +95,5 @@ export async function proxy(request) {
     },
   })
 }
+
+export const runtime = 'nodejs'
