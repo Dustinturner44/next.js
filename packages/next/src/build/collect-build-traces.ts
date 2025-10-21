@@ -140,8 +140,7 @@ export async function collectBuildTraces({
         })
       )
 
-      const { cacheHandler } = config
-      const { cacheHandlers } = config.experimental
+      const { cacheHandler, cacheHandlers } = config
 
       // ensure we trace any dependencies needed for custom
       // incremental cache handler
