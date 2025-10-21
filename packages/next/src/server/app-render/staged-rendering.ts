@@ -12,6 +12,9 @@ export type NonStaticRenderStage = RenderStage.Runtime | RenderStage.Dynamic
 export class StagedRenderingController {
   currentStage: RenderStage = RenderStage.Static
 
+  private runtimeStageListeners: Array<() => void> = []
+  private dynamicStageListeners: Array<() => void> = []
+
   private runtimeStagePromise = createPromiseWithResolvers<void>()
   private dynamicStagePromise = createPromiseWithResolvers<void>()
 
@@ -33,9 +36,35 @@ export class StagedRenderingController {
         { once: true }
       )
     }
+
+    console.log(
+      'constructing StagedRenderingController',
+      'current stage',
+      RenderStage[this.currentStage]
+    )
+  }
+
+  onStage(stage: NonStaticRenderStage, callback: () => void) {
+    if (this.currentStage >= stage) {
+      callback()
+    } else if (stage === RenderStage.Runtime) {
+      this.runtimeStageListeners.push(callback)
+    } else if (stage === RenderStage.Dynamic) {
+      this.dynamicStageListeners.push(callback)
+    } else {
+      // This should never happen
+      throw new InvariantError(`Invalid render stage: ${stage}`)
+    }
   }
 
   advanceStage(stage: NonStaticRenderStage) {
+    console.log(
+      '(( advanceStage to',
+      RenderStage[stage],
+      ')) (( currentStage is',
+      RenderStage[this.currentStage],
+      '))'
+    )
     // If we're already at the target stage or beyond, do nothing.
     // (this can happen e.g. if sync IO advanced us to the dynamic stage)
     if (this.currentStage >= stage) {
@@ -45,9 +74,19 @@ export class StagedRenderingController {
     // Note that we might be going directly from Static to Dynamic,
     // so we need to resolve the runtime stage as well.
     if (stage >= RenderStage.Runtime) {
+      const runtimeListeners = this.runtimeStageListeners
+      for (let i = 0; i < runtimeListeners.length; i++) {
+        runtimeListeners[i]()
+      }
+      runtimeListeners.length = 0
       this.runtimeStagePromise.resolve()
     }
     if (stage >= RenderStage.Dynamic) {
+      const dynamicListeners = this.dynamicStageListeners
+      for (let i = 0; i < dynamicListeners.length; i++) {
+        dynamicListeners[i]()
+      }
+      dynamicListeners.length = 0
       this.dynamicStagePromise.resolve()
     }
   }

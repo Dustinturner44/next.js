@@ -4738,9 +4738,12 @@
         "Server Functions cannot be called during initial render. This would create a fetch waterfall. Try to use a Server Component to pass data to Client Components instead."
       );
     }
-    function startReadingFromStream(response$jscomp$0, stream, onEnd) {
+    function startReadingFromStream(response$jscomp$0, stream, onEnd, label) {
+      var dec = new TextDecoder();
       var streamState = createStreamState(response$jscomp$0, stream);
       stream.on("data", function (chunk) {
+        console.log(label, 'received chunk');
+        console.log(dec.decode(chunk, { stream: true }));
         if ("string" === typeof chunk) {
           if (void 0 !== response$jscomp$0.weak.deref()) {
             var response = unwrapWeakResponse(response$jscomp$0),
@@ -5108,11 +5111,12 @@
         startReadingFromStream(
           response,
           options.debugChannel,
-          serverConsumerManifest
+          serverConsumerManifest,
+          "DEBUG"
         );
-        startReadingFromStream(response, stream, serverConsumerManifest);
+        startReadingFromStream(response, stream, serverConsumerManifest, "MAIN");
       } else
-        startReadingFromStream(response, stream, close.bind(null, response));
+        startReadingFromStream(response, stream, close.bind(null, response), "COMBINED");
       return getRoot(response);
     };
     exports.createFromReadableStream = function (stream, options) {

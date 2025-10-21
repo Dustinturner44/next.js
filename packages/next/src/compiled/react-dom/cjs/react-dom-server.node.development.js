@@ -7457,7 +7457,7 @@
         node = task.node;
       null !== node &&
         "object" === typeof node &&
-        pushHaltedAwaitOnComponentStack(task, node._debugInfo);
+        (console.log("DEBUG INFO", node._payload.value._debugInfo), pushHaltedAwaitOnComponentStack(task, node._debugInfo));
       if (null === boundary) {
         if (13 !== request.status && request.status !== CLOSED) {
           boundary = task.replay;

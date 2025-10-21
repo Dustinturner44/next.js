@@ -783,8 +783,11 @@ function createErrorWithComponentOrOwnerStack(
       ? React.captureOwnerStack()
       : null
 
+  console.log('ownerStack', ownerStack)
+  console.log('componentStack', componentStack)
+
   const error = new Error(message)
-  error.stack = error.name + ': ' + message + (ownerStack ?? componentStack)
+  error.stack = error.name + ': ' + message + componentStack
   return error
 }
 
