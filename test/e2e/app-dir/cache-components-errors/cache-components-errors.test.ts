@@ -1222,7 +1222,7 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.cookies)(...).get is not a function",
+                   "description": "<turbopack-module-id>.cookies(...).get is not a function",
                    "environmentLabel": "Prerender",
                    "label": "Runtime TypeError",
                    "source": "app/sync-cookies/page.tsx (18:36) @ CookiesReadingComponent
@@ -1404,7 +1404,7 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.cookies)(...).get is not a function",
+                   "description": "<turbopack-module-id>.cookies(...).get is not a function",
                    "environmentLabel": "Server",
                    "label": "Runtime TypeError",
                    "source": "app/sync-cookies-runtime/page.tsx (24:36) @ CookiesReadingComponent
@@ -1573,7 +1573,7 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.headers)(...).get is not a function",
+                   "description": "<turbopack-module-id>.headers(...).get is not a function",
                    "environmentLabel": "Prerender",
                    "label": "Runtime TypeError",
                    "source": "app/sync-headers/page.tsx (18:40) @ HeadersReadingComponent
@@ -1755,7 +1755,7 @@ describe('Cache Components Errors', () => {
                    ],
                  },
                  {
-                   "description": "(0 , <turbopack-module-id>.headers)(...).get is not a function",
+                   "description": "<turbopack-module-id>.headers(...).get is not a function",
                    "environmentLabel": "Server",
                    "label": "Runtime TypeError",
                    "source": "app/sync-headers-runtime/page.tsx (24:40) @ HeadersReadingComponent
