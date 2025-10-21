@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   // Explicitly configure deprecated options
-  skipMiddlewareUrlNormalize: true,
+  skipProxyUrlNormalize: true,
   experimental: {
-    middlewarePrefetch: 'strict',
+    proxyPrefetch: 'strict',
     instrumentationHook: true,
-    middlewareClientMaxBodySize: '5mb',
-    externalMiddlewareRewritesResolve: true,
+    proxyClientMaxBodySize: '5mb',
+    externalProxyRewritesResolve: true,
   },
 }
