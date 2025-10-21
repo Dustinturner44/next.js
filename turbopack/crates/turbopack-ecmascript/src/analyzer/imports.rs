@@ -770,7 +770,9 @@ impl Visit for Analyzer<'_> {
         // we could actually unwrap thanks to the optimisation above but it can't hurt to be safe...
         if let Some(comments) = self.comments {
             let callee_span = match &n.callee {
-                box Expr::Ident(Ident { sym, .. }) if sym == "Worker" => Some(n.span),
+                box Expr::Ident(Ident { sym, .. }) if sym == "Worker" || sym == "SharedWorker" => {
+                    Some(n.span)
+                }
                 _ => None,
             };
 

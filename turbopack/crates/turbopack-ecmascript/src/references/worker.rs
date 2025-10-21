@@ -32,6 +32,7 @@ use crate::{
 pub struct WorkerAssetReference {
     pub origin: ResolvedVc<Box<dyn ResolveOrigin>>,
     pub request: ResolvedVc<Request>,
+    pub worker_type: WorkerReferenceSubType,
     pub issue_source: IssueSource,
     pub in_try: bool,
 }
@@ -40,12 +41,14 @@ impl WorkerAssetReference {
     pub fn new(
         origin: ResolvedVc<Box<dyn ResolveOrigin>>,
         request: ResolvedVc<Request>,
+        worker_type: WorkerReferenceSubType,
         issue_source: IssueSource,
         in_try: bool,
     ) -> Self {
         WorkerAssetReference {
             origin,
             request,
+            worker_type,
             issue_source,
             in_try,
         }
@@ -59,8 +62,7 @@ impl WorkerAssetReference {
         let module = url_resolve(
             *self.origin,
             *self.request,
-            // TODO support more worker types
-            ReferenceType::Worker(WorkerReferenceSubType::WebWorker),
+            ReferenceType::Worker(self.worker_type),
             Some(self.issue_source),
             self.in_try,
         );
@@ -81,7 +83,7 @@ impl WorkerAssetReference {
             return Ok(None);
         };
 
-        Ok(Some(WorkerLoaderModule::new(*chunkable)))
+        Ok(Some(WorkerLoaderModule::new(*chunkable, self.worker_type)))
     }
 }
 
@@ -103,8 +105,14 @@ impl ModuleReference for WorkerAssetReference {
 impl ValueToString for WorkerAssetReference {
     #[turbo_tasks::function]
     async fn to_string(&self) -> Result<Vc<RcStr>> {
+        let worker_name = match self.worker_type {
+            WorkerReferenceSubType::WebWorker => "Worker",
+            WorkerReferenceSubType::SharedWorker => "SharedWorker",
+            WorkerReferenceSubType::ServiceWorker => "ServiceWorker",
+            _ => "Worker",
+        };
         Ok(Vc::cell(
-            format!("new Worker {}", self.request.to_string().await?,).into(),
+            format!("new {} {}", worker_name, self.request.to_string().await?,).into(),
         ))
     }
 }

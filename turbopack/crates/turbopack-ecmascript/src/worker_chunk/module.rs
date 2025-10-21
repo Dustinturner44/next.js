@@ -11,6 +11,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReference, ModuleReferences},
+    reference_type::WorkerReferenceSubType,
     resolve::ModuleResolveResult,
 };
 
@@ -21,13 +22,20 @@ use super::chunk_item::WorkerLoaderChunkItem;
 #[turbo_tasks::value]
 pub struct WorkerLoaderModule {
     pub inner: ResolvedVc<Box<dyn ChunkableModule>>,
+    pub worker_type: WorkerReferenceSubType,
 }
 
 #[turbo_tasks::value_impl]
 impl WorkerLoaderModule {
     #[turbo_tasks::function]
-    pub fn new(module: ResolvedVc<Box<dyn ChunkableModule>>) -> Vc<Self> {
-        Self::cell(WorkerLoaderModule { inner: module })
+    pub fn new(
+        module: ResolvedVc<Box<dyn ChunkableModule>>,
+        worker_type: WorkerReferenceSubType,
+    ) -> Vc<Self> {
+        Self::cell(WorkerLoaderModule {
+            inner: module,
+            worker_type,
+        })
     }
 
     #[turbo_tasks::function]

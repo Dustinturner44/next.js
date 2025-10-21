@@ -58,6 +58,7 @@ impl WorkerLoaderChunkItem {
 impl EcmascriptChunkItem for WorkerLoaderChunkItem {
     #[turbo_tasks::function]
     async fn content(self: Vc<Self>) -> Result<Vc<EcmascriptChunkItemContent>> {
+        let _this = self.await?;
         let chunks_data = self.chunks_data().await?;
         let chunks_data = chunks_data.iter().try_join().await?;
         let chunks_data: Vec<_> = chunks_data
@@ -65,6 +66,8 @@ impl EcmascriptChunkItem for WorkerLoaderChunkItem {
             .map(|chunk_data| EcmascriptChunkData::new(chunk_data))
             .collect();
 
+        // All worker types use the same blob URL generation
+        // The difference is handled at the JavaScript level when creating the worker
         let code = formatdoc! {
             r#"
                 {TURBOPACK_EXPORT_VALUE}({TURBOPACK_WORKER_BLOB_URL}({chunks:#}));

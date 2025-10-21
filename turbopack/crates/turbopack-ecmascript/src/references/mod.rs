@@ -75,7 +75,7 @@ use turbopack_core::{
     issue::{IssueExt, IssueSeverity, IssueSource, StyledString, analyze::AnalyzeIssue},
     module::Module,
     reference::{ModuleReference, ModuleReferences},
-    reference_type::{CommonJsReferenceSubType, ReferenceType},
+    reference_type::{CommonJsReferenceSubType, ReferenceType, WorkerReferenceSubType},
     resolve::{
         FindContextFileResult, ModulePart, find_context_file,
         origin::{PlainResolveOrigin, ResolveOrigin, ResolveOriginExt},
@@ -1719,6 +1719,43 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
                             WorkerAssetReference::new(
                                 origin,
                                 Request::parse(pat).to_resolved().await?,
+                                WorkerReferenceSubType::WebWorker,
+                                issue_source(source, span),
+                                in_try,
+                            ),
+                            ast_path.to_vec().into(),
+                        );
+                    }
+
+                    return Ok(());
+                }
+                // Ignore (e.g. dynamic parameter or string literal), just as Webpack does
+                return Ok(());
+            }
+            JsValue::WellKnownFunction(WellKnownFunctionKind::SharedWorkerConstructor) => {
+                let args = linked_args(args).await?;
+                if let Some(url @ JsValue::Url(_, JsValueUrlKind::Relative)) = args.first() {
+                    let pat = js_value_to_pattern(url);
+                    if !pat.has_constant_parts() {
+                        let (args, hints) = explain_args(&args);
+                        handler.span_warn_with_code(
+                            span,
+                            &format!("new SharedWorker({args}) is very dynamic{hints}",),
+                            DiagnosticId::Lint(
+                                errors::failed_to_analyze::ecmascript::NEW_WORKER.to_string(),
+                            ),
+                        );
+                        if ignore_dynamic_requests {
+                            return Ok(());
+                        }
+                    }
+
+                    if *compile_time_info.environment().rendering().await? == Rendering::Client {
+                        analysis.add_reference_code_gen(
+                            WorkerAssetReference::new(
+                                origin,
+                                Request::parse(pat).to_resolved().await?,
+                                WorkerReferenceSubType::SharedWorker,
                                 issue_source(source, span),
                                 in_try,
                             ),
@@ -3148,6 +3185,12 @@ async fn value_visitor_inner(
                 JsValue::WellKnownFunction(WellKnownFunctionKind::WorkerConstructor),
                 true,
                 "ignored Worker constructor",
+            ),
+            "SharedWorker" => JsValue::unknown_if(
+                ignore,
+                JsValue::WellKnownFunction(WellKnownFunctionKind::SharedWorkerConstructor),
+                true,
+                "ignored SharedWorker constructor",
             ),
             "define" => JsValue::WellKnownFunction(WellKnownFunctionKind::Define),
             "URL" => JsValue::WellKnownFunction(WellKnownFunctionKind::URLConstructor),
