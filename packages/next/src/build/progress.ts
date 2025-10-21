@@ -53,7 +53,7 @@ export const createProgress = (total: number, label: string) => {
     // - per fully generated segment, or
     // - per minute
     // when not showing the spinner
-    if (!process.env.IS_TTY) {
+    if (!process.stdout.isTTY) {
       currentSegmentCount++
 
       if (currentSegmentCount === currentSegmentTotal) {
