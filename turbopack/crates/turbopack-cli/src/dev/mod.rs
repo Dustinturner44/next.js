@@ -4,7 +4,7 @@ use std::{
     io::{Write, stdout},
     net::{IpAddr, SocketAddr},
     path::{MAIN_SEPARATOR, PathBuf},
-    sync::Arc,
+    sync::{Arc, LazyLock},
     time::{Duration, Instant},
 };
 
@@ -13,7 +13,8 @@ use owo_colors::OwoColorize;
 use rustc_hash::FxHashSet;
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
-    NonLocalValue, OperationVc, ResolvedVc, TransientInstance, TurboTasks, UpdateInfo, Vc,
+    NonLocalValue, OperationVc, ResolvedVc, StaticOrArc, TransientInstance, TurboTasks, UpdateInfo,
+    Vc,
     trace::TraceRawVcs,
     util::{FormatBytes, FormatDuration},
 };
@@ -57,7 +58,7 @@ pub(crate) mod web_entry_source;
 type Backend = TurboTasksBackend<NoopBackingStorage>;
 
 pub struct TurbopackDevServerBuilder {
-    turbo_tasks: Arc<TurboTasks<Backend>>,
+    turbo_tasks: StaticOrArc<TurboTasks<Backend>>,
     project_dir: RcStr,
     root_dir: RcStr,
     entry_requests: Vec<EntryRequest>,
@@ -74,7 +75,7 @@ pub struct TurbopackDevServerBuilder {
 
 impl TurbopackDevServerBuilder {
     pub fn new(
-        turbo_tasks: Arc<TurboTasks<Backend>>,
+        turbo_tasks: StaticOrArc<TurboTasks<Backend>>,
         project_dir: RcStr,
         root_dir: RcStr,
     ) -> TurbopackDevServerBuilder {
@@ -246,7 +247,7 @@ impl TurbopackDevServerBuilder {
         };
 
         let issue_reporter_arc = Arc::new(move || issue_provider.get_issue_reporter());
-        Ok(server.serve(tasks, source, issue_reporter_arc))
+        Ok(server.serve(tasks.as_api(), source, issue_reporter_arc))
     }
 }
 
@@ -369,13 +370,22 @@ pub async fn start_server(args: &DevArguments) -> Result<()> {
         root_dir,
     } = normalize_dirs(&args.common.dir, &args.common.root)?;
 
-    let tt = TurboTasks::new(TurboTasksBackend::new(
+    static TURBO_TASKS_STATIC: LazyLock<bool> =
+        LazyLock::new(|| std::env::var("NEXT_TURBO_TASKS_STATIC").unwrap() == "1");
+    let backend = TurboTasksBackend::new(
         BackendOptions {
             storage_mode: None,
             ..Default::default()
         },
         noop_backing_storage(),
-    ));
+    );
+    let tt = if *TURBO_TASKS_STATIC {
+        println!("Using static turbo tasks");
+        StaticOrArc::Static(TurboTasks::new_static(backend))
+    } else {
+        println!("Using refcounted turbo tasks");
+        StaticOrArc::Shared(TurboTasks::new(backend))
+    };
 
     let tt_clone = tt.clone();
 

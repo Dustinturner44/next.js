@@ -115,7 +115,7 @@ impl DevServer {
 impl DevServerBuilder {
     pub fn serve(
         self,
-        turbo_tasks: Arc<dyn TurboTasksApi>,
+        turbo_tasks: StaticOrArc<dyn TurboTasksApi>,
         source_provider: impl SourceProvider + NonLocalValue + TraceRawVcs + Sync,
         get_issue_reporter: Arc<dyn Fn() -> Vc<Box<dyn IssueReporter>> + Send + Sync>,
     ) -> DevServer {
@@ -172,7 +172,7 @@ impl DevServerBuilder {
                             method: request.method().clone(),
                             uri: request.uri().clone(),
                         };
-                        run_once_with_reason(StaticOrArc::Shared(tt.clone()), reason, async move {
+                        run_once_with_reason(tt.clone(), reason, async move {
                             // TODO: `get_issue_reporter` should be an `OperationVc`, as there's a
                             // risk it could be a task-local Vc, which is not safe for us to await.
                             let issue_reporter = get_issue_reporter();
@@ -253,7 +253,7 @@ impl DevServerBuilder {
                             }
                             if !side_effects.is_empty() {
                                 let join_handle = tokio::spawn(run_once_with_reason(
-                                    StaticOrArc::Shared(tt.clone()),
+                                    tt.clone(),
                                     side_effects_reason,
                                     async move {
                                         for side_effect in side_effects {

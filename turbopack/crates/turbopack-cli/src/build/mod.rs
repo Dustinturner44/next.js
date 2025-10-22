@@ -2,14 +2,16 @@ use std::{
     env::current_dir,
     mem::forget,
     path::{MAIN_SEPARATOR, PathBuf},
-    sync::Arc,
+    sync::LazyLock,
 };
 
 use anyhow::{Context, Result, bail};
 use rustc_hash::FxHashSet;
 use tracing::Instrument;
 use turbo_rcstr::RcStr;
-use turbo_tasks::{ResolvedVc, TransientInstance, TryJoinIterExt, TurboTasks, Vc, apply_effects};
+use turbo_tasks::{
+    ResolvedVc, StaticOrArc, TransientInstance, TryJoinIterExt, TurboTasks, Vc, apply_effects,
+};
 use turbo_tasks_backend::{
     BackendOptions, NoopBackingStorage, TurboTasksBackend, noop_backing_storage,
 };
@@ -60,7 +62,7 @@ use crate::{
 type Backend = TurboTasksBackend<NoopBackingStorage>;
 
 pub struct TurbopackBuildBuilder {
-    turbo_tasks: Arc<TurboTasks<Backend>>,
+    turbo_tasks: StaticOrArc<TurboTasks<Backend>>,
     project_dir: RcStr,
     root_dir: RcStr,
     entry_requests: Vec<EntryRequest>,
@@ -75,7 +77,11 @@ pub struct TurbopackBuildBuilder {
 }
 
 impl TurbopackBuildBuilder {
-    pub fn new(turbo_tasks: Arc<TurboTasks<Backend>>, project_dir: RcStr, root_dir: RcStr) -> Self {
+    pub fn new(
+        turbo_tasks: StaticOrArc<TurboTasks<Backend>>,
+        project_dir: RcStr,
+        root_dir: RcStr,
+    ) -> Self {
         TurbopackBuildBuilder {
             turbo_tasks,
             project_dir,
@@ -529,14 +535,23 @@ pub async fn build(args: &BuildArguments) -> Result<()> {
         root_dir,
     } = normalize_dirs(&args.common.dir, &args.common.root)?;
 
-    let tt = TurboTasks::new(TurboTasksBackend::new(
+    static TURBO_TASKS_STATIC: LazyLock<bool> =
+        LazyLock::new(|| std::env::var("NEXT_TURBO_TASKS_STATIC").unwrap() == "1");
+    let backend = TurboTasksBackend::new(
         BackendOptions {
             dependency_tracking: false,
             storage_mode: None,
             ..Default::default()
         },
         noop_backing_storage(),
-    ));
+    );
+    let tt = if *TURBO_TASKS_STATIC {
+        println!("Using static turbo tasks");
+        StaticOrArc::Static(TurboTasks::new_static(backend))
+    } else {
+        println!("Using refcounted turbo tasks");
+        StaticOrArc::Shared(TurboTasks::new(backend))
+    };
 
     let mut builder = TurbopackBuildBuilder::new(tt.clone(), project_dir, root_dir)
         .log_detail(args.common.log_detail)
