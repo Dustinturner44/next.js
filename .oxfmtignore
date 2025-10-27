@@ -17,10 +17,9 @@ packages/next/wasm/@next
 packages/next/errors.json
 
 .github/actions/next-stats-action/.work
+.changeset/*.md
 
 # examples
-examples/
-# examples using Flow
 examples/with-flow/components/Page.js
 examples/with-custom-babel-config/pages/index.js
 
