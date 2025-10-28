@@ -18,7 +18,7 @@ import path from 'path'
 import http from 'http'
 import https from 'https'
 import os from 'os'
-import { exec } from 'child_process'
+import { exec, spawnSync } from 'child_process'
 import Watchpack from 'next/dist/compiled/watchpack'
 import * as Log from '../../build/output/log'
 import setupDebug from 'next/dist/compiled/debug'
@@ -512,6 +512,16 @@ export async function startServer(
       onChange: (filename: string) => void
     ) {
       const wp = new Watchpack()
+      const originalConsoleError = console.error
+      console.error = (...args: any[]) => {
+        const msg = args[0]
+        if (typeof msg === 'string' && msg.includes('EMFILE')) {
+          spawnSync(`lsof`, [`-a`, `-p`, `${process.pid}`], {
+            stdio: 'inherit',
+          })
+        }
+        originalConsoleError(...args)
+      }
       wp.watch({
         files: CONFIG_FILES.map((file) => path.join(dirToWatch, file)),
       })
@@ -526,9 +536,9 @@ export async function startServer(
       }
 
       Log.warn(
-        `Found a change in ${path.basename(
+        `Found a change in ${
           filename
-        )}. Restarting the server to apply the changes...`
+        }. Restarting the server to apply the changes...`
       )
       process.exit(RESTART_EXIT_CODE)
     })
