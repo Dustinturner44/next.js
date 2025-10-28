@@ -1,4 +1,5 @@
 import { nextTestSetup } from 'e2e-utils'
+import { createRouterAct } from 'router-act'
 import { browserConfigWithFixedTime, fastForwardTo } from './test-utils'
 import { findAllTelemetryEvents } from 'next-test-utils'
 import path from 'path'
@@ -20,20 +21,25 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
       it('should trigger a loading state before fetching the page, followed by fresh data on every subsequent navigation', async () => {
         const browser = await next.browser('/', browserConfigWithFixedTime)
 
-        // this test introduces an artificial delay in rendering the requested page, so we verify a loading state is rendered
+        // Toggle and navigate - this test introduces an artificial delay in rendering the requested page, so we verify a loading state is rendered
         await browser
-          .elementByCss('[href="/1?timeout=1000"]')
+          .elementByCss('[data-link-accordion="/1?timeout=1000"]')
           .click()
-          .waitForElementByCss('#loading')
+        await browser.elementByCss('[href="/1?timeout=1000"]').click()
+        await browser.waitForElementByCss('#loading')
 
         const initialRandomNumber = await browser
           .waitForElementByCss('#random-number')
           .text()
 
+        await browser.elementByCss('[data-link-accordion="/"]').click()
         await browser.elementByCss('[href="/"]').click()
 
         await browser.eval(fastForwardTo, 5 * 1000) // fast forward 5 seconds
 
+        await browser
+          .elementByCss('[data-link-accordion="/1?timeout=1000"]')
+          .click()
         const newRandomNumber = await browser
           .elementByCss('[href="/1?timeout=1000"]')
           .click()
@@ -50,13 +56,32 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
             browserConfigWithFixedTime
           )
 
+          // reveal the link
+          await browser
+            .elementByCss(
+              '[data-link-accordion="/without-loading/1?timeout=1000"]'
+            )
+            .click()
+          // navigate
           const initialRandomNumber = await browser
             .elementByCss('[href="/without-loading/1?timeout=1000"]')
             .click()
             .waitForElementByCss('#random-number')
             .text()
 
+          // reveal the home link
+          await browser
+            .elementByCss('[data-link-accordion="/without-loading"]')
+            .click()
+          // navigate to the home page
           await browser.elementByCss('[href="/without-loading"]').click()
+
+          // reveal link back to the target page
+          await browser
+            .elementByCss(
+              '[data-link-accordion="/without-loading/1?timeout=1000"]'
+            )
+            .click()
 
           const newRandomNumber = await browser
             .elementByCss('[href="/without-loading/1?timeout=1000"]')
@@ -73,48 +98,107 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
     describe('prefetch={true}', () => {
       it('should re-use the cache for 5 minutes (default "static" time)', async () => {
-        const browser = await next.browser('/', browserConfigWithFixedTime)
+        let act: ReturnType<typeof createRouterAct>
+        const browser = await next.browser('/', {
+          beforePageLoad(page) {
+            browserConfigWithFixedTime.beforePageLoad(page)
+            act = createRouterAct(page)
+          },
+        })
 
-        // Wait for the prefetch to complete before clicking
-        await browser.waitForIdleNetwork()
+        // Toggle link to trigger prefetch
+        const link = await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/0?timeout=0"]'
+            )
+            await reveal.click()
+            return browser.elementByCss('[href="/0?timeout=0"]')
+          },
+          { includes: 'random-number' }
+        )
 
-        let initialRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate - should use prefetch
+        let initialRandomNumber = await act(async () => {
+          await link.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        })
 
-        let newRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate back - should use cache
+        let newRandomNumber = await act(async () => {
+          const reveal = await browser.elementByCss(
+            '[data-link-accordion="/0?timeout=0"]'
+          )
+          await reveal.click()
+          const link = await browser.elementByCss('[href="/0?timeout=0"]')
+          await link.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
         expect(initialRandomNumber).toBe(newRandomNumber)
 
         await browser.eval(fastForwardTo, 30 * 1000) // fast forward 30 seconds
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home - cached
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        }, 'no-requests')
 
-        newRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate back - still cached
+        newRandomNumber = await act(async () => {
+          const reveal = await browser.elementByCss(
+            '[data-link-accordion="/0?timeout=0"]'
+          )
+          await reveal.click()
+          const link = await browser.elementByCss('[href="/0?timeout=0"]')
+          await link.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
         expect(initialRandomNumber).toBe(newRandomNumber)
 
         await browser.eval(fastForwardTo, 5 * 60 * 1000) // fast forward 5 minutes
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home - cached
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        }, 'no-requests')
 
-        newRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Toggle link - should trigger new prefetch after expiry
+        const linkAfterExpiry = await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/0?timeout=0"]'
+            )
+            await reveal.click()
+            return browser.elementByCss('[href="/0?timeout=0"]')
+          },
+          { includes: 'random-number' }
+        )
+
+        // Navigate - should use fresh prefetch
+        newRandomNumber = await act(async () => {
+          await linkAfterExpiry.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
         expect(initialRandomNumber).not.toBe(newRandomNumber)
       })
@@ -122,26 +206,55 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
     describe('prefetch={false}', () => {
       it('should trigger a loading state before fetching the page, followed by fresh data on every subsequent navigation', async () => {
-        const browser = await next.browser('/', browserConfigWithFixedTime)
+        let act: ReturnType<typeof createRouterAct>
+        const browser = await next.browser('/', {
+          beforePageLoad(page) {
+            browserConfigWithFixedTime.beforePageLoad(page)
+            act = createRouterAct(page)
+          },
+        })
 
-        // this test introduces an artificial delay in rendering the requested page, so we verify a loading state is rendered
-        await browser
-          .elementByCss('[href="/2?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#loading')
+        // Toggle link - should NOT trigger prefetch
+        await act(async () => {
+          const reveal = await browser.elementByCss(
+            '[data-link-accordion="/2?timeout=1000"]'
+          )
+          await reveal.click()
+        }, 'no-requests')
 
-        const initialRandomNumber = await browser
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate - should fetch page. There was no prefetched loading state, so we won't see it until the dynamic request starts streaming.
+        // we can't use `act` here because it will wait for the request to finish, but that will be too late since we'll have
+        // shown the full response already.
+        await browser.elementByCss('[href="/2?timeout=1000"]').click()
+        await browser.waitForElementByCss('#loading')
 
-        await browser.elementByCss('[href="/"]').click()
+        const initialRandomNumber = await browser.elementByCss('#random-number')
+
+        // Navigate home
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        })
 
         await browser.eval(fastForwardTo, 5 * 1000) // fast forward 5 seconds
 
+        // Navigate back - should fetch fresh data (no cache with dynamic: 0)
+        await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/2?timeout=1000"]'
+            )
+            await reveal.click()
+            const link = await browser.elementByCss('[href="/2?timeout=1000"]')
+            await link.click()
+          },
+          { includes: 'random-number' }
+        )
+
         const newRandomNumber = await browser
-          .elementByCss('[href="/2?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#random-number')
+          .elementByCss('#random-number')
           .text()
 
         expect(initialRandomNumber).not.toBe(newRandomNumber)
@@ -149,22 +262,60 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
       describe('without a loading boundary', () => {
         it('should get fresh data on every subsequent navigation', async () => {
-          const browser = await next.browser('/', browserConfigWithFixedTime)
+          let act: ReturnType<typeof createRouterAct>
+          const browser = await next.browser('/', {
+            beforePageLoad(page) {
+              browserConfigWithFixedTime.beforePageLoad(page)
+              act = createRouterAct(page)
+            },
+          })
 
-          const initialRandomNumber = await browser
-            .elementByCss('[href="/2?timeout=1000"]')
-            .click()
-            .waitForElementByCss('#random-number')
-            .text()
+          // Toggle link - should NOT trigger prefetch
+          await act(async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/2?timeout=1000"]'
+            )
+            await reveal.click()
+          }, 'no-requests')
 
-          await browser.elementByCss('[href="/"]').click()
+          // Navigate - should fetch page. There was no prefetched loading state, so we won't see it until the dynamic request starts streaming.
+          // we can't use `act` here because it will wait for the request to finish, but that will be too late since we'll have
+          // shown the full response already.
+          await browser.elementByCss('[href="/2?timeout=1000"]').click()
+          await browser.waitForElementByCss('#loading')
+
+          const initialRandomNumber =
+            await browser.elementByCss('#random-number')
+
+          // Navigate home
+          await act(async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/"]'
+            )
+            await reveal.click()
+            const homeLink = await browser.elementByCss('[href="/"]')
+            await homeLink.click()
+          })
 
           await browser.eval(fastForwardTo, 5 * 1000) // fast forward 5 seconds
 
+          // Navigate back - should fetch fresh data
+          await act(
+            async () => {
+              const reveal = await browser.elementByCss(
+                '[data-link-accordion="/2?timeout=1000"]'
+              )
+              await reveal.click()
+              const link = await browser.elementByCss(
+                '[href="/2?timeout=1000"]'
+              )
+              await link.click()
+            },
+            { includes: 'random-number' }
+          )
+
           const newRandomNumber = await browser
-            .elementByCss('[href="/2?timeout=1000"]')
-            .click()
-            .waitForElementByCss('#random-number')
+            .elementByCss('#random-number')
             .text()
 
           expect(initialRandomNumber).not.toBe(newRandomNumber)
@@ -174,26 +325,62 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
     describe('prefetch={undefined} - default', () => {
       it('should trigger a loading state before fetching the page, followed by fresh data on every subsequent navigation', async () => {
-        const browser = await next.browser('/', browserConfigWithFixedTime)
+        let act: ReturnType<typeof createRouterAct>
+        const browser = await next.browser('/', {
+          beforePageLoad(page) {
+            browserConfigWithFixedTime.beforePageLoad(page)
+            act = createRouterAct(page)
+          },
+        })
 
-        // this test introduces an artificial delay in rendering the requested page, so we verify a loading state is rendered
-        await browser
-          .elementByCss('[href="/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#loading')
+        // Toggle link - should trigger partial prefetch (loading boundary)
+        await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/1?timeout=1000"]'
+            )
+            await reveal.click()
+          },
+          { includes: 'loading' }
+        )
 
-        const initialRandomNumber = await browser
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate - should fetch full page and show loading
+        await act(
+          async () => {
+            const link = await browser.elementByCss('[href="/1?timeout=1000"]')
+            await link.click()
+            await browser.waitForElementByCss('#loading')
+          },
+          { includes: 'random-number' }
+        )
 
-        await browser.elementByCss('[href="/"]').click()
+        const initialRandomNumber = await browser.elementByCss('#random-number')
+
+        // Navigate home
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        })
 
         await browser.eval(fastForwardTo, 5 * 1000) // fast forward 5 seconds
 
+        // Navigate back - should fetch fresh data (no cache with dynamic: 0)
+        await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/1?timeout=1000"]'
+            )
+            await reveal.click()
+            const link = await browser.elementByCss('[href="/1?timeout=1000"]')
+            await link.click()
+          },
+          { includes: 'random-number' }
+        )
+
         const newRandomNumber = await browser
-          .elementByCss('[href="/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#random-number')
+          .elementByCss('#random-number')
           .text()
 
         expect(initialRandomNumber).not.toBe(newRandomNumber)
@@ -201,23 +388,56 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
       describe('without a loading boundary', () => {
         it('should get fresh data on every subsequent navigation', async () => {
-          const browser = await next.browser(
-            '/without-loading',
-            browserConfigWithFixedTime
+          let act: ReturnType<typeof createRouterAct>
+          const browser = await next.browser('/without-loading', {
+            beforePageLoad(page) {
+              browserConfigWithFixedTime.beforePageLoad(page)
+              act = createRouterAct(page)
+            },
+          })
+
+          await act(
+            async () => {
+              const reveal = await browser.elementByCss(
+                '[data-link-accordion="/without-loading/1?timeout=1000"]'
+              )
+              await reveal.click()
+              const link = await browser.elementByCss(
+                '[href="/without-loading/1?timeout=1000"]'
+              )
+              await link.click()
+            },
+            { includes: 'random-number' }
           )
 
-          const initialRandomNumber = await browser
-            .elementByCss('[href="/without-loading/1?timeout=1000"]')
-            .click()
-            .waitForElementByCss('#random-number')
-            .text()
+          const initialRandomNumber =
+            await browser.elementByCss('#random-number')
 
-          await browser.elementByCss('[href="/without-loading"]').click()
+          await act(async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/without-loading"]'
+            )
+            await reveal.click()
+            const link = await browser.elementByCss('[href="/without-loading"]')
+            await link.click()
+          })
+
+          await act(
+            async () => {
+              const reveal = await browser.elementByCss(
+                '[data-link-accordion="/without-loading/1?timeout=1000"]'
+              )
+              await reveal.click()
+              const link = await browser.elementByCss(
+                '[href="/without-loading/1?timeout=1000"]'
+              )
+              await link.click()
+            },
+            { includes: 'random-number' }
+          )
 
           const newRandomNumber = await browser
-            .elementByCss('[href="/without-loading/1?timeout=1000"]')
-            .click()
-            .waitForElementByCss('#random-number')
+            .elementByCss('#random-number')
             .text()
 
           expect(initialRandomNumber).not.toBe(newRandomNumber)
@@ -266,48 +486,106 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
     describe('prefetch={true}', () => {
       it('should use the custom static override time (3 minutes)', async () => {
-        const browser = await next.browser('/', browserConfigWithFixedTime)
+        let act: ReturnType<typeof createRouterAct>
+        const browser = await next.browser('/', {
+          beforePageLoad(page) {
+            browserConfigWithFixedTime.beforePageLoad(page)
+            act = createRouterAct(page)
+          },
+        })
 
-        // Wait for the prefetch to complete before clicking
-        await browser.waitForIdleNetwork()
+        // Toggle link to trigger prefetch
+        const link = await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/0?timeout=0"]'
+            )
+            await reveal.click()
+            return browser.elementByCss('[href="/0?timeout=0"]')
+          },
+          { includes: 'random-number' }
+        )
 
-        let initialRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate - should use prefetch
+        let initialRandomNumber = await act(async () => {
+          await link.click()
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        })
 
-        let newRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate back - should use cache
+        let newRandomNumber = await act(async () => {
+          const reveal = await browser.elementByCss(
+            '[data-link-accordion="/0?timeout=0"]'
+          )
+          await reveal.click()
+          const link = await browser.elementByCss('[href="/0?timeout=0"]')
+          await link.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
         expect(initialRandomNumber).toBe(newRandomNumber)
 
         await browser.eval(fastForwardTo, 30 * 1000) // fast forward 30 seconds
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home - cached
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        }, 'no-requests')
 
-        newRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Navigate back - still cached (within 3 min window)
+        newRandomNumber = await act(async () => {
+          const reveal = await browser.elementByCss(
+            '[data-link-accordion="/0?timeout=0"]'
+          )
+          await reveal.click()
+          const link = await browser.elementByCss('[href="/0?timeout=0"]')
+          await link.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
         expect(initialRandomNumber).toBe(newRandomNumber)
 
         await browser.eval(fastForwardTo, 3 * 60 * 1000) // fast forward 3 minutes
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home - cache expired
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        })
 
-        newRandomNumber = await browser
-          .elementByCss('[href="/0?timeout=0"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
+        // Toggle link - should trigger new prefetch after expiry
+        const linkAfterExpiry = await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/0?timeout=0"]'
+            )
+            await reveal.click()
+            return browser.elementByCss('[href="/0?timeout=0"]')
+          },
+          { includes: 'random-number' }
+        )
+
+        // Navigate - should use fresh prefetch
+        newRandomNumber = await act(async () => {
+          await linkAfterExpiry.click()
+          await browser.waitForElementByCss('#random-number')
+          return browser.elementByCss('#random-number').text()
+        }, 'no-requests')
 
         expect(initialRandomNumber).not.toBe(newRandomNumber)
       })
@@ -315,35 +593,91 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
 
     describe('prefetch={undefined} - default', () => {
       it('should re-use the loading boundary for the custom static override time (3 minutes)', async () => {
-        const browser = await next.browser('/', browserConfigWithFixedTime)
+        let act: ReturnType<typeof createRouterAct>
+        const browser = await next.browser('/', {
+          beforePageLoad(page) {
+            browserConfigWithFixedTime.beforePageLoad(page)
+            act = createRouterAct(page)
+          },
+        })
 
-        const loadingRandomNumber = await browser
-          .elementByCss('[href="/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#loading')
-          .text()
+        // Toggle link - should trigger partial prefetch
+        await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/1?timeout=1000"]'
+            )
+            await reveal.click()
+          },
+          { includes: 'loading' }
+        )
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate
+        const loadingRandomNumber = await act(
+          async () => {
+            const link = await browser.elementByCss('[href="/1?timeout=1000"]')
+            await link.click()
+            await browser.waitForElementByCss('#loading')
+            return browser.elementByCss('#loading').text()
+          },
+          { includes: 'random-number' }
+        )
+
+        // Navigate home
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        })
 
         await browser.eval(fastForwardTo, 2 * 60 * 1000) // fast forward 2 minutes
 
-        let newLoadingNumber = await browser
-          .elementByCss('[href="/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#loading')
-          .text()
+        // Navigate back - should still use cached loading (within 3 min window)
+        let newLoadingNumber = await act(async () => {
+          const reveal = await browser.elementByCss(
+            '[data-link-accordion="/1?timeout=1000"]'
+          )
+          await reveal.click()
+          const link = await browser.elementByCss('[href="/1?timeout=1000"]')
+          await link.click()
+          await browser.waitForElementByCss('#loading')
+          return browser.elementByCss('#loading').text()
+        })
 
         expect(loadingRandomNumber).toBe(newLoadingNumber)
 
-        await browser.elementByCss('[href="/"]').click()
+        // Navigate home - cached
+        await act(async () => {
+          const reveal = await browser.elementByCss('[data-link-accordion="/"]')
+          await reveal.click()
+          const homeLink = await browser.elementByCss('[href="/"]')
+          await homeLink.click()
+        }, 'no-requests')
 
-        await browser.eval(fastForwardTo, 2 * 60 * 1000) // fast forward 2 minutes
+        await browser.eval(fastForwardTo, 2 * 60 * 1000) // fast forward 2 minutes (total 4 minutes)
 
-        newLoadingNumber = await browser
-          .elementByCss('[href="/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#loading')
-          .text()
+        // Toggle link - should trigger new prefetch after 3 min expiry
+        await act(
+          async () => {
+            const reveal = await browser.elementByCss(
+              '[data-link-accordion="/1?timeout=1000"]'
+            )
+            await reveal.click()
+          },
+          { includes: 'loading' }
+        )
+
+        // Navigate - should show fresh loading
+        newLoadingNumber = await act(
+          async () => {
+            const link = await browser.elementByCss('[href="/1?timeout=1000"]')
+            await link.click()
+            await browser.waitForElementByCss('#loading')
+            return browser.elementByCss('#loading').text()
+          },
+          { includes: 'random-number' }
+        )
 
         expect(loadingRandomNumber).not.toBe(newLoadingNumber)
       })
@@ -367,69 +701,5 @@ describe('app dir client cache semantics (experimental staleTimes)', () => {
         })
       })
     }
-  })
-
-  describe('dynamic: 0, static: 0', () => {
-    const { next } = nextTestSetup({
-      files: path.join(__dirname, 'fixtures', 'regular'),
-      nextConfig: {
-        experimental: { staleTimes: { dynamic: 0, static: 0 } },
-      },
-      env: {
-        NEXT_TELEMETRY_DEBUG: '1',
-      },
-    })
-
-    // dev doesn't support prefetch={true}, so this just performs a basic test to make sure data is fresh on each navigation
-    it('should trigger a loading state before fetching the page, followed by fresh data on every subsequent navigation', async () => {
-      const browser = await next.browser('/', browserConfigWithFixedTime)
-
-      // this test introduces an artificial delay in rendering the requested page, so we verify a loading state is rendered
-      await browser
-        .elementByCss('[href="/1?timeout=1000"]')
-        .click()
-        .waitForElementByCss('#loading')
-
-      const initialRandomNumber = await browser
-        .waitForElementByCss('#random-number')
-        .text()
-
-      await browser.elementByCss('[href="/"]').click()
-
-      await browser.eval(fastForwardTo, 5 * 1000) // fast forward 5 seconds
-
-      const newRandomNumber = await browser
-        .elementByCss('[href="/1?timeout=1000"]')
-        .click()
-        .waitForElementByCss('#random-number')
-        .text()
-
-      expect(initialRandomNumber).not.toBe(newRandomNumber)
-    })
-
-    describe('without a loading boundary', () => {
-      it('should get fresh data on every subsequent navigation', async () => {
-        const browser = await next.browser(
-          '/without-loading',
-          browserConfigWithFixedTime
-        )
-
-        const initialRandomNumber = await browser
-          .elementByCss('[href="/without-loading/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
-
-        await browser.elementByCss('[href="/without-loading"]').click()
-
-        const newRandomNumber = await browser
-          .elementByCss('[href="/without-loading/1?timeout=1000"]')
-          .click()
-          .waitForElementByCss('#random-number')
-          .text()
-
-        expect(initialRandomNumber).not.toBe(newRandomNumber)
-      })
-    })
   })
 })

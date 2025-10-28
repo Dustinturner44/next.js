@@ -1,35 +1,37 @@
-import Link from 'next/link'
+import { LinkAccordion } from '../components/link-accordion'
 
 export default function Page() {
   return (
     <>
       <div>
-        <Link href="/without-loading/0?timeout=0" prefetch={true}>
+        <LinkAccordion href="/without-loading/0?timeout=0" prefetch={true}>
           To Random Number - prefetch: true
-        </Link>
+        </LinkAccordion>
       </div>
       <div>
-        <Link href="/without-loading/0?timeout=1000" prefetch={true}>
+        <LinkAccordion href="/without-loading/0?timeout=1000" prefetch={true}>
           To Random Number - prefetch: true, slow
-        </Link>
+        </LinkAccordion>
       </div>
       <div>
-        <Link href="/without-loading/1">To Random Number - prefetch: auto</Link>
+        <LinkAccordion href="/without-loading/1">
+          To Random Number - prefetch: auto
+        </LinkAccordion>
       </div>
       <div>
-        <Link href="/without-loading/2" prefetch={false}>
+        <LinkAccordion href="/without-loading/2" prefetch={false}>
           To Random Number 2 - prefetch: false
-        </Link>
+        </LinkAccordion>
       </div>
       <div>
-        <Link href="/without-loading/2?timeout=1000" prefetch={false}>
+        <LinkAccordion href="/without-loading/2?timeout=1000" prefetch={false}>
           To Random Number 2 - prefetch: false, slow
-        </Link>
+        </LinkAccordion>
       </div>
       <div>
-        <Link href="/without-loading/1?timeout=1000">
+        <LinkAccordion href="/without-loading/1?timeout=1000">
           To Random Number - prefetch: auto, slow
-        </Link>
+        </LinkAccordion>
       </div>
     </>
   )

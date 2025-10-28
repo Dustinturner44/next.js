@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { LinkAccordion } from '../../components/link-accordion'
 
 export default async function Page({ searchParams }) {
   const timeout = (await searchParams).timeout
@@ -14,7 +14,7 @@ export default async function Page({ searchParams }) {
   return (
     <>
       <div>
-        <Link href="/without-loading">Back to Home</Link>
+        <LinkAccordion href="/without-loading">Back to Home</LinkAccordion>
       </div>
       <div id="random-number">{randomNumber}</div>
     </>
