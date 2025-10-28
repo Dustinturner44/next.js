@@ -4268,6 +4268,7 @@ export default async function build(
           pageExtensions: config.pageExtensions,
           buildManifest,
           middlewareManifest,
+          functionsConfigManifest,
           hasGSPAndRevalidateZero,
         })
       )
