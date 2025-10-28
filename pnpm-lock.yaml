@@ -290,7 +290,7 @@ importers:
         version: 5.2.1(eslint@9.37.0(jiti@2.5.1))
       eslint-plugin-import:
         specifier: 2.31.0
-        version: 2.31.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.37.0(jiti@2.5.1))
+        version: 2.31.0(eslint@9.37.0(jiti@2.5.1))
       eslint-plugin-jest:
         specifier: 27.6.3
         version: 27.6.3(eslint@9.37.0(jiti@2.5.1))(jest@29.7.0(@types/node@20.17.6(patch_hash=rvl3vkomen3tospgr67bzubfyu))(babel-plugin-macros@3.1.0))(typescript@5.9.2)
@@ -917,7 +917,7 @@ importers:
   packages/eslint-config-next:
     dependencies:
       '@next/eslint-plugin-next':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../eslint-plugin-next
       eslint:
         specifier: '>=9.0.0'
@@ -994,7 +994,7 @@ importers:
   packages/next:
     dependencies:
       '@next/env':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../next-env
       '@swc/helpers':
         specifier: 0.5.15
@@ -1119,19 +1119,19 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       '@next/font':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../font
       '@next/polyfill-module':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../next-polyfill-module
       '@next/polyfill-nomodule':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../next-polyfill-nomodule
       '@next/react-refresh-utils':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../react-refresh-utils
       '@next/swc':
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../next-swc
       '@opentelemetry/api':
         specifier: 1.6.0
@@ -1828,7 +1828,7 @@ importers:
         version: 1.0.20
     devDependencies:
       next:
-        specifier: 16.0.1-canary.5
+        specifier: 16.0.1-canary.6
         version: link:../next
       outdent:
         specifier: 0.8.0
@@ -26871,11 +26871,10 @@ snapshots:
       - bluebird
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@2.5.1)):
+  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@2.5.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@2.5.1))(typescript@5.9.2)
       eslint: 9.37.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
@@ -26916,7 +26915,7 @@ snapshots:
       - typescript
     optional: true
 
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.37.0(jiti@2.5.1)):
+  eslint-plugin-import@2.31.0(eslint@9.37.0(jiti@2.5.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
@@ -26927,7 +26926,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.37.0(jiti@2.5.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.5.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@2.5.1))
+      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@2.5.1))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -26938,8 +26937,6 @@ snapshots:
       semver: 6.3.1
       string.prototype.trimend: 1.0.9
       tsconfig-paths: 3.15.0
-    optionalDependencies:
-      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@2.5.1))(typescript@5.9.2)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
