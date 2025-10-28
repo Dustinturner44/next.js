@@ -93,7 +93,7 @@ import {
   DOC_PREFETCH_RANGE_HEADER_VALUE,
   doesExportedHtmlMatchBuildId,
 } from '../../../shared/lib/segment-cache/output-export-prefetch-encoding'
-import { FetchStrategy } from '../segment-cache'
+import { FetchStrategy, getStaleTimeMs } from '../segment-cache'
 import { createPromiseWithResolvers } from '../../../shared/lib/promise-with-resolvers'
 
 // A note on async/await when working in the prefetch cache:
@@ -266,14 +266,6 @@ export type NonEmptySegmentCacheEntry = Exclude<
 const isOutputExportMode =
   process.env.NODE_ENV === 'production' &&
   process.env.__NEXT_CONFIG_OUTPUT === 'export'
-
-/**
- * Ensures a minimum stale time of 30s to avoid issues where the server sends a too
- * short-lived stale time, which would prevent anything from being prefetched.
- */
-function getStaleTimeMs(staleTimeSeconds: number): number {
-  return Math.max(staleTimeSeconds, 30) * 1000
-}
 
 // Route cache entries vary on multiple keys: the href and the Next-Url. Each of
 // these parts needs to be included in the internal cache key. Rather than
