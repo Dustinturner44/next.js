@@ -1276,6 +1276,11 @@ export default async function build(
         )
       NextBuildContext.mappedPages = mappedPages
 
+      // Update appDirOnly if no user pages routes are found
+      if (Object.keys(mappedPages).length === 0 && !appDirOnly) {
+        NextBuildContext.appDirOnly = appDirOnly = true
+      }
+
       let mappedAppPages: MappedPages | undefined
       let mappedAppLayouts: MappedPages | undefined
       let denormalizedAppPages: string[] | undefined
