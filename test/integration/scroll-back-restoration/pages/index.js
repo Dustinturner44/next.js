@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 const Page = ({ loaded }) => {
   const link = (
@@ -15,9 +16,9 @@ const Page = ({ loaded }) => {
     </Link>
   )
 
-  if (typeof window !== 'undefined') {
+  useEffect(() => {
     window.didHydrate = true
-  }
+  }, [])
 
   if (loaded) {
     return (
