@@ -844,11 +844,10 @@
       "app dir - prefetching (custom staleTime) should fetch again when a static page was prefetched when navigating to it after the stale time has passed",
       "app dir - prefetching (custom staleTime) should fetch again when the initially visited static page is visited after the stale time has passed",
       "app dir - prefetching (custom staleTime) should not fetch again when a static page was prefetched when navigating to it twice",
+      "app dir - prefetching (custom staleTime) should not re-fetch cached data when navigating back to a route group",
       "app dir - prefetching (custom staleTime) should renew the stale time after refetching expired RSC data"
     ],
-    "failed": [
-      "app dir - prefetching (custom staleTime) should not re-fetch cached data when navigating back to a route group"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -1879,9 +1878,12 @@
       "Cache Components Errors Build With --prerender-debug Error Attribution with Sync IO Guarded RSC with unguarded Client sync IO should error the build with a reason related to sync IO access",
       "Cache Components Errors Build With --prerender-debug Error Attribution with Sync IO Unguarded RSC with guarded Client sync IO should error the build with a reason related dynamic data",
       "Cache Components Errors Build With --prerender-debug Error Attribution with Sync IO unguarded RSC with unguarded Client sync IO should error the build with a reason related to sync IO access",
+      "Cache Components Errors Build With --prerender-debug Inside `use cache` cacheLife with expire < 5 minutes should error the build",
+      "Cache Components Errors Build With --prerender-debug Inside `use cache` cacheLife with revalidate: 0 should error the build",
       "Cache Components Errors Build With --prerender-debug Inside `use cache` cookies should error the build",
       "Cache Components Errors Build With --prerender-debug Inside `use cache` draftMode should error the build",
       "Cache Components Errors Build With --prerender-debug Inside `use cache` headers should error the build",
+      "Cache Components Errors Build With --prerender-debug Inside `use cache` reading fallback params should error the build",
       "Cache Components Errors Build With --prerender-debug Static Route should not error the build when all routes are static",
       "Cache Components Errors Build With --prerender-debug Sync Dynamic Platform With Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
       "Cache Components Errors Build With --prerender-debug Sync Dynamic Platform Without Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
@@ -1918,9 +1920,12 @@
       "Cache Components Errors Build Without --prerender-debug Error Attribution with Sync IO Guarded RSC with unguarded Client sync IO should error the build with a reason related to sync IO access",
       "Cache Components Errors Build Without --prerender-debug Error Attribution with Sync IO Unguarded RSC with guarded Client sync IO should error the build with a reason related dynamic data",
       "Cache Components Errors Build Without --prerender-debug Error Attribution with Sync IO unguarded RSC with unguarded Client sync IO should error the build with a reason related to sync IO access",
+      "Cache Components Errors Build Without --prerender-debug Inside `use cache` cacheLife with expire < 5 minutes should error the build",
+      "Cache Components Errors Build Without --prerender-debug Inside `use cache` cacheLife with revalidate: 0 should error the build",
       "Cache Components Errors Build Without --prerender-debug Inside `use cache` cookies should error the build",
       "Cache Components Errors Build Without --prerender-debug Inside `use cache` draftMode should error the build",
       "Cache Components Errors Build Without --prerender-debug Inside `use cache` headers should error the build",
+      "Cache Components Errors Build Without --prerender-debug Inside `use cache` reading fallback params should error the build",
       "Cache Components Errors Build Without --prerender-debug Static Route should not error the build when all routes are static",
       "Cache Components Errors Build Without --prerender-debug Sync Dynamic Platform With Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
       "Cache Components Errors Build Without --prerender-debug Sync Dynamic Platform Without Fallback - Math.random() should error the build if Math.random() happens before some component outside a Suspense boundary is complete",
@@ -5863,6 +5868,7 @@
   },
   "test/e2e/app-dir/refresh/refresh.test.ts": {
     "passed": [
+      "app-dir refresh should let you read your write after a redirect and refresh",
       "app-dir refresh should refresh client cache when refresh() is called in a server action",
       "app-dir refresh should throw an error when refresh() is called during page render",
       "app-dir refresh should throw an error when refresh() is called in a route handler",
@@ -6795,28 +6801,29 @@
     "passed": [
       "runtime prefetching can completely prefetch a page that is fully static",
       "runtime prefetching in a page can completely prefetch a page that uses cookies and no uncached IO",
-      "runtime prefetching in a page includes cookies, but not dynamic content",
-      "runtime prefetching in a page includes dynamic params, but not dynamic content",
       "runtime prefetching in a page includes headers, but not dynamic content",
       "runtime prefetching in a page includes root params, but not dynamic content",
       "runtime prefetching in a page includes search params, but not dynamic content",
       "runtime prefetching in a private cache can completely prefetch a page that uses cookies and no uncached IO",
       "runtime prefetching in a private cache includes cookies, but not dynamic content",
-      "runtime prefetching in a private cache includes dynamic params, but not dynamic content",
       "runtime prefetching in a private cache includes headers, but not dynamic content",
-      "runtime prefetching in a private cache includes root params, but not dynamic content",
       "runtime prefetching in a private cache includes search params, but not dynamic content",
       "runtime prefetching passed to a public cache can completely prefetch a page that uses cookies and no uncached IO",
-      "runtime prefetching passed to a public cache includes cookies, but not dynamic content",
       "runtime prefetching passed to a public cache includes dynamic params, but not dynamic content",
       "runtime prefetching passed to a public cache includes headers, but not dynamic content",
       "runtime prefetching passed to a public cache includes root params, but not dynamic content",
-      "runtime prefetching passed to a public cache includes search params, but not dynamic content",
       "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a page",
-      "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a private cache",
+      "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a private cache"
+    ],
+    "failed": [
+      "runtime prefetching in a page includes cookies, but not dynamic content",
+      "runtime prefetching in a page includes dynamic params, but not dynamic content",
+      "runtime prefetching in a private cache includes dynamic params, but not dynamic content",
+      "runtime prefetching in a private cache includes root params, but not dynamic content",
+      "runtime prefetching passed to a public cache includes cookies, but not dynamic content",
+      "runtime prefetching passed to a public cache includes search params, but not dynamic content",
       "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side private caches should return new results on each request"
     ],
-    "failed": [],
     "pending": [
       "runtime prefetching cache stale time handling includes private caches with cacheLife(\"seconds\")",
       "runtime prefetching cache stale time handling includes public caches with cacheLife(\"seconds\")",
@@ -6837,12 +6844,13 @@
     "passed": [
       "segment cache prefetch scheduling cancels a viewport-initiated prefetch if the link leaves the viewport before it finishes",
       "segment cache prefetch scheduling increases the priority of a viewport-initiated prefetch on hover",
-      "segment cache prefetch scheduling prioritizes prefetching the route trees before the segments",
       "segment cache prefetch scheduling reschedules a link's prefetch when it re-enters the viewport",
       "segment cache prefetch scheduling reserve special bandwidth for the most recently hovered link"
     ],
     "failed": [],
-    "pending": [],
+    "pending": [
+      "segment cache prefetch scheduling prioritizes prefetching the route trees before the segments"
+    ],
     "flakey": [],
     "runtimeError": false
   },
@@ -10878,7 +10886,6 @@
       "API routes dev support should not conflict with /api routes",
       "API routes dev support should not show warning if using externalResolver flag",
       "API routes dev support should not show warning when the API resolves and the response is piped",
-      "API routes dev support should not strip .json from API route",
       "API routes dev support should not warn if response body is larger than 4MB with responseLimit config = false",
       "API routes dev support should parse JSON body",
       "API routes dev support should parse bigger body then 1mb",
@@ -10886,20 +10893,15 @@
       "API routes dev support should parse body with config",
       "API routes dev support should parse query correctly",
       "API routes dev support should parse urlencoded body",
-      "API routes dev support should prioritize a non-dynamic page",
       "API routes dev support should redirect to login",
       "API routes dev support should redirect with status code 301",
       "API routes dev support should redirect with status code 307",
       "API routes dev support should render page",
-      "API routes dev support should respond from /api/auth/[...nextauth] correctly",
       "API routes dev support should return 200 on POST on pages",
       "API routes dev support should return 404 for undefined path",
       "API routes dev support should return JSON on post on API",
       "API routes dev support should return cookies object",
       "API routes dev support should return custom error",
-      "API routes dev support should return data on dynamic nested route",
-      "API routes dev support should return data on dynamic optional nested route",
-      "API routes dev support should return data on dynamic route",
       "API routes dev support should return empty cookies object",
       "API routes dev support should return empty query object",
       "API routes dev support should return error with invalid JSON",
@@ -10919,8 +10921,6 @@
       "API routes dev support should warn if response body is larger than 4MB",
       "API routes dev support should warn with configured size if response body is larger than configured size",
       "API routes dev support should work with child_process correctly",
-      "API routes dev support should work with dynamic params and search string",
-      "API routes dev support should work with dynamic params and search string like lambda",
       "API routes dev support should work with index api",
       "API routes dev support should work with nullable payload",
       "API routes production mode should 404 on optional dynamic api page",
@@ -10973,7 +10973,16 @@
       "API routes production mode should work with index api",
       "API routes production mode should work with nullable payload"
     ],
-    "failed": [],
+    "failed": [
+      "API routes dev support should not strip .json from API route",
+      "API routes dev support should prioritize a non-dynamic page",
+      "API routes dev support should respond from /api/auth/[...nextauth] correctly",
+      "API routes dev support should return data on dynamic nested route",
+      "API routes dev support should return data on dynamic optional nested route",
+      "API routes dev support should return data on dynamic route",
+      "API routes dev support should work with dynamic params and search string",
+      "API routes dev support should work with dynamic params and search string like lambda"
+    ],
     "pending": [
       "API routes dev support should return error exceeded body limit",
       "API routes production mode should return error exceeded body limit"
@@ -11225,19 +11234,20 @@
   },
   "test/integration/auto-export/test/index.test.js": {
     "passed": [
-      "Auto Export dev Refreshes query on mount",
       "Auto Export dev Supports commonjs 1",
       "Auto Export dev Supports commonjs 2",
-      "Auto Export dev should not replace URL with page name while asPath is delayed",
-      "Auto Export dev should not show hydration warning from mismatching asPath",
-      "Auto Export dev should update asPath after mount",
       "Auto Export production mode Refreshes query on mount",
       "Auto Export production mode Supports commonjs 1",
       "Auto Export production mode Supports commonjs 2",
       "Auto Export production mode should not replace URL with page name while asPath is delayed",
       "Auto Export production mode should update asPath after mount"
     ],
-    "failed": [],
+    "failed": [
+      "Auto Export dev Refreshes query on mount",
+      "Auto Export dev should not replace URL with page name while asPath is delayed",
+      "Auto Export dev should not show hydration warning from mismatching asPath",
+      "Auto Export dev should update asPath after mount"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -11399,6 +11409,9 @@
       "CLI Usage dev --experimental-https with provided key/cert",
       "CLI Usage dev --help",
       "CLI Usage dev --hostname",
+      "CLI Usage dev --inspect",
+      "CLI Usage dev --inspect 0",
+      "CLI Usage dev --inspect [port]",
       "CLI Usage dev --port",
       "CLI Usage dev --port 0",
       "CLI Usage dev -H",
@@ -13132,7 +13145,6 @@
       "Edge runtime code with imports Edge API importing vanilla 3rd party module does not throw in dev at runtime",
       "Edge runtime code with imports Edge API importing vanilla 3rd party module production mode does not throw in production at runtime",
       "Edge runtime code with imports Edge API statically importing 3rd party module production mode does not build and reports",
-      "Edge runtime code with imports Edge API statically importing 3rd party module throws not-found module error in dev at runtime and highlights the faulty line",
       "Edge runtime code with imports Edge API using Buffer polyfill does not throw in dev at runtime",
       "Edge runtime code with imports Edge API using Buffer polyfill production mode does not throw in production at runtime",
       "Edge runtime code with imports Middleware dynamically importing node.js module in a lib production mode throws unsupported module error in production at runtime and prints error on logs",
@@ -13140,11 +13152,13 @@
       "Edge runtime code with imports Middleware importing vanilla 3rd party module does not throw in dev at runtime",
       "Edge runtime code with imports Middleware importing vanilla 3rd party module production mode does not throw in production at runtime",
       "Edge runtime code with imports Middleware statically importing 3rd party module production mode does not build and reports",
-      "Edge runtime code with imports Middleware statically importing 3rd party module throws not-found module error in dev at runtime and highlights the faulty line",
-      "Edge runtime code with imports Middleware using Buffer polyfill does not throw in dev at runtime",
       "Edge runtime code with imports Middleware using Buffer polyfill production mode does not throw in production at runtime"
     ],
-    "failed": [],
+    "failed": [
+      "Edge runtime code with imports Edge API statically importing 3rd party module throws not-found module error in dev at runtime and highlights the faulty line",
+      "Edge runtime code with imports Middleware statically importing 3rd party module throws not-found module error in dev at runtime and highlights the faulty line",
+      "Edge runtime code with imports Middleware using Buffer polyfill does not throw in dev at runtime"
+    ],
     "pending": [
       "Edge runtime code with imports Edge API dynamically importing node.js module development mode throws unsupported module error in dev at runtime and highlights the faulty line",
       "Edge runtime code with imports Edge API dynamically importing node.js module in a lib development mode throws unsupported module error in dev at runtime and highlights the faulty line",
@@ -16062,6 +16076,16 @@
   },
   "test/integration/image-optimizer/test/disable-write-to-cache-dir.test.ts": {
     "passed": [
+      "with isrFlushToDisk false config dev support w/o next.config.js should set cache-control to immutable for static images",
+      "with isrFlushToDisk false config dev support w/o next.config.js should use cache and stale-while-revalidate when query is the same for internal image",
+      "with isrFlushToDisk false config dev support w/o next.config.js should use cached image file when parameters are the same for animated gif",
+      "with isrFlushToDisk false config dev support with next.config.js should normalize invalid status codes",
+      "with isrFlushToDisk false config dev support with next.config.js should set cache-control to immutable for static images",
+      "with isrFlushToDisk false config dev support with next.config.js should use cache and stale-while-revalidate when query is the same for external image",
+      "with isrFlushToDisk false config dev support with next.config.js should use cache and stale-while-revalidate when query is the same for internal image",
+      "with isrFlushToDisk false config dev support with next.config.js should use cached image file when parameters are the same for animated gif"
+    ],
+    "failed": [
       "with isrFlushToDisk false config dev support w/o next.config.js recursive url is not allowed should fail with absolute next image url",
       "with isrFlushToDisk false config dev support w/o next.config.js recursive url is not allowed should fail with encoded relative image url",
       "with isrFlushToDisk false config dev support w/o next.config.js recursive url is not allowed should fail with relative image url with assetPrefix",
@@ -16122,9 +16146,6 @@
       "with isrFlushToDisk false config dev support w/o next.config.js should resize tiff",
       "with isrFlushToDisk false config dev support w/o next.config.js should return home page",
       "with isrFlushToDisk false config dev support w/o next.config.js should set 304 status without body when etag matches if-none-match",
-      "with isrFlushToDisk false config dev support w/o next.config.js should set cache-control to immutable for static images",
-      "with isrFlushToDisk false config dev support w/o next.config.js should use cache and stale-while-revalidate when query is the same for internal image",
-      "with isrFlushToDisk false config dev support w/o next.config.js should use cached image file when parameters are the same for animated gif",
       "with isrFlushToDisk false config dev support with next.config.js recursive url is not allowed should fail with encoded relative image url",
       "with isrFlushToDisk false config dev support with next.config.js recursive url is not allowed should fail with relative image url with assetPrefix",
       "with isrFlushToDisk false config dev support with next.config.js recursive url is not allowed should fail with relative next image url",
@@ -16175,7 +16196,6 @@
       "with isrFlushToDisk false config dev support with next.config.js should maintain jpg format for old Safari",
       "with isrFlushToDisk false config dev support with next.config.js should maintain jxl",
       "with isrFlushToDisk false config dev support with next.config.js should maintain png format for old Safari",
-      "with isrFlushToDisk false config dev support with next.config.js should normalize invalid status codes",
       "with isrFlushToDisk false config dev support with next.config.js should not allow pdf format",
       "with isrFlushToDisk false config dev support with next.config.js should not allow svg with application header",
       "with isrFlushToDisk false config dev support with next.config.js should not allow svg with comma header",
@@ -16199,13 +16219,8 @@
       "with isrFlushToDisk false config dev support with next.config.js should return 508 after redirecting too many times",
       "with isrFlushToDisk false config dev support with next.config.js should return home page",
       "with isrFlushToDisk false config dev support with next.config.js should set 304 status without body when etag matches if-none-match",
-      "with isrFlushToDisk false config dev support with next.config.js should set cache-control to immutable for static images",
-      "with isrFlushToDisk false config dev support with next.config.js should timeout for upstream image exceeding 7 seconds",
-      "with isrFlushToDisk false config dev support with next.config.js should use cache and stale-while-revalidate when query is the same for external image",
-      "with isrFlushToDisk false config dev support with next.config.js should use cache and stale-while-revalidate when query is the same for internal image",
-      "with isrFlushToDisk false config dev support with next.config.js should use cached image file when parameters are the same for animated gif"
+      "with isrFlushToDisk false config dev support with next.config.js should timeout for upstream image exceeding 7 seconds"
     ],
-    "failed": [],
     "pending": [
       "with isrFlushToDisk false config Production Mode Server support w/o next.config.js recursive url is not allowed should fail with absolute next image url",
       "with isrFlushToDisk false config Production Mode Server support w/o next.config.js recursive url is not allowed should fail with encoded relative image url",
@@ -18510,16 +18525,17 @@
   },
   "test/integration/next-image-new/loader-config-default-loader-with-file/test/index.test.ts": {
     "passed": [
-      "Image Loader Config development mode - component should work with loader prop",
-      "Image Loader Config development mode - component should work with loaderFile config, leaving default image optimization enabled",
-      "Image Loader Config development mode - getImageProps should work with loader prop",
-      "Image Loader Config development mode - getImageProps should work with loaderFile config, leaving default image optimization enabled",
       "Image Loader Config production mode - component should work with loader prop",
       "Image Loader Config production mode - component should work with loaderFile config, leaving default image optimization enabled",
       "Image Loader Config production mode - getImageProps should work with loader prop",
       "Image Loader Config production mode - getImageProps should work with loaderFile config, leaving default image optimization enabled"
     ],
-    "failed": [],
+    "failed": [
+      "Image Loader Config development mode - component should work with loader prop",
+      "Image Loader Config development mode - component should work with loaderFile config, leaving default image optimization enabled",
+      "Image Loader Config development mode - getImageProps should work with loader prop",
+      "Image Loader Config development mode - getImageProps should work with loaderFile config, leaving default image optimization enabled"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
