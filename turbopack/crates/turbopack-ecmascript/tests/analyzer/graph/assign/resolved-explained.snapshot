@@ -1,17 +1,23 @@
-a = ("" | `${???*0*}x`)
+a = ("" | `${???*0*}x` | `${???*1*}y`)
 - *0* a
   ⚠️  circular variable reference
+- *1* a
+  ⚠️  circular variable reference
 
-b = (0 | ???*0*)
-- *0* unsupported assign operation
+b = ???*0*
+- *0* unsupported expression
   ⚠️  This value might have side effects
 
 c = (0 | ???*0*)
+- *0* unsupported assign operation
+  ⚠️  This value might have side effects
+
+d = (0 | ???*0*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
-d = (0 | 1)
-
-e = (1 | 2)
+e = (0 | 1)
 
 f = (1 | 2)
+
+g = (1 | 2)

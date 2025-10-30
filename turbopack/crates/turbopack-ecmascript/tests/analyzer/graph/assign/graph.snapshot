@@ -2,7 +2,7 @@
     (
         "a",
         Alternatives {
-            total_nodes: 5,
+            total_nodes: 8,
             values: [
                 Constant(
                     Str(
@@ -29,12 +29,38 @@
                         ),
                     ],
                 ),
+                Concat(
+                    3,
+                    [
+                        Variable(
+                            (
+                                "a",
+                                #2,
+                            ),
+                        ),
+                        Constant(
+                            Str(
+                                Atom(
+                                    "y",
+                                ),
+                            ),
+                        ),
+                    ],
+                ),
             ],
             logical_property: None,
         },
     ),
     (
         "b",
+        Unknown {
+            original_value: None,
+            reason: "unsupported expression",
+            has_side_effects: true,
+        },
+    ),
+    (
+        "c",
         Alternatives {
             total_nodes: 3,
             values: [
@@ -55,7 +81,7 @@
         },
     ),
     (
-        "c",
+        "d",
         Alternatives {
             total_nodes: 3,
             values: [
@@ -76,7 +102,7 @@
         },
     ),
     (
-        "d",
+        "e",
         Alternatives {
             total_nodes: 3,
             values: [
@@ -99,7 +125,7 @@
         },
     ),
     (
-        "e",
+        "f",
         Alternatives {
             total_nodes: 3,
             values: [
@@ -122,7 +148,7 @@
         },
     ),
     (
-        "f",
+        "g",
         Alternatives {
             total_nodes: 3,
             values: [
