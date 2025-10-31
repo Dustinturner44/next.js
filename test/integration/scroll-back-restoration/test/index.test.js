@@ -8,7 +8,6 @@ import {
   launchApp,
   nextStart,
   nextBuild,
-  check,
   retry,
 } from 'next-test-utils'
 
@@ -39,17 +38,15 @@ const runTests = () => {
 
     await browser.eval(() => window.next.router.push('/another'))
 
-    await check(
-      () => browser.eval(() => document.documentElement.innerHTML),
-      /hi from another/
-    )
+    await retry(async () => {
+      const html = await browser.eval(() => document.documentElement.innerHTML)
+      expect(html).toMatch(/hi from another/)
+    })
     await browser.eval(() => (window.didHydrate = false))
 
     await browser.eval(() => window.history.back())
-    await check(() => browser.eval(() => window.didHydrate), {
-      test(content) {
-        return content
-      },
+    await retry(async () => {
+      expect(await browser.eval(() => window.didHydrate)).toBe(true)
     })
 
     await retry(async () => {
