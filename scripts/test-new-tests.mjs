@@ -6,23 +6,26 @@ import getChangedTests from './get-changed-tests.mjs'
 /**
  * Run tests for added/changed tests in the current branch
  * CLI Options:
- * --mode: test mode (dev, deploy, start)
+ * --mode: test mode (dev, start, deploy)
+ *   - dev: flake detection in dev mode (runs tests 3 times)
+ *   - start: flake detection in prod mode (runs tests 3 times)
+ *   - deploy: deploy tests (runs tests 1 time with deployed tarball)
  * --group: current group number / total groups
- * --flake-detection: run tests multiple times to detect flaky
+ * --with-webpack: run tests with Webpack (in addition to Turbopack for flake detection)
  */
 async function main() {
   let argv = await yargs(process.argv.slice(2))
     .string('mode')
     .string('group')
-    .boolean('flake-detection').argv
+    .boolean('with-webpack').argv
 
   let testMode = argv.mode
-  const isFlakeDetectionMode = argv['flake-detection']
-  const attempts = isFlakeDetectionMode ? 3 : 1
+  const attempts = testMode === 'deploy' ? 1 : 3
+  const withWebpack = argv['with-webpack']
 
   if (testMode && !['dev', 'deploy', 'start'].includes(testMode)) {
     throw new Error(
-      `Invalid test mode: ${testMode}. Must be one of: dev, deploy, start`
+      `Invalid test mode: ${testMode}. Must be one of: dev, start, deploy`
     )
   }
 
@@ -143,26 +146,12 @@ async function main() {
     )
   }
 
-  if (isFlakeDetectionMode && testMode !== 'deploy') {
+  // Run Webpack tests for deploy mode, or if the --with-webpack flag is set.
+  if (testMode === 'deploy' || withWebpack) {
     for (let i = 0; i < attempts; i++) {
       console.log(
-        `\n\nRun ${i + 1}/${attempts} for ${testMode} tests (Turbopack)`
+        `\n\nRun ${i + 1}/${attempts} for ${testMode} tests (Webpack)`
       )
-      await execa('node', [...RUN_TESTS_ARGS, ...currentTests], {
-        ...EXECA_OPTS_STDIO,
-        env: {
-          ...process.env,
-          NEXT_TEST_MODE: testMode,
-          NEXT_TEST_VERSION: nextTestVersion,
-          IS_TURBOPACK_TEST: '1',
-          TURBOPACK_BUILD: testMode === 'start' ? '1' : undefined,
-          TURBOPACK_DEV: testMode === 'dev' ? '1' : undefined,
-        },
-      })
-    }
-  } else {
-    for (let i = 0; i < attempts; i++) {
-      console.log(`\n\nRun ${i + 1}/${attempts} for ${testMode} tests`)
 
       await execa('node', [...RUN_TESTS_ARGS, ...currentTests], {
         ...EXECA_OPTS_STDIO,
@@ -172,6 +161,27 @@ async function main() {
           NEXT_TEST_MODE: testMode,
           NEXT_TEST_VERSION: nextTestVersion,
           IS_WEBPACK_TEST: '1',
+        },
+      })
+    }
+  }
+
+  // TODO: We should also run deploy tests with Turbopack.
+  if (testMode !== 'deploy') {
+    for (let i = 0; i < attempts; i++) {
+      console.log(
+        `\n\nRun ${i + 1}/${attempts} for ${testMode} tests (Turbopack)`
+      )
+      await execa('node', [...RUN_TESTS_ARGS, ...currentTests], {
+        ...EXECA_OPTS_STDIO,
+        env: {
+          ...process.env,
+          NEXT_EXTERNAL_TESTS_FILTERS,
+          NEXT_TEST_MODE: testMode,
+          NEXT_TEST_VERSION: nextTestVersion,
+          IS_TURBOPACK_TEST: '1',
+          TURBOPACK_BUILD: testMode === 'start' ? '1' : undefined,
+          TURBOPACK_DEV: testMode === 'dev' ? '1' : undefined,
         },
       })
     }

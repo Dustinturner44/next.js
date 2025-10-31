@@ -54,6 +54,13 @@ const CHANGE_ITEM_GROUPS = {
     'test/integration/create-next-app',
     'scripts/send-trace-to-jaeger',
   ],
+  test: [
+    'test/e2e',
+    'test/development',
+    'test/integration',
+    'test/production',
+    'test/unit',
+  ],
 }
 
 async function main() {

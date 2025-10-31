@@ -46,20 +46,24 @@ jobs:
           fetch-depth: 25
 
       - name: Check non-docs only change
-        run: echo "DOCS_CHANGE<<EOF" >> $GITHUB_OUTPUT; echo "$(node scripts/run-for-change.mjs --not --type docs --exec echo 'nope')" >> $GITHUB_OUTPUT; echo 'EOF' >> $GITHUB_OUTPUT
+        run: echo "DOCS_ONLY<<EOF" >> $GITHUB_OUTPUT; echo "$(node scripts/run-for-change.mjs --not --type docs --exec echo 'false')" >> $GITHUB_OUTPUT; echo 'EOF' >> $GITHUB_OUTPUT
         id: docs-change
 
+      - name: Check for test-only change
+        run: echo "TEST_ONLY<<EOF" >> $GITHUB_OUTPUT; echo "$(node scripts/run-for-change.mjs --not --type test --exec echo 'false')" >> $GITHUB_OUTPUT; echo 'EOF' >> $GITHUB_OUTPUT
+        id: test-only-change
+
       - uses: actions/download-artifact@v4
-        if: ${{ steps.docs-change.outputs.DOCS_CHANGE == 'nope' }}
+        if: ${{ steps.docs-change.outputs.DOCS_ONLY == 'false' && steps.test-only-change.outputs.TEST_ONLY == 'false' }}
         with:
           name: next-swc-binary
           path: packages/next-swc/native
 
       - run: cp -r packages/next-swc/native .github/actions/next-stats-action/native
-        if: ${{ steps.docs-change.outputs.DOCS_CHANGE == 'nope' }}
+        if: ${{ steps.docs-change.outputs.DOCS_ONLY == 'false' && steps.test-only-change.outputs.TEST_ONLY == 'false' }}
 
       - uses: ./.github/actions/next-stats-action
-        if: ${{ steps.docs-change.outputs.DOCS_CHANGE == 'nope' }}
+        if: ${{ steps.docs-change.outputs.DOCS_ONLY == 'false' && steps.test-only-change.outputs.TEST_ONLY == 'false' }}
         env:
           # This uses the webpack bundle analyzer and for consistent results we need to use webpack.
           # Once there is an equivalent analyzer for turbopack, we can remove this.

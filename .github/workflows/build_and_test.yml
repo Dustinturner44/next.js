@@ -36,6 +36,13 @@ jobs:
           echo "$(node scripts/run-for-change.mjs --not --type docs --exec echo 'false')" >> $GITHUB_OUTPUT;
           echo 'EOF' >> $GITHUB_OUTPUT
 
+      - name: check for test-only change
+        id: test-only-change
+        run: |
+          echo "TEST_ONLY<<EOF" >> $GITHUB_OUTPUT;
+          echo "$(node scripts/run-for-change.mjs --not --type test --exec echo 'false')" >> $GITHUB_OUTPUT;
+          echo 'EOF' >> $GITHUB_OUTPUT
+
       - name: check for release
         id: is-release
         run: |
@@ -48,6 +55,7 @@ jobs:
 
     outputs:
       docs-only: ${{ steps.docs-change.outputs.DOCS_ONLY != 'false' }}
+      test-only: ${{ steps.test-only-change.outputs.TEST_ONLY != 'false' }}
       is-release: ${{ steps.is-release.outputs.IS_RELEASE == 'true' }}
       rspack: >-
         ${{
@@ -104,6 +112,8 @@ jobs:
 
   validate-docs-links:
     runs-on: ubuntu-latest
+    needs: ['changes']
+    if: ${{ needs.changes.outputs.test-only == 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -131,7 +141,7 @@ jobs:
   test-cargo-unit:
     name: test cargo unit
     needs: ['changes', 'build-next']
-    if: ${{ needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -146,7 +156,7 @@ jobs:
   test-bench:
     name: test cargo benches
     needs: ['optimize-ci', 'changes', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/test-turbopack-rust-bench-test.yml
     secrets: inherit
@@ -154,7 +164,7 @@ jobs:
   rust-check:
     name: rust check
     needs: ['changes', 'build-next']
-    if: ${{ needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -168,7 +178,7 @@ jobs:
   rustdoc-check:
     name: rustdoc check
     needs: ['changes', 'build-next']
-    if: ${{ needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -181,6 +191,7 @@ jobs:
 
   ast-grep:
     needs: ['changes', 'build-next']
+    if: ${{ needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
     runs-on: ubuntu-latest
     name: ast-grep lint
     steps:
@@ -194,7 +205,7 @@ jobs:
   devlow-bench:
     name: Run devlow benchmarks
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && github.event_name != 'pull_request' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' && github.event_name != 'pull_request' }}
 
     strategy:
       fail-fast: false
@@ -219,7 +230,7 @@ jobs:
   test-devlow:
     name: test devlow package
     needs: ['optimize-ci', 'changes']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
     uses: ./.github/workflows/build_reusable.yml
     with:
       skipNativeBuild: 'yes'
@@ -231,7 +242,7 @@ jobs:
   test-turbopack-dev:
     name: test turbopack dev
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -260,7 +271,7 @@ jobs:
   test-turbopack-integration:
     name: test turbopack development integration
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -290,7 +301,7 @@ jobs:
   test-turbopack-production:
     name: test turbopack production
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -317,7 +328,7 @@ jobs:
   test-turbopack-production-integration:
     name: test turbopack production integration
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -347,7 +358,7 @@ jobs:
   test-rspack-dev:
     name: test rspack dev
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.rspack == 'true' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' && needs.changes.outputs.rspack == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -382,7 +393,7 @@ jobs:
   test-rspack-integration:
     name: test rspack development integration
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.rspack == 'true' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' && needs.changes.outputs.rspack == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -418,7 +429,7 @@ jobs:
   test-rspack-production:
     name: test rspack production
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.rspack == 'true' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' && needs.changes.outputs.rspack == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -451,7 +462,7 @@ jobs:
   test-rspack-production-integration:
     name: test rspack production integration
     needs: ['optimize-ci', 'changes', 'build-next', 'build-native']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.rspack == 'true' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' && needs.changes.outputs.rspack == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -487,7 +498,7 @@ jobs:
   test-next-swc-wasm:
     name: test next-swc wasm
     needs: ['optimize-ci', 'changes', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -550,7 +561,7 @@ jobs:
   test-next-config-ts-native-ts-dev:
     name: test next-config-ts-native-ts dev
     needs: ['changes', 'build-next', 'build-native']
-    if: ${{ needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -571,7 +582,7 @@ jobs:
   test-next-config-ts-native-ts-prod:
     name: test next-config-ts-native-ts prod
     needs: ['changes', 'build-next', 'build-native']
-    if: ${{ needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -612,7 +623,7 @@ jobs:
     name: Test new tests for flakes (dev)
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
     # test-new-tests-if
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ (needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false') || needs.changes.outputs.test-only == 'true' }}
     # test-new-tests-end-if
 
     strategy:
@@ -624,9 +635,9 @@ jobs:
     with:
       afterBuild: |
         node scripts/test-new-tests.mjs \
-          --flake-detection \
           --mode dev \
-          --group ${{ matrix.group }}
+          --group ${{ matrix.group }} \
+          ${{ needs.changes.outputs.test-only == 'true' && '--with-webpack' || '' }}
       stepName: 'test-new-tests-dev-${{matrix.group}}'
       timeout_minutes: 60 # Increase the default timeout as tests are intentionally run multiple times to detect flakes
 
@@ -636,7 +647,7 @@ jobs:
     name: Test new tests for flakes (prod)
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
     # test-new-tests-if
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ (needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false') || needs.changes.outputs.test-only == 'true' }}
     # test-new-tests-end-if
 
     strategy:
@@ -648,9 +659,9 @@ jobs:
     with:
       afterBuild: |
         node scripts/test-new-tests.mjs \
-          --flake-detection \
           --mode start \
-          --group ${{ matrix.group }}
+          --group ${{ matrix.group }} \
+          ${{ needs.changes.outputs.test-only == 'true' && '--with-webpack' || '' }}
       stepName: 'test-new-tests-start-${{matrix.group}}'
       timeout_minutes: 60 # Increase the default timeout as tests are intentionally run multiple times to detect flakes
     secrets: inherit
@@ -658,9 +669,15 @@ jobs:
   test-new-tests-deploy:
     name: Test new tests when deployed
     needs:
-      ['optimize-ci', 'test-prod', 'test-new-tests-dev', 'test-new-tests-start']
+      [
+        'optimize-ci',
+        'changes',
+        'test-prod',
+        'test-new-tests-dev',
+        'test-new-tests-start',
+      ]
     # test-new-tests-if
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' }}
+    if: ${{ always() && !cancelled() && (needs.optimize-ci.outputs.skip == 'false' || needs.changes.outputs.test-only == 'true') && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     # test-new-tests-end-if
 
     strategy:
@@ -685,12 +702,13 @@ jobs:
     needs:
       [
         'optimize-ci',
+        'changes',
         'test-cache-components-prod',
         'test-new-tests-dev',
         'test-new-tests-start',
       ]
     # test-new-tests-if
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' }}
+    if: ${{ always() && !cancelled() && (needs.optimize-ci.outputs.skip == 'false' || needs.changes.outputs.test-only == 'true') && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     # test-new-tests-end-if
 
     strategy:
@@ -716,7 +734,7 @@ jobs:
   test-dev: # TODO: rename to include webpack
     name: test dev
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -751,7 +769,7 @@ jobs:
         'build-native',
         'build-next',
       ]
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -780,7 +798,7 @@ jobs:
         'build-native',
         'build-next',
       ]
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -809,7 +827,7 @@ jobs:
         'build-native',
         'build-next',
       ]
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -831,7 +849,7 @@ jobs:
   test-prod:
     name: test prod
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -856,7 +874,7 @@ jobs:
   test-integration:
     name: test integration
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -898,7 +916,7 @@ jobs:
   test-firefox-safari:
     name: test firefox and safari
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -926,7 +944,7 @@ jobs:
   test-cache-components-integration:
     name: test cache components integration
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     uses: ./.github/workflows/build_reusable.yml
     with:
@@ -946,7 +964,7 @@ jobs:
   test-cache-components-dev:
     name: test cache components dev
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
@@ -971,7 +989,7 @@ jobs:
   test-cache-components-prod:
     name: test cache components prod
     needs: ['optimize-ci', 'changes', 'build-native', 'build-next']
-    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' }}
+    if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && needs.changes.outputs.test-only == 'false' }}
 
     strategy:
       fail-fast: false
