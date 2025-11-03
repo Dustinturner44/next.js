@@ -1,6 +1,7 @@
 import type * as Playwright from 'playwright'
 import { diff } from 'jest-diff'
 import { equals } from '@jest/expect-utils'
+import * as util from 'util'
 
 type Batch = {
   pendingRequestChecks: Set<Promise<void> & { debugInfo?: string[] }>
@@ -88,13 +89,14 @@ export function createRouterAct(
     allowErrorStatusCodes?: number[]
   }
 ): <T>(scope: () => Promise<T> | T, config?: ActConfig) => Promise<T> {
-  let waitingForIdleCallback = false
+  let waitingForIdleCallback: Error | null = null
   /**
    * Helper function to wait for requestIdleCallback with retry logic.
    * Retries up to 3 times if "Execution context was destroyed" error occurs.
    */
   async function waitForIdleCallback(): Promise<void> {
-    waitingForIdleCallback = true
+    waitingForIdleCallback = Error()
+    Error.captureStackTrace(waitingForIdleCallback, waitForIdleCallback)
     const maxRetries = 3
     const retryDelayMs = 100
 
@@ -103,9 +105,10 @@ export function createRouterAct(
         await page.evaluate(
           () => new Promise<void>((res) => requestIdleCallback(() => res()))
         )
-        waitingForIdleCallback = false
+        waitingForIdleCallback = null
         return
       } catch (err) {
+        waitingForIdleCallback!.cause = err
         const isLastAttempt = attempt === maxRetries - 1
         const isExecutionContextError =
           err instanceof Error &&
@@ -116,7 +119,7 @@ export function createRouterAct(
           continue
         }
 
-        waitingForIdleCallback = false
+        waitingForIdleCallback = null
         throw err
       }
     }
@@ -202,7 +205,9 @@ export function createRouterAct(
     function handleAbort() {
       const debugInfo: string[] = []
       if (waitingForIdleCallback) {
-        debugInfo.push('pending requestIdleCallback')
+        debugInfo.push(
+          'pending requestIdleCallback: ' + util.inspect(waitingForIdleCallback)
+        )
       }
       if (currentBatch === null) {
         debugInfo.push('no current batch')
