@@ -501,10 +501,11 @@
   },
   "test/e2e/app-dir/app-client-cache/client-cache.parallel-routes.test.ts": {
     "passed": [
-      "app dir client cache with parallel routes prefetch={true} should prefetch the full page",
+      "app dir client cache with parallel routes prefetch={true} should prefetch the full page"
+    ],
+    "failed": [
       "app dir client cache with parallel routes prefetch={true} should re-use the cache for the full page, only for 5 mins"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
