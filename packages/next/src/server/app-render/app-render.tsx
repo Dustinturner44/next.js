@@ -683,6 +683,7 @@ async function stagedRenderToReadableStreamWithoutCachesInDev(
   const environmentName = () => {
     const currentStage = stageController.currentStage
     switch (currentStage) {
+      case RenderStage.Before:
       case RenderStage.Static:
         return 'Prerender'
       case RenderStage.Runtime:
@@ -709,6 +710,7 @@ async function stagedRenderToReadableStreamWithoutCachesInDev(
     requestStore,
     scheduleInSequentialTasks,
     () => {
+      stageController.advanceStage(RenderStage.Static)
       return renderToReadableStream(
         rscPayload,
         clientReferenceManifest.clientModules,
@@ -3044,6 +3046,7 @@ async function renderWithRestartOnCacheMissInDev(
   const environmentName = () => {
     const currentStage = requestStore.stagedRendering!.currentStage
     switch (currentStage) {
+      case RenderStage.Before:
       case RenderStage.Static:
         return 'Prerender'
       case RenderStage.Runtime:
@@ -3101,10 +3104,9 @@ async function renderWithRestartOnCacheMissInDev(
   const runtimeChunks: Array<Uint8Array> = []
   const dynamicChunks: Array<Uint8Array> = []
 
-  // We don't care about sync IO while generating the payload, only during render.
-  initialStageController.enableSyncInterrupt = false
+  // Note: The stage controller starts out in the `Before` stage,
+  // where sync IO does not cause aborts, so it's okay if it happens before render.
   const initialRscPayload = await getPayload(requestStore)
-  initialStageController.enableSyncInterrupt = true
 
   const maybeInitialServerStream = await workUnitAsyncStorage.run(
     requestStore,
@@ -3112,6 +3114,8 @@ async function renderWithRestartOnCacheMissInDev(
       pipelineInSequentialTasks(
         () => {
           // Static stage
+          initialStageController.advanceStage(RenderStage.Static)
+
           const stream = ComponentMod.renderToReadableStream(
             initialRscPayload,
             clientReferenceManifest.clientModules,
@@ -3264,15 +3268,16 @@ async function renderWithRestartOnCacheMissInDev(
   runtimeChunks.length = 0
   dynamicChunks.length = 0
 
-  // We don't care about sync IO while generating the payload, only during render.
-  finalStageController.enableSyncInterrupt = false
+  // Note: The stage controller starts out in the `Before` stage,
+  // where sync IO does not cause aborts, so it's okay if it happens before render.
   const finalRscPayload = await getPayload(requestStore)
-  finalStageController.enableSyncInterrupt = true
 
   const finalServerStream = await workUnitAsyncStorage.run(requestStore, () =>
     pipelineInSequentialTasks(
       () => {
         // Static stage
+        finalStageController.advanceStage(RenderStage.Static)
+
         const stream = ComponentMod.renderToReadableStream(
           finalRscPayload,
           clientReferenceManifest.clientModules,

@@ -2,22 +2,21 @@ import { InvariantError } from '../../shared/lib/invariant-error'
 import { createPromiseWithResolvers } from '../../shared/lib/promise-with-resolvers'
 
 export enum RenderStage {
-  Static = 1,
-  Runtime = 2,
-  Dynamic = 3,
-  Abandoned = 4,
+  Before = 1,
+  Static = 2,
+  Runtime = 3,
+  Dynamic = 4,
+  Abandoned = 5,
 }
 
 export type NonStaticRenderStage = RenderStage.Runtime | RenderStage.Dynamic
 
 export class StagedRenderingController {
-  currentStage: RenderStage = RenderStage.Static
-  naturalStage: RenderStage = RenderStage.Static
+  currentStage: RenderStage = RenderStage.Before
+
   staticInterruptReason: Error | null = null
   runtimeInterruptReason: Error | null = null
   runtimeStageEndTime: number = Infinity
-  /** Whether sync IO should interrupt the render */
-  enableSyncInterrupt = true
 
   private runtimeStageListeners: Array<() => void> = []
   private dynamicStageListeners: Array<() => void> = []
@@ -66,9 +65,11 @@ export class StagedRenderingController {
   }
 
   canSyncInterrupt() {
-    if (!this.enableSyncInterrupt) {
+    // If we haven't started the render yet, it can't be interrupted.
+    if (this.currentStage === RenderStage.Before) {
       return false
     }
+
     const boundaryStage = this.hasRuntimePrefetch
       ? RenderStage.Dynamic
       : RenderStage.Runtime
@@ -76,6 +77,10 @@ export class StagedRenderingController {
   }
 
   syncInterruptCurrentStageWithReason(reason: Error) {
+    if (this.currentStage === RenderStage.Before) {
+      return
+    }
+
     if (this.mayAbandon) {
       return this.abandonRenderImpl()
     } else {
@@ -145,7 +150,8 @@ export class StagedRenderingController {
   }
 
   private abandonRenderImpl() {
-    switch (this.currentStage) {
+    const { currentStage } = this
+    switch (currentStage) {
       case RenderStage.Static: {
         this.currentStage = RenderStage.Abandoned
 
@@ -170,11 +176,19 @@ export class StagedRenderingController {
         // to fill caches.
         return
       }
-      default:
+      case RenderStage.Before:
+      case RenderStage.Dynamic:
+      case RenderStage.Abandoned:
+        break
+      default: {
+        currentStage satisfies never
+      }
     }
   }
 
-  advanceStage(stage: NonStaticRenderStage) {
+  advanceStage(
+    stage: RenderStage.Static | RenderStage.Runtime | RenderStage.Dynamic
+  ) {
     // If we're already at the target stage or beyond, do nothing.
     // (this can happen e.g. if sync IO advanced us to the dynamic stage)
     if (stage <= this.currentStage) {
