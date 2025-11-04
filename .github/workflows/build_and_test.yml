@@ -793,7 +793,8 @@ jobs:
           test/integration/css-client-nav/test/index.test.js \
           test/integration/rewrites-has-condition/test/index.test.js \
           test/integration/create-next-app/index.test.ts \
-          test/integration/create-next-app/package-manager/pnpm.test.ts
+          test/integration/create-next-app/package-manager/pnpm.test.ts \
+          test/integration/export-image-loader/test/index.test.js
       stepName: 'test-integration-windows'
       runs_on_labels: '["windows","self-hosted","x64"]'
       buildNativeTarget: 'x86_64-pc-windows-msvc'
