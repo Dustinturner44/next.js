@@ -147,7 +147,7 @@ function runTests({ dev }) {
 
         return newFrames.some((frame) => {
           try {
-            const data = JSON.parse(frame.payload)
+            const data = JSON.parse('' + frame.payload)
             return data.event === 'pong'
           } catch (_) {}
           return false
@@ -313,7 +313,7 @@ function runTests({ dev }) {
       .back()
       .waitForElementByCss('#view-post-1-hash-1-interpolated')
       .elementByCss('#view-post-1-hash-1-interpolated')
-      .click('#view-post-1-hash-1-interpolated')
+      .click()
       .waitForElementByCss('#asdf')
 
     expect(await browser.eval('window.beforeNav')).toBe(1)
@@ -329,7 +329,7 @@ function runTests({ dev }) {
       .back()
       .waitForElementByCss('#view-post-1-hash-1-href-only')
       .elementByCss('#view-post-1-hash-1-href-only')
-      .click('#view-post-1-hash-1-href-only')
+      .click()
       .waitForElementByCss('#asdf')
 
     expect(await browser.eval('window.beforeNav')).toBe(1)
@@ -695,10 +695,12 @@ function runTests({ dev }) {
     let browser
     try {
       browser = await webdriver(appPort, '/')
-      await browser.elementByCss('#view-post-1-comment-1').click()
-      await browser.waitForElementByCss('span')
 
-      const text = await browser.elementByCss('span').text()
+      await browser.elementByCss('#view-post-1-comment-1').click()
+      const text = await browser
+        .elementByCss('[data-testid="gip-query"]')
+        .text()
+
       expect(text).toMatch(/gip.*post-1/i)
     } finally {
       if (browser) await browser.close()
@@ -1162,6 +1164,7 @@ function runTests({ dev }) {
           '/_next/static/development/_devPagesManifest.json',
           undefined,
           {
+            // @ts-expect-error -- node-fetch doesn't have this as a top-level but whatwg fetch does.
             credentials: 'same-origin',
           }
         )
