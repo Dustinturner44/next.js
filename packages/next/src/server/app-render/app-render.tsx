@@ -3556,10 +3556,10 @@ async function spawnStaticShellValidationInDev(
     clientReferenceManifest
   )
 
-  let debugChunks = null
+  let debugChunks: Uint8Array[] | null = null
   if (debugChannelClient) {
     debugChunks = []
-    debugChannelClient.on('data', (c) => debugChunks.push(c))
+    debugChannelClient.on('data', (c) => debugChunks!.push(c))
   }
 
   // For both runtime and static validation we use the same end time which is
