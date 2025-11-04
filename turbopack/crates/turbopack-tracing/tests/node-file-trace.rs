@@ -149,6 +149,7 @@ static ALLOC: turbo_tasks_malloc::TurboMalloc = turbo_tasks_malloc::TurboMalloc;
 #[case::pdf2json("integration/pdf2json.mjs")]
 #[case::pdfkit("integration/pdfkit.js")]
 #[case::pg("integration/pg.js")]
+#[case::pino("integration/pino.js")]
 #[case::playwright_core("integration/playwright-core.js")]
 #[case::pnpm_like("integration/pnpm/pnpm-like.js")]
 #[case::polyfill_library("integration/polyfill-library.js")]
@@ -357,7 +358,7 @@ async fn node_file_trace_operation(
         }
         .resolved_cell(),
     ));
-    let module_asset_context = ModuleAssetContext::new(
+    let module_asset_context = ModuleAssetContext::new_without_replace_externals(
         Default::default(),
         // TODO These test cases should move into the `node-file-trace` crate and use the same
         // config.
