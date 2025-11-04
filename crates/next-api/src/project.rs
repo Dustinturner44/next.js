@@ -57,10 +57,7 @@ use turbopack_core::{
     environment::NodeJsVersion,
     file_source::FileSource,
     ident::Layer,
-    issue::{
-        CollectibleIssuesExt, Issue, IssueExt, IssueSeverity, IssueStage, OptionStyledString,
-        StyledString,
-    },
+    issue::{Issue, IssueExt, IssueSeverity, IssueStage, OptionStyledString, StyledString},
     module::Module,
     module_graph::{
         GraphEntries, ModuleGraph, SingleModuleGraph, VisitedModules,
