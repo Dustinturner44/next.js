@@ -1,5 +1,3 @@
-/* eslint-env jest */
-
 import fs from 'fs-extra'
 import { join } from 'path'
 import {
@@ -40,6 +38,7 @@ function runDoubleMiddlewareTests() {
 
 async function writeRootMiddleware() {
   await fs.copy(join(appDir, 'src/pages'), join(appDir, 'pages'), {
+    // @ts-expect-error
     force: true,
     recursive: true,
   })
@@ -68,9 +67,19 @@ return response
 }
 
 async function removeRootMiddleware() {
-  await fs.remove(rootMiddlewareJSFile, { force: true })
-  await fs.remove(rootMiddlewareTSFile, { force: true })
-  await fs.remove(join(appDir, 'pages'), { force: true, recursive: true })
+  await fs.remove(rootMiddlewareJSFile, {
+    // @ts-expect-error
+    force: true,
+  })
+  await fs.remove(rootMiddlewareTSFile, {
+    // @ts-expect-error
+    force: true,
+  })
+  await fs.remove(join(appDir, 'pages'), {
+    // @ts-expect-error
+    force: true,
+    recursive: true,
+  })
 }
 
 describe.each([
@@ -118,7 +127,7 @@ describe.each([
 
         exportOutput = result.stderr + result.stdout
       })
-      afterAll(() => nextConfig.delete())
+      afterAll(() => nextConfig.restore())
 
       it('should warn about middleware on export', async () => {
         expect(exportOutput).toContain(
