@@ -892,17 +892,13 @@ impl Project {
             match route {
                 Route::Page {
                     html_endpoint,
-                    data_endpoint,
+                    _data_endpoint,
                 } => {
                     if !app_dir_only {
                         endpoints.push(*html_endpoint);
                         if !is_pages_entries_added {
                             endpoints.extend(pages_shared_endpoints());
                             is_pages_entries_added = true;
-                        }
-                        // This only exists in development mode for HMR
-                        if let Some(data_endpoint) = data_endpoint {
-                            endpoints.push(*data_endpoint);
                         }
                     }
                 }
