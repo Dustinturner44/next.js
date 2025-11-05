@@ -30,6 +30,7 @@ function createDate(originalConstructor: typeof Date): typeof Date {
   const newConstructor = Object.defineProperties(
     // Ideally this should not minify the name.
     function Date() {
+      console.log('hello from patched `Date`')
       if (new.target === undefined) {
         io('`Date()`', 'time')
         return apply(originalConstructor, undefined, arguments)
@@ -48,8 +49,10 @@ function createDate(originalConstructor: typeof Date): typeof Date {
 }
 
 try {
+  console.log('--------- patching Date')
   // eslint-disable-next-line no-native-reassign
   Date = createDate(Date)
+  Date.__IS_PATCHED = true
 } catch {
   console.error(
     'Failed to install `Date` class extension. When using `cacheComponents`, APIs that read the current time will not correctly trigger dynamic behavior.'

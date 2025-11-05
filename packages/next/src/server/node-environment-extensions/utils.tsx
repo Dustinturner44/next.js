@@ -12,7 +12,16 @@ export function io(expression: string, type: ApiType) {
   const workUnitStore = workUnitAsyncStorage.getStore()
   const workStore = workAsyncStorage.getStore()
 
+  if (expression === '`new Date()`') {
+    console.log(`io() - ${expression}`)
+  }
+
   if (!workUnitStore || !workStore) {
+    if (expression === '`new Date()`') {
+      console.log(
+        `io() - ${expression} - (workUnitStore [id: ${workUnitAsyncStorage['__INSTANCE_ID']}]: ${!!workUnitStore}, workStore: ${!!workStore})`
+      )
+    }
     return
   }
 
@@ -85,6 +94,14 @@ export function io(expression: string, type: ApiType) {
     case 'request':
       if (process.env.NODE_ENV === 'development') {
         const stageController = workUnitStore.stagedRendering
+        if (stageController) {
+          console.log(`io() - ${expression} - staged`, {
+            canSyncInterrupt: stageController.canSyncInterrupt(),
+            currentStage: RenderStage[stageController.currentStage],
+            mayAbandon: stageController['mayAbandon'],
+            hasRuntimePrefetch: stageController['hasRuntimePrefetch'],
+          })
+        }
         if (stageController && stageController.canSyncInterrupt()) {
           let message: string
           if (stageController.currentStage === RenderStage.Static) {

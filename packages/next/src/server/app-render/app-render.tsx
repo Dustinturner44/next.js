@@ -3108,6 +3108,10 @@ async function renderWithRestartOnCacheMissInDev(
   // where sync IO does not cause aborts, so it's okay if it happens before render.
   const initialRscPayload = await getPayload(requestStore)
 
+  console.log(
+    `******** app-render :: using workUnitAsyncStorage [id: ${workUnitAsyncStorage['__INSTANCE_ID']}]`
+  )
+
   const maybeInitialServerStream = await workUnitAsyncStorage.run(
     requestStore,
     () =>
@@ -3150,6 +3154,9 @@ async function renderWithRestartOnCacheMissInDev(
 
           if (initialStageController.currentStage === RenderStage.Abandoned) {
             // If we abandoned the render in the static stage, we won't proceed further.
+            console.log(
+              '******** app-render :: render was abandoned during static stage'
+            )
             return null
           }
 
@@ -3161,6 +3168,9 @@ async function renderWithRestartOnCacheMissInDev(
             // Regardless of whether we are going to abandon this
             // render we need the unblock runtime b/c it's essential
             // filling caches.
+            console.log(
+              '******** app-render :: abandoning after static stage due to cache miss'
+            )
             initialStageController.abandonRender()
             return null
           }
@@ -3227,6 +3237,8 @@ async function renderWithRestartOnCacheMissInDev(
 
   await cacheSignal.cacheReady()
   initialReactController.abort()
+
+  console.log('******** app-render :: restarting')
 
   //===============================================
   // Final render (restarted)

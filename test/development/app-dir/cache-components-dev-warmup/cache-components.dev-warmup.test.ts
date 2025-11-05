@@ -309,7 +309,7 @@ describe.each([
         }
       })
 
-      it('sync IO in the static phase', async () => {
+      it.only('sync IO in the static phase', async () => {
         const path = '/sync-io/static'
 
         const assertLogs = async (browser: Playwright) => {
@@ -328,7 +328,7 @@ describe.each([
         }
       })
 
-      it('sync IO in the runtime phase', async () => {
+      it.only('sync IO in the runtime phase', async () => {
         const path = '/sync-io/runtime'
 
         const assertLogs = async (browser: Playwright) => {

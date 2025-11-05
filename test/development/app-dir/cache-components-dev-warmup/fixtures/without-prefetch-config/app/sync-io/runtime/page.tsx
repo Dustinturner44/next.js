@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { CachedData, getCachedData } from '../../data-fetching'
 import { cookies } from 'next/headers'
+import { workUnitAsyncStorage } from 'next/dist/server/app-render/work-unit-async-storage.external'
 
 const CACHE_KEY = __dirname + '/__PAGE__'
 
@@ -22,7 +23,10 @@ async function Runtime() {
   await cookies()
   console.log(`after cookies`)
 
-  Date.now()
+  console.log(
+    `before sync io - ${Date.__IS_PATCHED ? 'Date is patched' : 'Date is NOT PATCHED!!!!!!!'}, stage: ${workUnitAsyncStorage.getStore()?.['stagedRendering']?.['currentStage']}`
+  )
+  new Date()
   console.log(`after sync io`)
 
   return <CachedData label="page" cacheKey={CACHE_KEY} />

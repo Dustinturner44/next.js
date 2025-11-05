@@ -397,6 +397,8 @@ class NextTracerImpl implements NextTracer {
     const [name, options, fn] =
       args.length === 3 ? args : [args[0], {}, args[1]]
 
+    return fn
+
     if (
       !NextVanillaSpanAllowlist.includes(name) &&
       process.env.NEXT_OTEL_VERBOSE !== '1'

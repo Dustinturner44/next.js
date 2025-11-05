@@ -85,11 +85,21 @@ export class StagedRenderingController {
     // so we want a slightly different flow.
     // See the implementation of `abandonRenderImpl` for more explanation.
     if (this.mayAbandon) {
+      console.log(
+        'abandoning initial render due to sync IO',
+        RenderStage[this.currentStage],
+        reason
+      )
       return this.abandonRenderImpl()
     }
 
     // If we're in the final render, we cannot abandon it. We need to advance to the Dynamic stage
     // and capture the interruption reason.
+    console.log(
+      'aborting final render due to sync IO',
+      RenderStage[this.currentStage],
+      reason
+    )
     switch (this.currentStage) {
       case RenderStage.Static: {
         this.staticInterruptReason = reason

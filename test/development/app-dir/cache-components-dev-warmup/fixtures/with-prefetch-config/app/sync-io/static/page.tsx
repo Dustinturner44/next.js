@@ -1,3 +1,4 @@
+import { workUnitAsyncStorage } from 'next/dist/server/app-render/work-unit-async-storage.external'
 import { CachedData, getCachedData } from '../../data-fetching'
 
 export const unstable_prefetch = { mode: 'runtime', samples: [{}] }
@@ -8,7 +9,10 @@ export default async function Page() {
   await getCachedData(CACHE_KEY + '-1')
   console.log(`after first cache`)
 
-  Date.now()
+  console.log(
+    `before sync io - ${Date.__IS_PATCHED ? 'Date is patched' : 'Date is NOT PATCHED!!!!!!!'}, stage: ${workUnitAsyncStorage.getStore()?.['stagedRendering']?.['currentStage']}`
+  )
+  new Date()
   console.log(`after sync io`)
 
   return (

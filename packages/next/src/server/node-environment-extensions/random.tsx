@@ -10,6 +10,7 @@ import { io } from './utils'
 
 const expression = '`Math.random()`'
 try {
+  console.log('--------- patching Math')
   const _random = Math.random
   Math.random = function random() {
     io(expression, 'random')
@@ -19,6 +20,7 @@ try {
     // eslint-disable-next-line no-extra-bind
   }.bind(null)
   Object.defineProperty(Math.random, 'name', { value: 'random' })
+  Math.__IS_PATCHED = true
 } catch {
   console.error(
     `Failed to install ${expression} extension. When using \`cacheComponents\` calling this function will not correctly trigger dynamic behavior.`
