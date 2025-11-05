@@ -1132,11 +1132,7 @@ export async function createHotReloaderTurbopack(
       }
     },
 
-    setCacheStatus(
-      status: ServerCacheStatus,
-      htmlRequestId: string,
-      requestId: string
-    ): void {
+    setCacheStatus(status: ServerCacheStatus, htmlRequestId: string): void {
       // Legacy clients don't have Cache Components.
       const client = clientsByRequestId.get(htmlRequestId)
       if (client !== undefined) {
@@ -1147,7 +1143,7 @@ export async function createHotReloaderTurbopack(
       } else {
         // If the client is not connected, store the status so that we can send it
         // when the client connects.
-        cacheStatusesByRequestId.set(requestId, status)
+        cacheStatusesByRequestId.set(htmlRequestId, status)
       }
     },
 

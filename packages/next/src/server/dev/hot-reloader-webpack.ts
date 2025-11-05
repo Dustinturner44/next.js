@@ -1748,8 +1748,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
 
   public setCacheStatus(
     status: ServerCacheStatus,
-    htmlRequestId: string,
-    requestId: string
+    htmlRequestId: string
   ): void {
     const client = this.webpackHotMiddleware?.getClient(htmlRequestId)
     if (client !== undefined) {
@@ -1760,7 +1759,7 @@ export default class HotReloaderWebpack implements NextJsHotReloaderInterface {
     } else {
       // If the client is not connected, store the status so that we can send it
       // when the client connects.
-      this.cacheStatusesByRequestId.set(requestId, status)
+      this.cacheStatusesByRequestId.set(htmlRequestId, status)
     }
   }
 
