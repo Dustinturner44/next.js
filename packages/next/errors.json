@@ -914,5 +914,8 @@
   "913": "Expected debug stream to be a ReadableStream",
   "914": "Expected debug stream to be a Readable",
   "915": "Unexpected stream chunk in Before stage",
-  "916": "Unexpected stream chunk while in Before stage"
+  "916": "Unexpected stream chunk while in Before stage",
+  "917": "getFlightStream should always receive a ReadableStream when using the edge runtime",
+  "918": "nodeStreamFromReadableStream cannot be used in the edge runtime",
+  "919": "createNodeStreamFromChunks cannot be used in the edge runtime"
 }
