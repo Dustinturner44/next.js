@@ -836,6 +836,7 @@ export type StaticWorker = typeof import('./worker') & Worker
 export function createStaticWorker(
   config: NextConfigComplete,
   options: {
+    numberOfWorkers: number
     debuggerPortOffset: number
     progress?: {
       run: () => void
@@ -843,10 +844,10 @@ export function createStaticWorker(
     }
   }
 ): StaticWorker {
-  const { debuggerPortOffset, progress } = options
+  const { numberOfWorkers, debuggerPortOffset, progress } = options
   return new Worker(staticWorkerPath, {
     logger: Log,
-    numWorkers: getNumberOfWorkers(config),
+    numWorkers: numberOfWorkers,
     onActivity: () => {
       progress?.run()
     },
@@ -1917,8 +1918,11 @@ export default async function build(
         traceMemoryUsage('Finished type checking', nextBuildSpan)
       }
 
+      const numberOfWorkers = getNumberOfWorkers(config)
       const collectingPageDataStart = process.hrtime()
-      const postCompileSpinner = createSpinner('Collecting page data')
+      const postCompileSpinner = createSpinner(
+        `Collecting page data using ${numberOfWorkers} worker${numberOfWorkers > 1 ? 's' : ''}`
+      )
 
       const buildManifestPath = path.join(distDir, BUILD_MANIFEST)
 
@@ -1960,7 +1964,10 @@ export default async function build(
 
       process.env.NEXT_PHASE = PHASE_PRODUCTION_BUILD
 
-      const worker = createStaticWorker(config, { debuggerPortOffset: -1 })
+      const worker = createStaticWorker(config, {
+        numberOfWorkers,
+        debuggerPortOffset: -1,
+      })
 
       const analysisBegin = process.hrtime()
       const staticCheckSpan = nextBuildSpan.traceChild('static-check')
@@ -2482,7 +2489,7 @@ export default async function build(
       if (postCompileSpinner) {
         const collectingPageDataEnd = process.hrtime(collectingPageDataStart)
         postCompileSpinner.setText(
-          `Collecting page data in ${hrtimeDurationToString(collectingPageDataEnd)}`
+          `Collecting page data using ${numberOfWorkers} worker${numberOfWorkers > 1 ? 's' : ''} in ${hrtimeDurationToString(collectingPageDataEnd)}`
         )
         postCompileSpinner.stopAndPersist()
       }
@@ -3065,8 +3072,8 @@ export default async function build(
               debugPrerender,
               pages: combinedPages,
               outdir,
-              statusMessage: 'Generating static pages',
-              numWorkers: getNumberOfWorkers(exportConfig),
+              statusMessage: `Generating static pages using ${numberOfWorkers} worker${numberOfWorkers > 1 ? 's' : ''}`,
+              numWorkers: numberOfWorkers,
               appDirOnly,
             },
             nextBuildSpan
