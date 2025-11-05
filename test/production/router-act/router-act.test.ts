@@ -8,6 +8,8 @@ describe('router-act', () => {
     files: __dirname,
   })
 
+  // Feel free to disable if this is flaky. It's more useful to manually test
+  // failing `act` anyway.
   describe('prints debug info when test times out on act()', () => {
     let didTimeout = false
     let consoleErrorMock: jest.SpyInstance
@@ -29,7 +31,7 @@ describe('router-act', () => {
       })
       const act = createRouterAct(page)
 
-      let abortAct
+      let abortAct: () => void
       const actAborted = new Promise<void>((resolve) => {
         abortAct = resolve
       })
