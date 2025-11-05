@@ -4253,6 +4253,7 @@ name = "next-api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "byteorder",
  "either",
  "futures",
  "indexmap 2.9.0",
@@ -4274,6 +4275,7 @@ dependencies = [
  "turbo-tasks-malloc",
  "turbo-unix-path",
  "turbopack",
+ "turbopack-analyze",
  "turbopack-browser",
  "turbopack-core",
  "turbopack-ecmascript",
@@ -9467,6 +9469,23 @@ dependencies = [
  "turbopack-resolve",
  "turbopack-static",
  "turbopack-wasm",
+]
+
+[[package]]
+name = "turbopack-analyze"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "rustc-hash 2.1.1",
+ "serde",
+ "serde_json",
+ "tokio",
+ "turbo-rcstr",
+ "turbo-tasks",
+ "turbo-tasks-backend",
+ "turbo-tasks-fs",
+ "turbo-tasks-testing",
+ "turbopack-core",
 ]
 
 [[package]]

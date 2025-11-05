@@ -158,6 +158,18 @@ pub struct NextConfig {
     webpack: Option<serde_json::Value>,
 }
 
+#[turbo_tasks::value_impl]
+impl NextConfig {
+    #[turbo_tasks::function]
+    pub fn with_production_browser_source_maps(&self) -> Vc<Self> {
+        Self {
+            production_browser_source_maps: true,
+            ..self.clone()
+        }
+        .cell()
+    }
+}
+
 #[derive(
     Clone, Debug, PartialEq, Eq, Serialize, Deserialize, TraceRawVcs, NonLocalValue, OperationValue,
 )]
