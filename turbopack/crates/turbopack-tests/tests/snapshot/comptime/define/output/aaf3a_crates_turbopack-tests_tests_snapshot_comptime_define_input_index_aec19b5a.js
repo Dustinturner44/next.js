@@ -54,8 +54,9 @@ console.log(("TURBOPACK compile-time value", "development"));
 if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
 ;
 ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : console.log('development');
-"TURBOPACK simplified expression", console.log('development');
-"TURBOPACK simplified expression", ("TURBOPACK compile-time value", "development") == 'production';
+("TURBOPACK compile-time truthy", 1) && console.log('development');
+("TURBOPACK compile-time value", "development") == 'production' && "TURBOPACK unreachable";
+console.log(DEFINED_NULL?.foo ?? console.log('defined'));
 console.log(("TURBOPACK compile-time value", "/ROOT/turbopack/crates/turbopack-tests/tests/snapshot/comptime/define/input"));
 }),
 ]);
