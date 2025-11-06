@@ -536,6 +536,7 @@
   },
   "test/e2e/app-dir/app-css/index.test.ts": {
     "passed": [
+      "app dir - css css support chunks should bundle css resources into chunks",
       "app dir - css css support client components should support css modules inside client components",
       "app dir - css css support client components should support css modules inside client page",
       "app dir - css css support client layouts should support css modules inside client layouts",
@@ -553,6 +554,7 @@
       "app dir - css css support special entries should include css imported in client not-found.js",
       "app dir - css css support special entries should include css imported in client template.js",
       "app dir - css css support special entries should include css imported in error.js",
+      "app dir - css css support special entries should include css imported in loading.js",
       "app dir - css css support special entries should include css imported in root not-found.js",
       "app dir - css css support special entries should include css imported in server not-found.js",
       "app dir - css css support special entries should include css imported in server template.js",
@@ -567,10 +569,7 @@
       "app dir - css sass support server pages should support global sass/scss inside server pages",
       "app dir - css sass support server pages should support sass/scss modules inside server pages"
     ],
-    "failed": [
-      "app dir - css css support chunks should bundle css resources into chunks",
-      "app dir - css css support special entries should include css imported in loading.js"
-    ],
+    "failed": [],
     "pending": [
       "app dir - css css support server layouts should support global css inside server layouts"
     ],
@@ -844,10 +843,11 @@
       "app dir - prefetching (custom staleTime) should fetch again when a static page was prefetched when navigating to it after the stale time has passed",
       "app dir - prefetching (custom staleTime) should fetch again when the initially visited static page is visited after the stale time has passed",
       "app dir - prefetching (custom staleTime) should not fetch again when a static page was prefetched when navigating to it twice",
-      "app dir - prefetching (custom staleTime) should not re-fetch cached data when navigating back to a route group",
       "app dir - prefetching (custom staleTime) should renew the stale time after refetching expired RSC data"
     ],
-    "failed": [],
+    "failed": [
+      "app dir - prefetching (custom staleTime) should not re-fetch cached data when navigating back to a route group"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -3183,11 +3183,10 @@
   },
   "test/e2e/app-dir/initial-css-order/initial-css-order.test.ts": {
     "passed": [
+      "initial-css-order should serve styles in the correct order for global-not-found",
       "initial-css-order should serve styles in the correct order for the page"
     ],
-    "failed": [
-      "initial-css-order should serve styles in the correct order for global-not-found"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -11160,11 +11159,11 @@
     "runtimeError": false
   },
   "test/integration/app-document-remove-hmr/test/index.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "_app removal HMR should HMR when _app is removed",
       "_app removal HMR should HMR when _document is removed"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -11401,11 +11400,11 @@
     "runtimeError": false
   },
   "test/integration/clean-distdir/test/index.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "Cleaning distDir production mode disabled write should not clean up .next before build start",
       "Cleaning distDir production mode should clean up .next before build start"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
