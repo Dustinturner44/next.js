@@ -32,7 +32,7 @@ use crate::{
     key::{StoreKey, hash_key},
     lookup_entry::{LookupEntry, LookupValue},
     merge_iter::MergeIter,
-    meta_file::{AmqfCache, MetaFile, MetaLookupResult, StaticSortedFileRange},
+    meta_file::{AmqfCache, MetaEntryFlags, MetaFile, MetaLookupResult, StaticSortedFileRange},
     meta_file_builder::MetaFileBuilder,
     parallel_scheduler::ParallelScheduler,
     sst_filter::SstFilter,
@@ -552,8 +552,8 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                         let seq = entry.sequence_number();
                         let range = entry.range();
                         let size = entry.size();
-                        let cold = entry.cold();
-                        (seq, range.min_hash, range.max_hash, size, cold)
+                        let flags = entry.flags();
+                        (seq, range.min_hash, range.max_hash, size, flags)
                     })
                     .collect::<Vec<_>>();
                 (
@@ -645,13 +645,13 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                 writeln!(log, "Commit {seq:08} {keys_written} keys in {span:#}")?;
                 writeln!(log, "FAM | META SEQ | SST SEQ        | RANGE")?;
                 for (meta_seq, family, ssts, obsolete) in new_meta_info {
-                    for (seq, min, max, size, cold) in ssts {
+                    for (seq, min, max, size, flags) in ssts {
                         writeln!(
                             log,
                             "{family:3} | {meta_seq:08} | {seq:08} SST    | {} ({} MiB, {})",
                             range_to_str(min, max),
                             size / 1024 / 1024,
-                            if cold { "cold" } else { "warm" }
+                            flags
                         )?;
                     }
                     for obsolete in obsolete.chunks(15) {
@@ -973,7 +973,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             .key_compression_dictionary_length(),
                                         block_count: entry.block_count(),
                                         size: entry.size(),
-                                        cold: entry.cold(),
+                                        flags: entry.flags(),
                                         entries: 0,
                                     };
                                     return Ok(PartialMergeResult::Move {
@@ -988,7 +988,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                     total_key_size: usize,
                                     path: &Path,
                                     seq: u32,
-                                    cold: bool,
+                                    flags: MetaEntryFlags,
                                 ) -> Result<(u32, File, StaticSortedFileBuilderMeta<'static>)>
                                 {
                                     let _span =
@@ -998,7 +998,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             entries,
                                             total_key_size,
                                             &path.join(format!("{seq:08}.sst")),
-                                            cold,
+                                            flags,
                                         )
                                     })?;
                                     Ok((seq, file, meta))
@@ -1082,13 +1082,16 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                                         + 1;
 
                                                     keys_written += collector.entries.len() as u64;
+
+                                                    let mut flags = MetaEntryFlags::default();
+                                                    flags.set_cold(!is_used);
                                                     new_sst_files.push(create_sst_file(
                                                         &self.parallel_scheduler,
                                                         &collector.entries,
                                                         selected_total_key_size,
                                                         path,
                                                         seq,
-                                                        !is_used,
+                                                        flags,
                                                     )?);
 
                                                     collector.entries.clear();
@@ -1119,9 +1122,10 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                 }
 
                                 // If we have one set of entries left, write them to a new SST file
-                                for (collector, cold) in
-                                    [(&mut used_collector, false), (&mut unused_collector, true)]
-                                {
+                                for (collector, flags) in [
+                                    (&mut used_collector, MetaEntryFlags::WARM),
+                                    (&mut unused_collector, MetaEntryFlags::COLD),
+                                ] {
                                     if collector.last_entries.is_empty()
                                         && !collector.entries.is_empty()
                                     {
@@ -1135,7 +1139,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             collector.total_key_size,
                                             path,
                                             seq,
-                                            cold,
+                                            flags,
                                         )?);
                                     } else
                                     // If we have two sets of entries left, merge them and
@@ -1164,7 +1168,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             collector.last_entries_total_key_size / 2,
                                             path,
                                             seq1,
-                                            cold,
+                                            flags,
                                         )?);
 
                                         keys_written += part2.len() as u64;
@@ -1174,7 +1178,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             collector.last_entries_total_key_size / 2,
                                             path,
                                             seq2,
-                                            cold,
+                                            flags,
                                         )?);
                                     }
                                 }
@@ -1415,7 +1419,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                             min_hash: entry.min_hash(),
                             max_hash: entry.max_hash(),
                             sst_size: entry.size(),
-                            cold: entry.cold(),
+                            flags: entry.flags(),
                             amqf_size: entry.amqf_size(),
                             amqf_entries: amqf.len(),
                             key_compression_dictionary_size: entry
@@ -1480,7 +1484,7 @@ pub struct MetaFileEntryInfo {
     pub amqf_size: u32,
     pub amqf_entries: usize,
     pub sst_size: u64,
-    pub cold: bool,
+    pub flags: MetaEntryFlags,
     pub key_compression_dictionary_size: u16,
     pub block_count: u16,
 }
