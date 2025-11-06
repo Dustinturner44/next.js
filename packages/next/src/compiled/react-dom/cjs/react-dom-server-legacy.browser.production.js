@@ -2794,16 +2794,16 @@ function createRenderState(resumableState, generateStaticMarkup) {
       "\x3c/script>"
     ));
   bootstrapScriptContent = idPrefix + "P:";
-  var JSCompiler_object_inline_segmentPrefix_1689 = idPrefix + "S:";
+  var JSCompiler_object_inline_segmentPrefix_1690 = idPrefix + "S:";
   idPrefix += "B:";
-  var JSCompiler_object_inline_preconnects_1703 = new Set(),
-    JSCompiler_object_inline_fontPreloads_1704 = new Set(),
-    JSCompiler_object_inline_highImagePreloads_1705 = new Set(),
-    JSCompiler_object_inline_styles_1706 = new Map(),
-    JSCompiler_object_inline_bootstrapScripts_1707 = new Set(),
-    JSCompiler_object_inline_scripts_1708 = new Set(),
-    JSCompiler_object_inline_bulkPreloads_1709 = new Set(),
-    JSCompiler_object_inline_preloads_1710 = {
+  var JSCompiler_object_inline_preconnects_1704 = new Set(),
+    JSCompiler_object_inline_fontPreloads_1705 = new Set(),
+    JSCompiler_object_inline_highImagePreloads_1706 = new Set(),
+    JSCompiler_object_inline_styles_1707 = new Map(),
+    JSCompiler_object_inline_bootstrapScripts_1708 = new Set(),
+    JSCompiler_object_inline_scripts_1709 = new Set(),
+    JSCompiler_object_inline_bulkPreloads_1710 = new Set(),
+    JSCompiler_object_inline_preloads_1711 = {
       images: new Map(),
       stylesheets: new Map(),
       scripts: new Map(),
@@ -2840,7 +2840,7 @@ function createRenderState(resumableState, generateStaticMarkup) {
       scriptConfig.moduleScriptResources[href] = null;
       scriptConfig = [];
       pushLinkImpl(scriptConfig, props);
-      JSCompiler_object_inline_bootstrapScripts_1707.add(scriptConfig);
+      JSCompiler_object_inline_bootstrapScripts_1708.add(scriptConfig);
       bootstrapChunks.push('<script src="', escapeTextForBrowser(src), '"');
       "string" === typeof integrity &&
         bootstrapChunks.push(
@@ -2887,7 +2887,7 @@ function createRenderState(resumableState, generateStaticMarkup) {
         (props.moduleScriptResources[scriptConfig] = null),
         (props = []),
         pushLinkImpl(props, integrity),
-        JSCompiler_object_inline_bootstrapScripts_1707.add(props),
+        JSCompiler_object_inline_bootstrapScripts_1708.add(props),
         bootstrapChunks.push(
           '<script type="module" src="',
           escapeTextForBrowser(i),
@@ -2909,7 +2909,7 @@ function createRenderState(resumableState, generateStaticMarkup) {
         bootstrapChunks.push(' async="">\x3c/script>');
   return {
     placeholderPrefix: bootstrapScriptContent,
-    segmentPrefix: JSCompiler_object_inline_segmentPrefix_1689,
+    segmentPrefix: JSCompiler_object_inline_segmentPrefix_1690,
     boundaryPrefix: idPrefix,
     startInlineScript: "<script",
     startInlineStyle: "<style",
@@ -2929,14 +2929,14 @@ function createRenderState(resumableState, generateStaticMarkup) {
     charsetChunks: [],
     viewportChunks: [],
     hoistableChunks: [],
-    preconnects: JSCompiler_object_inline_preconnects_1703,
-    fontPreloads: JSCompiler_object_inline_fontPreloads_1704,
-    highImagePreloads: JSCompiler_object_inline_highImagePreloads_1705,
-    styles: JSCompiler_object_inline_styles_1706,
-    bootstrapScripts: JSCompiler_object_inline_bootstrapScripts_1707,
-    scripts: JSCompiler_object_inline_scripts_1708,
-    bulkPreloads: JSCompiler_object_inline_bulkPreloads_1709,
-    preloads: JSCompiler_object_inline_preloads_1710,
+    preconnects: JSCompiler_object_inline_preconnects_1704,
+    fontPreloads: JSCompiler_object_inline_fontPreloads_1705,
+    highImagePreloads: JSCompiler_object_inline_highImagePreloads_1706,
+    styles: JSCompiler_object_inline_styles_1707,
+    bootstrapScripts: JSCompiler_object_inline_bootstrapScripts_1708,
+    scripts: JSCompiler_object_inline_scripts_1709,
+    bulkPreloads: JSCompiler_object_inline_bulkPreloads_1710,
+    preloads: JSCompiler_object_inline_preloads_1711,
     nonce: { script: void 0, style: void 0 },
     stylesToHoist: !1,
     generateStaticMarkup: generateStaticMarkup
@@ -3695,7 +3695,10 @@ function describeComponentStackByType(type) {
   return "";
 }
 function isEligibleForOutlining(request, boundary) {
-  return (500 < boundary.byteSize || !1) && null === boundary.contentPreamble;
+  return (
+    (500 < boundary.byteSize || boundary.defer) &&
+    null === boundary.contentPreamble
+  );
 }
 function defaultErrorHandler(error) {
   if (
@@ -3824,7 +3827,8 @@ function createSuspenseBoundary(
   row,
   fallbackAbortableTasks,
   contentPreamble,
-  fallbackPreamble
+  fallbackPreamble,
+  defer
 ) {
   fallbackAbortableTasks = {
     status: 0,
@@ -3834,6 +3838,7 @@ function createSuspenseBoundary(
     row: row,
     completedSegments: [],
     byteSize: 0,
+    defer: defer,
     fallbackAbortableTasks: fallbackAbortableTasks,
     errorDigest: null,
     contentState: createHoistableState(),
@@ -4636,7 +4641,8 @@ function renderElement(request, task, keyPath, type, props, ref) {
             task.row,
             fallbackAbortSet,
             null,
-            null
+            null,
+            !1
           );
           null !== request.trackedPostpones &&
             (newBoundary.trackedContentKeyPath = keyPath);
@@ -4659,20 +4665,23 @@ function renderElement(request, task, keyPath, type, props, ref) {
             !1
           );
           contentRootSegment.parentFlushed = !0;
-          if (null !== request.trackedPostpones) {
+          var trackedPostpones = request.trackedPostpones;
+          if (null !== trackedPostpones) {
             var suspenseComponentStack = task.componentStack,
-              fallbackKeyPath = [keyPath[0], "Suspense Fallback", keyPath[2]],
-              fallbackReplayNode = [
+              fallbackKeyPath = [keyPath[0], "Suspense Fallback", keyPath[2]];
+            if (null !== trackedPostpones) {
+              var fallbackReplayNode = [
                 fallbackKeyPath[1],
                 fallbackKeyPath[2],
                 [],
                 null
               ];
-            request.trackedPostpones.workingMap.set(
-              fallbackKeyPath,
-              fallbackReplayNode
-            );
-            newBoundary.trackedFallbackNode = fallbackReplayNode;
+              trackedPostpones.workingMap.set(
+                fallbackKeyPath,
+                fallbackReplayNode
+              );
+              newBoundary.trackedFallbackNode = fallbackReplayNode;
+            }
             task.blockedSegment = boundarySegment;
             task.blockedPreamble = newBoundary.fallbackPreamble;
             task.keyPath = fallbackKeyPath;
@@ -5031,7 +5040,8 @@ function retryNode(request, task) {
                         task.row,
                         fallbackAbortSet,
                         null,
-                        null
+                        null,
+                        !1
                       );
                       props.parentFlushed = !0;
                       props.rootSegmentID = replay;
@@ -5548,7 +5558,8 @@ function abortRemainingReplayNodes(
           null,
           new Set(),
           null,
-          null
+          null,
+          !1
         );
       resumedBoundary.parentFlushed = !0;
       resumedBoundary.rootSegmentID = node;
@@ -6175,7 +6186,8 @@ function flushSegment(request, destination, segment, hoistableState) {
   if (
     !flushingPartialBoundaries &&
     isEligibleForOutlining(request, boundary) &&
-    flushedByteSize + boundary.byteSize > request.progressiveChunkSize
+    (flushedByteSize + boundary.byteSize > request.progressiveChunkSize ||
+      boundary.defer)
   )
     return (
       (boundary.rootSegmentID = request.nextSegmentId++),
@@ -6733,4 +6745,4 @@ exports.renderToString = function (children, options) {
     'The server used "renderToString" which does not support Suspense. If you intended for this Suspense boundary to render the fallback content on the server consider throwing an Error somewhere within the Suspense boundary. If you intended to have the server wait for the suspended component please switch to "renderToReadableStream" which supports Suspense on the server'
   );
 };
-exports.version = "19.3.0-canary-dd048c3b-20251105";
+exports.version = "19.3.0-canary-5a2205ba-20251105";

@@ -4445,7 +4445,8 @@
     }
     function isEligibleForOutlining(request, boundary) {
       return (
-        (500 < boundary.byteSize || !1) && null === boundary.contentPreamble
+        (500 < boundary.byteSize || boundary.defer) &&
+        null === boundary.contentPreamble
       );
     }
     function defaultErrorHandler(error) {
@@ -4581,7 +4582,8 @@
       row,
       fallbackAbortableTasks,
       contentPreamble,
-      fallbackPreamble
+      fallbackPreamble,
+      defer
     ) {
       fallbackAbortableTasks = {
         status: PENDING,
@@ -4591,6 +4593,7 @@
         row: row,
         completedSegments: [],
         byteSize: 0,
+        defer: defer,
         fallbackAbortableTasks: fallbackAbortableTasks,
         errorDigest: null,
         contentState: createHoistableState(),
@@ -5897,7 +5900,8 @@
                 task.row,
                 fallbackAbortSet,
                 null,
-                null
+                null,
+                !1
               );
               null !== request.trackedPostpones &&
                 (newBoundary.trackedContentKeyPath = keyPath);
@@ -5920,24 +5924,27 @@
                 !1
               );
               contentRootSegment.parentFlushed = !0;
-              if (null !== request.trackedPostpones) {
+              var trackedPostpones = request.trackedPostpones;
+              if (null !== trackedPostpones) {
                 var suspenseComponentStack = task.componentStack,
                   fallbackKeyPath = [
                     keyPath[0],
                     "Suspense Fallback",
                     keyPath[2]
-                  ],
-                  fallbackReplayNode = [
+                  ];
+                if (null !== trackedPostpones) {
+                  var fallbackReplayNode = [
                     fallbackKeyPath[1],
                     fallbackKeyPath[2],
                     [],
                     null
                   ];
-                request.trackedPostpones.workingMap.set(
-                  fallbackKeyPath,
-                  fallbackReplayNode
-                );
-                newBoundary.trackedFallbackNode = fallbackReplayNode;
+                  trackedPostpones.workingMap.set(
+                    fallbackKeyPath,
+                    fallbackReplayNode
+                  );
+                  newBoundary.trackedFallbackNode = fallbackReplayNode;
+                }
                 task.blockedSegment = boundarySegment;
                 task.blockedPreamble = newBoundary.fallbackPreamble;
                 task.keyPath = fallbackKeyPath;
@@ -6343,7 +6350,8 @@
                 task.row,
                 fallbackAbortSet,
                 null,
-                null
+                null,
+                !1
               );
               props.parentFlushed = !0;
               props.rootSegmentID = request;
@@ -7100,7 +7108,8 @@
               null,
               new Set(),
               null,
-              null
+              null,
+              !1
             );
           resumedBoundary.parentFlushed = !0;
           resumedBoundary.rootSegmentID = node;
@@ -7878,7 +7887,8 @@
       if (
         !flushingPartialBoundaries &&
         isEligibleForOutlining(request, boundary) &&
-        flushedByteSize + boundary.byteSize > request.progressiveChunkSize
+        (flushedByteSize + boundary.byteSize > request.progressiveChunkSize ||
+          boundary.defer)
       )
         return (
           (boundary.rootSegmentID = request.nextSegmentId++),
@@ -10004,5 +10014,5 @@
         'The server used "renderToString" which does not support Suspense. If you intended for this Suspense boundary to render the fallback content on the server consider throwing an Error somewhere within the Suspense boundary. If you intended to have the server wait for the suspended component please switch to "renderToReadableStream" which supports Suspense on the server'
       );
     };
-    exports.version = "19.3.0-canary-dd048c3b-20251105";
+    exports.version = "19.3.0-canary-5a2205ba-20251105";
   })();

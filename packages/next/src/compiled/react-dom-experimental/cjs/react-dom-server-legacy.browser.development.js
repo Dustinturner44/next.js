@@ -4624,7 +4624,8 @@
     }
     function isEligibleForOutlining(request, boundary) {
       return (
-        (500 < boundary.byteSize || !1) && null === boundary.contentPreamble
+        (500 < boundary.byteSize || boundary.defer) &&
+        null === boundary.contentPreamble
       );
     }
     function defaultErrorHandler(error) {
@@ -4760,7 +4761,8 @@
       row,
       fallbackAbortableTasks,
       contentPreamble,
-      fallbackPreamble
+      fallbackPreamble,
+      defer
     ) {
       fallbackAbortableTasks = {
         status: PENDING,
@@ -4770,6 +4772,7 @@
         row: row,
         completedSegments: [],
         byteSize: 0,
+        defer: defer,
         fallbackAbortableTasks: fallbackAbortableTasks,
         errorDigest: null,
         contentState: createHoistableState(),
@@ -6116,13 +6119,15 @@
                 parentSegment = task.blockedSegment,
                 fallback = props.fallback,
                 content = props.children,
+                defer = !0 === props.defer,
                 fallbackAbortSet = new Set();
               var newBoundary = createSuspenseBoundary(
                 request,
                 task.row,
                 fallbackAbortSet,
                 null,
-                null
+                null,
+                defer
               );
               null !== request.trackedPostpones &&
                 (newBoundary.trackedContentKeyPath = keyPath);
@@ -6145,24 +6150,27 @@
                 !1
               );
               contentRootSegment.parentFlushed = !0;
-              if (null !== request.trackedPostpones) {
+              var trackedPostpones = request.trackedPostpones;
+              if (null !== trackedPostpones || defer) {
                 var suspenseComponentStack = task.componentStack,
                   fallbackKeyPath = [
                     keyPath[0],
                     "Suspense Fallback",
                     keyPath[2]
-                  ],
-                  fallbackReplayNode = [
+                  ];
+                if (null !== trackedPostpones) {
+                  var fallbackReplayNode = [
                     fallbackKeyPath[1],
                     fallbackKeyPath[2],
                     [],
                     null
                   ];
-                request.trackedPostpones.workingMap.set(
-                  fallbackKeyPath,
-                  fallbackReplayNode
-                );
-                newBoundary.trackedFallbackNode = fallbackReplayNode;
+                  trackedPostpones.workingMap.set(
+                    fallbackKeyPath,
+                    fallbackReplayNode
+                  );
+                  newBoundary.trackedFallbackNode = fallbackReplayNode;
+                }
                 task.blockedSegment = boundarySegment;
                 task.blockedPreamble = newBoundary.fallbackPreamble;
                 task.keyPath = fallbackKeyPath;
@@ -6561,19 +6569,21 @@
                 parentBoundary = task.blockedBoundary,
                 parentHoistableState = task.hoistableState,
                 content = props.children,
-                fallback = props.fallback,
-                fallbackAbortSet = new Set();
-              props = createSuspenseBoundary(
+                fallback = props.fallback;
+              var resumedBoundary = !0 === props.defer;
+              props = new Set();
+              resumedBoundary = createSuspenseBoundary(
                 replay,
                 task.row,
-                fallbackAbortSet,
+                props,
                 null,
-                null
+                null,
+                resumedBoundary
               );
-              props.parentFlushed = !0;
-              props.rootSegmentID = request;
-              task.blockedBoundary = props;
-              task.hoistableState = props.contentState;
+              resumedBoundary.parentFlushed = !0;
+              resumedBoundary.rootSegmentID = request;
+              task.blockedBoundary = resumedBoundary;
+              task.hoistableState = resumedBoundary.contentState;
               task.keyPath = keyPath;
               task.formatContext = getSuspenseContentFormatContext(
                 replay.resumableState,
@@ -6591,13 +6601,16 @@
                     "Couldn't find all resumable slots by key/index during replaying. The tree doesn't match so React will fallback to client rendering."
                   );
                 task.replay.pendingTasks--;
-                if (0 === props.pendingTasks && props.status === PENDING) {
-                  props.status = COMPLETED;
-                  replay.completedBoundaries.push(props);
+                if (
+                  0 === resumedBoundary.pendingTasks &&
+                  resumedBoundary.status === PENDING
+                ) {
+                  resumedBoundary.status = COMPLETED;
+                  replay.completedBoundaries.push(resumedBoundary);
                   break a;
                 }
               } catch (error) {
-                (props.status = CLIENT_RENDERED),
+                (resumedBoundary.status = CLIENT_RENDERED),
                   (childNodes = getThrownInfo(task.componentStack)),
                   (childSlots = logRecoverableError(
                     replay,
@@ -6606,14 +6619,14 @@
                     task.debugTask
                   )),
                   encodeErrorForBoundary(
-                    props,
+                    resumedBoundary,
                     childSlots,
                     error,
                     childNodes,
                     !1
                   ),
                   task.replay.pendingTasks--,
-                  replay.clientRenderedBoundaries.push(props);
+                  replay.clientRenderedBoundaries.push(resumedBoundary);
               } finally {
                 (task.blockedBoundary = parentBoundary),
                   (task.hoistableState = parentHoistableState),
@@ -6629,8 +6642,8 @@
                 fallback,
                 -1,
                 parentBoundary,
-                props.fallbackState,
-                fallbackAbortSet,
+                resumedBoundary.fallbackState,
+                props,
                 [keyPath[0], "Suspense Fallback", keyPath[2]],
                 getSuspenseFallbackFormatContext(
                   replay.resumableState,
@@ -7366,7 +7379,8 @@
               null,
               new Set(),
               null,
-              null
+              null,
+              !1
             );
           resumedBoundary.parentFlushed = !0;
           resumedBoundary.rootSegmentID = node;
@@ -8144,7 +8158,8 @@
       if (
         !flushingPartialBoundaries &&
         isEligibleForOutlining(request, boundary) &&
-        flushedByteSize + boundary.byteSize > request.progressiveChunkSize
+        (flushedByteSize + boundary.byteSize > request.progressiveChunkSize ||
+          boundary.defer)
       )
         return (
           (boundary.rootSegmentID = request.nextSegmentId++),
@@ -10381,5 +10396,5 @@
         'The server used "renderToString" which does not support Suspense. If you intended for this Suspense boundary to render the fallback content on the server consider throwing an Error somewhere within the Suspense boundary. If you intended to have the server wait for the suspended component please switch to "renderToReadableStream" which supports Suspense on the server'
       );
     };
-    exports.version = "19.3.0-experimental-dd048c3b-20251105";
+    exports.version = "19.3.0-experimental-5a2205ba-20251105";
   })();

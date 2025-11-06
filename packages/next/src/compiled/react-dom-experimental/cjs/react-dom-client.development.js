@@ -11443,10 +11443,7 @@
             (workInProgress.memoizedState = SUSPENDED_MARKER),
             bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_3231)
           );
-        if (
-          "number" ===
-          typeof JSCompiler_object_inline_stack_3231.unstable_expectedLoadTime
-        )
+        if (!0 === JSCompiler_object_inline_stack_3231.defer)
           return (
             reuseSuspenseHandlerOnStack(workInProgress),
             mountSuspenseFallbackChildren(
@@ -32406,11 +32403,11 @@
     };
     (function () {
       var isomorphicReactPackageVersion = React.version;
-      if ("19.3.0-experimental-dd048c3b-20251105" !== isomorphicReactPackageVersion)
+      if ("19.3.0-experimental-5a2205ba-20251105" !== isomorphicReactPackageVersion)
         throw Error(
           'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
             (isomorphicReactPackageVersion +
-              "\n  - react-dom:  19.3.0-experimental-dd048c3b-20251105\nLearn more: https://react.dev/warnings/version-mismatch")
+              "\n  - react-dom:  19.3.0-experimental-5a2205ba-20251105\nLearn more: https://react.dev/warnings/version-mismatch")
         );
     })();
     ("function" === typeof Map &&
@@ -32447,10 +32444,10 @@
       !(function () {
         var internals = {
           bundleType: 1,
-          version: "19.3.0-experimental-dd048c3b-20251105",
+          version: "19.3.0-experimental-5a2205ba-20251105",
           rendererPackageName: "react-dom",
           currentDispatcherRef: ReactSharedInternals,
-          reconcilerVersion: "19.3.0-experimental-dd048c3b-20251105"
+          reconcilerVersion: "19.3.0-experimental-5a2205ba-20251105"
         };
         internals.overrideHookState = overrideHookState;
         internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -32598,7 +32595,7 @@
       listenToAllSupportedEvents(container);
       return new ReactDOMHydrationRoot(initialChildren);
     };
-    exports.version = "19.3.0-experimental-dd048c3b-20251105";
+    exports.version = "19.3.0-experimental-5a2205ba-20251105";
     "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
       "function" ===
         typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&

@@ -7837,7 +7837,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
         (workInProgress.memoizedState = SUSPENDED_MARKER),
         bailoutOffscreenComponent(null, nextProps)
       );
-    if ("number" === typeof nextProps.unstable_expectedLoadTime)
+    if (!0 === nextProps.defer)
       return (
         reuseSuspenseHandlerOnStack(),
         mountSuspenseFallbackChildren(
@@ -21672,14 +21672,14 @@ ReactDOMHydrationRoot.prototype.unstable_scheduleHydration = function (target) {
 };
 var isomorphicReactPackageVersion$jscomp$inline_2494 = React.version;
 if (
-  "19.3.0-experimental-dd048c3b-20251105" !==
+  "19.3.0-experimental-5a2205ba-20251105" !==
   isomorphicReactPackageVersion$jscomp$inline_2494
 )
   throw Error(
     formatProdErrorMessage(
       527,
       isomorphicReactPackageVersion$jscomp$inline_2494,
-      "19.3.0-experimental-dd048c3b-20251105"
+      "19.3.0-experimental-5a2205ba-20251105"
     )
   );
 ReactDOMSharedInternals.findDOMNode = function (componentOrElement) {
@@ -21701,10 +21701,10 @@ ReactDOMSharedInternals.findDOMNode = function (componentOrElement) {
 };
 var internals$jscomp$inline_3212 = {
   bundleType: 0,
-  version: "19.3.0-experimental-dd048c3b-20251105",
+  version: "19.3.0-experimental-5a2205ba-20251105",
   rendererPackageName: "react-dom",
   currentDispatcherRef: ReactSharedInternals,
-  reconcilerVersion: "19.3.0-experimental-dd048c3b-20251105"
+  reconcilerVersion: "19.3.0-experimental-5a2205ba-20251105"
 };
 if ("undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__) {
   var hook$jscomp$inline_3213 = __REACT_DEVTOOLS_GLOBAL_HOOK__;
@@ -21972,7 +21972,7 @@ exports.useFormState = function (action, initialState, permalink) {
 exports.useFormStatus = function () {
   return ReactSharedInternals.H.useHostTransitionStatus();
 };
-exports.version = "19.3.0-experimental-dd048c3b-20251105";
+exports.version = "19.3.0-experimental-5a2205ba-20251105";
 "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
   "function" ===
     typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&

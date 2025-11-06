@@ -4630,7 +4630,8 @@
     function isEligibleForOutlining(request, boundary) {
       return (
         (500 < boundary.byteSize ||
-          hasSuspenseyContent(boundary.contentState)) &&
+          hasSuspenseyContent(boundary.contentState) ||
+          boundary.defer) &&
         null === boundary.contentPreamble
       );
     }
@@ -4930,7 +4931,8 @@
       row,
       fallbackAbortableTasks,
       contentPreamble,
-      fallbackPreamble
+      fallbackPreamble,
+      defer
     ) {
       fallbackAbortableTasks = {
         status: PENDING,
@@ -4940,6 +4942,7 @@
         row: row,
         completedSegments: [],
         byteSize: 0,
+        defer: defer,
         fallbackAbortableTasks: fallbackAbortableTasks,
         errorDigest: null,
         contentState: createHoistableState(),
@@ -6293,14 +6296,16 @@
                       task.row,
                       fallbackAbortSet,
                       createPreambleState(),
-                      createPreambleState()
+                      createPreambleState(),
+                      !1
                     )
                   : createSuspenseBoundary(
                       request,
                       task.row,
                       fallbackAbortSet,
                       null,
-                      null
+                      null,
+                      !1
                     );
               null !== request.trackedPostpones &&
                 (newBoundary.trackedContentKeyPath = keyPath);
@@ -6323,24 +6328,27 @@
                 !1
               );
               contentRootSegment.parentFlushed = !0;
-              if (null !== request.trackedPostpones) {
+              var trackedPostpones = request.trackedPostpones;
+              if (null !== trackedPostpones) {
                 var suspenseComponentStack = task.componentStack,
                   fallbackKeyPath = [
                     keyPath[0],
                     "Suspense Fallback",
                     keyPath[2]
-                  ],
-                  fallbackReplayNode = [
+                  ];
+                if (null !== trackedPostpones) {
+                  var fallbackReplayNode = [
                     fallbackKeyPath[1],
                     fallbackKeyPath[2],
                     [],
                     null
                   ];
-                request.trackedPostpones.workingMap.set(
-                  fallbackKeyPath,
-                  fallbackReplayNode
-                );
-                newBoundary.trackedFallbackNode = fallbackReplayNode;
+                  trackedPostpones.workingMap.set(
+                    fallbackKeyPath,
+                    fallbackReplayNode
+                  );
+                  newBoundary.trackedFallbackNode = fallbackReplayNode;
+                }
                 task.blockedSegment = boundarySegment;
                 task.blockedPreamble = newBoundary.fallbackPreamble;
                 task.keyPath = fallbackKeyPath;
@@ -6745,14 +6753,16 @@
                       task.row,
                       fallbackAbortSet,
                       createPreambleState(),
-                      createPreambleState()
+                      createPreambleState(),
+                      !1
                     )
                   : createSuspenseBoundary(
                       replay,
                       task.row,
                       fallbackAbortSet,
                       null,
-                      null
+                      null,
+                      !1
                     );
               props.parentFlushed = !0;
               props.rootSegmentID = request;
@@ -7509,7 +7519,8 @@
               null,
               new Set(),
               null,
-              null
+              null,
+              !1
             );
           resumedBoundary.parentFlushed = !0;
           resumedBoundary.rootSegmentID = node;
@@ -8300,7 +8311,8 @@
         !flushingPartialBoundaries &&
         isEligibleForOutlining(request, boundary) &&
         (flushedByteSize + boundary.byteSize > request.progressiveChunkSize ||
-          hasSuspenseyContent(boundary.contentState))
+          hasSuspenseyContent(boundary.contentState) ||
+          boundary.defer)
       )
         (boundary.rootSegmentID = request.nextSegmentId++),
           request.completedBoundaries.push(boundary),
@@ -9002,11 +9014,11 @@
     }
     function ensureCorrectIsomorphicReactVersion() {
       var isomorphicReactPackageVersion = React.version;
-      if ("19.3.0-canary-dd048c3b-20251105" !== isomorphicReactPackageVersion)
+      if ("19.3.0-canary-5a2205ba-20251105" !== isomorphicReactPackageVersion)
         throw Error(
           'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
             (isomorphicReactPackageVersion +
-              "\n  - react-dom:  19.3.0-canary-dd048c3b-20251105\nLearn more: https://react.dev/warnings/version-mismatch")
+              "\n  - react-dom:  19.3.0-canary-5a2205ba-20251105\nLearn more: https://react.dev/warnings/version-mismatch")
         );
     }
     var React = require("next/dist/compiled/react"),
@@ -10804,5 +10816,5 @@
         startWork(request);
       });
     };
-    exports.version = "19.3.0-canary-dd048c3b-20251105";
+    exports.version = "19.3.0-canary-5a2205ba-20251105";
   })();

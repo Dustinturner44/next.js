@@ -2951,16 +2951,16 @@ function createRenderState(resumableState, generateStaticMarkup) {
       "\x3c/script>"
     ));
   bootstrapScriptContent = idPrefix + "P:";
-  var JSCompiler_object_inline_segmentPrefix_1881 = idPrefix + "S:";
+  var JSCompiler_object_inline_segmentPrefix_1883 = idPrefix + "S:";
   idPrefix += "B:";
-  var JSCompiler_object_inline_preconnects_1895 = new Set(),
-    JSCompiler_object_inline_fontPreloads_1896 = new Set(),
-    JSCompiler_object_inline_highImagePreloads_1897 = new Set(),
-    JSCompiler_object_inline_styles_1898 = new Map(),
-    JSCompiler_object_inline_bootstrapScripts_1899 = new Set(),
-    JSCompiler_object_inline_scripts_1900 = new Set(),
-    JSCompiler_object_inline_bulkPreloads_1901 = new Set(),
-    JSCompiler_object_inline_preloads_1902 = {
+  var JSCompiler_object_inline_preconnects_1897 = new Set(),
+    JSCompiler_object_inline_fontPreloads_1898 = new Set(),
+    JSCompiler_object_inline_highImagePreloads_1899 = new Set(),
+    JSCompiler_object_inline_styles_1900 = new Map(),
+    JSCompiler_object_inline_bootstrapScripts_1901 = new Set(),
+    JSCompiler_object_inline_scripts_1902 = new Set(),
+    JSCompiler_object_inline_bulkPreloads_1903 = new Set(),
+    JSCompiler_object_inline_preloads_1904 = {
       images: new Map(),
       stylesheets: new Map(),
       scripts: new Map(),
@@ -2997,7 +2997,7 @@ function createRenderState(resumableState, generateStaticMarkup) {
       scriptConfig.moduleScriptResources[href] = null;
       scriptConfig = [];
       pushLinkImpl(scriptConfig, props);
-      JSCompiler_object_inline_bootstrapScripts_1899.add(scriptConfig);
+      JSCompiler_object_inline_bootstrapScripts_1901.add(scriptConfig);
       bootstrapChunks.push('<script src="', escapeTextForBrowser(src), '"');
       "string" === typeof integrity &&
         bootstrapChunks.push(
@@ -3044,7 +3044,7 @@ function createRenderState(resumableState, generateStaticMarkup) {
         (props.moduleScriptResources[scriptConfig] = null),
         (props = []),
         pushLinkImpl(props, integrity),
-        JSCompiler_object_inline_bootstrapScripts_1899.add(props),
+        JSCompiler_object_inline_bootstrapScripts_1901.add(props),
         bootstrapChunks.push(
           '<script type="module" src="',
           escapeTextForBrowser(i),
@@ -3066,7 +3066,7 @@ function createRenderState(resumableState, generateStaticMarkup) {
         bootstrapChunks.push(' async="">\x3c/script>');
   return {
     placeholderPrefix: bootstrapScriptContent,
-    segmentPrefix: JSCompiler_object_inline_segmentPrefix_1881,
+    segmentPrefix: JSCompiler_object_inline_segmentPrefix_1883,
     boundaryPrefix: idPrefix,
     startInlineScript: "<script",
     startInlineStyle: "<style",
@@ -3086,14 +3086,14 @@ function createRenderState(resumableState, generateStaticMarkup) {
     charsetChunks: [],
     viewportChunks: [],
     hoistableChunks: [],
-    preconnects: JSCompiler_object_inline_preconnects_1895,
-    fontPreloads: JSCompiler_object_inline_fontPreloads_1896,
-    highImagePreloads: JSCompiler_object_inline_highImagePreloads_1897,
-    styles: JSCompiler_object_inline_styles_1898,
-    bootstrapScripts: JSCompiler_object_inline_bootstrapScripts_1899,
-    scripts: JSCompiler_object_inline_scripts_1900,
-    bulkPreloads: JSCompiler_object_inline_bulkPreloads_1901,
-    preloads: JSCompiler_object_inline_preloads_1902,
+    preconnects: JSCompiler_object_inline_preconnects_1897,
+    fontPreloads: JSCompiler_object_inline_fontPreloads_1898,
+    highImagePreloads: JSCompiler_object_inline_highImagePreloads_1899,
+    styles: JSCompiler_object_inline_styles_1900,
+    bootstrapScripts: JSCompiler_object_inline_bootstrapScripts_1901,
+    scripts: JSCompiler_object_inline_scripts_1902,
+    bulkPreloads: JSCompiler_object_inline_bulkPreloads_1903,
+    preloads: JSCompiler_object_inline_preloads_1904,
     nonce: { script: void 0, style: void 0 },
     stylesToHoist: !1,
     generateStaticMarkup: generateStaticMarkup
@@ -3862,7 +3862,10 @@ function describeComponentStackByType(type) {
   return "";
 }
 function isEligibleForOutlining(request, boundary) {
-  return (500 < boundary.byteSize || !1) && null === boundary.contentPreamble;
+  return (
+    (500 < boundary.byteSize || boundary.defer) &&
+    null === boundary.contentPreamble
+  );
 }
 function defaultErrorHandler(error) {
   if (
@@ -3991,7 +3994,8 @@ function createSuspenseBoundary(
   row,
   fallbackAbortableTasks,
   contentPreamble,
-  fallbackPreamble
+  fallbackPreamble,
+  defer
 ) {
   fallbackAbortableTasks = {
     status: 0,
@@ -4001,6 +4005,7 @@ function createSuspenseBoundary(
     row: row,
     completedSegments: [],
     byteSize: 0,
+    defer: defer,
     fallbackAbortableTasks: fallbackAbortableTasks,
     errorDigest: null,
     contentState: createHoistableState(),
@@ -4837,13 +4842,15 @@ function renderElement(request, task, keyPath, type, props, ref) {
             parentSegment = task.blockedSegment,
             fallback = props.fallback,
             content = props.children,
+            defer = !0 === props.defer,
             fallbackAbortSet = new Set();
           var newBoundary = createSuspenseBoundary(
             request,
             task.row,
             fallbackAbortSet,
             null,
-            null
+            null,
+            defer
           );
           null !== request.trackedPostpones &&
             (newBoundary.trackedContentKeyPath = keyPath);
@@ -4866,20 +4873,23 @@ function renderElement(request, task, keyPath, type, props, ref) {
             !1
           );
           contentRootSegment.parentFlushed = !0;
-          if (null !== request.trackedPostpones) {
+          var trackedPostpones = request.trackedPostpones;
+          if (null !== trackedPostpones || defer) {
             var suspenseComponentStack = task.componentStack,
-              fallbackKeyPath = [keyPath[0], "Suspense Fallback", keyPath[2]],
-              fallbackReplayNode = [
+              fallbackKeyPath = [keyPath[0], "Suspense Fallback", keyPath[2]];
+            if (null !== trackedPostpones) {
+              var fallbackReplayNode = [
                 fallbackKeyPath[1],
                 fallbackKeyPath[2],
                 [],
                 null
               ];
-            request.trackedPostpones.workingMap.set(
-              fallbackKeyPath,
-              fallbackReplayNode
-            );
-            newBoundary.trackedFallbackNode = fallbackReplayNode;
+              trackedPostpones.workingMap.set(
+                fallbackKeyPath,
+                fallbackReplayNode
+              );
+              newBoundary.trackedFallbackNode = fallbackReplayNode;
+            }
             task.blockedSegment = boundarySegment;
             task.blockedPreamble = newBoundary.fallbackPreamble;
             task.keyPath = fallbackKeyPath;
@@ -5230,19 +5240,21 @@ function retryNode(request, task) {
                         parentBoundary = task.blockedBoundary,
                         parentHoistableState = task.hoistableState,
                         content = props.children,
-                        fallback = props.fallback,
-                        fallbackAbortSet = new Set();
-                      props = createSuspenseBoundary(
+                        fallback = props.fallback;
+                      var resumedBoundary = !0 === props.defer;
+                      props = new Set();
+                      resumedBoundary = createSuspenseBoundary(
                         request,
                         task.row,
-                        fallbackAbortSet,
+                        props,
                         null,
-                        null
+                        null,
+                        resumedBoundary
                       );
-                      props.parentFlushed = !0;
-                      props.rootSegmentID = replay;
-                      task.blockedBoundary = props;
-                      task.hoistableState = props.contentState;
+                      resumedBoundary.parentFlushed = !0;
+                      resumedBoundary.rootSegmentID = replay;
+                      task.blockedBoundary = resumedBoundary;
+                      task.hoistableState = resumedBoundary.contentState;
                       task.keyPath = key;
                       task.formatContext = getSuspenseContentFormatContext(
                         request.resumableState,
@@ -5262,22 +5274,27 @@ function retryNode(request, task) {
                         )
                           throw Error(formatProdErrorMessage(488));
                         task.replay.pendingTasks--;
-                        if (0 === props.pendingTasks && 0 === props.status) {
-                          props.status = 1;
-                          request.completedBoundaries.push(props);
+                        if (
+                          0 === resumedBoundary.pendingTasks &&
+                          0 === resumedBoundary.status
+                        ) {
+                          resumedBoundary.status = 1;
+                          request.completedBoundaries.push(resumedBoundary);
                           break b;
                         }
                       } catch (error) {
-                        (props.status = 4),
+                        (resumedBoundary.status = 4),
                           (childNodes = getThrownInfo(task.componentStack)),
                           (childSlots = logRecoverableError(
                             request,
                             error,
                             childNodes
                           )),
-                          (props.errorDigest = childSlots),
+                          (resumedBoundary.errorDigest = childSlots),
                           task.replay.pendingTasks--,
-                          request.clientRenderedBoundaries.push(props);
+                          request.clientRenderedBoundaries.push(
+                            resumedBoundary
+                          );
                       } finally {
                         (task.blockedBoundary = parentBoundary),
                           (task.hoistableState = parentHoistableState),
@@ -5293,8 +5310,8 @@ function retryNode(request, task) {
                         fallback,
                         -1,
                         parentBoundary,
-                        props.fallbackState,
-                        fallbackAbortSet,
+                        resumedBoundary.fallbackState,
+                        props,
                         [key[0], "Suspense Fallback", key[2]],
                         getSuspenseFallbackFormatContext(
                           request.resumableState,
@@ -5780,7 +5797,8 @@ function abortRemainingReplayNodes(
           null,
           new Set(),
           null,
-          null
+          null,
+          !1
         );
       resumedBoundary.parentFlushed = !0;
       resumedBoundary.rootSegmentID = node;
@@ -6407,7 +6425,8 @@ function flushSegment(request, destination, segment, hoistableState) {
   if (
     !flushingPartialBoundaries &&
     isEligibleForOutlining(request, boundary) &&
-    flushedByteSize + boundary.byteSize > request.progressiveChunkSize
+    (flushedByteSize + boundary.byteSize > request.progressiveChunkSize ||
+      boundary.defer)
   )
     return (
       (boundary.rootSegmentID = request.nextSegmentId++),
@@ -7008,4 +7027,4 @@ exports.renderToString = function (children, options) {
     'The server used "renderToString" which does not support Suspense. If you intended for this Suspense boundary to render the fallback content on the server consider throwing an Error somewhere within the Suspense boundary. If you intended to have the server wait for the suspended component please switch to "renderToReadableStream" which supports Suspense on the server'
   );
 };
-exports.version = "19.3.0-experimental-dd048c3b-20251105";
+exports.version = "19.3.0-experimental-5a2205ba-20251105";
