@@ -501,10 +501,11 @@
   },
   "test/e2e/app-dir/app-client-cache/client-cache.parallel-routes.test.ts": {
     "passed": [
-      "app dir client cache with parallel routes prefetch={true} should prefetch the full page",
       "app dir client cache with parallel routes prefetch={true} should re-use the cache for the full page, only for 5 mins"
     ],
-    "failed": [],
+    "failed": [
+      "app dir client cache with parallel routes prefetch={true} should prefetch the full page"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -536,6 +537,7 @@
   },
   "test/e2e/app-dir/app-css/index.test.ts": {
     "passed": [
+      "app dir - css css support chunks should bundle css resources into chunks",
       "app dir - css css support client components should support css modules inside client components",
       "app dir - css css support client components should support css modules inside client page",
       "app dir - css css support client layouts should support css modules inside client layouts",
@@ -553,6 +555,7 @@
       "app dir - css css support special entries should include css imported in client not-found.js",
       "app dir - css css support special entries should include css imported in client template.js",
       "app dir - css css support special entries should include css imported in error.js",
+      "app dir - css css support special entries should include css imported in loading.js",
       "app dir - css css support special entries should include css imported in root not-found.js",
       "app dir - css css support special entries should include css imported in server not-found.js",
       "app dir - css css support special entries should include css imported in server template.js",
@@ -567,10 +570,7 @@
       "app dir - css sass support server pages should support global sass/scss inside server pages",
       "app dir - css sass support server pages should support sass/scss modules inside server pages"
     ],
-    "failed": [
-      "app dir - css css support chunks should bundle css resources into chunks",
-      "app dir - css css support special entries should include css imported in loading.js"
-    ],
+    "failed": [],
     "pending": [
       "app dir - css css support server layouts should support global css inside server layouts"
     ],
@@ -844,10 +844,11 @@
       "app dir - prefetching (custom staleTime) should fetch again when a static page was prefetched when navigating to it after the stale time has passed",
       "app dir - prefetching (custom staleTime) should fetch again when the initially visited static page is visited after the stale time has passed",
       "app dir - prefetching (custom staleTime) should not fetch again when a static page was prefetched when navigating to it twice",
-      "app dir - prefetching (custom staleTime) should not re-fetch cached data when navigating back to a route group",
       "app dir - prefetching (custom staleTime) should renew the stale time after refetching expired RSC data"
     ],
-    "failed": [],
+    "failed": [
+      "app dir - prefetching (custom staleTime) should not re-fetch cached data when navigating back to a route group"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -3183,11 +3184,10 @@
   },
   "test/e2e/app-dir/initial-css-order/initial-css-order.test.ts": {
     "passed": [
+      "initial-css-order should serve styles in the correct order for global-not-found",
       "initial-css-order should serve styles in the correct order for the page"
     ],
-    "failed": [
-      "initial-css-order should serve styles in the correct order for global-not-found"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -5917,7 +5917,7 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/resume-data-cache/resume-data-cache/resume-data-cache.test.ts": {
+  "test/e2e/app-dir/resume-data-cache/resume-data-cache.test.ts": {
     "passed": [
       "resume-data-cache should have consistent data between static and dynamic renders with fetch cache",
       "resume-data-cache should have consistent data between static and dynamic renders with use cache"
@@ -6811,28 +6811,29 @@
     "passed": [
       "runtime prefetching can completely prefetch a page that is fully static",
       "runtime prefetching in a page can completely prefetch a page that uses cookies and no uncached IO",
-      "runtime prefetching in a page includes cookies, but not dynamic content",
       "runtime prefetching in a page includes dynamic params, but not dynamic content",
       "runtime prefetching in a page includes headers, but not dynamic content",
-      "runtime prefetching in a page includes root params, but not dynamic content",
       "runtime prefetching in a page includes search params, but not dynamic content",
       "runtime prefetching in a private cache can completely prefetch a page that uses cookies and no uncached IO",
       "runtime prefetching in a private cache includes cookies, but not dynamic content",
-      "runtime prefetching in a private cache includes dynamic params, but not dynamic content",
       "runtime prefetching in a private cache includes headers, but not dynamic content",
       "runtime prefetching in a private cache includes root params, but not dynamic content",
       "runtime prefetching in a private cache includes search params, but not dynamic content",
       "runtime prefetching passed to a public cache can completely prefetch a page that uses cookies and no uncached IO",
       "runtime prefetching passed to a public cache includes cookies, but not dynamic content",
-      "runtime prefetching passed to a public cache includes dynamic params, but not dynamic content",
       "runtime prefetching passed to a public cache includes headers, but not dynamic content",
       "runtime prefetching passed to a public cache includes root params, but not dynamic content",
       "runtime prefetching passed to a public cache includes search params, but not dynamic content",
-      "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a page",
       "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a private cache",
       "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side private caches should return new results on each request"
     ],
-    "failed": [],
+    "failed": [
+      "runtime prefetching in a page includes cookies, but not dynamic content",
+      "runtime prefetching in a page includes root params, but not dynamic content",
+      "runtime prefetching in a private cache includes dynamic params, but not dynamic content",
+      "runtime prefetching passed to a public cache includes dynamic params, but not dynamic content",
+      "runtime prefetching should not cache runtime prefetch responses in the browser cache or server-side different cookies should return different prefetch results - in a page"
+    ],
     "pending": [
       "runtime prefetching cache stale time handling includes private caches with cacheLife(\"seconds\")",
       "runtime prefetching cache stale time handling includes public caches with cacheLife(\"seconds\")",
@@ -9875,6 +9876,7 @@
       "opentelemetry root context pages should handle getServerSideProps on edge",
       "opentelemetry root context pages should handle getServerSideProps returning notFound",
       "opentelemetry root context pages should handle getStaticProps when fallback: 'blocking'",
+      "opentelemetry with custom server should set attributes correctly on handleRequest span",
       "opentelemetry with disabled fetch tracing root context app router with disabled fetch should handle RSC with disabled fetch"
     ],
     "failed": [],
@@ -11160,11 +11162,11 @@
     "runtimeError": false
   },
   "test/integration/app-document-remove-hmr/test/index.test.ts": {
-    "passed": [],
-    "failed": [
+    "passed": [
       "_app removal HMR should HMR when _app is removed",
       "_app removal HMR should HMR when _document is removed"
     ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -11396,16 +11398,6 @@
       "Chunking production mode should use all url friendly names"
     ],
     "failed": [],
-    "pending": [],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/clean-distdir/test/index.test.ts": {
-    "passed": [],
-    "failed": [
-      "Cleaning distDir production mode disabled write should not clean up .next before build start",
-      "Cleaning distDir production mode should clean up .next before build start"
-    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -20587,6 +20579,15 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/production/app-dir/metadata-base-warning/metadata-base-warning.test.ts": {
+    "passed": [
+      "metadata-base-warning should not warn metadataBase for static image when metadataBase is set"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/production/app-dir/metadata-img-too-large/opengraph-image/index.test.ts": {
     "passed": [
       "app-dir - metadata-img-too-large opengraph-image should throw when opengraph-image file size exceeds 8MB"
@@ -20913,6 +20914,16 @@
     "passed": [
       "ci-missing-typescript-deps should not throw an error if beta version of @types/react and @types/react-dom is installed",
       "ci-missing-typescript-deps should show missing TypeScript dependencies error in CI"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/production/clean-distdir/index.test.ts": {
+    "passed": [
+      "Cleaning distDir disabled write should clean up .next before build start",
+      "Cleaning distDir disabled write should not clean up .next before build start"
     ],
     "failed": [],
     "pending": [],
