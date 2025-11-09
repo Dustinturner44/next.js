@@ -523,8 +523,8 @@
     "runtimeError": false
   },
   "test/development/app-dir/build-error-logs/build-error-logs.test.ts": {
-    "passed": [],
-    "failed": ["build-error-logs should only log error a single time"],
+    "passed": ["build-error-logs should only log error a single time"],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -2012,6 +2012,16 @@
   "test/development/mcp-server/mcp-server-get-project-metadata.test.ts": {
     "passed": [
       "mcp-server get_project_metadata tool should return correct project metadata via get_project_metadata tool"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/development/mcp-server/mcp-server-get-routes.test.ts": {
+    "passed": [
+      "get_routes MCP tool should filter routes by routerType parameter",
+      "get_routes MCP tool should return all routes via MCP get_routes tool without visiting pages"
     ],
     "failed": [],
     "pending": [],
@@ -3826,7 +3836,6 @@
       "app dir - basic searchParams prop server component should have the correct search params on middleware rewrite",
       "app dir - basic searchParams prop server component should have the correct search params on rewrite",
       "app dir - basic server components Loading should render loading.js in browser for slow layout",
-      "app dir - basic server components Loading should render loading.js in browser for slow layout and page",
       "app dir - basic server components Loading should render loading.js in browser for slow page",
       "app dir - basic server components Loading should render loading.js in initial html for slow layout",
       "app dir - basic server components Loading should render loading.js in initial html for slow layout and page",
@@ -3884,7 +3893,8 @@
       "app dir - basic template component should render the template that holds state in a client component and reset on navigation"
     ],
     "failed": [
-      "app dir - basic <Link /> should navigate to pages dynamic route from pages page if it overlaps with an app page"
+      "app dir - basic <Link /> should navigate to pages dynamic route from pages page if it overlaps with an app page",
+      "app dir - basic server components Loading should render loading.js in browser for slow layout and page"
     ],
     "pending": [
       "app dir - basic HMR should HMR correctly when changing the component type",
@@ -8035,7 +8045,7 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/resume-data-cache/resume-data-cache/resume-data-cache.test.ts": {
+  "test/e2e/app-dir/resume-data-cache/resume-data-cache.test.ts": {
     "passed": ["resume-data-cache is skipped"],
     "failed": [],
     "pending": [],
@@ -11867,6 +11877,7 @@
       "opentelemetry root context pages should handle getServerSideProps on edge",
       "opentelemetry root context pages should handle getServerSideProps returning notFound",
       "opentelemetry root context pages should handle getStaticProps when fallback: 'blocking'",
+      "opentelemetry with custom server should set attributes correctly on handleRequest span",
       "opentelemetry with disabled fetch tracing root context app router with disabled fetch should handle RSC with disabled fetch"
     ],
     "failed": [],
@@ -13358,16 +13369,6 @@
       "Chunking production mode should not include more than one instance of react-dom",
       "Chunking production mode should not preload the build manifest",
       "Chunking production mode should use all url friendly names"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/clean-distdir/test/index.test.ts": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Cleaning distDir production mode disabled write should not clean up .next before build start",
-      "Cleaning distDir production mode should clean up .next before build start"
     ],
     "flakey": [],
     "runtimeError": false
