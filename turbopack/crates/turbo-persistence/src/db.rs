@@ -3,7 +3,7 @@ use std::{
     collections::HashSet,
     fs::{self, File, OpenOptions, ReadDir},
     io::{BufWriter, Write},
-    mem::swap,
+    mem::{swap, take},
     ops::RangeInclusive,
     path::{Path, PathBuf},
     sync::atomic::{AtomicBool, AtomicU32, Ordering},
@@ -1005,8 +1005,6 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                     Ok((seq, file, meta))
                                 }
 
-                                let mut new_sst_files = Vec::new();
-
                                 // Iterate all SST files
                                 let iters = indicies
                                     .iter()
@@ -1037,6 +1035,8 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                     total_value_size: usize,
                                     last_entries: Vec<LookupEntry<'l>>,
                                     last_entries_total_key_size: usize,
+                                    new_sst_files:
+                                        Vec<(u32, File, StaticSortedFileBuilderMeta<'static>)>,
                                 }
                                 let mut used_collector = Collector::default();
                                 let mut unused_collector = Collector::default();
@@ -1086,7 +1086,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
 
                                                     let mut flags = MetaEntryFlags::default();
                                                     flags.set_cold(!is_used);
-                                                    new_sst_files.push(create_sst_file(
+                                                    collector.new_sst_files.push(create_sst_file(
                                                         &self.parallel_scheduler,
                                                         &collector.entries,
                                                         selected_total_key_size,
@@ -1134,7 +1134,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             sequence_number.fetch_add(1, Ordering::SeqCst) + 1;
 
                                         keys_written += collector.entries.len() as u64;
-                                        new_sst_files.push(create_sst_file(
+                                        collector.new_sst_files.push(create_sst_file(
                                             &self.parallel_scheduler,
                                             &collector.entries,
                                             collector.total_key_size,
@@ -1162,7 +1162,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                             sequence_number.fetch_add(1, Ordering::SeqCst) + 1;
 
                                         keys_written += part1.len() as u64;
-                                        new_sst_files.push(create_sst_file(
+                                        collector.new_sst_files.push(create_sst_file(
                                             &self.parallel_scheduler,
                                             part1,
                                             // We don't know the exact sizes so we estimate them
@@ -1173,7 +1173,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                         )?);
 
                                         keys_written += part2.len() as u64;
-                                        new_sst_files.push(create_sst_file(
+                                        collector.new_sst_files.push(create_sst_file(
                                             &self.parallel_scheduler,
                                             part2,
                                             collector.last_entries_total_key_size / 2,
@@ -1183,6 +1183,8 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                                         )?);
                                     }
                                 }
+                                let mut new_sst_files = take(&mut unused_collector.new_sst_files);
+                                new_sst_files.append(&mut used_collector.new_sst_files);
                                 Ok(PartialMergeResult::Merged {
                                     new_sst_files,
                                     blob_seq_numbers_to_delete,
