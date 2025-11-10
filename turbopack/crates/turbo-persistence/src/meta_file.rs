@@ -53,11 +53,11 @@ impl MetaEntryFlags {
 impl Display for MetaEntryFlags {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.fresh() {
-            write!(f, "fresh")
+            f.pad_integral(true, "", "fresh")
         } else if self.cold() {
-            write!(f, "cold")
+            f.pad_integral(true, "", "cold")
         } else {
-            write!(f, "warm")
+            f.pad_integral(true, "", "warm")
         }
     }
 }
