@@ -523,8 +523,8 @@
     "runtimeError": false
   },
   "test/development/app-dir/build-error-logs/build-error-logs.test.ts": {
-    "passed": [],
-    "failed": ["build-error-logs should only log error a single time"],
+    "passed": ["build-error-logs should only log error a single time"],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -2012,6 +2012,16 @@
   "test/development/mcp-server/mcp-server-get-project-metadata.test.ts": {
     "passed": [
       "mcp-server get_project_metadata tool should return correct project metadata via get_project_metadata tool"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/development/mcp-server/mcp-server-get-routes.test.ts": {
+    "passed": [
+      "get_routes MCP tool should filter routes by routerType parameter",
+      "get_routes MCP tool should return all routes via MCP get_routes tool without visiting pages"
     ],
     "failed": [],
     "pending": [],
@@ -3825,7 +3835,6 @@
       "app dir - basic searchParams prop server component should have the correct search params",
       "app dir - basic searchParams prop server component should have the correct search params on middleware rewrite",
       "app dir - basic searchParams prop server component should have the correct search params on rewrite",
-      "app dir - basic server components Loading should render loading.js in browser for slow layout",
       "app dir - basic server components Loading should render loading.js in browser for slow layout and page",
       "app dir - basic server components Loading should render loading.js in browser for slow page",
       "app dir - basic server components Loading should render loading.js in initial html for slow layout",
@@ -3884,7 +3893,8 @@
       "app dir - basic template component should render the template that holds state in a client component and reset on navigation"
     ],
     "failed": [
-      "app dir - basic <Link /> should navigate to pages dynamic route from pages page if it overlaps with an app page"
+      "app dir - basic <Link /> should navigate to pages dynamic route from pages page if it overlaps with an app page",
+      "app dir - basic server components Loading should render loading.js in browser for slow layout"
     ],
     "pending": [
       "app dir - basic HMR should HMR correctly when changing the component type",
@@ -8035,7 +8045,7 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/resume-data-cache/resume-data-cache/resume-data-cache.test.ts": {
+  "test/e2e/app-dir/resume-data-cache/resume-data-cache.test.ts": {
     "passed": ["resume-data-cache is skipped"],
     "failed": [],
     "pending": [],
@@ -11867,6 +11877,7 @@
       "opentelemetry root context pages should handle getServerSideProps on edge",
       "opentelemetry root context pages should handle getServerSideProps returning notFound",
       "opentelemetry root context pages should handle getStaticProps when fallback: 'blocking'",
+      "opentelemetry with custom server should set attributes correctly on handleRequest span",
       "opentelemetry with disabled fetch tracing root context app router with disabled fetch should handle RSC with disabled fetch"
     ],
     "failed": [],
@@ -12822,12 +12833,11 @@
     "runtimeError": false
   },
   "test/integration/api-body-parser/test/index.test.ts": {
-    "passed": [
+    "passed": ["should parse JSON body"],
+    "failed": [
       "should not throw if request body is already parsed in custom middleware",
-      "should not throw if request's content-type is invalid",
-      "should parse JSON body"
+      "should not throw if request's content-type is invalid"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -13362,16 +13372,6 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/integration/clean-distdir/test/index.test.ts": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Cleaning distDir production mode disabled write should not clean up .next before build start",
-      "Cleaning distDir production mode should clean up .next before build start"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
   "test/integration/cli/test/index.test.ts": {
     "passed": [
       "CLI Usage dev --experimental-https",
@@ -13749,12 +13749,12 @@
     "runtimeError": false
   },
   "test/integration/create-next-app/templates/app-api.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "create-next-app --api (Headless App) should create JavaScript project with --js flag",
       "create-next-app --api (Headless App) should create TypeScript project with --ts flag",
       "create-next-app --api (Headless App) should create project inside \"src\" directory with --src-dir flag"
     ],
-    "failed": [],
     "pending": [
       "create-next-app --api (Headless App) should enable webpack dev with --webpack flag"
     ],
@@ -16962,12 +16962,13 @@
   },
   "test/integration/getinitialprops/test/index.test.ts": {
     "passed": [
-      "getInitialProps development mode should have correct router.asPath for direct visit dynamic page",
-      "getInitialProps development mode should have correct router.asPath for direct visit dynamic page rewrite direct",
       "getInitialProps development mode should have gip in __NEXT_DATA__",
       "getInitialProps development mode should not have gip in __NEXT_DATA__ for non-GIP page"
     ],
-    "failed": [],
+    "failed": [
+      "getInitialProps development mode should have correct router.asPath for direct visit dynamic page",
+      "getInitialProps development mode should have correct router.asPath for direct visit dynamic page rewrite direct"
+    ],
     "pending": [
       "getInitialProps production mode should have correct router.asPath for direct visit dynamic page",
       "getInitialProps production mode should have correct router.asPath for direct visit dynamic page rewrite direct",
@@ -17437,13 +17438,13 @@
     "runtimeError": false
   },
   "test/integration/i18n-support-custom-error/test/index.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "Custom routes i18n custom error development mode handle custom http status maintaining locale props in custom _error page",
       "Custom routes i18n custom error development mode handle default http status maintaining locale props in custom _error page",
       "Custom routes i18n custom error development mode should localized [slug] routes render correctly",
       "Custom routes i18n custom error development mode should work also on client side routing"
     ],
-    "failed": [],
     "pending": [
       "Custom routes i18n custom error production mode handle custom http status maintaining locale props in custom _error page",
       "Custom routes i18n custom error production mode handle default http status maintaining locale props in custom _error page",
@@ -19646,11 +19647,11 @@
     "runtimeError": false
   },
   "test/integration/next-dynamic-css-asset-prefix/test/index.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "next/dynamic with assetPrefix development mode should load a App Router page correctly",
       "next/dynamic with assetPrefix development mode should load a Pages Router page correctly"
     ],
-    "failed": [],
     "pending": [
       "next/dynamic with assetPrefix production mode should load a App Router page correctly",
       "next/dynamic with assetPrefix production mode should load a Pages Router page correctly"
@@ -19991,11 +19992,12 @@
   "test/integration/next-image-legacy/typescript/test/index.test.ts": {
     "passed": [
       "TypeScript Image Component development mode 2 should remove global image types when disabled (dev)",
-      "TypeScript Image Component development mode should have image types when enabled",
+      "TypeScript Image Component development mode should have image types when enabled"
+    ],
+    "failed": [
       "TypeScript Image Component development mode should print error when invalid Image usage",
       "TypeScript Image Component development mode should render the valid Image usage and not print error"
     ],
-    "failed": [],
     "pending": [
       "TypeScript Image Component production mode should fail to build invalid usage of the Image component",
       "TypeScript Image Component production mode should remove global image types when disabled"
@@ -20695,13 +20697,14 @@
   "test/integration/non-standard-node-env-warning/test/index.test.ts": {
     "passed": [
       "Non-Standard NODE_ENV should not show the warning with NODE_ENV set to valid value",
-      "Non-Standard NODE_ENV should not show the warning with NODE_ENV set to valid value (custom server)",
       "Non-Standard NODE_ENV should not show the warning with no NODE_ENV set",
       "Non-Standard NODE_ENV should show the warning with NODE_ENV set to invalid value",
-      "Non-Standard NODE_ENV should show the warning with NODE_ENV set to invalid value (custom server)",
       "Non-Standard NODE_ENV should show the warning with NODE_ENV set to production with next dev"
     ],
-    "failed": [],
+    "failed": [
+      "Non-Standard NODE_ENV should not show the warning with NODE_ENV set to valid value (custom server)",
+      "Non-Standard NODE_ENV should show the warning with NODE_ENV set to invalid value (custom server)"
+    ],
     "pending": [
       "Non-Standard NODE_ENV production mode should show the warning with NODE_ENV set to development with next build",
       "Non-Standard NODE_ENV production mode should show the warning with NODE_ENV set to development with next start",
@@ -21160,10 +21163,10 @@
     "runtimeError": false
   },
   "test/integration/relay-graphql-swc-single-project/test/index.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "Relay Compiler Transform - Single Project Config development mode should resolve index page correctly"
     ],
-    "failed": [],
     "pending": [
       "Relay Compiler Transform - Single Project Config production mode should resolve index page correctly"
     ],
@@ -21942,8 +21945,8 @@
     "runtimeError": false
   },
   "test/integration/typescript-baseurl/test/index.test.ts": {
-    "passed": ["TypeScript Features default behavior should render the page"],
-    "failed": [],
+    "passed": [],
+    "failed": ["TypeScript Features default behavior should render the page"],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -22125,10 +22128,10 @@
     "runtimeError": false
   },
   "test/integration/worker-webpack5/test/index.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "Web Workers with webpack 5 development mode should pass on both client and worker"
     ],
-    "failed": [],
     "pending": [
       "Web Workers with webpack 5 production mode should pass on both client and worker"
     ],
