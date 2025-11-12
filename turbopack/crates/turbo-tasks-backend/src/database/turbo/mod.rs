@@ -40,6 +40,7 @@ pub struct TurboKeyValueDatabase {
     compact_join_handle: Mutex<Option<JoinHandle<Result<()>>>>,
     is_ci: bool,
     is_short_session: bool,
+    is_fresh: bool,
 }
 
 impl TurboKeyValueDatabase {
@@ -50,6 +51,7 @@ impl TurboKeyValueDatabase {
             compact_join_handle: Mutex::new(None),
             is_ci,
             is_short_session,
+            is_fresh: db.is_empty(),
         })
     }
 }
@@ -111,20 +113,23 @@ impl KeyValueDatabase for TurboKeyValueDatabase {
             join_handle.join()?;
         }
         // Compact the database on shutdown
-        if self.is_ci {
-            // Fully compact in CI to reduce cache size
-            do_compact(
-                &self.db,
-                "Finished filesystem cache database compaction",
-                usize::MAX,
-            )?;
-        } else {
-            // Compact with a reasonable limit in non-CI environments
-            do_compact(
-                &self.db,
-                "Finished filesystem cache database compaction",
-                available_parallelism().map_or(4, |c| max(4, c.get())),
-            )?;
+        // (Avoid compacting a fresh database since we don't have any usage info yet)
+        if !self.is_fresh {
+            if self.is_ci {
+                // Fully compact in CI to reduce cache size
+                do_compact(
+                    &self.db,
+                    "Finished filesystem cache database compaction",
+                    usize::MAX,
+                )?;
+            } else {
+                // Compact with a reasonable limit in non-CI environments
+                do_compact(
+                    &self.db,
+                    "Finished filesystem cache database compaction",
+                    available_parallelism().map_or(4, |c| max(4, c.get())),
+                )?;
+            }
         }
         // Shutdown the database
         self.db.shutdown()
