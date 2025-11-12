@@ -833,6 +833,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
             seq: u32,
             range: StaticSortedFileRange,
             size: u64,
+            flags: MetaEntryFlags,
         }
 
         impl Compactable for SstWithRange {
@@ -842,6 +843,10 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
 
             fn size(&self) -> u64 {
                 self.size
+            }
+
+            fn category(&self) -> u8 {
+                if self.flags.cold() { 1 } else { 0 }
             }
         }
 
@@ -858,6 +863,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
                         seq: entry.sequence_number(),
                         range: entry.range(),
                         size: entry.size(),
+                        flags: entry.flags(),
                     })
             })
             .collect::<Vec<_>>();

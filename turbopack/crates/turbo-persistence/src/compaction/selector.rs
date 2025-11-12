@@ -1,5 +1,6 @@
 use std::ops::RangeInclusive;
 
+use rustc_hash::FxHashMap;
 use smallvec::{SmallVec, smallvec};
 
 use crate::compaction::interval_map::IntervalMap;
@@ -12,6 +13,12 @@ pub trait Compactable {
 
     /// The size of the compactable database segment in bytes.
     fn size(&self) -> u64;
+
+    /// The category of the compactable. Overlap between different categories is not considered for
+    /// compaction.
+    fn category(&self) -> u8 {
+        0
+    }
 }
 
 fn is_overlapping(a: &RangeInclusive<u64>, b: &RangeInclusive<u64>) -> bool {
@@ -157,7 +164,7 @@ impl DuplicationInfo {
     /// Get a value in the range `0..=u64` that represents the estimated amount of duplication
     /// across the given range. The units are arbitrary, but linear.
     fn duplication(&self, range: &RangeInclusive<u64>) -> u64 {
-        if self.total_size == 0 {
+        if self.max_size == self.total_size {
             return 0;
         }
         // the maximum numerator value is `u64::MAX + 1`
@@ -193,11 +200,14 @@ impl DuplicationInfo {
     }
 }
 
-fn total_duplication_size(duplication: &IntervalMap<Option<DuplicationInfo>>) -> u64 {
+fn total_duplication_size(duplication: &IntervalMap<FxHashMap<u8, DuplicationInfo>>) -> u64 {
     duplication
         .iter()
-        .flat_map(|(range, info)| Some((range, info.as_ref()?)))
-        .map(|(range, info)| info.duplication(&range))
+        .map(|(range, info)| {
+            info.values()
+                .map(|info| info.duplication(&range))
+                .sum::<u64>()
+        })
         .sum()
 }
 
@@ -241,16 +251,18 @@ pub fn get_merge_segments<T: Compactable>(
         }
         let start_compactable_range = start_compactable.range();
         let start_compactable_size = start_compactable.size();
+        let start_compactable_category = start_compactable.category();
         let mut current_range = start_compactable_range.clone();
 
         // We might need to restart the search if we need to extend the range.
         'search: loop {
             let mut current_set = smallvec![start_index];
             let mut current_size = start_compactable_size;
-            let mut duplication = IntervalMap::<Option<DuplicationInfo>>::new();
+            let mut duplication = IntervalMap::<FxHashMap<u8, DuplicationInfo>>::new();
             duplication.update(start_compactable_range.clone(), |dup_info| {
                 dup_info
-                    .get_or_insert_default()
+                    .entry(start_compactable_category)
+                    .or_default()
                     .add(start_compactable_size, &start_compactable_range);
             });
             let mut current_skip = 0;
@@ -340,8 +352,9 @@ pub fn get_merge_segments<T: Compactable>(
                 // set.
                 current_set.push(next_index);
                 current_size += size;
+                let category = compactable.category();
                 duplication.update(range.clone(), |dup_info| {
-                    dup_info.get_or_insert_default().add(size, &range);
+                    dup_info.entry(category).or_default().add(size, &range);
                 });
             }
         }
