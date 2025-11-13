@@ -91,8 +91,6 @@ This error screen typically appears due to rendering errors such as:
 
 - **Chunk loading failures**: Network interruptions or cancelled requests while loading JavaScript chunks during navigation. This can happen if you press ESC during page navigation, lose network connectivity, or if there's a deployment mismatch between HTML and JS assets.
 
-  > **Why this happens**: By default, chunk loading errors during navigation trigger React error boundaries, showing this screen. You can enable `experimental.appNavFailHandling` in `next.config.js` to make Next.js perform a hard navigation (page reload) instead when chunk loading fails
-
 ## What This Screen Does NOT Handle
 
 This error screen is specifically for rendering errors. The following error types are handled differently:
