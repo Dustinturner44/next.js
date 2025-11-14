@@ -2815,7 +2815,7 @@ export default async function build(
 
       const features: EventBuildFeatureUsage[] = [
         {
-          featureName: 'experimental/cacheComponents',
+          featureName: 'cacheComponents',
           invocationCount: config.cacheComponents ? 1 : 0,
         },
         {
