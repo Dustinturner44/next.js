@@ -863,7 +863,7 @@ export async function buildAppStaticPaths({
     )
   }
 
-  ComponentMod.patchFetch()
+  // ComponentMod.patchFetch()
 
   const incrementalCache = await createIncrementalCache({
     dir,

@@ -19,7 +19,7 @@ import {
 } from '../../async-storage/work-store'
 import { type HTTP_METHOD, HTTP_METHODS, isHTTPMethod } from '../../web/http'
 import { getImplicitTags, type ImplicitTags } from '../../lib/implicit-tags'
-import { patchFetch } from '../../lib/patch-fetch'
+// import { patchFetch } from '../../lib/patch-fetch'
 import { getTracer } from '../../lib/trace/tracer'
 import { AppRouteRouteHandlersSpan } from '../../lib/trace/constants'
 import * as Log from '../../../build/output/log'
@@ -313,10 +313,10 @@ export class AppRouteRouteModule extends RouteModule<
     const cacheComponentsEnabled = !!context.renderOpts.cacheComponents
 
     // Patch the global fetch.
-    patchFetch({
-      workAsyncStorage: this.workAsyncStorage,
-      workUnitAsyncStorage: this.workUnitAsyncStorage,
-    })
+    // patchFetch({
+    //   workAsyncStorage: this.workAsyncStorage,
+    //   workUnitAsyncStorage: this.workUnitAsyncStorage,
+    // })
 
     const handlerContext: AppRouteHandlerFnContext = {
       params: context.params

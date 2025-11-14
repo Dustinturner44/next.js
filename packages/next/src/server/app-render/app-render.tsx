@@ -1901,7 +1901,7 @@ async function renderToHTMLOrFlightImpl(
     serverModuleMap,
   })
 
-  ComponentMod.patchFetch()
+  // ComponentMod.patchFetch()
 
   // Pull out the hooks/references from the component.
   const {
