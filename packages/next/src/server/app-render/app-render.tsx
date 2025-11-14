@@ -649,7 +649,26 @@ async function generateDynamicFlightRenderResult(
     }
   )
 
-  return new FlightRenderResult(flightReadableStream, {
+  const [stream1, stream2] = flightReadableStream.tee()
+
+  const reader = stream2.getReader()
+  const decoder = new TextDecoder()
+  ;(async () => {
+    try {
+      while (true) {
+        const result = await reader.read()
+        if (result.done) {
+          break
+        }
+        console.log(
+          `-- RSC chunk -- ${result.value.byteLength} bytes --\n`,
+          decoder.decode(result.value, { stream: true })
+        )
+      }
+    } catch {}
+  })()
+
+  return new FlightRenderResult(stream1, {
     fetchMetrics: workStore.fetchMetrics,
   })
 }
@@ -2186,6 +2205,7 @@ async function renderToHTMLOrFlightImpl(
       })
 
       if (actionRequestResult) {
+        console.log('actionRequestResult:', actionRequestResult)
         if (actionRequestResult.type === 'not-found') {
           const notFoundLoaderTree = createNotFoundLoaderTree(loaderTree)
           res.statusCode = 404
