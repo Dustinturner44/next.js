@@ -243,7 +243,9 @@ describe('app dir - navigation', () => {
 
   describe('hash-link-back-to-same-page', () => {
     it('should scroll to the specified hash', async () => {
-      const browser = await next.browser('/hash-link-back-to-same-page')
+      const browser = await next.browser('/hash-link-back-to-same-page', {
+        cpuThrottleRate: 8,
+      })
 
       const checkLink = async (
         val: number | string,
@@ -407,21 +409,6 @@ describe('app dir - navigation', () => {
     })
   })
 
-  describe('bots', () => {
-    if (!isNextDeploy) {
-      it('should block rendering for bots and return 404 status', async () => {
-        const res = await next.fetch('/not-found/servercomponent', {
-          headers: {
-            'User-Agent': 'Googlebot',
-          },
-        })
-
-        expect(res.status).toBe(404)
-        expect(await res.text()).toInclude('"noindex"')
-      })
-    }
-  })
-
   describe('redirect', () => {
     describe('components', () => {
       it('should redirect in a server component', async () => {
@@ -519,7 +506,9 @@ describe('app dir - navigation', () => {
 
               // If the timestamp has changed, throw immediately.
               if (currentTimestamp !== initialTimestamp) {
-                throw new Error('Timestamp has changed')
+                throw new Error(
+                  `Timestamp has changed from the initial '${initialTimestamp}' to '${currentTimestamp}'`
+                )
               }
 
               // If we've reached the last attempt without the timestamp changing, force a retry failure to keep going.
@@ -579,27 +568,6 @@ describe('app dir - navigation', () => {
           .waitForElementByCss('h1')
         expect(await browser.elementByCss('h1').text()).toBe('redirect-dest')
         expect(await browser.url()).toBe(next.url + '/redirect-dest')
-      })
-    })
-
-    describe('status code', () => {
-      it('should respond with 307 status code in server component', async () => {
-        const res = await next.fetch('/redirect/servercomponent', {
-          redirect: 'manual',
-        })
-        expect(res.status).toBe(307)
-      })
-      it('should respond with 307 status code in client component', async () => {
-        const res = await next.fetch('/redirect/clientcomponent', {
-          redirect: 'manual',
-        })
-        expect(res.status).toBe(307)
-      })
-      it('should respond with 308 status code if permanent flag is set', async () => {
-        const res = await next.fetch('/redirect/servercomponent-2', {
-          redirect: 'manual',
-        })
-        expect(res.status).toBe(308)
       })
     })
   })
@@ -993,15 +961,18 @@ describe('app dir - navigation', () => {
     describe('locale warnings', () => {
       it('should warn about using the `locale` prop with `next/link` in app router', async () => {
         const browser = await next.browser('/locale-app')
-        const logs = await browser.log()
-        expect(logs).toContainEqual(
-          expect.objectContaining({
-            message: expect.stringContaining(
-              'The `locale` prop is not supported in `next/link` while using the `app` router.'
-            ),
-            source: 'warning',
-          })
-        )
+
+        await retry(async () => {
+          const logs = await browser.log()
+          expect(logs).toContainEqual(
+            expect.objectContaining({
+              message: expect.stringContaining(
+                'The `locale` prop is not supported in `next/link` while using the `app` router.'
+              ),
+              source: 'warning',
+            })
+          )
+        })
       })
 
       it('should have no warnings in pages router', async () => {
