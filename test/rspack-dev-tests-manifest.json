@@ -404,8 +404,6 @@
       "ReactRefreshRequire can continue hot updates after module-level errors with module.exports",
       "ReactRefreshRequire can replace a module before it is loaded",
       "ReactRefreshRequire does not accumulate stale exports over time",
-      "ReactRefreshRequire propagates a hot update to closest accepted module",
-      "ReactRefreshRequire propagates a module that stops accepting in next version",
       "ReactRefreshRequire propagates hot update to all inverse dependencies",
       "ReactRefreshRequire provides fresh value for ES6 default import in parents",
       "ReactRefreshRequire provides fresh value for ES6 named import in parents",
@@ -415,7 +413,10 @@
       "ReactRefreshRequire runs dependencies before dependents",
       "ReactRefreshRequire stops update propagation after module-level errors"
     ],
-    "failed": [],
+    "failed": [
+      "ReactRefreshRequire propagates a hot update to closest accepted module",
+      "ReactRefreshRequire propagates a module that stops accepting in next version"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -424,12 +425,12 @@
     "passed": [
       "pages/ error recovery logbox: can recover from a component error",
       "pages/ error recovery logbox: can recover from a event handler error",
-      "pages/ error recovery render error not shown right after syntax error",
-      "pages/ error recovery stuck error",
       "pages/ error recovery syntax > runtime error"
     ],
     "failed": [
-      "pages/ error recovery logbox: can recover from a syntax error without losing state"
+      "pages/ error recovery logbox: can recover from a syntax error without losing state",
+      "pages/ error recovery render error not shown right after syntax error",
+      "pages/ error recovery stuck error"
     ],
     "pending": [],
     "flakey": [],
@@ -523,8 +524,8 @@
     "runtimeError": false
   },
   "test/development/app-dir/build-error-logs/build-error-logs.test.ts": {
-    "passed": [],
-    "failed": ["build-error-logs should only log error a single time"],
+    "passed": ["build-error-logs should only log error a single time"],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -1035,12 +1036,16 @@
       "server-components-hmr-cache edge runtime in after() should use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache edge runtime should not use cached fetch calls for intentional refresh requests",
       "server-components-hmr-cache edge runtime should use cached fetch calls for fast refresh requests",
+      "server-components-hmr-cache edge runtime with cacheMaxMemorySize set to 0 should not warn about \"Single item size exceeds maxSize\"",
+      "server-components-hmr-cache edge runtime with cacheMaxMemorySize set to 0 should still use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache edge runtime with experimental.serverComponentsHmrCache disabled in after() should not use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache edge runtime with experimental.serverComponentsHmrCache disabled should not use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache node runtime in after() should not use cached fetch calls for intentional refresh requests",
       "server-components-hmr-cache node runtime in after() should use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache node runtime should not use cached fetch calls for intentional refresh requests",
       "server-components-hmr-cache node runtime should use cached fetch calls for fast refresh requests",
+      "server-components-hmr-cache node runtime with cacheMaxMemorySize set to 0 should not warn about \"Single item size exceeds maxSize\"",
+      "server-components-hmr-cache node runtime with cacheMaxMemorySize set to 0 should still use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache node runtime with experimental.serverComponentsHmrCache disabled in after() should not use cached fetch calls for fast refresh requests",
       "server-components-hmr-cache node runtime with experimental.serverComponentsHmrCache disabled should not use cached fetch calls for fast refresh requests"
     ],
@@ -1135,6 +1140,7 @@
   },
   "test/development/app-dir/use-cache-errors/use-cache-errors.test.ts": {
     "passed": [
+      "use-cache-errors should not leak generated internal cache function names in call stacks",
       "use-cache-errors should not show a false-positive compiler error about a misplaced \"use cache\" directive"
     ],
     "failed": [
@@ -1167,13 +1173,14 @@
   },
   "test/development/app-hmr/hmr.test.ts": {
     "passed": [
-      "app-dir-hmr filesystem changes can navigate cleanly to a page that requires a change in the Webpack runtime",
       "app-dir-hmr filesystem changes should have no unexpected action error for hmr",
       "app-dir-hmr filesystem changes should not break when renaming a folder",
       "app-dir-hmr filesystem changes should not continously poll when hitting a not found page",
       "app-dir-hmr filesystem changes should update server components after navigating to a page with a different runtime"
     ],
-    "failed": [],
+    "failed": [
+      "app-dir-hmr filesystem changes can navigate cleanly to a page that requires a change in the Webpack runtime"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -2018,6 +2025,16 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/development/mcp-server/mcp-server-get-routes.test.ts": {
+    "passed": [
+      "get_routes MCP tool should filter routes by routerType parameter",
+      "get_routes MCP tool should return all routes via MCP get_routes tool without visiting pages"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/development/mcp-server/mcp-server-get-server-action-by-id.test.ts": {
     "passed": [
       "mcp-server get_server_action_by_id tool should return action details via get_server_action_by_id tool",
@@ -2585,6 +2602,15 @@
   "test/e2e/app-dir/actions-revalidate-remount/actions-revalidate-remount.test.ts": {
     "passed": [
       "actions-revalidate-remount should not remount the page + loading component when revalidating"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/actions-streaming/actions-streaming.test.ts": {
+    "passed": [
+      "actions-streaming actions returning a ReadableStream should properly stream the response without buffering"
     ],
     "failed": [],
     "pending": [],
@@ -4568,7 +4594,6 @@
   },
   "test/e2e/app-dir/css-order/css-order.test.ts": {
     "passed": [
-      "css-order loose should load correct styles navigating first -> first-client",
       "css-order loose should load correct styles navigating first -> second",
       "css-order loose should load correct styles navigating first -> second-client",
       "css-order loose should load correct styles navigating first -> third",
@@ -4669,7 +4694,9 @@
       "css-order strict should load correct styles on third",
       "css-order strict should load correct styles on vendor"
     ],
-    "failed": [],
+    "failed": [
+      "css-order loose should load correct styles navigating first -> first-client"
+    ],
     "pending": [
       "css-order loose should load correct styles navigating big-interleaved-a -> big-interleaved-b",
       "css-order loose should load correct styles navigating big-interleaved-b -> big-interleaved-a",
@@ -8035,7 +8062,7 @@
     "flakey": [],
     "runtimeError": false
   },
-  "test/e2e/app-dir/resume-data-cache/resume-data-cache/resume-data-cache.test.ts": {
+  "test/e2e/app-dir/resume-data-cache/resume-data-cache.test.ts": {
     "passed": ["resume-data-cache is skipped"],
     "failed": [],
     "pending": [],
@@ -8856,10 +8883,10 @@
     "runtimeError": false
   },
   "test/e2e/app-dir/segment-cache/no-prefetch/no-prefetch.test.ts": {
-    "passed": [
+    "passed": [],
+    "failed": [
       "navigating without a prefetch can show a loading boundary from the dynamic response"
     ],
-    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -9172,6 +9199,17 @@
       "app-dir trailingSlash handling should redirect route when requesting it directly",
       "app-dir trailingSlash handling should redirect route when requesting it directly by browser",
       "app-dir trailingSlash handling should render link with trailing slash"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/e2e/app-dir/transition-indicator/transition-indicator.test.ts": {
+    "passed": [
+      "transition-indicator displays during any Transition that does not commit a pending state",
+      "transition-indicator displays while loading content without fallback",
+      "transition-indicator does not display while loading content with fallback"
     ],
     "failed": [],
     "pending": [],
@@ -11867,6 +11905,7 @@
       "opentelemetry root context pages should handle getServerSideProps on edge",
       "opentelemetry root context pages should handle getServerSideProps returning notFound",
       "opentelemetry root context pages should handle getStaticProps when fallback: 'blocking'",
+      "opentelemetry with custom server should set attributes correctly on handleRequest span",
       "opentelemetry with disabled fetch tracing root context app router with disabled fetch should handle RSC with disabled fetch"
     ],
     "failed": [],
@@ -13358,16 +13397,6 @@
       "Chunking production mode should not include more than one instance of react-dom",
       "Chunking production mode should not preload the build manifest",
       "Chunking production mode should use all url friendly names"
-    ],
-    "flakey": [],
-    "runtimeError": false
-  },
-  "test/integration/clean-distdir/test/index.test.ts": {
-    "passed": [],
-    "failed": [],
-    "pending": [
-      "Cleaning distDir production mode disabled write should not clean up .next before build start",
-      "Cleaning distDir production mode should clean up .next before build start"
     ],
     "flakey": [],
     "runtimeError": false
