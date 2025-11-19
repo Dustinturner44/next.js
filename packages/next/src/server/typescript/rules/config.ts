@@ -307,7 +307,7 @@ const config = {
       ...(prior.documentation ?? []),
     ]
 
-    let overridden: tsModule.QuickInfo = prior
+    let overridden: tsModule.QuickInfo = { ...prior }
 
     // TODO: Do we have to walk the AST, or can we populate the values we need
     // from the prior?
