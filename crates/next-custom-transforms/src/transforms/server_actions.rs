@@ -1776,6 +1776,11 @@ impl<C: Comments> VisitMut for ServerActions<C> {
             }
         }
 
+        // If there were any errors, skip further processing.
+        if HANDLER.with(|handler| handler.has_errors()) {
+            return;
+        }
+
         if in_action_file || in_cache_file && !self.config.is_react_server_layer {
             self.reference_ids_by_export_name.extend(
                 self.server_reference_exports
