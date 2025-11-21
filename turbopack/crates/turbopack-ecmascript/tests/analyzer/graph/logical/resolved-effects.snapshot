@@ -14,7 +14,7 @@
 
 0 -> 8 free var = FreeVar(global)
 
-0 -> 10 conditional = (side-effectful({}) | ???*0* | undefined | ???*2*)
+0 -> 10 conditional = (effectful({}) | ???*0* | undefined | ???*2*)
 - *0* ???*1*["__esModule"]
   ⚠️  unknown object
 - *1* t

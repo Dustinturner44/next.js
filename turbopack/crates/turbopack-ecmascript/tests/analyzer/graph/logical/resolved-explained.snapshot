@@ -18,7 +18,7 @@ d = false
 
 e = true
 
-n = ((side-effectful({}) | ???*0* | undefined | ???*2*) ? (???*3* | {}) : {"default": (???*4* | {})})
+n = ((effectful({}) | ???*0* | undefined | ???*2*) ? (???*3* | {}) : {"default": (???*4* | {})})
 - *0* ???*1*["__esModule"]
   ⚠️  unknown object
 - *1* t

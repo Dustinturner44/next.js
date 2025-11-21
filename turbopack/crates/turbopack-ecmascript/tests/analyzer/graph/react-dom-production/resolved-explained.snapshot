@@ -8,7 +8,7 @@ $c = (...) => undefined
 
 $d = [9, 13, 27, 32]
 
-$e = (undefined | ???*0* | "animationend" | side-effectful((???*1* | ???*3*)))
+$e = (undefined | ???*0* | "animationend" | effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
 - *1* {}[???*2*]
@@ -230,7 +230,7 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 5213* = (...) => undefined
 
-*anonymous function 55504* = (...) => (side-effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1))
+*anonymous function 55504* = (...) => (effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1))
 
 *anonymous function 55574* = (...) => undefined
 
@@ -266,9 +266,9 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 71500* = (...) => [d["memoizedState"], a]
 
-*anonymous function 71750* = (...) => side-effectful(a)
+*anonymous function 71750* = (...) => effectful(a)
 
-*anonymous function 71860* = (...) => side-effectful(a)
+*anonymous function 71860* = (...) => effectful(a)
 
 *anonymous function 71915* = (...) => [b, a]
 
@@ -276,7 +276,7 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 72052* = (...) => c
 
-*anonymous function 72352* = (...) => side-effectful(b)
+*anonymous function 72352* = (...) => effectful(b)
 
 *anonymous function 72781* = (...) => fi(ei)
 
@@ -286,7 +286,7 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 73223* = (...) => gi(ei)
 
-*anonymous function 73283* = (...) => ((null === O) ? side-effectful(a) : Di(b, O["memoizedState"], a))
+*anonymous function 73283* = (...) => ((null === O) ? effectful(a) : Di(b, O["memoizedState"], a))
 
 *anonymous function 73380* = (...) => [a, b]
 
@@ -325,7 +325,7 @@ Aa = ???*0*
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-Ab = (null | [???*0*] | side-effectful(null))
+Ab = (null | [???*0*] | effectful(null))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
@@ -602,7 +602,7 @@ Dg = (...) => ((0 !== ???*0*) && (0 === ???*1*))
 Dh = {}
 
 Di = (...) => (???*0* | b)
-- *0* side-effectful(c)
+- *0* effectful(c)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
 
@@ -1053,7 +1053,7 @@ Kj = ???*0*
 
 Kk = (...) => ((null === a) ? ai : a)
 
-L = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))
+L = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -1253,7 +1253,7 @@ N = (
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*1*
       | undefined
       | ???*3*
@@ -1265,7 +1265,7 @@ N = (
             "next": null
         }
     ))
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+  | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
@@ -1459,7 +1459,7 @@ Nk = (...) => undefined
 
 O = (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | null["alternate"]
   | ???*0*
   | (null !== ???*2*)["alternate"]
@@ -1512,7 +1512,7 @@ O = (
 Oa = (...) => (
   | ""
   | k
-  | (side-effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
+  | (effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
 )
 
 Ob = (false | true)
@@ -1541,10 +1541,10 @@ Of = `__reactFiber$${???*0*}`
 
 Og = (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | ???*0*
   | {"context": ???*1*, "memoizedValue": ???*2*, "next": null}
-  | side-effectful((
+  | effectful((
       | ???*4*
       | {"context": ???*5*, "memoizedValue": ???*6*, "next": null}
     ))
@@ -1592,7 +1592,7 @@ Pc = new ???*0*()
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-Pd = (...) => (b["getModifierState"] ? b["getModifierState"](a) : (side-effectful(Od[a]) ? !(!(b[a])) : !(1)))
+Pd = (...) => (b["getModifierState"] ? b["getModifierState"](a) : (effectful(Od[a]) ? !(!(b[a])) : !(1)))
 
 Pe = (!(???*0*) | ???*3*)
 - *0* ("undefined" === ???*1*)
@@ -1618,7 +1618,7 @@ Pf = `__reactProps$${???*0*}`
   ⚠️  unknown object
   ⚠️  This value might have side effects
 
-Pg = (null | side-effectful(side-effectful(null)) | side-effectful(null))
+Pg = (null | effectful(effectful(null)) | effectful(null))
 
 Ph = module<react, {}>["__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED"]["ReactCurrentDispatcher"]
 
@@ -1850,7 +1850,7 @@ Sk = (...) => (a() | undefined)
 T = (3 | 0 | 1 | 2 | 4 | 6 | 5)
 
 Ta = (...) => (
- && side-effectful(a["nodeName"])
+ && effectful(a["nodeName"])
  && ("input" === a["toLowerCase"]())
  && (("checkbox" === b) || ("radio" === b))
 )
@@ -1876,7 +1876,7 @@ Tf = (???*0* | ???*1*)
 
 Tg = (...) => undefined
 
-Th = (false | side-effectful(true))
+Th = (false | effectful(true))
 
 Ti = (...) => undefined
 
@@ -2119,14 +2119,14 @@ Yh = {
     "useInsertionEffect": (...) => ti(4, 2, a, b),
     "useMemo": (...) => a,
     "useReducer": (...) => [d["memoizedState"], a],
-    "useRef": (...) => side-effectful(a),
+    "useRef": (...) => effectful(a),
     "useState": (...) => [b["memoizedState"], a],
     "useDebugValue": (...) => undefined,
-    "useDeferredValue": (...) => side-effectful(a),
+    "useDeferredValue": (...) => effectful(a),
     "useTransition": (...) => [b, a],
     "useMutableSource": (...) => undefined,
     "useSyncExternalStore": (...) => c,
-    "useId": (...) => side-effectful(b),
+    "useId": (...) => effectful(b),
     "unstable_isNewReconciler": false
 }
 
@@ -2138,7 +2138,7 @@ Yj = ???*0*
 
 Yk = (...) => undefined
 
-Z = (0 | side-effectful((???*0* | 0 | ???*1*)))
+Z = (0 | effectful((???*0* | 0 | ???*1*)))
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -2154,7 +2154,7 @@ Zd = (...) => ???*0*
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-Ze = (...) => (Xe[a] | a | side-effectful(b[c]))
+Ze = (...) => (Xe[a] | a | effectful(b[c]))
 
 Zf = (...) => ((null !== a) && (undefined !== a))
 
@@ -2958,7 +2958,7 @@ a#232 = (???*0* | ???*1*)
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-a#233 = (???*0* | null | ???*1* | side-effectful(side-effectful(null)) | side-effectful(???*14*))
+a#233 = (???*0* | null | ???*1* | effectful(effectful(null)) | effectful(???*14*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*((???*9* | 0 | ???*10*), ???*11*)
@@ -3394,7 +3394,7 @@ a#345 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-a#346 = (???*0* | side-effectful(???*1*) | ???*3* | {})
+a#346 = (???*0* | effectful(???*1*) | ???*3* | {})
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*["stateNode"]
@@ -3600,7 +3600,7 @@ a#400 = (
         "callback": ???*12*,
         "next": null
     }
-  | side-effectful((
+  | effectful((
       | {
             "eventTime": ???*14*,
             "lane": ???*16*,
@@ -3611,7 +3611,7 @@ a#400 = (
         }
       | undefined
     ))
-  | side-effectful(???*24*)
+  | effectful(???*24*)
   | ???*25*
 )
 - *0* arguments[0]
@@ -3870,7 +3870,7 @@ a#471 = ???*0*
 a#472 = (
   | ???*0*
   | ???*1*
-  | (side-effectful(???*3*) ? ???*5* : ???*7*)["nodeType"]
+  | (effectful(???*3*) ? ???*5* : ???*7*)["nodeType"]
   | null["nodeType"]
   | (???*9* ? (
       | "http://www.w3.org/2000/svg"
@@ -3925,7 +3925,7 @@ a#472 = (
   ⚠️  function calls are not analyzed yet
 - *19* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *20* (side-effectful(???*21*) ? ???*23* : ???*25*)
+- *20* (effectful(???*21*) ? ???*23* : ???*25*)
   ⚠️  nested operation
 - *21* ???*22*["documentElement"]
   ⚠️  unknown object
@@ -3990,17 +3990,17 @@ a#49 = ???*0*
 a#490 = (
   | null["alternate"]
   | ???*0*
-  | (null !== (null | side-effectful(null) | ???*2*))["alternate"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*3*))["alternate"]
+  | (null !== (null | effectful(null) | ???*2*))["alternate"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*3*))["alternate"]
   | undefined
   | (???*5* ? ???*7* : null)
   | null["next"]
-  | side-effectful(null)["next"]
+  | effectful(null)["next"]
   | {
-        "memoizedState": (null["memoizedState"] | side-effectful(null)["memoizedState"] | ???*9*),
-        "baseState": (null["baseState"] | side-effectful(null)["baseState"] | ???*11*),
-        "baseQueue": (null["baseQueue"] | side-effectful(null)["baseQueue"] | ???*13*),
-        "queue": (null["queue"] | side-effectful(null)["queue"] | ???*15*),
+        "memoizedState": (null["memoizedState"] | effectful(null)["memoizedState"] | ???*9*),
+        "baseState": (null["baseState"] | effectful(null)["baseState"] | ???*11*),
+        "baseQueue": (null["baseQueue"] | effectful(null)["baseQueue"] | ???*13*),
+        "queue": (null["queue"] | effectful(null)["queue"] | ???*15*),
         "next": null
     }
 )
@@ -4131,7 +4131,7 @@ a#514 = (
         "lastRenderedReducer": (...) => (("function" === typeof(b)) ? b(a) : b),
         "lastRenderedState": ???*2*
     }
-  | side-effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
+  | effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -4143,7 +4143,7 @@ a#514 = (
   ⚠️  function calls are not analyzed yet
 - *4* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*5*
       | undefined
       | ???*7*
@@ -4319,7 +4319,7 @@ a#554 = (
         "lastRenderedReducer": ???*1*,
         "lastRenderedState": (???*2* | (???*3* ? ???*5* : ???*7*))
     }
-  | side-effectful((...) => undefined["bind"](null, (null | ???*8* | ???*9*), ???*25*))
+  | effectful((...) => undefined["bind"](null, (null | ???*8* | ???*9*), ???*25*))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -4341,7 +4341,7 @@ a#554 = (
   ⚠️  function calls are not analyzed yet
 - *9* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*10*
       | undefined
       | ???*12*
@@ -4669,7 +4669,7 @@ a#612 = ???*0*
 
 a#613 = (
   | ???*0*
-  | side-effectful((
+  | effectful((
       | ???*1*
       | {"mode": "visible", "children": ???*4*}
       | new (...) => undefined(22, ???*5*, null, ???*6*)
@@ -4766,11 +4766,7 @@ a#639 = (???*0* | ???*1*)
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-a#64 = (
-  | ???*0*
-  | ""
-  | ((side-effectful(???*1*) | ???*3*) ? ???*7* : ???*10*)
-)
+a#64 = (???*0* | "" | ((effectful(???*1*) | ???*3*) ? ???*7* : ???*10*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*["nodeName"]
@@ -5652,7 +5648,7 @@ ae = (!(???*0*) | ???*3*)
 - *3* unsupported expression
   ⚠️  This value might have side effects
 
-af = (undefined | ???*0* | "animationiteration" | side-effectful((???*1* | ???*3*)))
+af = (undefined | ???*0* | "animationiteration" | effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
 - *1* {}[???*2*]
@@ -5694,7 +5690,7 @@ ai = {
     "unstable_isNewReconciler": false
 }
 
-aj = (...) => (???*0* | side-effectful(a) | $i(a, b, e) | side-effectful(a))
+aj = (...) => (???*0* | effectful(a) | $i(a, b, e) | effectful(a))
 - *0* cj(a, b, f, d, e)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -5842,7 +5838,7 @@ b#11 = ???*0*
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-b#112 = (null | [???*0*] | side-effectful(null) | undefined)
+b#112 = (null | [???*0*] | effectful(null) | undefined)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
@@ -6038,7 +6034,7 @@ b#203 = ???*0*
 
 b#207 = (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | (???*0* ? (null["value"] | ???*1*) : (null["textContent"] | ???*16*))
 )
 - *0* unsupported expression
@@ -6902,7 +6898,7 @@ b#421 = (
   ⚠️  circular variable reference
 - *5* unknown mutation
   ⚠️  This value might have side effects
-- *6* (side-effectful(???*7*) ? ({} | ???*12*) : {})
+- *6* (effectful(???*7*) ? ({} | ???*12*) : {})
   ⚠️  nested operation
 - *7* (null !== (false | ???*8* | ???*10*))
   ⚠️  nested operation
@@ -6939,7 +6935,7 @@ b#424 = (???*0* | (...) => undefined)
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-b#428 = (???*0* | undefined["refs"] | side-effectful({}))
+b#428 = (???*0* | undefined["refs"] | effectful({}))
 - *0* ???*1*["refs"]
   ⚠️  unknown object
 - *1* ???*2*["stateNode"]
@@ -7176,7 +7172,7 @@ b#447 = ???*0*
 
 b#472 = (
   | ???*0*
-  | (side-effectful(???*1*) ? ???*3* : ???*5*)
+  | (effectful(???*1*) ? ???*3* : ???*5*)
   | ???*7*
   | (???*9* ? ???*11* : ???*13*)["namespaceURI"]
   | null
@@ -7253,7 +7249,7 @@ b#485 = (
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | null["alternate"]
       | ???*1*
       | undefined
@@ -7268,7 +7264,7 @@ b#485 = (
     ))
   | (null !== (
       | null["next"]
-      | side-effectful(null)["next"]
+      | effectful(null)["next"]
       | null["alternate"]["next"]
       | ???*16*
       | undefined["next"]
@@ -7387,7 +7383,7 @@ b#506 = (
   | ???*1*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -7399,7 +7395,7 @@ b#506 = (
             "next": null
         }
     ))["updateQueue"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]
   | {"lastEffect": null, "stores": null}
 )
 - *0* arguments[1]
@@ -7487,7 +7483,7 @@ b#515 = (
   | ???*1*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -7499,7 +7495,7 @@ b#515 = (
             "next": null
         }
     ))["updateQueue"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]
   | {"lastEffect": null, "stores": null}
 )
 - *0* arguments[1]
@@ -7693,7 +7689,7 @@ b#559 = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-b#56 = ((side-effectful(???*0*) | ???*2*) ? "checked" : "value")
+b#56 = ((effectful(???*0*) | ???*2*) ? "checked" : "value")
 - *0* ???*1*["nodeName"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -7899,7 +7895,7 @@ b#639 = ???*0*
 b#64 = (
   | ???*0*
   | ""["_valueTracker"]
-  | ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
+  | ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
 )
 - *0* ???*1*["_valueTracker"]
   ⚠️  unknown object
@@ -8322,7 +8318,7 @@ b#915 = (???*0* | (???*1* ? ???*3* : ???*4*))
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
+- *4* (???*5* ? (???*9* | ???*10*) : effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -8512,7 +8508,7 @@ b#961 = (
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
+- *4* (???*5* ? (???*9* | ???*10*) : effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -8828,7 +8824,7 @@ be = (null | ???*0*)
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-bf = (undefined | ???*0* | "animationstart" | side-effectful((???*1* | ???*3*)))
+bf = (undefined | ???*0* | "animationstart" | effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
 - *1* {}[???*2*]
@@ -9160,7 +9156,7 @@ c#203 = ???*0*
 
 c#207 = (
   | null["length"]
-  | side-effectful(null)["length"]
+  | effectful(null)["length"]
   | (???*0* ? (null["value"] | ???*1*) : (null["textContent"] | ???*16*))["length"]
 )
 - *0* unsupported expression
@@ -9368,7 +9364,7 @@ c#275 = (0 | ???*0*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
-c#280 = (???*0* | side-effectful(new ???*2*()))
+c#280 = (???*0* | effectful(new ???*2*()))
 - *0* ???*1*[of]
   ⚠️  unknown object
 - *1* arguments[1]
@@ -9591,7 +9587,7 @@ c#400 = (
         "firstBaseUpdate": (
           | null
           | undefined
-          | side-effectful((
+          | effectful((
               | {
                     "eventTime": ???*5*,
                     "lane": ???*7*,
@@ -9602,7 +9598,7 @@ c#400 = (
                 }
               | undefined
             ))
-          | side-effectful(???*15*)
+          | effectful(???*15*)
         ),
         "lastBaseUpdate": (
           | null
@@ -9615,7 +9611,7 @@ c#400 = (
                 "callback": ???*24*,
                 "next": null
             }
-          | side-effectful((
+          | effectful((
               | {
                     "eventTime": ???*26*,
                     "lane": ???*28*,
@@ -9627,7 +9623,7 @@ c#400 = (
               | undefined
             ))
           | ???*36*
-          | side-effectful(???*37*)
+          | effectful(???*37*)
         ),
         "shared": ???*38*,
         "effects": ???*41*
@@ -9775,7 +9771,7 @@ c#419 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -9912,7 +9908,7 @@ c#504 = (
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*1*
       | undefined
       | ???*3*
@@ -9924,7 +9920,7 @@ c#504 = (
             "next": null
         }
     ))
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+  | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
@@ -9973,7 +9969,7 @@ c#506 = (
   | null["updateQueue"]["stores"]
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -9985,7 +9981,7 @@ c#506 = (
             "next": null
         }
     ))["updateQueue"]["stores"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["stores"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["stores"]
   | null
   | ???*22*
 )
@@ -10056,7 +10052,7 @@ c#515 = (
   | null["updateQueue"]["lastEffect"]
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -10068,7 +10064,7 @@ c#515 = (
             "next": null
         }
     ))["updateQueue"]["lastEffect"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["lastEffect"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["lastEffect"]
   | null
   | ???*22*
 )
@@ -10355,7 +10351,7 @@ c#559 = (???*0* | ???*1*() | ???*2*())
 c#56 = ???*0*
 - *0* ???*1*(
         ???*3*,
-        ((side-effectful(???*6*) | ???*8*) ? "checked" : "value")
+        ((effectful(???*6*) | ???*8*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -10543,7 +10539,7 @@ c#629 = (
   | ???*0*
   | ???*1*
   | new (...) => undefined(???*3*, ???*5*, ???*7*, ???*9*)
-  | side-effectful((
+  | effectful((
       | ???*11*
       | new (...) => undefined(???*13*, ???*15*, ???*17*, ???*19*)
     ))
@@ -10732,7 +10728,7 @@ c#69 = ((???*0* ? "" : ???*3*) | (???*5* ? ???*8* : ???*10*) | "" | undefined)
   ⚠️  circular variable reference
 
 c#691 = (
-  | side-effectful((???*0* | (???*2* ? ???*4* : null)["next"]))
+  | effectful((???*0* | (???*2* ? ???*4* : null)["next"]))
   | undefined
   | ???*6*
 )
@@ -10797,7 +10793,7 @@ c#71 = (???*0* | "" | undefined)
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-c#713 = (???*0* | undefined | side-effectful(new ???*2*()))
+c#713 = (???*0* | undefined | effectful(new ???*2*()))
 - *0* ???*1*["stateNode"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -11048,7 +11044,7 @@ c#916 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -11259,7 +11255,7 @@ c#992 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -11283,7 +11279,7 @@ c#994 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -11341,7 +11337,7 @@ ce = (!(???*0*) | ???*3* | !((null | ???*4*)))
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-cf = (undefined | ???*0* | "transitionend" | side-effectful((???*1* | ???*3*)))
+cf = (undefined | ???*0* | "transitionend" | effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
 - *1* {}[???*2*]
@@ -11755,7 +11751,7 @@ d#285 = ???*0*
 - *0* arguments[3]
   ⚠️  function calls are not analyzed yet
 
-d#286 = (???*0* | side-effectful((???*1* | undefined | ???*3*)) | ???*4*)
+d#286 = (???*0* | effectful((???*1* | undefined | ???*3*)) | ???*4*)
 - *0* arguments[3]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*["tag"]
@@ -11895,7 +11891,7 @@ d#400 = (
   | undefined["alternate"]
   | undefined
   | ???*2*
-  | side-effectful((
+  | effectful((
       | {
             "eventTime": ???*3*,
             "lane": ???*5*,
@@ -11906,7 +11902,7 @@ d#400 = (
         }
       | undefined
     ))["alternate"]
-  | side-effectful(???*13*)["alternate"]
+  | effectful(???*13*)["alternate"]
   | ???*14*
 )
 - *0* ???*1*["alternate"]
@@ -11975,7 +11971,7 @@ d#417 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -11999,7 +11995,7 @@ d#418 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -12110,7 +12106,7 @@ d#421 = (
   ⚠️  circular variable reference
 - *6* unknown mutation
   ⚠️  This value might have side effects
-- *7* (side-effectful(???*8*) ? ({} | ???*10*) : {})
+- *7* (effectful(???*8*) ? ({} | ???*10*) : {})
   ⚠️  nested operation
 - *8* (null !== ???*9*)
   ⚠️  nested operation
@@ -12370,7 +12366,7 @@ d#515 = (
   | null["updateQueue"]["lastEffect"]["next"]
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -12382,7 +12378,7 @@ d#515 = (
             "next": null
         }
     ))["updateQueue"]["lastEffect"]["next"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["lastEffect"]["next"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["lastEffect"]["next"]
   | null["next"]
   | ???*22*
 )
@@ -12611,7 +12607,7 @@ d#559 = (
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*1*
       | undefined
       | ???*3*
@@ -12623,7 +12619,7 @@ d#559 = (
             "next": null
         }
     ))
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+  | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
@@ -12703,7 +12699,7 @@ d#580 = ???*0*
 d#585 = (
   | ???*0*
   | (...) => undefined["bind"](null, ???*2*, ???*3*, ???*4*)["pingCache"]
-  | side-effectful(new ???*5*())
+  | effectful(new ???*5*())
 )
 - *0* ???*1*["pingCache"]
   ⚠️  unknown object
@@ -12918,10 +12914,7 @@ d#639 = (???*0* | ???*1*)
 - *11* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-d#64 = (
-  | ""
-  | ((side-effectful(???*0*) | ???*2*) ? ???*6* : ???*9*)
-)
+d#64 = ("" | ((effectful(???*0*) | ???*2*) ? ???*6* : ???*9*))
 - *0* ???*1*["nodeName"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -13008,7 +13001,7 @@ d#69 = (???*0* ? ???*3* : ???*5*)
   ⚠️  function calls are not analyzed yet
 
 d#691 = (
-  | side-effectful((???*0* | (???*2* ? ???*4* : null)["next"]))["create"]
+  | effectful((???*0* | (???*2* ? ???*4* : null)["next"]))["create"]
   | undefined["create"]
   | ???*6*
   | undefined
@@ -13110,7 +13103,7 @@ d#802 = ???*0*
 
 d#803 = (
   | 0
-  | (???*0* ? (0 | side-effectful((???*19* | 0 | ???*20*))) : 0)
+  | (???*0* ? (0 | effectful((???*19* | 0 | ???*20*))) : 0)
   | ???*21*
   | ???*23*
   | 1
@@ -13259,7 +13252,7 @@ d#843 = (
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*2*
       | undefined
       | ???*4*
@@ -13271,7 +13264,7 @@ d#843 = (
             "next": null
         }
     ))["memoizedState"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*17* | undefined["next"] | null | ???*20*))["memoizedState"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*17* | undefined["next"] | null | ???*20*))["memoizedState"]
   | undefined
 )
 - *0* ???*1*["memoizedState"]
@@ -13542,7 +13535,7 @@ d#960 = (???*0* | (???*1* ? ???*3* : ???*4*))
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
+- *4* (???*5* ? (???*9* | ???*10*) : effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -13584,7 +13577,7 @@ d#997 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -14318,7 +14311,7 @@ e#396 = (???*0* | undefined)
 e#400 = (
   | null
   | undefined
-  | side-effectful((
+  | effectful((
       | {
             "eventTime": (???*0* | undefined | ???*3*),
             "lane": (???*4* | undefined | ???*7*),
@@ -14329,7 +14322,7 @@ e#400 = (
         }
       | undefined
     ))
-  | side-effectful(???*20*)
+  | effectful(???*20*)
 )
 - *0* ???*1*["eventTime"]
   ⚠️  unknown object
@@ -14576,7 +14569,7 @@ e#419 = {
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -14667,7 +14660,7 @@ e#421 = ({} | (???*0* ? ({} | ???*16*) : ({} | ???*17*)))
   ⚠️  circular variable reference
 - *7* unknown mutation
   ⚠️  This value might have side effects
-- *8* (side-effectful(???*9*) ? ({} | ???*12*) : {})
+- *8* (effectful(???*9*) ? ({} | ???*12*) : {})
   ⚠️  nested operation
 - *9* (null !== (false | ???*10* | ???*11*))
   ⚠️  nested operation
@@ -14769,7 +14762,7 @@ e#537 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -14880,7 +14873,7 @@ e#539 = (
   ⚠️  This value might have side effects
 - *33* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *34* (???*35* ? (???*39* | ???*40*) : side-effectful(???*41*))
+- *34* (???*35* ? (???*39* | ???*40*) : effectful(???*41*))
   ⚠️  nested operation
 - *35* (???*36* !== (???*37* | ???*38*))
   ⚠️  nested operation
@@ -14907,7 +14900,7 @@ e#56 = (???*0* | undefined)
   ⚠️  This value might have side effects
 - *1* ???*2*(
         ???*4*,
-        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+        ((effectful(???*7*) | ???*9*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -14942,7 +14935,7 @@ e#580 = (???*0* | undefined)
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-e#585 = (new ???*0*() | undefined | ???*1* | ???*5* | side-effectful(???*13*)["get"](???*20*))
+e#585 = (new ???*0*() | undefined | ???*1* | ???*5* | effectful(???*13*)["get"](???*20*))
 - *0* FreeVar(Set)
   ⚠️  unknown global
   ⚠️  This value might have side effects
@@ -15166,7 +15159,7 @@ e#673 = ???*0*
   ⚠️  This value might have side effects
 
 e#687 = (
-  | side-effectful((???*0* | (???*3* ? ???*5* : null)["next"]))
+  | effectful((???*0* | (???*3* ? ???*5* : null)["next"]))
   | undefined
   | ???*7*
 )
@@ -15313,7 +15306,7 @@ e#843 = (
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -15325,7 +15318,7 @@ e#843 = (
             "next": null
         }
     ))["memoizedState"]["queue"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["memoizedState"]["queue"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["memoizedState"]["queue"]
   | undefined["queue"]
   | undefined
 )
@@ -15461,7 +15454,7 @@ e#960 = (
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* (???*12* ? (???*16* | ???*17*) : side-effectful(???*18*))
+- *11* (???*12* ? (???*16* | ???*17*) : effectful(???*18*))
   ⚠️  nested operation
 - *12* (???*13* !== (???*14* | ???*15*))
   ⚠️  nested operation
@@ -16009,7 +16002,7 @@ f#417 = {
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -16107,7 +16100,7 @@ f#418 = {
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -16186,7 +16179,7 @@ f#421 = (
   | new ???*2*(???*3*, ???*4*)["contextType"]
   | undefined
   | ???*5*
-  | (side-effectful(???*6*) ? ({} | ???*11*) : {})
+  | (effectful(???*6*) ? ({} | ???*11*) : {})
 )
 - *0* ???*1*["contextType"]
   ⚠️  unknown object
@@ -16342,7 +16335,7 @@ f#504 = !(???*0*)
 f#518 = (
   | undefined
   | null["memoizedState"]["destroy"]
-  | side-effectful(null)["memoizedState"]["destroy"]
+  | effectful(null)["memoizedState"]["destroy"]
   | null["alternate"]["memoizedState"]["destroy"]
   | ???*0*
   | (null !== ???*4*)["alternate"]["memoizedState"]["destroy"]
@@ -16402,7 +16395,7 @@ f#56 = (???*0* | undefined)
   ⚠️  This value might have side effects
 - *1* ???*2*(
         ???*4*,
-        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+        ((effectful(???*7*) | ???*9*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -16639,7 +16632,7 @@ f#673 = ???*0*
   ⚠️  This value might have side effects
 
 f#687 = (
-  | side-effectful((???*0* | (???*3* ? ???*5* : null)["next"]))["destroy"]
+  | effectful((???*0* | (???*3* ? ???*5* : null)["next"]))["destroy"]
   | undefined["destroy"]
   | ???*7*
   | undefined
@@ -16854,7 +16847,7 @@ f#960 = (
   ⚠️  This value might have side effects
 - *4* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *5* (???*6* ? (???*10* | ???*11*) : side-effectful(???*12*))
+- *5* (???*6* ? (???*10* | ???*11*) : effectful(???*12*))
   ⚠️  nested operation
 - *6* (???*7* !== (???*8* | ???*9*))
   ⚠️  nested operation
@@ -16893,7 +16886,7 @@ f#960 = (
   ⚠️  This value might have side effects
 - *23* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *24* (???*25* ? (???*29* | ???*30*) : side-effectful(???*31*))
+- *24* (???*25* ? (???*29* | ???*30*) : effectful(???*31*))
   ⚠️  nested operation
 - *25* (???*26* !== (???*27* | ???*28*))
   ⚠️  nested operation
@@ -16965,7 +16958,7 @@ f#961 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -17194,7 +17187,7 @@ g#494 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-g#501 = (side-effectful((???*0* | ???*4*)) | undefined | ???*7*)
+g#501 = (effectful((???*0* | ???*4*)) | undefined | ???*7*)
 - *0* ???*1*["next"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
@@ -17219,7 +17212,7 @@ g#501 = (side-effectful((???*0* | ???*4*)) | undefined | ???*7*)
 
 g#518 = (
   | null["memoizedState"]
-  | side-effectful(null)["memoizedState"]
+  | effectful(null)["memoizedState"]
   | null["alternate"]["memoizedState"]
   | ???*0*
   | (null !== ???*3*)["alternate"]["memoizedState"]
@@ -17781,7 +17774,7 @@ h#275 = (
 
 h#286 = (
   | ???*0*
-  | side-effectful((
+  | effectful((
       | ???*3*
       | undefined
       | null[`__reactFiber$${???*5*}`]
@@ -19081,7 +19074,7 @@ lc = (null | ???*0* | undefined)
 
 ld = (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | (???*0* ? (null["value"] | ???*1*) : (null["textContent"] | ???*16*))
 )
 - *0* unsupported expression
@@ -19283,7 +19276,7 @@ mb = (???*0* | ???*1* | ???*2*)
 
 mc = (...) => undefined
 
-md = (null | ???*0* | side-effectful(side-effectful(null)))
+md = (null | ???*0* | effectful(effectful(null)))
 - *0* ???*1*((???*8* | 0 | ???*9*), ???*10*)
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -19363,8 +19356,8 @@ n#404 = (
   | undefined["next"]["payload"]
   | null["next"]["payload"]
   | undefined["payload"]
-  | side-effectful(null)["payload"]
-  | side-effectful((
+  | effectful(null)["payload"]
+  | effectful((
       | ???*8*
       | undefined
       | ???*10*
@@ -19521,7 +19514,7 @@ nc = (...) => ((0 === a) ? 32 : ???*0*)
 
 nd = (...) => (
   | md
-  | side-effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
+  | effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
 )
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -19541,7 +19534,7 @@ ng = (0 | ???*0* | ???*1*)
   ⚠️  This value might have side effects
 
 nh = {
-    "isMounted": (...) => (side-effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
+    "isMounted": (...) => (effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
     "enqueueSetState": (...) => undefined,
     "enqueueReplaceState": (...) => undefined,
     "enqueueForceUpdate": (...) => undefined
@@ -19555,7 +19548,7 @@ nk = module<react, {}>["__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED"]["Re
 
 nl = (...) => undefined
 
-oa = (...) => (!(0) | !(1) | side-effectful(!(0)))
+oa = (...) => (!(0) | !(1) | effectful(!(0)))
 
 ob = (...) => undefined
 
@@ -19777,7 +19770,7 @@ qc = ???*0*
 
 qd = (...) => !(1)
 
-qe = (null | side-effectful(null) | ???*0*)
+qe = (null | effectful(null) | ???*0*)
 - *0* arguments[2]
   ⚠️  function calls are not analyzed yet
 
@@ -19874,9 +19867,9 @@ rh = (...) => undefined
 
 ri = (...) => undefined
 
-rj = (...) => side-effectful(b)
+rj = (...) => effectful(b)
 
-rk = (0 | ???*0* | side-effectful(0))
+rk = (0 | ???*0* | effectful(0))
 - *0* unsupported assign operation
   ⚠️  This value might have side effects
 
@@ -19916,7 +19909,7 @@ sj = (...) => (???*0* | f | tj(a, b, g, null) | tj(a, b, g, d) | b)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
 
-sk = (0 | side-effectful(side-effectful(0)) | ???*0*)
+sk = (0 | effectful(effectful(0)) | ???*0*)
 - *0* unsupported assign operation
   ⚠️  This value might have side effects
 
@@ -20196,11 +20189,11 @@ w#292 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-w#449 = (side-effectful(0) | ???*0*)
+w#449 = (effectful(0) | ???*0*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
-w#454 = (side-effectful(0) | ???*0*)
+w#454 = (effectful(0) | ???*0*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
@@ -20324,7 +20317,7 @@ xc = (...) => ((0 !== a) ? a : (???*0* ? 1073741824 : 0))
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-xd = (???*0* | ???*1* | side-effectful(0))
+xd = (???*0* | ???*1* | effectful(0))
 - *0* xd
   ⚠️  pattern without value
 - *1* unsupported expression

@@ -67,7 +67,7 @@
 - *7* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-16 -> 17 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+16 -> 17 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -96,7 +96,7 @@
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* (???*12* ? (???*16* | ???*17*) : side-effectful(???*18*))
+- *11* (???*12* ? (???*16* | ???*17*) : effectful(???*18*))
   ⚠️  nested operation
 - *12* (???*13* !== (???*14* | ???*15*))
   ⚠️  nested operation
@@ -145,7 +145,7 @@
 - *7* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-23 -> 24 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+23 -> 24 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -179,7 +179,7 @@
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* (???*12* ? (???*16* | ???*17*) : side-effectful(???*18*))
+- *11* (???*12* ? (???*16* | ???*17*) : effectful(???*18*))
   ⚠️  nested operation
 - *12* (???*13* !== (???*14* | ???*15*))
   ⚠️  nested operation
@@ -302,7 +302,7 @@
 - *7* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-31 -> 32 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+31 -> 32 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -398,7 +398,7 @@
   ⚠️  This value might have side effects
 - *33* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *34* (???*35* ? (???*39* | ???*40*) : side-effectful(???*41*))
+- *34* (???*35* ? (???*39* | ???*40*) : effectful(???*41*))
   ⚠️  nested operation
 - *35* (???*36* !== (???*37* | ???*38*))
   ⚠️  nested operation
@@ -2772,7 +2772,7 @@
 - *20* e
   ⚠️  circular variable reference
 
-425 -> 426 call = (...) => (!(0) | !(1) | side-effectful(!(0)))(
+425 -> 426 call = (...) => (!(0) | !(1) | effectful(!(0)))(
     (???*0* | (???*1* ? ???*4* : null)["attributeName"] | ???*6*)
 )
 - *0* arguments[1]
@@ -3815,7 +3815,7 @@ ${(???*0* | ???*7*)}`
 - *3* a
   ⚠️  circular variable reference
 
-528 -> 595 conditional = side-effectful(((???*0* | ???*1*) ? ???*5* : ""))
+528 -> 595 conditional = effectful(((???*0* | ???*1*) ? ???*5* : ""))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* (???*2* ? ???*3* : "")
@@ -3882,7 +3882,7 @@ ${La}${a}`("SuspenseList")
 0 -> 609 call = (...) => (
   | ""
   | k
-  | (side-effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
+  | (effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
 )(???*0*, false)
 - *0* ???*1*["type"]
   ⚠️  unknown object
@@ -3897,7 +3897,7 @@ ${La}${a}`("SuspenseList")
 0 -> 613 call = (...) => (
   | ""
   | k
-  | (side-effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
+  | (effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
 )(???*0*, false)
 - *0* ???*1*["render"]
   ⚠️  unknown object
@@ -3915,7 +3915,7 @@ ${La}${a}`("SuspenseList")
 0 -> 616 call = (...) => (
   | ""
   | k
-  | (side-effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
+  | (effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
 )(???*0*, true)
 - *0* ???*1*["type"]
   ⚠️  unknown object
@@ -4549,14 +4549,14 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 
 0 -> 708 call = (...) => (
- && side-effectful(a["nodeName"])
+ && effectful(a["nodeName"])
  && ("input" === a["toLowerCase"]())
  && (("checkbox" === b) || ("radio" === b))
 )(???*0*)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-0 -> 709 conditional = (side-effectful(???*0*) | ("input" === ???*2*) | ("checkbox" === ???*5*) | ("radio" === ???*7*))
+0 -> 709 conditional = (effectful(???*0*) | ("input" === ???*2*) | ("checkbox" === ???*5*) | ("radio" === ???*7*))
 - *0* ???*1*["nodeName"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -4580,7 +4580,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 714 member call = Object*0*["getOwnPropertyDescriptor"](
     ???*1*,
-    ((side-effectful(???*4*) | ???*6*) ? "checked" : "value")
+    ((effectful(???*4*) | ???*6*) ? "checked" : "value")
 )
 - *0* Object: The global Object variable
 - *1* ???*2*["prototype"]
@@ -4603,7 +4603,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 
 0 -> 717 member call = ???*0*["hasOwnProperty"](
-    ((side-effectful(???*1*) | ???*3*) ? "checked" : "value")
+    ((effectful(???*1*) | ???*3*) ? "checked" : "value")
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -4623,7 +4623,7 @@ ${La}${a}`("SuspenseList")
 0 -> 718 typeof = typeof(???*0*)
 - *0* ???*1*(
         ???*3*,
-        ((side-effectful(???*6*) | ???*8*) ? "checked" : "value")
+        ((effectful(???*6*) | ???*8*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4656,7 +4656,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *1* ???*2*(
         ???*4*,
-        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+        ((effectful(???*7*) | ???*9*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4687,7 +4687,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *1* ???*2*(
         ???*4*,
-        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+        ((effectful(???*7*) | ???*9*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4721,7 +4721,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  nested operation
 - *3* ???*4*(
         ???*6*,
-        ((side-effectful(???*9*) | ???*11*) ? "checked" : "value")
+        ((effectful(???*9*) | ???*11*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4752,7 +4752,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *16* ???*17*(
         ???*19*,
-        ((side-effectful(???*21*) | ???*23*) ? "checked" : "value")
+        ((effectful(???*21*) | ???*23*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4781,7 +4781,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *1* ???*2*(
         ???*4*,
-        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+        ((effectful(???*7*) | ???*9*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4818,7 +4818,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *1* ???*2*(
         ???*4*,
-        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+        ((effectful(???*7*) | ???*9*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4849,7 +4849,7 @@ ${La}${a}`("SuspenseList")
 
 723 -> 733 member call = Object*0*["defineProperty"](
     ???*1*,
-    ((side-effectful(???*2*) | ???*4*) ? "checked" : "value"),
+    ((effectful(???*2*) | ???*4*) ? "checked" : "value"),
     {"configurable": true, "get": (...) => e["call"](???*8*), "set": (...) => undefined}
 )
 - *0* Object: The global Object variable
@@ -4874,7 +4874,7 @@ ${La}${a}`("SuspenseList")
 
 723 -> 737 member call = Object*0*["defineProperty"](
     ???*1*,
-    ((side-effectful(???*2*) | ???*4*) ? "checked" : "value"),
+    ((effectful(???*2*) | ???*4*) ? "checked" : "value"),
     {"enumerable": ???*8*}
 )
 - *0* Object: The global Object variable
@@ -4897,7 +4897,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *9* ???*10*(
         ???*12*,
-        ((side-effectful(???*15*) | ???*17*) ? "checked" : "value")
+        ((effectful(???*15*) | ???*17*) ? "checked" : "value")
     )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -4944,7 +4944,7 @@ ${La}${a}`("SuspenseList")
 0 -> 745 conditional = !((???*0* | "" | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)
+- *1* ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)
   ⚠️  nested operation
 - *2* ???*3*["nodeName"]
   ⚠️  unknown object
@@ -4986,7 +4986,7 @@ ${La}${a}`("SuspenseList")
 748 -> 751 member call = (
   | ???*0*
   | ""["_valueTracker"]
-  | ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
+  | ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
 )["getValue"]()
 - *0* ???*1*["_valueTracker"]
   ⚠️  unknown object
@@ -5016,15 +5016,11 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 
 748 -> 752 call = (...) => (
- && side-effectful(a["nodeName"])
+ && effectful(a["nodeName"])
  && ("input" === a["toLowerCase"]())
  && (("checkbox" === b) || ("radio" === b))
 )(
-    (
-      | ???*0*
-      | ""
-      | ((side-effectful(???*1*) | ???*3*) ? ???*7* : ???*10*)
-    )
+    (???*0* | "" | ((effectful(???*1*) | ???*3*) ? ???*7* : ???*10*))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -5052,10 +5048,10 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 
 748 -> 753 conditional = (
-  | side-effectful((
+  | effectful((
       | ???*0*
       | ""["nodeName"]
-      | ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["nodeName"]
+      | ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["nodeName"]
     ))
   | ("input" === ???*13*)
   | ("checkbox" === (???*16* | ""["type"]))
@@ -5105,7 +5101,7 @@ ${La}${a}`("SuspenseList")
 753 -> 755 conditional = (
   | ???*0*
   | ""["checked"]
-  | ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["checked"]
+  | ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["checked"]
 )
 - *0* ???*1*["checked"]
   ⚠️  unknown object
@@ -5137,7 +5133,7 @@ ${La}${a}`("SuspenseList")
 748 -> 757 conditional = ((???*0* | "" | ???*1*) !== ???*13*)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)
+- *1* ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)
   ⚠️  nested operation
 - *2* ???*3*["nodeName"]
   ⚠️  unknown object
@@ -5173,12 +5169,12 @@ ${La}${a}`("SuspenseList")
 757 -> 759 member call = (
   | ???*0*
   | ""["_valueTracker"]
-  | ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
+  | ((effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
 )["setValue"](
     (
       | ???*13*
       | ""
-      | ((side-effectful(???*14*) | ???*16*) ? ???*20* : ???*23*)
+      | ((effectful(???*14*) | ???*16*) ? ???*20* : ???*23*)
     )
 )
 - *0* ???*1*["_valueTracker"]
@@ -6510,7 +6506,7 @@ ${La}${a}`("SuspenseList")
 - *7* a
   ⚠️  circular variable reference
 
-0 -> 1063 conditional = side-effectful((???*0* ? null : (???*12* | ???*13* | ???*21*)))
+0 -> 1063 conditional = effectful((???*0* ? null : (???*12* | ???*13* | ???*21*)))
 - *0* !((???*1* | ???*2* | ???*10*))
   ⚠️  nested operation
 - *1* arguments[0]
@@ -6668,11 +6664,11 @@ ${La}${a}`("SuspenseList")
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-1074 -> 1075 conditional = (null | [???*0*] | side-effectful(null))
+1074 -> 1075 conditional = (null | [???*0*] | effectful(null))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-1075 -> 1077 member call = (null | [???*0*] | side-effectful(null))["push"](???*1*)
+1075 -> 1077 member call = (null | [???*0*] | effectful(null))["push"](???*1*)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* arguments[0]
@@ -6688,7 +6684,7 @@ ${La}${a}`("SuspenseList")
 - *1* updated with update expression
   ⚠️  This value might have side effects
 
-1078 -> 1080 conditional = (null | [???*0*] | side-effectful(null) | undefined)
+1078 -> 1080 conditional = (null | [???*0*] | effectful(null) | undefined)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
@@ -6699,7 +6695,7 @@ ${La}${a}`("SuspenseList")
       | ???*4*
       | ???*5*
       | ???*7*
-      | side-effectful(null)[(null | ???*8* | undefined | 0 | ???*9*)]
+      | effectful(null)[(null | ???*8* | undefined | 0 | ???*9*)]
       | undefined[(null | ???*10* | undefined | 0 | ???*11*)]
     )
 )
@@ -10680,7 +10676,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 1542 conditional = (null | ???*0* | side-effectful(side-effectful(null)))
+0 -> 1542 conditional = (null | ???*0* | effectful(effectful(null)))
 - *0* ???*1*((???*8* | 0 | ???*9*), ???*10*)
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -11314,7 +11310,7 @@ ${La}${a}`("SuspenseList")
 - *4* a
   ⚠️  circular variable reference
 
-1650 -> 1654 conditional = side-effectful(("altKey" | "ctrlKey" | "metaKey" | "shiftKey" | ???*0* | undefined | ???*2*))
+1650 -> 1654 conditional = effectful(("altKey" | "ctrlKey" | "metaKey" | "shiftKey" | ???*0* | undefined | ???*2*))
 - *0* {}[???*1*]
   ⚠️  unknown object prototype methods or values
   ⚠️  This value might have side effects
@@ -11876,7 +11872,7 @@ ${La}${a}`("SuspenseList")
 0 -> 1743 conditional = (false | true)
 
 1743 -> 1744 call = (...) => ((???*0* !== $d["indexOf"](b["keyCode"])) | (229 !== b["keyCode"]) | !(0) | !(1) | undefined)(
-    (???*1* | null | ???*2* | side-effectful(side-effectful(null)) | side-effectful(???*15*)),
+    (???*1* | null | ???*2* | effectful(effectful(null)) | effectful(???*15*)),
     ???*28*
 )
 - *0* unsupported expression
@@ -11941,7 +11937,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 
 1743 -> 1745 conditional = (
-  | ("compositionend" === (???*0* | null | ???*1* | side-effectful(side-effectful(null)) | side-effectful(???*14*)))
+  | ("compositionend" === (???*0* | null | ???*1* | effectful(effectful(null)) | effectful(???*14*)))
   | !((???*27* | ???*31*))
   | (???*32* !== ???*33*)
   | (229 !== ???*37*)
@@ -12033,7 +12029,7 @@ ${La}${a}`("SuspenseList")
 
 1745 -> 1746 call = (...) => (
   | md
-  | side-effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
+  | effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
 )()
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -12254,7 +12250,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  unknown object
 - *2* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *3* ((side-effectful(???*4*) | ???*6*) ? ???*9* : ???*12*)
+- *3* ((effectful(???*4*) | ???*6*) ? ???*9* : ???*12*)
   ⚠️  nested operation
 - *4* ???*5*["nodeName"]
   ⚠️  unknown object
@@ -12371,11 +12367,11 @@ ${La}${a}`("SuspenseList")
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-0 -> 1814 call = (...) => (a | undefined)((null | side-effectful(null) | ???*0*))
+0 -> 1814 call = (...) => (a | undefined)((null | effectful(null) | ???*0*))
 - *0* arguments[2]
   ⚠️  function calls are not analyzed yet
 
-0 -> 1815 conditional = (("value" === ???*0*) | null | side-effectful(null) | ???*2* | undefined)
+0 -> 1815 conditional = (("value" === ???*0*) | null | effectful(null) | ???*2* | undefined)
 - *0* ???*1*["propertyName"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -12389,7 +12385,7 @@ ${La}${a}`("SuspenseList")
 
 1815 -> 1817 call = (...) => undefined(
     ([] | undefined),
-    (null | side-effectful(null) | ???*0*),
+    (null | effectful(null) | ???*0*),
     ???*1*,
     (???*2* ? (???*7* | ???*9*) : (???*11* | ???*12* | ???*14*))
 )
@@ -12451,7 +12447,7 @@ ${La}${a}`("SuspenseList")
 - *2* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-1824 -> 1825 call = (...) => (a | undefined)((null | side-effectful(null) | ???*0*))
+1824 -> 1825 call = (...) => (a | undefined)((null | effectful(null) | ???*0*))
 - *0* arguments[2]
   ⚠️  function calls are not analyzed yet
 
@@ -13781,13 +13777,13 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 2081 call = (...) => (Xe[a] | a | side-effectful(b[c]))("animationend")
+0 -> 2081 call = (...) => (Xe[a] | a | effectful(b[c]))("animationend")
 
-0 -> 2082 call = (...) => (Xe[a] | a | side-effectful(b[c]))("animationiteration")
+0 -> 2082 call = (...) => (Xe[a] | a | effectful(b[c]))("animationiteration")
 
-0 -> 2083 call = (...) => (Xe[a] | a | side-effectful(b[c]))("animationstart")
+0 -> 2083 call = (...) => (Xe[a] | a | effectful(b[c]))("animationstart")
 
-0 -> 2084 call = (...) => (Xe[a] | a | side-effectful(b[c]))("transitionend")
+0 -> 2084 call = (...) => (Xe[a] | a | effectful(b[c]))("transitionend")
 
 0 -> 2085 free var = FreeVar(Map)
 
@@ -13878,7 +13874,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  nested operation
 
 0 -> 2102 call = (...) => undefined(
-    (undefined | ???*0* | "animationend" | side-effectful((???*1* | ???*3*))),
+    (undefined | ???*0* | "animationend" | effectful((???*1* | ???*3*))),
     "onAnimationEnd"
 )
 - *0* unknown mutation
@@ -13898,7 +13894,7 @@ ${La}${a}`("SuspenseList")
 - *6* for-in variable currently not analyzed
 
 0 -> 2103 call = (...) => undefined(
-    (undefined | ???*0* | "animationiteration" | side-effectful((???*1* | ???*3*))),
+    (undefined | ???*0* | "animationiteration" | effectful((???*1* | ???*3*))),
     "onAnimationIteration"
 )
 - *0* unknown mutation
@@ -13918,7 +13914,7 @@ ${La}${a}`("SuspenseList")
 - *6* for-in variable currently not analyzed
 
 0 -> 2104 call = (...) => undefined(
-    (undefined | ???*0* | "animationstart" | side-effectful((???*1* | ???*3*))),
+    (undefined | ???*0* | "animationstart" | effectful((???*1* | ???*3*))),
     "onAnimationStart"
 )
 - *0* unknown mutation
@@ -13944,7 +13940,7 @@ ${La}${a}`("SuspenseList")
 0 -> 2107 call = (...) => undefined("focusout", "onBlur")
 
 0 -> 2108 call = (...) => undefined(
-    (undefined | ???*0* | "transitionend" | side-effectful((???*1* | ???*3*))),
+    (undefined | ???*0* | "transitionend" | effectful((???*1* | ???*3*))),
     "onTransitionEnd"
 )
 - *0* unknown mutation
@@ -14361,7 +14357,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-0 -> 2168 member call = (???*0* | side-effectful(new ???*2*()))["has"](`${???*3*}__bubble`)
+0 -> 2168 member call = (???*0* | effectful(new ???*2*()))["has"](`${???*3*}__bubble`)
 - *0* ???*1*[of]
   ⚠️  unknown object
 - *1* arguments[1]
@@ -14378,7 +14374,7 @@ ${La}${a}`("SuspenseList")
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-0 -> 2171 member call = (???*0* | side-effectful(new ???*2*()))["add"](`${???*3*}__bubble`)
+0 -> 2171 member call = (???*0* | effectful(new ???*2*()))["add"](`${???*3*}__bubble`)
 - *0* ???*1*[of]
   ⚠️  unknown object
 - *1* arguments[1]
@@ -14676,7 +14672,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 2209 conditional = (
   | (0 === ???*0*)
-  | (null !== (???*1* | side-effectful((???*2* | undefined | ???*4*)) | ???*5*))
+  | (null !== (???*1* | effectful((???*2* | undefined | ???*4*)) | ???*5*))
 )
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -14697,7 +14693,7 @@ ${La}${a}`("SuspenseList")
 - *0* labeled statement
   ⚠️  This value might have side effects
 
-2210 -> 2211 conditional = (null === (???*0* | side-effectful((???*1* | undefined | ???*3*)) | ???*4*))
+2210 -> 2211 conditional = (null === (???*0* | effectful((???*1* | undefined | ???*3*)) | ???*4*))
 - *0* arguments[3]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*["tag"]
@@ -14738,7 +14734,7 @@ ${La}${a}`("SuspenseList")
 2214 -> 2229 call = (...) => (b | c | null)(
     (
       | ???*0*
-      | side-effectful((
+      | effectful((
           | ???*3*
           | undefined
           | null[`__reactFiber$${???*5*}`]
@@ -15023,7 +15019,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-2264 -> 2266 conditional = side-effectful((
+2264 -> 2266 conditional = effectful((
   | (???*0* ? (???*5* | ???*7*) : (???*9* | ???*10* | ???*12*))["ownerDocument"]
   | new (...) => ???*13*("onBeforeInput", "beforeinput", null, ???*14*, ???*15*)["ownerDocument"]
 ))
@@ -15429,7 +15425,7 @@ ${La}${a}`("SuspenseList")
   | (...) => (te(qe) | undefined)
   | (...) => (te(b) | undefined)
   | ???*0*
-  | side-effectful(???*2*)
+  | effectful(???*2*)
 )
 - *0* ???*1*(a, d)
   ⚠️  unknown callee
@@ -15714,7 +15710,7 @@ ${La}${a}`("SuspenseList")
 
 2340 -> 2341 call = (...) => (
   | md
-  | side-effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
+  | effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
 )()
 - *0* unsupported expression
   ⚠️  This value might have side effects
@@ -17346,7 +17342,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-2486 -> 2491 conditional = side-effectful((
+2486 -> 2491 conditional = effectful((
   | ???*0*
   | null["parentNode"][`__reactContainer$${???*7*}`]
   | null[`__reactFiber$${???*12*}`]["alternate"][`__reactContainer$${???*17*}`]
@@ -17640,7 +17636,7 @@ ${La}${a}`("SuspenseList")
 - *3* a
   ⚠️  circular variable reference
 
-2495 -> 2498 conditional = side-effectful((???*0* | null[`__reactFiber$${???*6*}`]))
+2495 -> 2498 conditional = effectful((???*0* | null[`__reactFiber$${???*6*}`]))
 - *0* ???*1*[`__reactFiber$${???*2*}`]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -17923,7 +17919,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 2575 call = (...) => undefined({"current": {}}, (???*0* | side-effectful(???*1*) | ???*3* | {}))
+0 -> 2575 call = (...) => undefined({"current": {}}, (???*0* | effectful(???*1*) | ???*3* | {}))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*["stateNode"]
@@ -18501,7 +18497,7 @@ ${La}${a}`("SuspenseList")
 - *11* a
   ⚠️  circular variable reference
 
-2701 -> 2710 conditional = (???*0* | side-effectful(???*1*))
+2701 -> 2710 conditional = (???*0* | effectful(???*1*))
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -18761,7 +18757,7 @@ ${La}${a}`("SuspenseList")
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-0 -> 2777 conditional = ((null | side-effectful(side-effectful(null)) | side-effectful(null)) !== (
+0 -> 2777 conditional = ((null | effectful(effectful(null)) | effectful(null)) !== (
   | ???*0*
   | {"context": ???*1*, "memoizedValue": ???*2*, "next": null}
 ))
@@ -18929,7 +18925,7 @@ ${La}${a}`("SuspenseList")
       | undefined["alternate"]
       | undefined
       | ???*2*
-      | side-effectful((
+      | effectful((
           | {
                 "eventTime": ???*3*,
                 "lane": ???*5*,
@@ -18940,7 +18936,7 @@ ${La}${a}`("SuspenseList")
             }
           | undefined
         ))["alternate"]
-      | side-effectful(???*13*)["alternate"]
+      | effectful(???*13*)["alternate"]
       | ???*14*
     ))
   | ???*16*
@@ -18989,7 +18985,7 @@ ${La}${a}`("SuspenseList")
         "firstBaseUpdate": (
           | null
           | undefined
-          | side-effectful((
+          | effectful((
               | {
                     "eventTime": ???*5*,
                     "lane": ???*7*,
@@ -19000,7 +18996,7 @@ ${La}${a}`("SuspenseList")
                 }
               | undefined
             ))
-          | side-effectful(???*15*)
+          | effectful(???*15*)
         ),
         "lastBaseUpdate": (
           | null
@@ -19013,7 +19009,7 @@ ${La}${a}`("SuspenseList")
                 "callback": ???*24*,
                 "next": null
             }
-          | side-effectful((
+          | effectful((
               | {
                     "eventTime": ???*26*,
                     "lane": ???*28*,
@@ -19025,7 +19021,7 @@ ${La}${a}`("SuspenseList")
               | undefined
             ))
           | ???*36*
-          | side-effectful(???*37*)
+          | effectful(???*37*)
         ),
         "shared": ???*38*,
         "effects": ???*41*
@@ -19145,7 +19141,7 @@ ${La}${a}`("SuspenseList")
         "callback": ???*12*,
         "next": null
     }
-  | side-effectful((
+  | effectful((
       | {
             "eventTime": ???*14*,
             "lane": ???*16*,
@@ -19156,7 +19152,7 @@ ${La}${a}`("SuspenseList")
         }
       | undefined
     ))
-  | side-effectful(???*24*)
+  | effectful(???*24*)
   | ???*25*
 ))
 - *0* arguments[0]
@@ -19246,8 +19242,8 @@ ${La}${a}`("SuspenseList")
   | undefined["next"]["payload"]
   | null["next"]["payload"]
   | undefined["payload"]
-  | side-effectful(null)["payload"]
-  | side-effectful((
+  | effectful(null)["payload"]
+  | effectful((
       | ???*8*
       | undefined
       | ???*10*
@@ -19341,8 +19337,8 @@ ${La}${a}`("SuspenseList")
       | undefined["next"]["payload"]
       | null["next"]["payload"]
       | undefined["payload"]
-      | side-effectful(null)["payload"]
-      | side-effectful((
+      | effectful(null)["payload"]
+      | effectful((
           | ???*8*
           | undefined
           | ???*10*
@@ -19421,8 +19417,8 @@ ${La}${a}`("SuspenseList")
   | undefined["next"]["payload"]
   | null["next"]["payload"]
   | undefined["payload"]
-  | side-effectful(null)["payload"]
-  | side-effectful((
+  | effectful(null)["payload"]
+  | effectful((
       | ???*8*
       | undefined
       | ???*10*
@@ -19521,8 +19517,8 @@ ${La}${a}`("SuspenseList")
   | undefined["next"]["payload"]
   | null["next"]["payload"]
   | undefined["payload"]
-  | side-effectful(null)["payload"]
-  | side-effectful((
+  | effectful(null)["payload"]
+  | effectful((
       | ???*8*
       | undefined
       | ???*10*
@@ -19616,8 +19612,8 @@ ${La}${a}`("SuspenseList")
       | undefined["next"]["payload"]
       | null["next"]["payload"]
       | undefined["payload"]
-      | side-effectful(null)["payload"]
-      | side-effectful((
+      | effectful(null)["payload"]
+      | effectful((
           | ???*8*
           | undefined
           | ???*10*
@@ -19696,8 +19692,8 @@ ${La}${a}`("SuspenseList")
   | undefined["next"]["payload"]
   | null["next"]["payload"]
   | undefined["payload"]
-  | side-effectful(null)["payload"]
-  | side-effectful((
+  | effectful(null)["payload"]
+  | effectful((
       | ???*8*
       | undefined
       | ???*10*
@@ -20154,7 +20150,7 @@ ${La}${a}`("SuspenseList")
 - *17* c
   ⚠️  circular variable reference
 
-0 -> 2982 conditional = side-effectful(???*0*)
+0 -> 2982 conditional = effectful(???*0*)
 - *0* ???*1*["_reactInternals"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -20172,7 +20168,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 2986 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 2986 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -20215,7 +20211,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -20337,7 +20333,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *5* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *6* (???*7* ? (???*11* | ???*12*) : side-effectful(???*13*))
+- *6* (???*7* ? (???*11* | ???*12*) : effectful(???*13*))
   ⚠️  nested operation
 - *7* (???*8* !== (???*9* | ???*10*))
   ⚠️  nested operation
@@ -20561,7 +20557,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *38* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *39* (???*40* ? (???*44* | ???*45*) : side-effectful(???*46*))
+- *39* (???*40* ? (???*44* | ???*45*) : effectful(???*46*))
   ⚠️  nested operation
 - *40* (???*41* !== (???*42* | ???*43*))
   ⚠️  nested operation
@@ -20673,7 +20669,7 @@ ${La}${a}`("SuspenseList")
 - *35* a
   ⚠️  circular variable reference
 
-0 -> 2995 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 2995 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -20716,7 +20712,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -20838,7 +20834,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *5* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *6* (???*7* ? (???*11* | ???*12*) : side-effectful(???*13*))
+- *6* (???*7* ? (???*11* | ???*12*) : effectful(???*13*))
   ⚠️  nested operation
 - *7* (???*8* !== (???*9* | ???*10*))
   ⚠️  nested operation
@@ -21062,7 +21058,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *38* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *39* (???*40* ? (???*44* | ???*45*) : side-effectful(???*46*))
+- *39* (???*40* ? (???*44* | ???*45*) : effectful(???*46*))
   ⚠️  nested operation
 - *40* (???*41* !== (???*42* | ???*43*))
   ⚠️  nested operation
@@ -21174,7 +21170,7 @@ ${La}${a}`("SuspenseList")
 - *35* a
   ⚠️  circular variable reference
 
-0 -> 3005 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 3005 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -21217,7 +21213,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -21339,7 +21335,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *5* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *6* (???*7* ? (???*11* | ???*12*) : side-effectful(???*13*))
+- *6* (???*7* ? (???*11* | ???*12*) : effectful(???*13*))
   ⚠️  nested operation
 - *7* (???*8* !== (???*9* | ???*10*))
   ⚠️  nested operation
@@ -21563,7 +21559,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *38* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *39* (???*40* ? (???*44* | ???*45*) : side-effectful(???*46*))
+- *39* (???*40* ? (???*44* | ???*45*) : effectful(???*46*))
   ⚠️  nested operation
 - *40* (???*41* !== (???*42* | ???*43*))
   ⚠️  nested operation
@@ -21730,7 +21726,7 @@ ${La}${a}`("SuspenseList")
   | new ???*2*(???*3*, ???*4*)["contextType"]
   | undefined
   | ???*5*
-  | (side-effectful(???*6*) ? ({} | ???*11*) : {})
+  | (effectful(???*6*) ? ({} | ???*11*) : {})
 ))
 - *0* ???*1*["contextType"]
   ⚠️  unknown object
@@ -21773,7 +21769,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *3* unknown mutation
   ⚠️  This value might have side effects
-- *4* (side-effectful(???*5*) ? ({} | ???*10*) : {})
+- *4* (effectful(???*5*) ? ({} | ???*10*) : {})
   ⚠️  nested operation
 - *5* (null !== (false | ???*6* | ???*8*))
   ⚠️  nested operation
@@ -21797,7 +21793,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *15* unknown mutation
   ⚠️  This value might have side effects
-- *16* (side-effectful(???*17*) ? ({} | ???*22*) : {})
+- *16* (effectful(???*17*) ? ({} | ???*22*) : {})
   ⚠️  nested operation
 - *17* (null !== (false | ???*18* | ???*20*))
   ⚠️  nested operation
@@ -21822,7 +21818,7 @@ ${La}${a}`("SuspenseList")
       | new ???*2*(???*3*, ???*4*)["contextType"]
       | undefined
       | ???*5*
-      | (side-effectful(???*6*) ? ({} | ???*11*) : {})
+      | (effectful(???*6*) ? ({} | ???*11*) : {})
     )
 )
 - *0* ???*1*["contextType"]
@@ -21872,7 +21868,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 - *5* unknown mutation
   ⚠️  This value might have side effects
-- *6* (side-effectful(???*7*) ? ({} | ???*12*) : {})
+- *6* (effectful(???*7*) ? ({} | ???*12*) : {})
   ⚠️  nested operation
 - *7* (null !== (false | ???*8* | ???*10*))
   ⚠️  nested operation
@@ -21906,7 +21902,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 - *6* unknown mutation
   ⚠️  This value might have side effects
-- *7* (side-effectful(???*8*) ? ({} | ???*13*) : {})
+- *7* (effectful(???*8*) ? ({} | ???*13*) : {})
   ⚠️  nested operation
 - *8* (null !== (false | ???*9* | ???*11*))
   ⚠️  nested operation
@@ -21942,7 +21938,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 - *24* unknown mutation
   ⚠️  This value might have side effects
-- *25* (side-effectful(???*26*) ? ({} | ???*31*) : {})
+- *25* (effectful(???*26*) ? ({} | ???*31*) : {})
   ⚠️  nested operation
 - *26* (null !== (false | ???*27* | ???*29*))
   ⚠️  nested operation
@@ -21965,7 +21961,7 @@ ${La}${a}`("SuspenseList")
 - *35* a
   ⚠️  circular variable reference
 
-3028 -> 3034 conditional = side-effectful(((null !== (false | ???*0* | ???*2*)) | (undefined !== (false | ???*4* | ???*6*))))
+3028 -> 3034 conditional = effectful(((null !== (false | ???*0* | ???*2*)) | (undefined !== (false | ???*4* | ???*6*))))
 - *0* ???*1*["contextTypes"]
   ⚠️  unknown object
 - *1* arguments[1]
@@ -22006,7 +22002,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 - *10* unknown mutation
   ⚠️  This value might have side effects
-- *11* (side-effectful(???*12*) ? ({} | ???*13*) : {})
+- *11* (effectful(???*12*) ? ({} | ???*13*) : {})
   ⚠️  nested operation
 - *12* (null !== (... | ... | ...))
   ⚠️  nested operation
@@ -22033,7 +22029,7 @@ ${La}${a}`("SuspenseList")
       | new ???*18*(???*19*, ???*20*)["contextType"]
       | undefined
       | ???*21*
-      | (side-effectful(???*22*) ? ({} | ???*27*) : {})
+      | (effectful(???*22*) ? ({} | ???*27*) : {})
     )
 )
 - *0* arguments[1]
@@ -22048,7 +22044,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  circular variable reference
 - *5* unknown mutation
   ⚠️  This value might have side effects
-- *6* (side-effectful(???*7*) ? ({} | ???*12*) : {})
+- *6* (effectful(???*7*) ? ({} | ???*12*) : {})
   ⚠️  nested operation
 - *7* (null !== (false | ???*8* | ???*10*))
   ⚠️  nested operation
@@ -22140,7 +22136,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 
 0 -> 3061 member call = {
-    "isMounted": (...) => (side-effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
+    "isMounted": (...) => (effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
     "enqueueSetState": (...) => undefined,
     "enqueueReplaceState": (...) => undefined,
     "enqueueForceUpdate": (...) => undefined
@@ -22409,7 +22405,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 
 0 -> 3105 member call = {
-    "isMounted": (...) => (side-effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
+    "isMounted": (...) => (effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
     "enqueueSetState": (...) => undefined,
     "enqueueReplaceState": (...) => undefined,
     "enqueueForceUpdate": (...) => undefined
@@ -25168,7 +25164,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 3393 call = (...) => (???*0* | c)(???*1*, ???*2*, (side-effectful(0) | ???*3*))
+0 -> 3393 call = (...) => (???*0* | c)(???*1*, ???*2*, (effectful(0) | ???*3*))
 - *0* c
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25183,7 +25179,7 @@ ${La}${a}`("SuspenseList")
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 3397 conditional = ((side-effectful(0) | ???*0*) === ???*1*)
+0 -> 3397 conditional = ((effectful(0) | ???*0*) === ???*1*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 - *1* ???*2*["length"]
@@ -25197,7 +25193,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3397 -> 3399 call = (...) => undefined(???*0*, (side-effectful(0) | ???*1*))
+3397 -> 3399 call = (...) => undefined(???*0*, (effectful(0) | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -25224,7 +25220,7 @@ ${La}${a}`("SuspenseList")
 - *4* arguments[3]
   ⚠️  function calls are not analyzed yet
 
-3401 -> 3405 call = (...) => (???*0* | c)(???*1*, ???*2*, (side-effectful(0) | ???*3*))
+3401 -> 3405 call = (...) => (???*0* | c)(???*1*, ???*2*, (effectful(0) | ???*3*))
 - *0* c
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25239,7 +25235,7 @@ ${La}${a}`("SuspenseList")
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3401 -> 3408 call = (...) => undefined(???*0*, (side-effectful(0) | ???*1*))
+3401 -> 3408 call = (...) => undefined(???*0*, (effectful(0) | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -25255,7 +25251,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3401 -> 3413 call = (...) => (???*0* | y(a, b, c, f(d["_payload"]), e) | null)(???*1*, ???*2*, (side-effectful(0) | ???*3*), ???*4*, ???*6*)
+3401 -> 3413 call = (...) => (???*0* | y(a, b, c, f(d["_payload"]), e) | null)(???*1*, ???*2*, (effectful(0) | ???*3*), ???*4*, ???*6*)
 - *0* h(b, a, ("" + d), e)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25279,7 +25275,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3401 -> 3419 member call = ???*0*["delete"]((???*1* ? (side-effectful(0) | ???*4*) : ???*5*))
+3401 -> 3419 member call = ???*0*["delete"]((???*1* ? (effectful(0) | ???*4*) : ???*5*))
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 - *1* (null === ???*2*)
@@ -25297,7 +25293,7 @@ ${La}${a}`("SuspenseList")
 - *6* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3401 -> 3420 call = (...) => (???*0* | c)(???*1*, ???*2*, (side-effectful(0) | ???*3*))
+3401 -> 3420 call = (...) => (???*0* | c)(???*1*, ???*2*, (effectful(0) | ???*3*))
 - *0* c
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25326,7 +25322,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-3401 -> 3427 call = (...) => undefined(???*0*, (side-effectful(0) | ???*1*))
+3401 -> 3427 call = (...) => undefined(???*0*, (effectful(0) | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -25419,7 +25415,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 3450 call = (...) => (???*0* | c)(???*1*, ???*2*, (side-effectful(0) | ???*3*))
+0 -> 3450 call = (...) => (???*0* | c)(???*1*, ???*2*, (effectful(0) | ???*3*))
 - *0* c
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25451,7 +25447,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3456 -> 3458 call = (...) => undefined(???*0*, (side-effectful(0) | ???*1*))
+3456 -> 3458 call = (...) => undefined(???*0*, (effectful(0) | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -25479,7 +25475,7 @@ ${La}${a}`("SuspenseList")
 - *4* arguments[3]
   ⚠️  function calls are not analyzed yet
 
-3460 -> 3464 call = (...) => (???*0* | c)(???*1*, ???*2*, (side-effectful(0) | ???*3*))
+3460 -> 3464 call = (...) => (???*0* | c)(???*1*, ???*2*, (effectful(0) | ???*3*))
 - *0* c
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25498,7 +25494,7 @@ ${La}${a}`("SuspenseList")
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3460 -> 3469 call = (...) => undefined(???*0*, (side-effectful(0) | ???*1*))
+3460 -> 3469 call = (...) => undefined(???*0*, (effectful(0) | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -25514,7 +25510,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3460 -> 3474 call = (...) => (???*0* | y(a, b, c, f(d["_payload"]), e) | null)(???*1*, ???*2*, (side-effectful(0) | ???*3*), ???*4*, ???*6*)
+3460 -> 3474 call = (...) => (???*0* | y(a, b, c, f(d["_payload"]), e) | null)(???*1*, ???*2*, (effectful(0) | ???*3*), ???*4*, ???*6*)
 - *0* h(b, a, ("" + d), e)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25539,7 +25535,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3460 -> 3480 member call = ???*0*["delete"]((???*1* ? (side-effectful(0) | ???*4*) : ???*5*))
+3460 -> 3480 member call = ???*0*["delete"]((???*1* ? (effectful(0) | ???*4*) : ???*5*))
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 - *1* (null === ???*2*)
@@ -25557,7 +25553,7 @@ ${La}${a}`("SuspenseList")
 - *6* max number of linking steps reached
   ⚠️  This value might have side effects
 
-3460 -> 3481 call = (...) => (???*0* | c)(???*1*, ???*2*, (side-effectful(0) | ???*3*))
+3460 -> 3481 call = (...) => (???*0* | c)(???*1*, ???*2*, (effectful(0) | ???*3*))
 - *0* c
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -25590,7 +25586,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-3460 -> 3490 call = (...) => undefined(???*0*, (side-effectful(0) | ???*1*))
+3460 -> 3490 call = (...) => undefined(???*0*, (effectful(0) | ???*1*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* updated with update expression
@@ -26326,7 +26322,7 @@ ${La}${a}`("SuspenseList")
     {"current": {}},
     (
       | ???*0*
-      | (side-effectful(???*1*) ? ???*3* : ???*5*)
+      | (effectful(???*1*) ? ???*3* : ???*5*)
       | ???*7*
       | (???*9* ? ???*11* : ???*13*)["namespaceURI"]
       | null
@@ -26389,7 +26385,7 @@ ${La}${a}`("SuspenseList")
     (
       | ???*0*
       | ???*1*
-      | (side-effectful(???*3*) ? ???*5* : ???*7*)["nodeType"]
+      | (effectful(???*3*) ? ???*5* : ???*7*)["nodeType"]
       | null["nodeType"]
       | (???*9* ? (
           | "http://www.w3.org/2000/svg"
@@ -26445,7 +26441,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *19* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *20* (side-effectful(???*21*) ? ???*23* : ???*25*)
+- *20* (effectful(???*21*) ? ???*23* : ???*25*)
   ⚠️  nested operation
 - *21* ???*22*["documentElement"]
   ⚠️  unknown object
@@ -26471,9 +26467,9 @@ ${La}${a}`("SuspenseList")
 
 0 -> 3615 call = (...) => undefined({"current": {}}, {})
 
-0 -> 3618 conditional = side-effectful((
+0 -> 3618 conditional = effectful((
   | ???*0*
-  | (side-effectful(???*2*) ? ???*4* : ???*6*)["documentElement"]
+  | (effectful(???*2*) ? ???*4* : ???*6*)["documentElement"]
   | (???*8* ? ???*10* : ???*12*)["namespaceURI"]["documentElement"]
   | null["documentElement"]
   | (???*13* ? (
@@ -26548,7 +26544,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *8* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *9* (side-effectful(???*10*) ? ???*12* : ???*14*)
+- *9* (effectful(???*10*) ? ???*12* : ???*14*)
   ⚠️  nested operation
 - *10* ???*11*["documentElement"]
   ⚠️  unknown object
@@ -26575,7 +26571,7 @@ ${La}${a}`("SuspenseList")
 0 -> 3625 call = (...) => (((null == a) || ("http://www.w3.org/1999/xhtml" === a)) ? kb(b) : ((("http://www.w3.org/2000/svg" === a) && ("foreignObject" === b)) ? "http://www.w3.org/1999/xhtml" : a))(
     (
       | ???*0*
-      | (side-effectful(???*1*) ? ???*3* : ???*5*)
+      | (effectful(???*1*) ? ???*3* : ???*5*)
       | ???*7*
       | (???*9* ? ???*11* : ???*13*)["namespaceURI"]
       | null
@@ -26589,7 +26585,7 @@ ${La}${a}`("SuspenseList")
     (
       | ???*20*
       | ???*21*
-      | (side-effectful(???*23*) ? ???*25* : ???*27*)["nodeType"]
+      | (effectful(???*23*) ? ???*25* : ???*27*)["nodeType"]
       | null["nodeType"]
       | (???*29* ? (
           | "http://www.w3.org/2000/svg"
@@ -26690,7 +26686,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *39* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *40* (side-effectful(???*41*) ? ???*43* : ???*45*)
+- *40* (effectful(???*41*) ? ???*43* : ???*45*)
   ⚠️  nested operation
 - *41* ???*42*["documentElement"]
   ⚠️  unknown object
@@ -26720,7 +26716,7 @@ ${La}${a}`("SuspenseList")
     {"current": {}},
     (
       | ???*0*
-      | (side-effectful(???*1*) ? ???*3* : ???*5*)
+      | (effectful(???*1*) ? ???*3* : ???*5*)
       | ???*7*
       | (???*9* ? ???*11* : ???*13*)["namespaceURI"]
       | null
@@ -27006,7 +27002,7 @@ ${La}${a}`("SuspenseList")
 - *2* arguments[4]
   ⚠️  function calls are not analyzed yet
 
-0 -> 3700 conditional = (false | side-effectful(true))
+0 -> 3700 conditional = (false | effectful(true))
 
 3700 -> 3701 free var = FreeVar(Error)
 
@@ -27033,7 +27029,7 @@ ${La}${a}`("SuspenseList")
   | ???*0*
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | null["alternate"]
       | ???*1*
       | undefined
@@ -27048,7 +27044,7 @@ ${La}${a}`("SuspenseList")
     ))
   | (null !== (
       | null["next"]
-      | side-effectful(null)["next"]
+      | effectful(null)["next"]
       | null["alternate"]["next"]
       | ???*16*
       | undefined["next"]
@@ -27128,7 +27124,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 3719 conditional = (null === (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | null["alternate"]
   | ???*0*
   | undefined
@@ -27172,12 +27168,12 @@ ${La}${a}`("SuspenseList")
   | undefined
   | ???*2*
   | null["next"]
-  | side-effectful(null)["next"]
+  | effectful(null)["next"]
   | {
-        "memoizedState": (null["memoizedState"] | side-effectful(null)["memoizedState"] | ???*7*),
-        "baseState": (null["baseState"] | side-effectful(null)["baseState"] | ???*9*),
-        "baseQueue": (null["baseQueue"] | side-effectful(null)["baseQueue"] | ???*11*),
-        "queue": (null["queue"] | side-effectful(null)["queue"] | ???*13*),
+        "memoizedState": (null["memoizedState"] | effectful(null)["memoizedState"] | ???*7*),
+        "baseState": (null["baseState"] | effectful(null)["baseState"] | ???*9*),
+        "baseQueue": (null["baseQueue"] | effectful(null)["baseQueue"] | ???*11*),
+        "queue": (null["queue"] | effectful(null)["queue"] | ???*13*),
         "next": null
     }
 ))
@@ -27226,12 +27222,12 @@ ${La}${a}`("SuspenseList")
   | undefined
   | ???*2*
   | null["next"]
-  | side-effectful(null)["next"]
+  | effectful(null)["next"]
   | {
-        "memoizedState": (null["memoizedState"] | side-effectful(null)["memoizedState"] | ???*7*),
-        "baseState": (null["baseState"] | side-effectful(null)["baseState"] | ???*9*),
-        "baseQueue": (null["baseQueue"] | side-effectful(null)["baseQueue"] | ???*11*),
-        "queue": (null["queue"] | side-effectful(null)["queue"] | ???*13*),
+        "memoizedState": (null["memoizedState"] | effectful(null)["memoizedState"] | ???*7*),
+        "baseState": (null["baseState"] | effectful(null)["baseState"] | ???*9*),
+        "baseQueue": (null["baseQueue"] | effectful(null)["baseQueue"] | ???*11*),
+        "queue": (null["queue"] | effectful(null)["queue"] | ???*13*),
         "next": null
     }
 ))
@@ -27462,7 +27458,7 @@ ${La}${a}`("SuspenseList")
 
 3809 -> 3813 call = ???*0*(
     (???*1* | ???*3*),
-    (side-effectful((???*5* | ???*9*))["action"] | undefined["action"] | ???*12*)
+    (effectful((???*5* | ???*9*))["action"] | undefined["action"] | ???*12*)
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -27583,7 +27579,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -27595,7 +27591,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     (???*20* | ???*21*),
     ???*23*
@@ -27659,7 +27655,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *2* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -27780,7 +27776,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -27792,7 +27788,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     (???*20* | ???*21*),
     ???*23*(),
@@ -27859,7 +27855,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *1* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*2*
       | undefined
       | ???*4*
@@ -27970,7 +27966,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -27982,7 +27978,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     ???*20*,
     ???*21*()
@@ -28060,7 +28056,7 @@ ${La}${a}`("SuspenseList")
   | null["updateQueue"]["stores"]
   | (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -28072,7 +28068,7 @@ ${La}${a}`("SuspenseList")
             "next": null
         }
     ))["updateQueue"]["stores"]
-  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["stores"]
+  | (null !== (null["next"] | effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["stores"]
   | null
   | ???*22*
 )["push"]((???*23* | ???*24*))
@@ -28232,7 +28228,7 @@ ${La}${a}`("SuspenseList")
         "lastRenderedReducer": (...) => (("function" === typeof(b)) ? b(a) : b),
         "lastRenderedState": ???*2*
     }
-  | side-effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
+  | effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
 ))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -28244,7 +28240,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *4* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*5*
       | undefined
       | ???*7*
@@ -28301,7 +28297,7 @@ ${La}${a}`("SuspenseList")
         "lastRenderedReducer": (...) => (("function" === typeof(b)) ? b(a) : b),
         "lastRenderedState": ???*2*
     }
-  | side-effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
+  | effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
 )()
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -28313,7 +28309,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *4* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*5*
       | undefined
       | ???*7*
@@ -28366,7 +28362,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -28378,7 +28374,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     (
       | ???*20*
@@ -28391,7 +28387,7 @@ ${La}${a}`("SuspenseList")
             "lastRenderedReducer": (...) => (("function" === typeof(b)) ? b(a) : b),
             "lastRenderedState": ???*22*
         }
-      | side-effectful((...) => undefined["bind"](null, (null | ???*23* | ???*24*), ???*40*))
+      | effectful((...) => undefined["bind"](null, (null | ???*23* | ???*24*), ???*40*))
     )
 )
 - *0* arguments[1]
@@ -28444,7 +28440,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *24* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*25*
       | undefined
       | ???*27*
@@ -28556,7 +28552,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 3906 conditional = (null !== (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | null["alternate"]
   | ???*0*
   | undefined
@@ -28598,7 +28594,7 @@ ${La}${a}`("SuspenseList")
     (???*0* | (???*1* ? null : ???*3*)),
     (
       | null["memoizedState"]["deps"]
-      | side-effectful(null)["memoizedState"]["deps"]
+      | effectful(null)["memoizedState"]["deps"]
       | null["alternate"]["memoizedState"]["deps"]
       | ???*4*
       | (null !== ???*8*)["alternate"]["memoizedState"]["deps"]
@@ -28663,7 +28659,7 @@ ${La}${a}`("SuspenseList")
     (
       | undefined
       | null["memoizedState"]["destroy"]
-      | side-effectful(null)["memoizedState"]["destroy"]
+      | effectful(null)["memoizedState"]["destroy"]
       | null["alternate"]["memoizedState"]["destroy"]
       | ???*2*
       | (null !== ???*6*)["alternate"]["memoizedState"]["destroy"]
@@ -28725,7 +28721,7 @@ ${La}${a}`("SuspenseList")
     (
       | undefined
       | null["memoizedState"]["destroy"]
-      | side-effectful(null)["memoizedState"]["destroy"]
+      | effectful(null)["memoizedState"]["destroy"]
       | null["alternate"]["memoizedState"]["destroy"]
       | ???*2*
       | (null !== ???*6*)["alternate"]["memoizedState"]["destroy"]
@@ -29165,7 +29161,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *2* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -29220,7 +29216,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *23* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*24*
       | undefined
       | ???*26*
@@ -29524,7 +29520,7 @@ ${La}${a}`("SuspenseList")
 - *56* a
   ⚠️  circular variable reference
 
-3987 -> 3990 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+3987 -> 3990 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -29696,7 +29692,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *58* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *59* (???*60* ? (???*64* | ???*65*) : side-effectful(???*66*))
+- *59* (???*60* ? (???*64* | ???*65*) : effectful(???*66*))
   ⚠️  nested operation
 - *60* (???*61* !== (???*62* | ???*63*))
   ⚠️  nested operation
@@ -29897,7 +29893,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *2* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -29952,7 +29948,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *23* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*24*
       | undefined
       | ???*26*
@@ -30095,7 +30091,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *34* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *35* (???*36* ? (???*40* | ???*41*) : side-effectful(???*42*))
+- *35* (???*36* ? (???*40* | ???*41*) : effectful(???*42*))
   ⚠️  nested operation
 - *36* (???*37* !== (???*38* | ???*39*))
   ⚠️  nested operation
@@ -30351,7 +30347,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *35* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *36* (???*37* ? (???*41* | ???*42*) : side-effectful(???*43*))
+- *36* (???*37* ? (???*41* | ???*42*) : effectful(???*43*))
   ⚠️  nested operation
 - *37* (???*38* !== (???*39* | ???*40*))
   ⚠️  nested operation
@@ -30417,7 +30413,7 @@ ${La}${a}`("SuspenseList")
 - *66* a
   ⚠️  circular variable reference
 
-3995 -> 4018 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+3995 -> 4018 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -30602,7 +30598,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *65* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *66* (???*67* ? (???*71* | ???*72*) : side-effectful(???*73*))
+- *66* (???*67* ? (???*71* | ???*72*) : effectful(???*73*))
   ⚠️  nested operation
 - *67* (???*68* !== (???*69* | ???*70*))
   ⚠️  nested operation
@@ -30887,7 +30883,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -30899,7 +30895,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     (
       | ???*20*
@@ -30911,7 +30907,7 @@ ${La}${a}`("SuspenseList")
             "lastRenderedReducer": ???*21*,
             "lastRenderedState": (???*22* | (???*23* ? ???*25* : ???*27*))
         }
-      | side-effectful((...) => undefined["bind"](null, (null | ???*28* | ???*29*), ???*45*))
+      | effectful((...) => undefined["bind"](null, (null | ???*28* | ???*29*), ???*45*))
     )
 )
 - *0* arguments[1]
@@ -30974,7 +30970,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *29* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*30*
       | undefined
       | ???*32*
@@ -31143,7 +31139,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -31155,7 +31151,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     ???*20*,
     (???*21* | ???*22*() | ???*23*())
@@ -31216,7 +31212,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -31228,7 +31224,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     {"value": (???*20* | ???*21*() | ???*22*()), "getSnapshot": ???*23*},
     ???*24*
@@ -31299,7 +31295,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *2* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*3*
       | undefined
       | ???*5*
@@ -31362,7 +31358,7 @@ ${La}${a}`("SuspenseList")
       | ???*0*
       | (null !== (
           | null
-          | side-effectful(null)
+          | effectful(null)
           | ???*1*
           | undefined
           | ???*3*
@@ -31374,7 +31370,7 @@ ${La}${a}`("SuspenseList")
                 "next": null
             }
         ))
-      | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
+      | (null !== (null["next"] | effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
     ),
     {"value": (???*20* | ???*21*() | ???*22*()), "getSnapshot": ???*23*},
     (???*24* | ???*25*() | ???*26*()),
@@ -31453,7 +31449,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 - *1* (null !== (
       | null
-      | side-effectful(null)
+      | effectful(null)
       | ???*2*
       | undefined
       | ???*4*
@@ -31569,7 +31565,7 @@ ${La}${a}`("SuspenseList")
     ???*1*,
     (
       | null["memoizedState"]
-      | side-effectful(null)["memoizedState"]
+      | effectful(null)["memoizedState"]
       | null["alternate"]["memoizedState"]
       | ???*2*
       | (null !== ???*5*)["alternate"]["memoizedState"]
@@ -31580,7 +31576,7 @@ ${La}${a}`("SuspenseList")
     ),
     ???*13*
 )
-- *0* side-effectful(c)
+- *0* effectful(c)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
 - *1* node limit reached
@@ -31632,7 +31628,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 4129 conditional = (null === (
   | null
-  | side-effectful(null)
+  | effectful(null)
   | null["alternate"]
   | ???*0*
   | undefined
@@ -31674,7 +31670,7 @@ ${La}${a}`("SuspenseList")
     ???*1*,
     (
       | null["memoizedState"]
-      | side-effectful(null)["memoizedState"]
+      | effectful(null)["memoizedState"]
       | null["alternate"]["memoizedState"]
       | ???*2*
       | (null !== ???*5*)["alternate"]["memoizedState"]
@@ -31685,7 +31681,7 @@ ${La}${a}`("SuspenseList")
     ),
     ???*13*
 )
-- *0* side-effectful(c)
+- *0* effectful(c)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
 - *1* node limit reached
@@ -31949,7 +31945,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 4195 conditional = (null === (???*0* | side-effectful(???*2*)))
+0 -> 4195 conditional = (null === (???*0* | effectful(???*2*)))
 - *0* ???*1*["pingCache"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -31997,10 +31993,10 @@ ${La}${a}`("SuspenseList")
 4195 -> 4201 member call = (
   | ???*0*
   | (...) => undefined["bind"](null, ???*2*, ???*3*, ???*4*)["pingCache"]
-  | side-effectful(new ???*5*())
+  | effectful(new ???*5*())
 )["set"](
     ???*11*,
-    (new ???*12*() | undefined | ???*13* | ???*17* | side-effectful(???*25*)["get"](???*32*))
+    (new ???*12*() | undefined | ???*13* | ???*17* | effectful(???*25*)["get"](???*32*))
 )
 - *0* ???*1*["pingCache"]
   ⚠️  unknown object
@@ -32079,7 +32075,7 @@ ${La}${a}`("SuspenseList")
 4195 -> 4203 member call = (
   | ???*0*
   | (...) => undefined["bind"](null, ???*2*, ???*3*, ???*4*)["pingCache"]
-  | side-effectful(new ???*5*())
+  | effectful(new ???*5*())
 )["get"](???*11*)
 - *0* ???*1*["pingCache"]
   ⚠️  unknown object
@@ -32119,10 +32115,10 @@ ${La}${a}`("SuspenseList")
 4195 -> 4207 member call = (
   | ???*0*
   | (...) => undefined["bind"](null, ???*2*, ???*3*, ???*4*)["pingCache"]
-  | side-effectful(new ???*5*())
+  | effectful(new ???*5*())
 )["set"](
     ???*11*,
-    (new ???*12*() | undefined | ???*13* | ???*17* | side-effectful(???*25*)["get"](???*32*))
+    (new ???*12*() | undefined | ???*13* | ???*17* | effectful(???*25*)["get"](???*32*))
 )
 - *0* ???*1*["pingCache"]
   ⚠️  unknown object
@@ -32198,7 +32194,7 @@ ${La}${a}`("SuspenseList")
 - *32* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-0 -> 4209 member call = (new ???*0*() | undefined | ???*1* | ???*5* | side-effectful(???*13*)["get"](???*20*))["has"](???*21*)
+0 -> 4209 member call = (new ???*0*() | undefined | ???*1* | ???*5* | effectful(???*13*)["get"](???*20*))["has"](???*21*)
 - *0* FreeVar(Set)
   ⚠️  unknown global
   ⚠️  This value might have side effects
@@ -32248,7 +32244,7 @@ ${La}${a}`("SuspenseList")
 - *21* arguments[2]
   ⚠️  function calls are not analyzed yet
 
-0 -> 4211 member call = (new ???*0*() | undefined | ???*1* | ???*5* | side-effectful(???*13*)["get"](???*20*))["add"](???*21*)
+0 -> 4211 member call = (new ???*0*() | undefined | ???*1* | ???*5* | effectful(???*13*)["get"](???*20*))["add"](???*21*)
 - *0* FreeVar(Set)
   ⚠️  unknown global
   ⚠️  This value might have side effects
@@ -32349,7 +32345,7 @@ ${La}${a}`("SuspenseList")
 - *8* arguments[2]
   ⚠️  function calls are not analyzed yet
 
-0 -> 4217 conditional = side-effectful((13 === ???*0*))
+0 -> 4217 conditional = effectful((13 === ???*0*))
 - *0* ???*1*["tag"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -34328,7 +34324,7 @@ ${La}${a}`("SuspenseList")
 - *16* max number of linking steps reached
   ⚠️  This value might have side effects
 
-4412 -> 4417 conditional = side-effectful((false | true | (???*0* ? ???*4* : ???*18*)))
+4412 -> 4417 conditional = effectful((false | true | (???*0* ? ???*4* : ???*18*)))
 - *0* ("function" === ???*1*)
   ⚠️  nested operation
 - *1* typeof(???*2*)
@@ -34834,7 +34830,7 @@ ${La}${a}`("SuspenseList")
 - *17* unknown mutation
   ⚠️  This value might have side effects
 
-4477 -> 4482 conditional = side-effectful((false | true | (???*0* ? ???*4* : ???*19*)))
+4477 -> 4482 conditional = effectful((false | true | (???*0* ? ???*4* : ???*19*)))
 - *0* ("function" === ???*1*)
   ⚠️  nested operation
 - *1* typeof(???*2*)
@@ -35380,7 +35376,7 @@ ${La}${a}`("SuspenseList")
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-4597 -> 4613 call = (...) => side-effectful(b)(???*0*, ???*1*)
+4597 -> 4613 call = (...) => effectful(b)(???*0*, ???*1*)
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 - *1* max number of linking steps reached
@@ -35559,7 +35555,7 @@ ${La}${a}`("SuspenseList")
     ???*2*,
     (
       | ???*3*
-      | side-effectful((
+      | effectful((
           | ???*5*
           | {"mode": "visible", "children": ???*8*}
           | new (...) => undefined(22, ???*9*, null, ???*10*)
@@ -35597,7 +35593,7 @@ ${La}${a}`("SuspenseList")
 - *12* arguments[2]
   ⚠️  function calls are not analyzed yet
 
-0 -> 4682 call = (...) => side-effectful(b)(???*0*, ???*1*)
+0 -> 4682 call = (...) => effectful(b)(???*0*, ???*1*)
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*["children"]
@@ -35860,7 +35856,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-4753 -> 4770 call = (...) => side-effectful(b)(???*0*, ???*1*)
+4753 -> 4770 call = (...) => effectful(b)(???*0*, ???*1*)
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 - *1* ???*2*["children"]
@@ -37633,7 +37629,7 @@ ${La}${a}`("SuspenseList")
 - *3* f
   ⚠️  circular variable reference
 
-4989 -> 4991 member call = side-effectful((null | undefined | [] | ???*0*){truthy})["push"]((???*1* | null | undefined | [] | ???*2*), null)
+4989 -> 4991 member call = effectful((null | undefined | [] | ???*0*){truthy})["push"]((???*1* | null | undefined | [] | ???*2*), null)
 - *0* f
   ⚠️  circular variable reference
 - *1* for-in variable currently not analyzed
@@ -38659,7 +38655,7 @@ ${La}${a}`("SuspenseList")
 - *54* h
   ⚠️  circular variable reference
 
-5013 -> 5019 member call = side-effectful((null | undefined | [] | ???*0*){truthy})["push"](
+5013 -> 5019 member call = effectful((null | undefined | [] | ???*0*){truthy})["push"](
     (???*1* | null | undefined | [] | ???*2*),
     (???*3* | ???*7* | undefined | (???*21* ? ???*22* : undefined))
 )
@@ -38828,7 +38824,7 @@ ${La}${a}`("SuspenseList")
 - *20* k
   ⚠️  circular variable reference
 
-5020 -> 5024 member call = side-effectful((null | undefined | [] | ???*0*){truthy})["push"](
+5020 -> 5024 member call = effectful((null | undefined | [] | ???*0*){truthy})["push"](
     (???*1* | null | undefined | [] | ???*2*),
     (???*3* | ???*7* | undefined | (???*21* ? ???*22* : undefined))
 )
@@ -38910,7 +38906,7 @@ ${La}${a}`("SuspenseList")
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-5027 -> 5030 member call = side-effectful((null | undefined | [] | ???*0*){truthy})["push"](
+5027 -> 5030 member call = effectful((null | undefined | [] | ???*0*){truthy})["push"](
     (???*1* | null | undefined | [] | ???*2*),
     (???*3* | ???*7* | undefined | (???*21* ? ???*22* : undefined))
 )
@@ -38970,7 +38966,7 @@ ${La}${a}`("SuspenseList")
 - *23* k
   ⚠️  circular variable reference
 
-4960 -> 5032 member call = side-effectful((null | undefined | [] | ???*0*){truthy})["push"](
+4960 -> 5032 member call = effectful((null | undefined | [] | ???*0*){truthy})["push"](
     "style",
     (???*1* | null | {} | ???*2* | ???*6* | undefined | (???*20* ? ???*21* : undefined))
 )
@@ -39029,7 +39025,7 @@ ${La}${a}`("SuspenseList")
 - *22* k
   ⚠️  circular variable reference
 
-4960 -> 5034 conditional = side-effectful((???*0* | null | undefined | [] | ???*1*))
+4960 -> 5034 conditional = effectful((???*0* | null | undefined | [] | ???*1*))
 - *0* for-in variable currently not analyzed
 - *1* f
   ⚠️  circular variable reference
@@ -39850,7 +39846,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
 
-5304 -> 5309 conditional = side-effectful((???*0* !== ???*2*))
+5304 -> 5309 conditional = effectful((???*0* !== ???*2*))
 - *0* ???*1*["nodeValue"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
@@ -40747,7 +40743,7 @@ ${La}${a}`("SuspenseList")
     ???*0*,
     ???*1*,
     (
-      | side-effectful((???*2* | (???*5* ? ???*7* : null)["next"]))["destroy"]
+      | effectful((???*2* | (???*5* ? ???*7* : null)["next"]))["destroy"]
       | undefined["destroy"]
       | ???*9*
       | undefined
@@ -40821,7 +40817,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  function calls are not analyzed yet
 
 5666 -> 5669 call = (
-  | side-effectful((???*0* | (???*2* ? ???*4* : null)["next"]))["create"]
+  | effectful((???*0* | (???*2* ? ???*4* : null)["next"]))["create"]
   | undefined["create"]
   | ???*6*
   | undefined
@@ -41514,7 +41510,7 @@ ${La}${a}`("SuspenseList")
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-5845 -> 5849 member call = (???*0* | undefined | side-effectful(new ???*2*()))["has"](???*8*)
+5845 -> 5849 member call = (???*0* | undefined | effectful(new ???*2*()))["has"](???*8*)
 - *0* ???*1*["stateNode"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -41537,7 +41533,7 @@ ${La}${a}`("SuspenseList")
 - *8* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-5845 -> 5851 member call = (???*0* | undefined | side-effectful(new ???*2*()))["add"](???*8*)
+5845 -> 5851 member call = (???*0* | undefined | effectful(new ???*2*()))["add"](???*8*)
 - *0* ???*1*["stateNode"]
   ⚠️  unknown object
 - *1* arguments[0]
@@ -42027,7 +42023,7 @@ ${La}${a}`("SuspenseList")
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-0 -> 5998 conditional = (side-effectful(???*0*) | !(???*1*) | (0 !== ???*2*))
+0 -> 5998 conditional = (effectful(???*0*) | !(???*1*) | (0 !== ???*2*))
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -42369,7 +42365,7 @@ ${La}${a}`("SuspenseList")
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-6114 -> 6117 conditional = (side-effectful(???*0*) | !(???*1*))
+6114 -> 6117 conditional = (effectful(???*0*) | !(???*1*))
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 - *1* max number of linking steps reached
@@ -42698,10 +42694,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-6243 -> 6245 conditional = (
-  | (0 !== ???*0*)
-  | (0 !== (0 | side-effectful((???*1* | 0 | ???*2*))))
-)
+6243 -> 6245 conditional = ((0 !== ???*0*) | (0 !== (0 | effectful((???*1* | 0 | ???*2*)))))
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* arguments[1]
@@ -42897,7 +42890,7 @@ ${La}${a}`("SuspenseList")
 - *18* a
   ⚠️  circular variable reference
 
-6263 -> 6264 call = (...) => undefined(???*0*, (0 | side-effectful((???*1* | 0 | ???*2*))))
+6263 -> 6264 call = (...) => undefined(???*0*, (0 | effectful((???*1* | 0 | ???*2*))))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* arguments[1]
@@ -42963,7 +42956,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 6272 call = (...) => (0 | b | d)(
     ???*0*,
-    (???*1* ? (0 | side-effectful((???*20* | 0 | ???*21*))) : 0)
+    (???*1* ? (0 | effectful((???*20* | 0 | ???*21*))) : 0)
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -43028,7 +43021,7 @@ ${La}${a}`("SuspenseList")
   | 1073741824
   | undefined
 ))
-- *0* (???*1* ? (0 | side-effectful((???*16* | 0 | ???*17*))) : 0)
+- *0* (???*1* ? (0 | effectful((???*16* | 0 | ???*17*))) : 0)
   ⚠️  nested operation
 - *1* (???*2* === (null | ???*3* | ???*4* | ???*7*))
   ⚠️  nested operation
@@ -43205,7 +43198,7 @@ ${La}${a}`("SuspenseList")
 6279 -> 6290 call = (...) => (???*0* ? (???*1* ? ((0 !== ???*2*) ? 16 : 536870912) : 4) : 1)(
     (
       | 0
-      | (???*3* ? (0 | side-effectful((???*22* | 0 | ???*23*))) : 0)
+      | (???*3* ? (0 | effectful((???*22* | 0 | ???*23*))) : 0)
       | ???*24*
       | ???*26*
       | 1
@@ -43386,7 +43379,7 @@ ${La}${a}`("SuspenseList")
 
 6303 -> 6306 call = (...) => (0 | b | d)(
     ???*0*,
-    (???*1* ? (0 | side-effectful((???*20* | 0 | ???*21*))) : 0)
+    (???*1* ? (0 | effectful((???*20* | 0 | ???*21*))) : 0)
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -43457,7 +43450,7 @@ ${La}${a}`("SuspenseList")
 
 6310 -> 6313 conditional = (
   | ((null | ???*0* | ???*1* | ???*4*) !== ???*17*)
-  | ((0 | side-effectful((???*18* | 0 | ???*19*))) !== ???*20*)
+  | ((0 | effectful((???*18* | 0 | ???*19*))) !== ???*20*)
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -43706,7 +43699,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-6353 -> 6354 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+6353 -> 6354 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -44755,7 +44748,7 @@ ${La}${a}`("SuspenseList")
       | ???*1*
       | new (...) => undefined(???*4*, (null | ???*7*), ???*10*, ???*13*)
     ),
-    (0 | side-effectful((???*16* | 0 | ???*17*)))
+    (0 | effectful((???*16* | 0 | ???*17*)))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -44798,7 +44791,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 6606 conditional = (
   | ((null | ???*0* | ???*1* | ???*4*) !== ???*17*)
-  | ((0 | side-effectful((???*18* | 0 | ???*19*))) !== ???*20*)
+  | ((0 | effectful((???*18* | 0 | ???*19*))) !== ???*20*)
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -45577,7 +45570,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 6787 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 6787 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -45713,7 +45706,7 @@ ${La}${a}`("SuspenseList")
 - *1* max number of linking steps reached
   ⚠️  This value might have side effects
 
-6806 -> 6810 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+6806 -> 6810 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -45744,7 +45737,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *5* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *6* (???*7* ? (???*11* | ???*12*) : side-effectful(???*13*))
+- *6* (???*7* ? (???*11* | ???*12*) : effectful(???*13*))
   ⚠️  nested operation
 - *7* (???*8* !== (???*9* | ???*10*))
   ⚠️  nested operation
@@ -45761,7 +45754,7 @@ ${La}${a}`("SuspenseList")
 - *13* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
 
-0 -> 6817 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 6817 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -45772,7 +45765,7 @@ ${La}${a}`("SuspenseList")
 0 -> 6821 conditional = (
   | (4 === (3 | 0 | 1 | 2 | 4 | 6 | 5))
   | (3 === (3 | 0 | 1 | 2 | 4 | 6 | 5))
-  | (???*0* === (0 | side-effectful((???*1* | 0 | ???*2*))))
+  | (???*0* === (0 | effectful((???*1* | 0 | ???*2*))))
   | ???*3*
 )
 - *0* unsupported expression
@@ -45799,7 +45792,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *4* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *5* (???*6* ? (???*10* | ???*11*) : side-effectful(???*12*))
+- *5* (???*6* ? (???*10* | ???*11*) : effectful(???*12*))
   ⚠️  nested operation
 - *6* (???*7* !== (???*8* | ???*9*))
   ⚠️  nested operation
@@ -45820,7 +45813,7 @@ ${La}${a}`("SuspenseList")
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-0 -> 6826 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 6826 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -45879,7 +45872,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *12* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *13* (???*14* ? (???*18* | ???*19*) : side-effectful(???*20*))
+- *13* (???*14* ? (???*18* | ???*19*) : effectful(???*20*))
   ⚠️  nested operation
 - *14* (???*15* !== (???*16* | ???*17*))
   ⚠️  nested operation
@@ -45919,7 +45912,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* (???*12* ? (???*16* | ???*17*) : side-effectful(???*18*))
+- *11* (???*12* ? (???*16* | ???*17*) : effectful(???*18*))
   ⚠️  nested operation
 - *12* (???*13* !== (???*14* | ???*15*))
   ⚠️  nested operation
@@ -46247,7 +46240,7 @@ ${La}${a}`("SuspenseList")
 - *2* max number of linking steps reached
   ⚠️  This value might have side effects
 
-6898 -> 6913 call = (...) => (???*0* | side-effectful(a) | $i(a, b, e) | side-effectful(a))(null, ???*1*, ???*2*, (???*3* | ???*4*), ???*7*)
+6898 -> 6913 call = (...) => (???*0* | effectful(a) | $i(a, b, e) | effectful(a))(null, ???*1*, ???*2*, (???*3* | ???*4*), ???*7*)
 - *0* cj(a, b, f, d, e)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -47079,7 +47072,7 @@ ${La}${a}`("SuspenseList")
 - *2* max number of linking steps reached
   ⚠️  This value might have side effects
 
-0 -> 7122 call = (...) => (???*0* | side-effectful(a) | $i(a, b, e) | side-effectful(a))(???*1*, ???*2*, ???*3*, ???*4*, ???*5*)
+0 -> 7122 call = (...) => (???*0* | effectful(a) | $i(a, b, e) | effectful(a))(???*1*, ???*2*, ???*3*, ???*4*, ???*5*)
 - *0* cj(a, b, f, d, e)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
@@ -48561,7 +48554,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *8* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *9* (???*10* ? (???*14* | ???*15*) : side-effectful(???*16*))
+- *9* (???*10* ? (???*14* | ???*15*) : effectful(???*16*))
   ⚠️  nested operation
 - *10* (???*11* !== (???*12* | ???*13*))
   ⚠️  nested operation
@@ -48604,7 +48597,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *29* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *30* (???*31* ? (???*35* | ???*36*) : side-effectful(???*37*))
+- *30* (???*31* ? (???*35* | ???*36*) : effectful(???*37*))
   ⚠️  nested operation
 - *31* (???*32* !== (???*33* | ???*34*))
   ⚠️  nested operation
@@ -48678,7 +48671,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *65* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *66* (???*67* ? (???*71* | ???*72*) : side-effectful(???*73*))
+- *66* (???*67* ? (???*71* | ???*72*) : effectful(???*73*))
   ⚠️  nested operation
 - *67* (???*68* !== (???*69* | ???*70*))
   ⚠️  nested operation
@@ -48717,7 +48710,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *84* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *85* (???*86* ? (???*88* | ???*89*) : side-effectful(???*90*))
+- *85* (???*86* ? (???*88* | ???*89*) : effectful(???*90*))
   ⚠️  nested operation
 - *86* (???*87* !== (... | ...))
   ⚠️  nested operation
@@ -48786,7 +48779,7 @@ ${La}${a}`("SuspenseList")
 
 0 -> 7371 call = (...) => (Vf | bg(a, c, b) | b)(null)
 
-0 -> 7373 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 7373 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -48837,7 +48830,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
+- *4* (???*5* ? (???*9* | ???*10*) : effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -48876,7 +48869,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *22* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *23* (???*24* ? (???*28* | ???*29*) : side-effectful(???*30*))
+- *23* (???*24* ? (???*28* | ???*29*) : effectful(???*30*))
   ⚠️  nested operation
 - *24* (???*25* !== (???*26* | ???*27*))
   ⚠️  nested operation
@@ -49013,7 +49006,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* (???*11* ? (???*15* | ???*16*) : side-effectful(???*17*))
+- *10* (???*11* ? (???*15* | ???*16*) : effectful(???*17*))
   ⚠️  nested operation
 - *11* (???*12* !== (???*13* | ???*14*))
   ⚠️  nested operation
@@ -49052,7 +49045,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *28* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *29* (???*30* ? (???*32* | ???*33*) : side-effectful(???*34*))
+- *29* (???*30* ? (???*32* | ???*33*) : effectful(???*34*))
   ⚠️  nested operation
 - *30* (???*31* !== (... | ...))
   ⚠️  nested operation
@@ -49135,7 +49128,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *68* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *69* (???*70* ? (???*74* | ???*75*) : side-effectful(???*76*))
+- *69* (???*70* ? (???*74* | ???*75*) : effectful(???*76*))
   ⚠️  nested operation
 - *70* (???*71* !== (???*72* | ???*73*))
   ⚠️  nested operation
@@ -49247,7 +49240,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *12* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *13* (???*14* ? (???*18* | ???*19*) : side-effectful(???*20*))
+- *13* (???*14* ? (???*18* | ???*19*) : effectful(???*20*))
   ⚠️  nested operation
 - *14* (???*15* !== (???*16* | ???*17*))
   ⚠️  nested operation
@@ -49319,7 +49312,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *47* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *48* (???*49* ? (???*53* | ???*54*) : side-effectful(???*55*))
+- *48* (???*49* ? (???*53* | ???*54*) : effectful(???*55*))
   ⚠️  nested operation
 - *49* (???*50* !== (???*51* | ???*52*))
   ⚠️  nested operation
@@ -49349,7 +49342,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *5* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *6* (???*7* ? (???*11* | ???*12*) : side-effectful(???*13*))
+- *6* (???*7* ? (???*11* | ???*12*) : effectful(???*13*))
   ⚠️  nested operation
 - *7* (???*8* !== (???*9* | ???*10*))
   ⚠️  nested operation
@@ -49370,7 +49363,7 @@ ${La}${a}`("SuspenseList")
 - *0* unreachable
   ⚠️  This value might have side effects
 
-0 -> 7385 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))()
+0 -> 7385 call = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : effectful(B())))()
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
@@ -49452,7 +49445,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
+- *3* (???*4* ? (???*8* | ???*9*) : effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -49594,7 +49587,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *6* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *7* (???*8* ? (???*12* | ???*13*) : side-effectful(???*14*))
+- *7* (???*8* ? (???*12* | ???*13*) : effectful(???*14*))
   ⚠️  nested operation
 - *8* (???*9* !== (???*10* | ???*11*))
   ⚠️  nested operation
@@ -49809,7 +49802,7 @@ ${La}${a}`("SuspenseList")
   ⚠️  This value might have side effects
 - *32* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *33* (???*34* ? (???*38* | ???*39*) : side-effectful(???*40*))
+- *33* (???*34* ? (???*38* | ???*39*) : effectful(???*40*))
   ⚠️  nested operation
 - *34* (???*35* !== (???*36* | ???*37*))
   ⚠️  nested operation

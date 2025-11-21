@@ -1,4 +1,4 @@
-*arrow function 1213* = (...) => __webpack_require__(side-effectful(moduleId))
+*arrow function 1213* = (...) => __webpack_require__(effectful(moduleId))
 
 *arrow function 131* = (...) => undefined
 
@@ -8,9 +8,9 @@ __unused_webpack_module = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-__webpack_exec__ = (...) => __webpack_require__(side-effectful(moduleId))
+__webpack_exec__ = (...) => __webpack_require__(effectful(moduleId))
 
-__webpack_exports__#3 = module<../../webpack-api-runtime.js, {}>(side-effectful(5166))
+__webpack_exports__#3 = module<../../webpack-api-runtime.js, {}>(effectful(5166))
 
 __webpack_exports__#4 = ???*0*
 - *0* arguments[1]

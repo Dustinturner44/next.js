@@ -1994,7 +1994,7 @@ impl JsValue {
             }
             JsValue::Effectful(_, operand) => {
                 format!(
-                    "side-effectful({})",
+                    "effectful({})",
                     operand.explain_internal_inner(hints, indent_depth, depth, unknown_depth)
                 )
             }
