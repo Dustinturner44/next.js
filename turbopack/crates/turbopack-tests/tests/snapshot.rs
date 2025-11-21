@@ -165,7 +165,6 @@ fn is_empty_dir_tree(dir_entries: impl IntoIterator<Item = io::Result<fs::DirEnt
     true
 }
 
-// Edit this number to force the macro to regenerate: 2
 #[testing::fixture("tests/snapshot/*/*/input/index.js", exclude("node_modules"))]
 fn test(resource: PathBuf) {
     let resource = resource.parent().unwrap().parent().unwrap().to_path_buf();
