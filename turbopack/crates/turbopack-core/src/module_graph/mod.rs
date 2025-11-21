@@ -414,7 +414,7 @@ impl SingleModuleGraph {
     fn traverse_cycles<'l>(
         &'l self,
         edge_filter: impl Fn(&'l RefData) -> bool,
-        mut visit_cycle: impl FnMut(&[&'l ResolvedVc<Box<dyn Module>>]) -> Result<()>,
+        mut visit_cycle: impl FnMut(&[ResolvedVc<Box<dyn Module>>]) -> Result<()>,
     ) -> Result<()> {
         // see https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
         // but iteratively instead of recursively
@@ -491,7 +491,7 @@ impl SingleModuleGraph {
                                 if let SingleModuleGraphNode::Module(module) =
                                     self.graph.node_weight(poppped).unwrap()
                                 {
-                                    scc.push(module);
+                                    scc.push(*module);
                                 }
                                 if poppped == node {
                                     break;
@@ -1182,7 +1182,7 @@ impl ModuleGraphRef {
     pub fn traverse_cycles(
         &self,
         edge_filter: impl Fn(&RefData) -> bool,
-        mut visit_cycle: impl FnMut(&[&ResolvedVc<Box<dyn Module>>]) -> Result<()>,
+        mut visit_cycle: impl FnMut(&[ResolvedVc<Box<dyn Module>>]) -> Result<()>,
     ) -> Result<()> {
         for graph in &self.graphs {
             graph.traverse_cycles(&edge_filter, &mut visit_cycle)?;

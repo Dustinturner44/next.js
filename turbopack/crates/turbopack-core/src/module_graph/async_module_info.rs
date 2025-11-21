@@ -1,5 +1,6 @@
 use anyhow::Result;
-use rustc_hash::FxHashSet;
+use rustc_hash::{FxHashMap, FxHashSet};
+use smallvec::SmallVec;
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Vc};
 
 use crate::{
@@ -72,8 +73,30 @@ async fn compute_async_module_info_single(
     // strongly-connected components, and then marking all the whole SCC as async if one of the
     // modules in the SCC is async.
 
-    let mut async_modules = self_async_modules;
     let graph_ref = graph.read();
+
+    let mut async_modules = self_async_modules;
+
+    let mut cycles = vec![];
+    let mut cycle_entries: FxHashMap<ResolvedVc<_>, SmallVec<[usize; 1]>> = Default::default();
+    graph_ref.traverse_cycles(
+        |ref_data| ref_data.chunking_type.is_inherit_async(),
+        |cycle| {
+            let cycle_idx = cycles.len();
+            cycles.push(cycle.to_vec());
+            for module in cycle {
+                // For later when we propagate async-ness to parents
+                cycle_entries.entry(*module).or_default().push(cycle_idx);
+            }
+
+            // For the self_async_modules
+            if cycle.iter().any(|node| async_modules.contains(node)) {
+                async_modules.extend(cycle.iter().copied());
+            }
+            Ok(())
+        },
+    )?;
+
     graph_ref.traverse_edges_from_entries_dfs(
         graph.entry_modules(),
         &mut (),
@@ -85,17 +108,16 @@ async fn compute_async_module_info_single(
             };
 
             if ref_data.chunking_type.is_inherit_async() && async_modules.contains(&module) {
-                async_modules.insert(parent_module);
-            }
-            Ok(())
-        },
-    )?;
-
-    graph_ref.traverse_cycles(
-        |ref_data| ref_data.chunking_type.is_inherit_async(),
-        |cycle| {
-            if cycle.iter().any(|node| async_modules.contains(node)) {
-                async_modules.extend(cycle.iter().map(|n| **n));
+                let newly_async = async_modules.insert(parent_module);
+                if newly_async {
+                    for cycle in cycle_entries
+                        .get(&parent_module)
+                        .iter()
+                        .flat_map(|v| v.iter())
+                    {
+                        async_modules.extend(cycles[*cycle].iter().copied());
+                    }
+                }
             }
             Ok(())
         },

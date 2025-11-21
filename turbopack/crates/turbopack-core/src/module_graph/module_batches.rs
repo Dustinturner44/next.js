@@ -392,9 +392,7 @@ pub async fn compute_module_batches(
                     .iter()
                     .any(|node| pre_batches.boundary_modules.contains(node))
                 {
-                    pre_batches
-                        .boundary_modules
-                        .extend(cycle.iter().map(|node| **node));
+                    pre_batches.boundary_modules.extend(cycle.iter().copied());
                 }
                 Ok(())
             },
