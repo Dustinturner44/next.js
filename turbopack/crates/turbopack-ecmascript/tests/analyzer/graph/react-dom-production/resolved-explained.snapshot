@@ -8,11 +8,22 @@ $c = (...) => undefined
 
 $d = [9, 13, 27, 32]
 
-$e = (undefined | ???*0* | "animationend" | ???*1*)
+$e = (undefined | ???*0* | "animationend" | side-effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
-- *1* assignment expression
+- *1* {}[???*2*]
+  ⚠️  unknown object prototype methods or values
   ⚠️  This value might have side effects
+- *2* c
+  ⚠️  pattern without value
+- *3* ???*4*[(???*5* | ???*6*)]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *4* unknown mutation
+  ⚠️  This value might have side effects
+- *5* c
+  ⚠️  pattern without value
+- *6* for-in variable currently not analyzed
 
 $f = (...) => undefined
 
@@ -219,9 +230,7 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 5213* = (...) => undefined
 
-*anonymous function 55504* = (...) => (???*0* ? (Vb(a) === a) : !(1))
-- *0* assignment expression
-  ⚠️  This value might have side effects
+*anonymous function 55504* = (...) => (side-effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1))
 
 *anonymous function 55574* = (...) => undefined
 
@@ -257,13 +266,9 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 71500* = (...) => [d["memoizedState"], a]
 
-*anonymous function 71750* = (...) => ???*0*
-- *0* assignment expression
-  ⚠️  This value might have side effects
+*anonymous function 71750* = (...) => side-effectful(a)
 
-*anonymous function 71860* = (...) => ???*0*
-- *0* assignment expression
-  ⚠️  This value might have side effects
+*anonymous function 71860* = (...) => side-effectful(a)
 
 *anonymous function 71915* = (...) => [b, a]
 
@@ -271,9 +276,7 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 72052* = (...) => c
 
-*anonymous function 72352* = (...) => ???*0*
-- *0* assignment expression
-  ⚠️  This value might have side effects
+*anonymous function 72352* = (...) => side-effectful(b)
 
 *anonymous function 72781* = (...) => fi(ei)
 
@@ -283,9 +286,7 @@ $k = (...) => ((bj(a) ? 1 : 0) | 11 | 14 | 2)
 
 *anonymous function 73223* = (...) => gi(ei)
 
-*anonymous function 73283* = (...) => ((null === O) ? ???*0* : Di(b, O["memoizedState"], a))
-- *0* assignment expression
-  ⚠️  This value might have side effects
+*anonymous function 73283* = (...) => ((null === O) ? side-effectful(a) : Di(b, O["memoizedState"], a))
 
 *anonymous function 73380* = (...) => [a, b]
 
@@ -324,11 +325,9 @@ Aa = ???*0*
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-Ab = (null | [???*0*] | ???*1*)
+Ab = (null | [???*0*] | side-effectful(null))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
 
 Ac = (...) => undefined
 
@@ -603,10 +602,8 @@ Dg = (...) => ((0 !== ???*0*) && (0 === ???*1*))
 Dh = {}
 
 Di = (...) => (???*0* | b)
-- *0* ???*1*
+- *0* side-effectful(c)
   ⚠️  sequence with side effects
-  ⚠️  This value might have side effects
-- *1* assignment expression
   ⚠️  This value might have side effects
 
 Dj = (???*0* | (...) => undefined)
@@ -1056,12 +1053,10 @@ Kj = ???*0*
 
 Kk = (...) => ((null === a) ? ai : a)
 
-L = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : ???*2*))
+L = (...) => ((0 !== ???*0*) ? B() : ((???*1* !== Bk) ? Bk : side-effectful(B())))
 - *0* unsupported expression
   ⚠️  This value might have side effects
 - *1* unsupported expression
-  ⚠️  This value might have side effects
-- *2* assignment expression
   ⚠️  This value might have side effects
 
 La = (???*0* | ???*1* | undefined | ???*6* | undefined[1] | "")
@@ -1258,66 +1253,59 @@ N = (
   | ???*0*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*1*
-      | ???*2*
       | undefined
-      | ???*4*
+      | ???*3*
       | {
-            "memoizedState": ???*9*,
-            "baseState": ???*11*,
-            "baseQueue": ???*13*,
-            "queue": ???*15*,
+            "memoizedState": ???*8*,
+            "baseState": ???*10*,
+            "baseQueue": ???*12*,
+            "queue": ???*14*,
             "next": null
         }
     ))
-  | (null !== (null["next"] | ???*17* | ???*19* | undefined["next"] | null | ???*22*))
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["alternate"]
+- *1* ???*2*["alternate"]
   ⚠️  unknown object
-- *3* N
+- *2* N
   ⚠️  circular variable reference
-- *4* (???*5* ? ???*7* : null)
+- *3* (???*4* ? ???*6* : null)
   ⚠️  nested operation
-- *5* (null !== ???*6*)
+- *4* (null !== ???*5*)
   ⚠️  nested operation
-- *6* a
+- *5* a
   ⚠️  circular variable reference
-- *7* ???*8*["memoizedState"]
+- *6* ???*7*["memoizedState"]
   ⚠️  unknown object
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* O
+- *9* O
   ⚠️  circular variable reference
-- *11* ???*12*["baseState"]
+- *10* ???*11*["baseState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseQueue"]
+- *12* ???*13*["baseQueue"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["queue"]
+- *14* ???*15*["queue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["next"]
+- *16* ???*17*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *18* assignment expression
-  ⚠️  This value might have side effects
-- *19* ???*20*["next"]
+- *17* ???*18*["alternate"]
   ⚠️  unknown object
-- *20* ???*21*["alternate"]
-  ⚠️  unknown object
-- *21* N
+- *18* N
   ⚠️  circular variable reference
-- *22* unknown mutation
+- *19* unknown mutation
   ⚠️  This value might have side effects
 
 Na = (false | true)
@@ -1471,61 +1459,61 @@ Nk = (...) => undefined
 
 O = (
   | null
-  | ???*0*
+  | side-effectful(null)
   | null["alternate"]
-  | ???*1*
+  | ???*0*
+  | (null !== ???*2*)["alternate"]
   | (null !== ???*3*)["alternate"]
-  | (null !== ???*4*)["alternate"]
   | undefined
-  | (???*6* ? ???*8* : null)
+  | (???*5* ? ???*7* : null)
   | {
-        "memoizedState": ???*10*,
-        "baseState": ???*12*,
-        "baseQueue": ???*14*,
-        "queue": ???*16*,
+        "memoizedState": ???*9*,
+        "baseState": ???*11*,
+        "baseQueue": ???*13*,
+        "queue": ???*15*,
         "next": null
     }
 )
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* ???*2*["alternate"]
+- *0* ???*1*["alternate"]
   ⚠️  unknown object
-- *2* arguments[1]
+- *1* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* O
+- *2* O
   ⚠️  circular variable reference
-- *4* ???*5*["next"]
+- *3* ???*4*["next"]
   ⚠️  unknown object
-- *5* O
+- *4* O
   ⚠️  circular variable reference
-- *6* (null !== ???*7*)
+- *5* (null !== ???*6*)
   ⚠️  nested operation
-- *7* a
+- *6* a
   ⚠️  circular variable reference
-- *8* ???*9*["memoizedState"]
+- *7* ???*8*["memoizedState"]
   ⚠️  unknown object
-- *9* a
+- *8* a
   ⚠️  circular variable reference
-- *10* ???*11*["memoizedState"]
+- *9* ???*10*["memoizedState"]
   ⚠️  unknown object
-- *11* O
+- *10* O
   ⚠️  circular variable reference
-- *12* ???*13*["baseState"]
+- *11* ???*12*["baseState"]
   ⚠️  unknown object
-- *13* O
+- *12* O
   ⚠️  circular variable reference
-- *14* ???*15*["baseQueue"]
+- *13* ???*14*["baseQueue"]
   ⚠️  unknown object
-- *15* O
+- *14* O
   ⚠️  circular variable reference
-- *16* ???*17*["queue"]
+- *15* ???*16*["queue"]
   ⚠️  unknown object
-- *17* O
+- *16* O
   ⚠️  circular variable reference
 
-Oa = (...) => ("" | k | (???*0* ? Ma(a) : ""))
-- *0* assignment expression
-  ⚠️  This value might have side effects
+Oa = (...) => (
+  | ""
+  | k
+  | (side-effectful((a ? (a["displayName"] || a["name"]) : "")) ? Ma(a) : "")
+)
 
 Ob = (false | true)
 
@@ -1553,19 +1541,29 @@ Of = `__reactFiber$${???*0*}`
 
 Og = (
   | null
+  | side-effectful(null)
   | ???*0*
-  | ???*1*
-  | {"context": ???*2*, "memoizedValue": ???*3*, "next": null}
+  | {"context": ???*1*, "memoizedValue": ???*2*, "next": null}
+  | side-effectful((
+      | ???*4*
+      | {"context": ???*5*, "memoizedValue": ???*6*, "next": null}
+    ))
 )
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* arguments[0]
+- *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *2* a
+- *1* a
   ⚠️  circular variable reference
-- *3* ???*4*["_currentValue"]
+- *2* ???*3*["_currentValue"]
   ⚠️  unknown object
-- *4* a
+- *3* a
+  ⚠️  circular variable reference
+- *4* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *5* a
+  ⚠️  circular variable reference
+- *6* ???*7*["_currentValue"]
+  ⚠️  unknown object
+- *7* a
   ⚠️  circular variable reference
 
 Oh = (...) => undefined
@@ -1576,107 +1574,9 @@ Oj = false
 
 Ok = (...) => a
 
-P = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+P = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 Pa = (...) => (Ma(a["type"]) | Ma("Lazy") | Ma("Suspense") | Ma("SuspenseList") | ???*0* | "" | undefined)
 - *0* a
@@ -1692,9 +1592,7 @@ Pc = new ???*0*()
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-Pd = (...) => (b["getModifierState"] ? b["getModifierState"](a) : (???*0* ? !(!(b[a])) : !(1)))
-- *0* assignment expression
-  ⚠️  This value might have side effects
+Pd = (...) => (b["getModifierState"] ? b["getModifierState"](a) : (side-effectful(Od[a]) ? !(!(b[a])) : !(1)))
 
 Pe = (!(???*0*) | ???*3*)
 - *0* ("undefined" === ???*1*)
@@ -1720,9 +1618,7 @@ Pf = `__reactProps$${???*0*}`
   ⚠️  unknown object
   ⚠️  This value might have side effects
 
-Pg = (null | ???*0*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
+Pg = (null | side-effectful(side-effectful(null)) | side-effectful(null))
 
 Ph = module<react, {}>["__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED"]["ReactCurrentDispatcher"]
 
@@ -1887,21 +1783,8 @@ Rd = (...) => ???*0*
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-Re = (null | ???*0* | ???*1* | ???*2* | ???*4* | undefined | ???*6* | [])
-- *0* arguments[3]
-  ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["return"]
-  ⚠️  unknown object
-- *3* d
-  ⚠️  circular variable reference
-- *4* ???*5*["tag"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *5* assignment expression
-  ⚠️  This value might have side effects
-- *6* node limit reached
+Re = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 Rf = `__reactHandles$${???*0*}`
@@ -1966,9 +1849,11 @@ Sk = (...) => (a() | undefined)
 
 T = (3 | 0 | 1 | 2 | 4 | 6 | 5)
 
-Ta = (...) => (???*0* && ("input" === a["toLowerCase"]()) && (("checkbox" === b) || ("radio" === b)))
-- *0* assignment expression
-  ⚠️  This value might have side effects
+Ta = (...) => (
+ && side-effectful(a["nodeName"])
+ && ("input" === a["toLowerCase"]())
+ && (("checkbox" === b) || ("radio" === b))
+)
 
 Tb = (...) => undefined
 
@@ -1991,9 +1876,7 @@ Tf = (???*0* | ???*1*)
 
 Tg = (...) => undefined
 
-Th = (false | ???*0*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
+Th = (false | side-effectful(true))
 
 Ti = (...) => undefined
 
@@ -2236,39 +2119,29 @@ Yh = {
     "useInsertionEffect": (...) => ti(4, 2, a, b),
     "useMemo": (...) => a,
     "useReducer": (...) => [d["memoizedState"], a],
-    "useRef": (...) => ???*0*,
+    "useRef": (...) => side-effectful(a),
     "useState": (...) => [b["memoizedState"], a],
     "useDebugValue": (...) => undefined,
-    "useDeferredValue": (...) => ???*1*,
+    "useDeferredValue": (...) => side-effectful(a),
     "useTransition": (...) => [b, a],
     "useMutableSource": (...) => undefined,
     "useSyncExternalStore": (...) => c,
-    "useId": (...) => ???*2*,
+    "useId": (...) => side-effectful(b),
     "unstable_isNewReconciler": false
 }
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* assignment expression
-  ⚠️  This value might have side effects
 
 Yi = (...) => undefined
 
-Yj = (false | ???*0* | undefined | ???*1* | ???*2* | true)
-- *0* Yj
-  ⚠️  circular variable reference
-- *1* assignment expression
+Yj = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *2* ???*3*["next"]
-  ⚠️  unknown object
-- *3* e
-  ⚠️  circular variable reference
 
 Yk = (...) => undefined
 
-Z = (0 | ???*0*)
-- *0* assignment expression
+Z = (0 | side-effectful((???*0* | 0 | ???*1*)))
+- *0* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *1* updated with update expression
   ⚠️  This value might have side effects
 
 Za = (...) => undefined
@@ -2281,9 +2154,7 @@ Zd = (...) => ???*0*
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-Ze = (...) => (Xe[a] | a | ???*0*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
+Ze = (...) => (Xe[a] | a | side-effectful(b[c]))
 
 Zf = (...) => ((null !== a) && (undefined !== a))
 
@@ -3087,7 +2958,7 @@ a#232 = (???*0* | ???*1*)
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-a#233 = (???*0* | null | ???*1* | ???*14*)
+a#233 = (???*0* | null | ???*1* | side-effectful(side-effectful(null)) | side-effectful(???*14*))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *1* ???*2*((???*9* | 0 | ???*10*), ???*11*)
@@ -3117,7 +2988,32 @@ a#233 = (???*0* | null | ???*1* | ???*14*)
   ⚠️  This value might have side effects
 - *13* unsupported expression
   ⚠️  This value might have side effects
-- *14* assignment expression
+- *14* ???*15*((???*22* | 0 | ???*23*), ???*24*)
+  ⚠️  unknown callee
+  ⚠️  This value might have side effects
+- *15* ???*16*["slice"]
+  ⚠️  unknown object
+- *16* (???*17* ? (null["value"] | ???*18*) : (null["textContent"] | ???*20*))
+  ⚠️  nested operation
+- *17* unsupported expression
+  ⚠️  This value might have side effects
+- *18* ???*19*["value"]
+  ⚠️  unknown object
+- *19* (??? ? (??? | ???) : (??? | ??? | ???))
+  ⚠️  nested operation
+- *20* ???*21*["textContent"]
+  ⚠️  unknown object
+- *21* (??? ? (??? | ???) : (??? | ??? | ???))
+  ⚠️  nested operation
+- *22* a
+  ⚠️  pattern without value
+- *23* updated with update expression
+  ⚠️  This value might have side effects
+- *24* (???*25* ? ???*26* : undefined)
+  ⚠️  nested operation
+- *25* unsupported expression
+  ⚠️  This value might have side effects
+- *26* unsupported expression
   ⚠️  This value might have side effects
 
 a#235 = ???*0*
@@ -3498,14 +3394,16 @@ a#345 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-a#346 = (???*0* | ???*1* | ???*2* | {})
+a#346 = (???*0* | side-effectful(???*1*) | ???*3* | {})
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["__reactInternalMemoizedMergedChildContext"]
+- *1* ???*2*["stateNode"]
   ⚠️  unknown object
-- *3* a
+- *2* a
+  ⚠️  circular variable reference
+- *3* ???*4*["__reactInternalMemoizedMergedChildContext"]
+  ⚠️  unknown object
+- *4* a
   ⚠️  circular variable reference
 
 a#347 = (???*0* | {} | ???*1* | ???*2*)
@@ -3702,8 +3600,19 @@ a#400 = (
         "callback": ???*12*,
         "next": null
     }
-  | ???*14*
-  | ???*15*
+  | side-effectful((
+      | {
+            "eventTime": ???*14*,
+            "lane": ???*16*,
+            "tag": ???*18*,
+            "payload": ???*20*,
+            "callback": ???*22*,
+            "next": null
+        }
+      | undefined
+    ))
+  | side-effectful(???*24*)
+  | ???*25*
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -3733,9 +3642,29 @@ a#400 = (
   ⚠️  unknown object
 - *13* c
   ⚠️  circular variable reference
-- *14* assignment expression
-  ⚠️  This value might have side effects
-- *15* unknown mutation
+- *14* ???*15*["eventTime"]
+  ⚠️  unknown object
+- *15* c
+  ⚠️  circular variable reference
+- *16* ???*17*["lane"]
+  ⚠️  unknown object
+- *17* c
+  ⚠️  circular variable reference
+- *18* ???*19*["tag"]
+  ⚠️  unknown object
+- *19* c
+  ⚠️  circular variable reference
+- *20* ???*21*["payload"]
+  ⚠️  unknown object
+- *21* c
+  ⚠️  circular variable reference
+- *22* ???*23*["callback"]
+  ⚠️  unknown object
+- *23* c
+  ⚠️  circular variable reference
+- *24* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *25* unknown mutation
   ⚠️  This value might have side effects
 
 a#404 = ???*0*
@@ -3941,15 +3870,15 @@ a#471 = ???*0*
 a#472 = (
   | ???*0*
   | ???*1*
-  | (???*3* ? ???*4* : ???*6*)["nodeType"]
+  | (side-effectful(???*3*) ? ???*5* : ???*7*)["nodeType"]
   | null["nodeType"]
-  | (???*8* ? (
+  | (???*9* ? (
       | "http://www.w3.org/2000/svg"
       | "http://www.w3.org/1998/Math/MathML"
       | "http://www.w3.org/1999/xhtml"
       | undefined
-    ) : ???*10*)["nodeType"]
-  | (???*14* ? (???*16* | null["parentNode"]) : (???*18* | ???*19* | ???*25* | null))
+    ) : ???*11*)["nodeType"]
+  | (???*15* ? (???*17* | null["parentNode"]) : (???*19* | ???*20* | ???*27* | null))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -3957,63 +3886,67 @@ a#472 = (
   ⚠️  unknown object
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["namespaceURI"]
+- *3* ???*4*["documentElement"]
   ⚠️  unknown object
-- *5* b
+- *4* b
   ⚠️  circular variable reference
-- *6* ((???*7* | false) ? (
+- *5* ???*6*["namespaceURI"]
+  ⚠️  unknown object
+- *6* b
+  ⚠️  circular variable reference
+- *7* ((???*8* | false) ? (
       | "http://www.w3.org/2000/svg"
       | "http://www.w3.org/1998/Math/MathML"
       | "http://www.w3.org/1999/xhtml"
       | undefined
     ) : null)
   ⚠️  nested operation
-- *7* (null == null)
+- *8* (null == null)
   ⚠️  nested operation
-- *8* (null == ???*9*)
+- *9* (null == ???*10*)
   ⚠️  nested operation
-- *9* b
+- *10* b
   ⚠️  circular variable reference
-- *10* (???*11* ? "http://www.w3.org/1999/xhtml" : ???*13*)
+- *11* (???*12* ? "http://www.w3.org/1999/xhtml" : ???*14*)
   ⚠️  nested operation
-- *11* ("http://www.w3.org/2000/svg" === ???*12*)
+- *12* ("http://www.w3.org/2000/svg" === ???*13*)
   ⚠️  nested operation
-- *12* b
-  ⚠️  circular variable reference
 - *13* b
   ⚠️  circular variable reference
-- *14* (8 === ???*15*)
-  ⚠️  nested operation
-- *15* a
+- *14* b
   ⚠️  circular variable reference
-- *16* ???*17*["parentNode"]
+- *15* (8 === ???*16*)
+  ⚠️  nested operation
+- *16* a
+  ⚠️  circular variable reference
+- *17* ???*18*["parentNode"]
   ⚠️  unknown object
-- *17* arguments[1]
-  ⚠️  function calls are not analyzed yet
 - *18* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *19* (???*20* ? ???*21* : ???*23*)
+- *19* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *20* (side-effectful(???*21*) ? ???*23* : ???*25*)
   ⚠️  nested operation
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["namespaceURI"]
+- *21* ???*22*["documentElement"]
   ⚠️  unknown object
 - *22* b
   ⚠️  circular variable reference
-- *23* ((???*24* | false) ? (
+- *23* ???*24*["namespaceURI"]
+  ⚠️  unknown object
+- *24* b
+  ⚠️  circular variable reference
+- *25* ((???*26* | false) ? (
       | "http://www.w3.org/2000/svg"
       | "http://www.w3.org/1998/Math/MathML"
       | "http://www.w3.org/1999/xhtml"
       | undefined
     ) : null)
   ⚠️  nested operation
-- *24* (null == null)
+- *26* (null == null)
   ⚠️  nested operation
-- *25* ???*26*["documentElement"]
+- *27* ???*28*["documentElement"]
   ⚠️  unknown object
-- *26* b
+- *28* b
   ⚠️  circular variable reference
 
 a#474 = ???*0*
@@ -4050,167 +3983,24 @@ a#488 = (0 !== (0 | ???*0*))
 
 a#489 = {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
 
-a#49 = (
-  | ???*0*
-  | ""
-  | `
-${(???*1* | ???*8*)}`
-  | undefined
-  | ???*11*
-  | (???*13* ? ???*14* : "")
-  | (???*30* ? ???*31* : "")
-  | (???*48* ? ???*49* : "")
-)
-- *0* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *1* ???*2*["replace"](" at new ", " at ")
-  ⚠️  unknown callee object
+a#49 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *2* ???*3*[(???*6* | undefined | ???*7*)]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *3* ???*4*["split"]("\n")
-  ⚠️  unknown callee object
-- *4* ???*5*["stack"]
-  ⚠️  unknown object
-- *5* l
-  ⚠️  pattern without value
-- *6* unsupported expression
-  ⚠️  This value might have side effects
-- *7* updated with update expression
-  ⚠️  This value might have side effects
-- *8* undefined[(???*9* | undefined | ???*10*)]["replace"](" at new ", " at ")
-  ⚠️  nested operation
-- *9* unsupported expression
-  ⚠️  This value might have side effects
-- *10* updated with update expression
-  ⚠️  This value might have side effects
-- *11* ???*12*["replace"]("<anonymous>", a["displayName"])
-  ⚠️  unknown callee object
-- *12* k
-  ⚠️  circular variable reference
-- *13* assignment expression
-  ⚠️  This value might have side effects
-- *14* `
-${(???*15* | ???*16* | undefined | ???*20* | undefined[1] | "")}${(???*24* | ???*26*)}`
-  ⚠️  nested operation
-- *15* La
-  ⚠️  pattern without value
-- *16* ???*17*(/\n( *(at )?)/)
-  ⚠️  unknown callee
-- *17* ???*18*["match"]
-  ⚠️  unknown object
-- *18* ???*19*()
-  ⚠️  nested operation
-- *19* ???["trim"]
-  ⚠️  unknown object
-- *20* ???*21*[1]
-  ⚠️  unknown object
-- *21* ???*22*(/\n( *(at )?)/)
-  ⚠️  unknown callee
-- *22* ???*23*["match"]
-  ⚠️  unknown object
-- *23* ???()
-  ⚠️  nested operation
-- *24* ???*25*["type"]
-  ⚠️  unknown object
-- *25* a
-  ⚠️  circular variable reference
-- *26* (???*27* ? ???*28* : "")
-  ⚠️  nested operation
-- *27* a
-  ⚠️  circular variable reference
-- *28* ???*29*["displayName"]
-  ⚠️  unknown object
-- *29* a
-  ⚠️  circular variable reference
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* `
-${(???*32* | ???*33* | undefined | ???*37* | undefined[1] | "")}${(???*41* | ???*44*)}`
-  ⚠️  nested operation
-- *32* La
-  ⚠️  pattern without value
-- *33* ???*34*(/\n( *(at )?)/)
-  ⚠️  unknown callee
-- *34* ???*35*["match"]
-  ⚠️  unknown object
-- *35* ???*36*()
-  ⚠️  nested operation
-- *36* ???["trim"]
-  ⚠️  unknown object
-- *37* ???*38*[1]
-  ⚠️  unknown object
-- *38* ???*39*(/\n( *(at )?)/)
-  ⚠️  unknown callee
-- *39* ???*40*["match"]
-  ⚠️  unknown object
-- *40* ???()
-  ⚠️  nested operation
-- *41* ???*42*["render"]
-  ⚠️  unknown object
-- *42* ???*43*["type"]
-  ⚠️  unknown object
-- *43* a
-  ⚠️  circular variable reference
-- *44* (???*45* ? ???*46* : "")
-  ⚠️  nested operation
-- *45* a
-  ⚠️  circular variable reference
-- *46* ???*47*["displayName"]
-  ⚠️  unknown object
-- *47* a
-  ⚠️  circular variable reference
-- *48* assignment expression
-  ⚠️  This value might have side effects
-- *49* `
-${(???*50* | ???*51* | undefined | ???*55* | undefined[1] | "")}${(???*59* | ???*61*)}`
-  ⚠️  nested operation
-- *50* La
-  ⚠️  pattern without value
-- *51* ???*52*(/\n( *(at )?)/)
-  ⚠️  unknown callee
-- *52* ???*53*["match"]
-  ⚠️  unknown object
-- *53* ???*54*()
-  ⚠️  nested operation
-- *54* ???["trim"]
-  ⚠️  unknown object
-- *55* ???*56*[1]
-  ⚠️  unknown object
-- *56* ???*57*(/\n( *(at )?)/)
-  ⚠️  unknown callee
-- *57* ???*58*["match"]
-  ⚠️  unknown object
-- *58* ???()
-  ⚠️  nested operation
-- *59* ???*60*["type"]
-  ⚠️  unknown object
-- *60* a
-  ⚠️  circular variable reference
-- *61* (???*62* ? ???*63* : "")
-  ⚠️  nested operation
-- *62* a
-  ⚠️  circular variable reference
-- *63* ???*64*["displayName"]
-  ⚠️  unknown object
-- *64* a
-  ⚠️  circular variable reference
 
 a#490 = (
   | null["alternate"]
   | ???*0*
-  | (null !== (null | ???*2* | ???*3*))["alternate"]
-  | (null !== (null["next"] | ???*4* | ???*6*))["alternate"]
+  | (null !== (null | side-effectful(null) | ???*2*))["alternate"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*3*))["alternate"]
   | undefined
-  | (???*8* ? ???*10* : null)
+  | (???*5* ? ???*7* : null)
   | null["next"]
-  | ???*12*
+  | side-effectful(null)["next"]
   | {
-        "memoizedState": (null["memoizedState"] | ???*14* | ???*16*),
-        "baseState": (null["baseState"] | ???*18* | ???*20*),
-        "baseQueue": (null["baseQueue"] | ???*22* | ???*24*),
-        "queue": (null["queue"] | ???*26* | ???*28*),
+        "memoizedState": (null["memoizedState"] | side-effectful(null)["memoizedState"] | ???*9*),
+        "baseState": (null["baseState"] | side-effectful(null)["baseState"] | ???*11*),
+        "baseQueue": (null["baseQueue"] | side-effectful(null)["baseQueue"] | ???*13*),
+        "queue": (null["queue"] | side-effectful(null)["queue"] | ???*15*),
         "next": null
     }
 )
@@ -4218,67 +4008,35 @@ a#490 = (
   ⚠️  unknown object
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *2* assignment expression
-  ⚠️  This value might have side effects
-- *3* a
+- *2* a
   ⚠️  circular variable reference
-- *4* ???*5*["next"]
+- *3* ???*4*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *5* assignment expression
-  ⚠️  This value might have side effects
-- *6* ???*7*["next"]
-  ⚠️  unknown object
-- *7* a
+- *4* a
   ⚠️  circular variable reference
-- *8* (null !== ???*9*)
+- *5* (null !== ???*6*)
   ⚠️  nested operation
-- *9* a
+- *6* a
   ⚠️  circular variable reference
-- *10* ???*11*["memoizedState"]
+- *7* ???*8*["memoizedState"]
   ⚠️  unknown object
-- *11* a
+- *8* a
   ⚠️  circular variable reference
-- *12* ???*13*["next"]
+- *9* ???*10*["memoizedState"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *13* assignment expression
-  ⚠️  This value might have side effects
-- *14* ???*15*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *15* assignment expression
-  ⚠️  This value might have side effects
-- *16* ???*17*["memoizedState"]
-  ⚠️  unknown object
-- *17* a
+- *10* a
   ⚠️  circular variable reference
-- *18* ???*19*["baseState"]
+- *11* ???*12*["baseState"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *19* assignment expression
-  ⚠️  This value might have side effects
-- *20* ???*21*["baseState"]
-  ⚠️  unknown object
-- *21* a
+- *12* a
   ⚠️  circular variable reference
-- *22* ???*23*["baseQueue"]
+- *13* ???*14*["baseQueue"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *23* assignment expression
-  ⚠️  This value might have side effects
-- *24* ???*25*["baseQueue"]
-  ⚠️  unknown object
-- *25* a
+- *14* a
   ⚠️  circular variable reference
-- *26* ???*27*["queue"]
+- *15* ???*16*["queue"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *27* assignment expression
-  ⚠️  This value might have side effects
-- *28* ???*29*["queue"]
-  ⚠️  unknown object
-- *29* a
+- *16* a
   ⚠️  circular variable reference
 
 a#493 = ???*0*
@@ -4291,7 +4049,10 @@ a#494 = (???*0* | ???*1*)
 - *1* ???*2*["interleaved"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *2* node limit reached
+- *2* ???*3*["queue"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *3* node limit reached
   ⚠️  This value might have side effects
 
 a#5 = (???*0* | 0 | ???*1*)
@@ -4333,8 +4094,10 @@ a#504 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-a#506 = ???*0*
-- *0* node limit reached
+a#506 = (???*0* | ???*1*)
+- *0* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *1* node limit reached
   ⚠️  This value might have side effects
 
 a#507 = ???*0*
@@ -4368,7 +4131,7 @@ a#514 = (
         "lastRenderedReducer": (...) => (("function" === typeof(b)) ? b(a) : b),
         "lastRenderedState": ???*2*
     }
-  | ???*3*
+  | side-effectful((...) => undefined["bind"](null, (null | ???*3* | ???*4*), ???*20*))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -4376,8 +4139,55 @@ a#514 = (
   ⚠️  circular variable reference
 - *2* a
   ⚠️  circular variable reference
-- *3* assignment expression
-  ⚠️  This value might have side effects
+- *3* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *4* (null !== (
+      | null
+      | side-effectful(null)
+      | ???*5*
+      | undefined
+      | ???*7*
+      | {
+            "memoizedState": ???*12*,
+            "baseState": ???*14*,
+            "baseQueue": ???*16*,
+            "queue": ???*18*,
+            "next": null
+        }
+    ))
+  ⚠️  nested operation
+- *5* ???*6*["alternate"]
+  ⚠️  unknown object
+- *6* N
+  ⚠️  circular variable reference
+- *7* (???*8* ? ???*10* : null)
+  ⚠️  nested operation
+- *8* (null !== ???*9*)
+  ⚠️  nested operation
+- *9* a
+  ⚠️  circular variable reference
+- *10* ???*11*["memoizedState"]
+  ⚠️  unknown object
+- *11* a
+  ⚠️  circular variable reference
+- *12* ???*13*["memoizedState"]
+  ⚠️  unknown object
+- *13* O
+  ⚠️  circular variable reference
+- *14* ???*15*["baseState"]
+  ⚠️  unknown object
+- *15* O
+  ⚠️  circular variable reference
+- *16* ???*17*["baseQueue"]
+  ⚠️  unknown object
+- *17* O
+  ⚠️  circular variable reference
+- *18* ???*19*["queue"]
+  ⚠️  unknown object
+- *19* O
+  ⚠️  circular variable reference
+- *20* a
+  ⚠️  circular variable reference
 
 a#515 = ???*0*
 - *0* max number of linking steps reached
@@ -4509,7 +4319,7 @@ a#554 = (
         "lastRenderedReducer": ???*1*,
         "lastRenderedState": (???*2* | (???*3* ? ???*5* : ???*7*))
     }
-  | ???*8*
+  | side-effectful((...) => undefined["bind"](null, (null | ???*8* | ???*9*), ???*25*))
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -4527,8 +4337,55 @@ a#554 = (
   ⚠️  function calls are not analyzed yet
 - *7* b
   ⚠️  circular variable reference
-- *8* assignment expression
-  ⚠️  This value might have side effects
+- *8* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *9* (null !== (
+      | null
+      | side-effectful(null)
+      | ???*10*
+      | undefined
+      | ???*12*
+      | {
+            "memoizedState": ???*17*,
+            "baseState": ???*19*,
+            "baseQueue": ???*21*,
+            "queue": ???*23*,
+            "next": null
+        }
+    ))
+  ⚠️  nested operation
+- *10* ???*11*["alternate"]
+  ⚠️  unknown object
+- *11* N
+  ⚠️  circular variable reference
+- *12* (???*13* ? ???*15* : null)
+  ⚠️  nested operation
+- *13* (null !== ???*14*)
+  ⚠️  nested operation
+- *14* a
+  ⚠️  circular variable reference
+- *15* ???*16*["memoizedState"]
+  ⚠️  unknown object
+- *16* a
+  ⚠️  circular variable reference
+- *17* ???*18*["memoizedState"]
+  ⚠️  unknown object
+- *18* O
+  ⚠️  circular variable reference
+- *19* ???*20*["baseState"]
+  ⚠️  unknown object
+- *20* O
+  ⚠️  circular variable reference
+- *21* ???*22*["baseQueue"]
+  ⚠️  unknown object
+- *22* O
+  ⚠️  circular variable reference
+- *23* ???*24*["queue"]
+  ⚠️  unknown object
+- *24* O
+  ⚠️  circular variable reference
+- *25* a
+  ⚠️  circular variable reference
 
 a#555 = (???*0* | {"current": ???*1*})
 - *0* arguments[0]
@@ -4540,37 +4397,9 @@ a#556 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-a#557 = (
-  | [
-        ???*0*,
-        (
-          | false
-          | ???*1*()
-          | {
-                "pending": null,
-                "interleaved": null,
-                "lanes": 0,
-                "dispatch": null,
-                "lastRenderedReducer": (...) => (("function" === typeof(b)) ? b(a) : b),
-                "lastRenderedState": ???*2*
-            }
-          | ???*3*
-        )
-    ]
-  | (...) => undefined["bind"](null, ???*4*)
-)
-- *0* node limit reached
+a#557 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *1* a
-  ⚠️  circular variable reference
-- *2* a
-  ⚠️  circular variable reference
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*[1]
-  ⚠️  unknown object
-- *5* a
-  ⚠️  circular variable reference
 
 a#559 = ???*0*
 - *0* arguments[0]
@@ -4580,107 +4409,9 @@ a#56 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-a#562 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+a#562 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 a#565 = ???*0*
 - *0* arguments[0]
@@ -4936,11 +4667,30 @@ a#612 = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-a#613 = (???*0* | ???*1*)
+a#613 = (
+  | ???*0*
+  | side-effectful((
+      | ???*1*
+      | {"mode": "visible", "children": ???*4*}
+      | new (...) => undefined(22, ???*5*, null, ???*6*)
+    ))
+)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
+- *1* ???*2*["children"]
+  ⚠️  unknown object
+- *2* ???*3*["pendingProps"]
+  ⚠️  unknown object
+- *3* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *4* b
+  ⚠️  circular variable reference
+- *5* a
+  ⚠️  circular variable reference
+- *6* ???*7*["mode"]
+  ⚠️  unknown object
+- *7* arguments[1]
+  ⚠️  function calls are not analyzed yet
 
 a#614 = ???*0*
 - *0* max number of linking steps reached
@@ -5016,28 +4766,34 @@ a#639 = (???*0* | ???*1*)
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-a#64 = (???*0* | "" | ((???*1* | ???*2*) ? ???*6* : ???*9*))
+a#64 = (
+  | ???*0*
+  | ""
+  | ((side-effectful(???*1*) | ???*3*) ? ???*7* : ???*10*)
+)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ("input" === ???*3*)
-  ⚠️  nested operation
-- *3* ???*4*()
-  ⚠️  nested operation
-- *4* ???*5*["toLowerCase"]
+- *1* ???*2*["nodeName"]
   ⚠️  unknown object
-- *5* a
+- *2* a
   ⚠️  circular variable reference
-- *6* (???*7* ? "true" : "false")
+- *3* ("input" === ???*4*)
   ⚠️  nested operation
-- *7* ???*8*["checked"]
+- *4* ???*5*()
+  ⚠️  nested operation
+- *5* ???*6*["toLowerCase"]
   ⚠️  unknown object
-- *8* a
+- *6* a
   ⚠️  circular variable reference
-- *9* ???*10*["value"]
+- *7* (???*8* ? "true" : "false")
+  ⚠️  nested operation
+- *8* ???*9*["checked"]
   ⚠️  unknown object
-- *10* a
+- *9* a
+  ⚠️  circular variable reference
+- *10* ???*11*["value"]
+  ⚠️  unknown object
+- *11* a
   ⚠️  circular variable reference
 
 a#644 = ???*0*
@@ -5896,11 +5652,22 @@ ae = (!(???*0*) | ???*3*)
 - *3* unsupported expression
   ⚠️  This value might have side effects
 
-af = (undefined | ???*0* | "animationiteration" | ???*1*)
+af = (undefined | ???*0* | "animationiteration" | side-effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
-- *1* assignment expression
+- *1* {}[???*2*]
+  ⚠️  unknown object prototype methods or values
   ⚠️  This value might have side effects
+- *2* c
+  ⚠️  pattern without value
+- *3* ???*4*[(???*5* | ???*6*)]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *4* unknown mutation
+  ⚠️  This value might have side effects
+- *5* c
+  ⚠️  pattern without value
+- *6* for-in variable currently not analyzed
 
 ag = (...) => undefined
 
@@ -5927,11 +5694,9 @@ ai = {
     "unstable_isNewReconciler": false
 }
 
-aj = (...) => (???*0* | ???*1* | $i(a, b, e))
+aj = (...) => (???*0* | side-effectful(a) | $i(a, b, e) | side-effectful(a))
 - *0* cj(a, b, f, d, e)
   ⚠️  sequence with side effects
-  ⚠️  This value might have side effects
-- *1* assignment expression
   ⚠️  This value might have side effects
 
 ak = (...) => undefined
@@ -6077,11 +5842,9 @@ b#11 = ???*0*
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-b#112 = (null | [???*0*] | ???*1* | undefined)
+b#112 = (null | [???*0*] | side-effectful(null) | undefined)
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
 
 b#114 = ???*0*
 - *0* arguments[1]
@@ -6275,81 +6038,79 @@ b#203 = ???*0*
 
 b#207 = (
   | null
-  | ???*0*
-  | (???*1* ? (null["value"] | ???*2*) : (null["textContent"] | ???*17*))
+  | side-effectful(null)
+  | (???*0* ? (null["value"] | ???*1*) : (null["textContent"] | ???*16*))
 )
-- *0* assignment expression
+- *0* unsupported expression
   ⚠️  This value might have side effects
-- *1* unsupported expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["value"]
+- *1* ???*2*["value"]
   ⚠️  unknown object
-- *3* (???*4* ? (???*9* | ???*11*) : (???*13* | ???*14* | ???*16*))
+- *2* (???*3* ? (???*8* | ???*10*) : (???*12* | ???*13* | ???*15*))
   ⚠️  nested operation
-- *4* (3 === (???*5* | ???*7*))
+- *3* (3 === (???*4* | ???*6*))
   ⚠️  nested operation
-- *5* ???*6*["nodeType"]
+- *4* ???*5*["nodeType"]
   ⚠️  unknown object
-- *6* arguments[2]
+- *5* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *7* ???*8*["nodeType"]
+- *6* ???*7*["nodeType"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *8* FreeVar(window)
+- *7* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *9* ???*10*["parentNode"]
+- *8* ???*9*["parentNode"]
   ⚠️  unknown object
-- *10* arguments[2]
+- *9* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *11* ???*12*["parentNode"]
+- *10* ???*11*["parentNode"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *12* FreeVar(window)
+- *11* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *13* arguments[2]
+- *12* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *14* ???*15*["target"]
+- *13* ???*14*["target"]
   ⚠️  unknown object
-- *15* a
+- *14* a
   ⚠️  circular variable reference
-- *16* FreeVar(window)
+- *15* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *17* ???*18*["textContent"]
+- *16* ???*17*["textContent"]
   ⚠️  unknown object
-- *18* (???*19* ? (???*24* | ???*26*) : (???*28* | ???*29* | ???*31*))
+- *17* (???*18* ? (???*23* | ???*25*) : (???*27* | ???*28* | ???*30*))
   ⚠️  nested operation
-- *19* (3 === (???*20* | ???*22*))
+- *18* (3 === (???*19* | ???*21*))
   ⚠️  nested operation
-- *20* ???*21*["nodeType"]
+- *19* ???*20*["nodeType"]
   ⚠️  unknown object
-- *21* arguments[2]
+- *20* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *22* ???*23*["nodeType"]
+- *21* ???*22*["nodeType"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *23* FreeVar(window)
+- *22* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *24* ???*25*["parentNode"]
+- *23* ???*24*["parentNode"]
   ⚠️  unknown object
-- *25* arguments[2]
+- *24* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *26* ???*27*["parentNode"]
+- *25* ???*26*["parentNode"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *27* FreeVar(window)
+- *26* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *28* arguments[2]
+- *27* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *29* ???*30*["target"]
+- *28* ???*29*["target"]
   ⚠️  unknown object
-- *30* a
+- *29* a
   ⚠️  circular variable reference
-- *31* FreeVar(window)
+- *30* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
@@ -7141,15 +6902,23 @@ b#421 = (
   ⚠️  circular variable reference
 - *5* unknown mutation
   ⚠️  This value might have side effects
-- *6* (???*7* ? ({} | ???*8*) : {})
+- *6* (side-effectful(???*7*) ? ({} | ???*12*) : {})
   ⚠️  nested operation
-- *7* assignment expression
-  ⚠️  This value might have side effects
-- *8* ???*9*["__reactInternalMemoizedMaskedChildContext"]
+- *7* (null !== (false | ???*8* | ???*10*))
+  ⚠️  nested operation
+- *8* ???*9*["contextTypes"]
   ⚠️  unknown object
-- *9* ???*10*["stateNode"]
+- *9* b
+  ⚠️  circular variable reference
+- *10* (null !== ???*11*)
+  ⚠️  nested operation
+- *11* d
+  ⚠️  circular variable reference
+- *12* ???*13*["__reactInternalMemoizedMaskedChildContext"]
   ⚠️  unknown object
-- *10* arguments[0]
+- *13* ???*14*["stateNode"]
+  ⚠️  unknown object
+- *14* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 b#422 = ???*0*
@@ -7170,15 +6939,13 @@ b#424 = (???*0* | (...) => undefined)
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-b#428 = (???*0* | undefined["refs"] | ???*3*)
+b#428 = (???*0* | undefined["refs"] | side-effectful({}))
 - *0* ???*1*["refs"]
   ⚠️  unknown object
 - *1* ???*2*["stateNode"]
   ⚠️  unknown object
 - *2* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
 
 b#429 = ???*0*
 - *0* arguments[1]
@@ -7409,59 +7176,61 @@ b#447 = ???*0*
 
 b#472 = (
   | ???*0*
-  | (???*1* ? ???*2* : ???*4*)
-  | ???*6*
-  | (???*8* ? ???*10* : ???*12*)["namespaceURI"]
+  | (side-effectful(???*1*) ? ???*3* : ???*5*)
+  | ???*7*
+  | (???*9* ? ???*11* : ???*13*)["namespaceURI"]
   | null
-  | (???*13* ? (
+  | (???*14* ? (
       | "http://www.w3.org/2000/svg"
       | "http://www.w3.org/1998/Math/MathML"
       | "http://www.w3.org/1999/xhtml"
       | undefined
-    ) : ???*15*)
+    ) : ???*16*)
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["namespaceURI"]
+- *1* ???*2*["documentElement"]
   ⚠️  unknown object
-- *3* b
+- *2* b
   ⚠️  circular variable reference
-- *4* ((???*5* | false) ? (
+- *3* ???*4*["namespaceURI"]
+  ⚠️  unknown object
+- *4* b
+  ⚠️  circular variable reference
+- *5* ((???*6* | false) ? (
       | "http://www.w3.org/2000/svg"
       | "http://www.w3.org/1998/Math/MathML"
       | "http://www.w3.org/1999/xhtml"
       | undefined
     ) : null)
   ⚠️  nested operation
-- *5* (null == null)
+- *6* (null == null)
   ⚠️  nested operation
-- *6* ???*7*["documentElement"]
+- *7* ???*8*["documentElement"]
   ⚠️  unknown object
-- *7* b
+- *8* b
   ⚠️  circular variable reference
-- *8* (8 === ???*9*)
+- *9* (8 === ???*10*)
   ⚠️  nested operation
-- *9* a
+- *10* a
   ⚠️  circular variable reference
-- *10* ???*11*["parentNode"]
+- *11* ???*12*["parentNode"]
   ⚠️  unknown object
-- *11* b
-  ⚠️  circular variable reference
 - *12* b
   ⚠️  circular variable reference
-- *13* (null == ???*14*)
-  ⚠️  nested operation
-- *14* b
+- *13* b
   ⚠️  circular variable reference
-- *15* (???*16* ? "http://www.w3.org/1999/xhtml" : ???*18*)
+- *14* (null == ???*15*)
   ⚠️  nested operation
-- *16* ("http://www.w3.org/2000/svg" === ???*17*)
-  ⚠️  nested operation
-- *17* b
+- *15* b
   ⚠️  circular variable reference
+- *16* (???*17* ? "http://www.w3.org/1999/xhtml" : ???*19*)
+  ⚠️  nested operation
+- *17* ("http://www.w3.org/2000/svg" === ???*18*)
+  ⚠️  nested operation
 - *18* b
+  ⚠️  circular variable reference
+- *19* b
   ⚠️  circular variable reference
 
 b#474 = ({} | ???*0*)
@@ -7484,178 +7253,81 @@ b#485 = (
   | ???*0*
   | (null !== (
       | null
-      | ???*1*
+      | side-effectful(null)
       | null["alternate"]
-      | ???*2*
+      | ???*1*
       | undefined
-      | ???*4*
+      | ???*3*
       | {
-            "memoizedState": ???*9*,
-            "baseState": ???*11*,
-            "baseQueue": ???*13*,
-            "queue": ???*15*,
+            "memoizedState": ???*8*,
+            "baseState": ???*10*,
+            "baseQueue": ???*12*,
+            "queue": ???*14*,
             "next": null
         }
     ))
-  | (null !== (null["next"] | ???*17* | null["alternate"]["next"] | ???*19* | undefined["next"] | null | ???*22*))
+  | (null !== (
+      | null["next"]
+      | side-effectful(null)["next"]
+      | null["alternate"]["next"]
+      | ???*16*
+      | undefined["next"]
+      | null
+      | ???*19*
+    ))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["alternate"]
+- *1* ???*2*["alternate"]
   ⚠️  unknown object
-- *3* b
+- *2* b
   ⚠️  circular variable reference
-- *4* (???*5* ? ???*7* : null)
+- *3* (???*4* ? ???*6* : null)
   ⚠️  nested operation
-- *5* (null !== ???*6*)
+- *4* (null !== ???*5*)
   ⚠️  nested operation
-- *6* a
+- *5* a
   ⚠️  circular variable reference
-- *7* ???*8*["memoizedState"]
+- *6* ???*7*["memoizedState"]
   ⚠️  unknown object
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* O
+- *9* O
   ⚠️  circular variable reference
-- *11* ???*12*["baseState"]
+- *10* ???*11*["baseState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseQueue"]
+- *12* ???*13*["baseQueue"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["queue"]
+- *14* ???*15*["queue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["next"]
+- *16* ???*17*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *18* assignment expression
-  ⚠️  This value might have side effects
-- *19* ???*20*["next"]
+- *17* ???*18*["alternate"]
   ⚠️  unknown object
-- *20* ???*21*["alternate"]
-  ⚠️  unknown object
-- *21* b
+- *18* b
   ⚠️  circular variable reference
-- *22* unknown mutation
+- *19* unknown mutation
   ⚠️  This value might have side effects
 
 b#490 = ???*0*
-- *0* node limit reached
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 b#493 = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-b#494 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+b#494 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 b#5 = ???*0*
 - *0* arguments[1]
@@ -7701,107 +7373,9 @@ b#50 = (
 - *13* a
   ⚠️  circular variable reference
 
-b#501 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+b#501 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 b#504 = ???*0*
 - *0* arguments[1]
@@ -7813,19 +7387,19 @@ b#506 = (
   | ???*1*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*3*
-      | ???*4*
       | undefined
-      | ???*6*
+      | ???*5*
       | {
-            "memoizedState": ???*11*,
-            "baseState": ???*13*,
-            "baseQueue": ???*15*,
-            "queue": ???*17*,
+            "memoizedState": ???*10*,
+            "baseState": ???*12*,
+            "baseQueue": ???*14*,
+            "queue": ???*16*,
             "next": null
         }
     ))["updateQueue"]
-  | (null !== (null["next"] | ???*19* | ???*21* | undefined["next"] | null | ???*24*))["updateQueue"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]
   | {"lastEffect": null, "stores": null}
 )
 - *0* arguments[1]
@@ -7834,50 +7408,43 @@ b#506 = (
   ⚠️  unknown object
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["alternate"]
+- *3* ???*4*["alternate"]
   ⚠️  unknown object
-- *5* N
+- *4* N
   ⚠️  circular variable reference
-- *6* (???*7* ? ???*9* : null)
+- *5* (???*6* ? ???*8* : null)
   ⚠️  nested operation
-- *7* (null !== ???*8*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* a
+- *9* a
   ⚠️  circular variable reference
-- *11* ???*12*["memoizedState"]
+- *10* ???*11*["memoizedState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseState"]
+- *12* ???*13*["baseState"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["baseQueue"]
+- *14* ???*15*["baseQueue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["queue"]
+- *16* ???*17*["queue"]
   ⚠️  unknown object
-- *18* O
+- *17* O
   ⚠️  circular variable reference
-- *19* ???*20*["next"]
+- *18* ???*19*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["next"]
+- *19* ???*20*["alternate"]
   ⚠️  unknown object
-- *22* ???*23*["alternate"]
-  ⚠️  unknown object
-- *23* N
+- *20* N
   ⚠️  circular variable reference
-- *24* unknown mutation
+- *21* unknown mutation
   ⚠️  This value might have side effects
 
 b#507 = ???*0*
@@ -7910,107 +7477,9 @@ b#513 = (???*0* ? ???*4* : null)
 - *6* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-b#514 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+b#514 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 b#515 = (
   | ???*0*
@@ -8018,19 +7487,19 @@ b#515 = (
   | ???*1*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*3*
-      | ???*4*
       | undefined
-      | ???*6*
+      | ???*5*
       | {
-            "memoizedState": ???*11*,
-            "baseState": ???*13*,
-            "baseQueue": ???*15*,
-            "queue": ???*17*,
+            "memoizedState": ???*10*,
+            "baseState": ???*12*,
+            "baseQueue": ???*14*,
+            "queue": ???*16*,
             "next": null
         }
     ))["updateQueue"]
-  | (null !== (null["next"] | ???*19* | ???*21* | undefined["next"] | null | ???*24*))["updateQueue"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]
   | {"lastEffect": null, "stores": null}
 )
 - *0* arguments[1]
@@ -8039,50 +7508,43 @@ b#515 = (
   ⚠️  unknown object
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["alternate"]
+- *3* ???*4*["alternate"]
   ⚠️  unknown object
-- *5* N
+- *4* N
   ⚠️  circular variable reference
-- *6* (???*7* ? ???*9* : null)
+- *5* (???*6* ? ???*8* : null)
   ⚠️  nested operation
-- *7* (null !== ???*8*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* a
+- *9* a
   ⚠️  circular variable reference
-- *11* ???*12*["memoizedState"]
+- *10* ???*11*["memoizedState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseState"]
+- *12* ???*13*["baseState"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["baseQueue"]
+- *14* ???*15*["baseQueue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["queue"]
+- *16* ???*17*["queue"]
   ⚠️  unknown object
-- *18* O
+- *17* O
   ⚠️  circular variable reference
-- *19* ???*20*["next"]
+- *18* ???*19*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["next"]
+- *19* ???*20*["alternate"]
   ⚠️  unknown object
-- *22* ???*23*["alternate"]
-  ⚠️  unknown object
-- *23* N
+- *20* N
   ⚠️  circular variable reference
-- *24* unknown mutation
+- *21* unknown mutation
   ⚠️  This value might have side effects
 
 b#517 = ???*0*
@@ -8219,348 +7681,56 @@ b#554 = (???*0* | (???*1* ? ???*3* : ???*5*))
 - *5* b
   ⚠️  circular variable reference
 
-b#555 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
-
-b#557 = (???*0* | ???*1* | (...) => undefined["bind"](null, ???*2*)[0])
+b#555 = ???*0*
 - *0* node limit reached
   ⚠️  This value might have side effects
-- *1* unknown mutation
+
+b#557 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *2* ???*3*[1]
-  ⚠️  unknown object
-- *3* a
-  ⚠️  circular variable reference
 
 b#559 = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-b#56 = ((???*0* | ???*1*) ? "checked" : "value")
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* ("input" === ???*2*)
-  ⚠️  nested operation
-- *2* ???*3*()
-  ⚠️  nested operation
-- *3* ???*4*["toLowerCase"]
+b#56 = ((side-effectful(???*0*) | ???*2*) ? "checked" : "value")
+- *0* ???*1*["nodeName"]
   ⚠️  unknown object
-- *4* arguments[0]
+- *1* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *2* ("input" === ???*3*)
+  ⚠️  nested operation
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["toLowerCase"]
+  ⚠️  unknown object
+- *5* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 b#562 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-b#565 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+b#565 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 b#566 = ???*0*
-- *0* node limit reached
+- *0* ???*1*["memoizedState"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *1* node limit reached
   ⚠️  This value might have side effects
 
-b#568 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+b#568 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 b#569 = ???*0*
-- *0* node limit reached
+- *0* ???*1*["memoizedState"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *1* node limit reached
   ⚠️  This value might have side effects
 
 b#570 = ???*0*
@@ -8729,31 +7899,33 @@ b#639 = ???*0*
 b#64 = (
   | ???*0*
   | ""["_valueTracker"]
-  | ((???*2* | ???*3*) ? ???*7* : ???*10*)["_valueTracker"]
+  | ((side-effectful(???*2*) | ???*4*) ? ???*8* : ???*11*)["_valueTracker"]
 )
 - *0* ???*1*["_valueTracker"]
   ⚠️  unknown object
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *2* assignment expression
-  ⚠️  This value might have side effects
-- *3* ("input" === ???*4*)
-  ⚠️  nested operation
-- *4* ???*5*()
-  ⚠️  nested operation
-- *5* ???*6*["toLowerCase"]
+- *2* ???*3*["nodeName"]
   ⚠️  unknown object
-- *6* a
+- *3* a
   ⚠️  circular variable reference
-- *7* (???*8* ? "true" : "false")
+- *4* ("input" === ???*5*)
   ⚠️  nested operation
-- *8* ???*9*["checked"]
+- *5* ???*6*()
+  ⚠️  nested operation
+- *6* ???*7*["toLowerCase"]
   ⚠️  unknown object
-- *9* a
+- *7* a
   ⚠️  circular variable reference
-- *10* ???*11*["value"]
+- *8* (???*9* ? "true" : "false")
+  ⚠️  nested operation
+- *9* ???*10*["checked"]
   ⚠️  unknown object
-- *11* a
+- *10* a
+  ⚠️  circular variable reference
+- *11* ???*12*["value"]
+  ⚠️  unknown object
+- *12* a
   ⚠️  circular variable reference
 
 b#644 = ???*0*
@@ -9150,7 +8322,7 @@ b#915 = (???*0* | (???*1* ? ???*3* : ???*4*))
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : ???*11*)
+- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -9164,8 +8336,8 @@ b#915 = (???*0* | (???*1* ? ???*3* : ???*4*))
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* assignment expression
-  ⚠️  This value might have side effects
+- *11* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 b#916 = (???*0* | 1 | 4194304 | ???*1*)
 - *0* arguments[1]
@@ -9340,7 +8512,7 @@ b#961 = (
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : ???*11*)
+- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -9354,8 +8526,8 @@ b#961 = (
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* assignment expression
-  ⚠️  This value might have side effects
+- *11* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 - *12* unsupported expression
   ⚠️  This value might have side effects
 - *13* Ck
@@ -9656,11 +8828,22 @@ be = (null | ???*0*)
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-bf = (undefined | ???*0* | "animationstart" | ???*1*)
+bf = (undefined | ???*0* | "animationstart" | side-effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
-- *1* assignment expression
+- *1* {}[???*2*]
+  ⚠️  unknown object prototype methods or values
   ⚠️  This value might have side effects
+- *2* c
+  ⚠️  pattern without value
+- *3* ???*4*[(???*5* | ???*6*)]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *4* unknown mutation
+  ⚠️  This value might have side effects
+- *5* c
+  ⚠️  pattern without value
+- *6* for-in variable currently not analyzed
 
 bg = (...) => (c | A({}, c, d))
 
@@ -9977,84 +9160,79 @@ c#203 = ???*0*
 
 c#207 = (
   | null["length"]
-  | ???*0*
-  | (???*2* ? (null["value"] | ???*3*) : (null["textContent"] | ???*18*))["length"]
+  | side-effectful(null)["length"]
+  | (???*0* ? (null["value"] | ???*1*) : (null["textContent"] | ???*16*))["length"]
 )
-- *0* ???*1*["length"]
+- *0* unsupported expression
+  ⚠️  This value might have side effects
+- *1* ???*2*["value"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* unsupported expression
-  ⚠️  This value might have side effects
-- *3* ???*4*["value"]
+- *2* (???*3* ? (???*8* | ???*10*) : (???*12* | ???*13* | ???*15*))
+  ⚠️  nested operation
+- *3* (3 === (???*4* | ???*6*))
+  ⚠️  nested operation
+- *4* ???*5*["nodeType"]
   ⚠️  unknown object
-- *4* (???*5* ? (???*10* | ???*12*) : (???*14* | ???*15* | ???*17*))
-  ⚠️  nested operation
-- *5* (3 === (???*6* | ???*8*))
-  ⚠️  nested operation
+- *5* arguments[2]
+  ⚠️  function calls are not analyzed yet
 - *6* ???*7*["nodeType"]
   ⚠️  unknown object
-- *7* arguments[2]
-  ⚠️  function calls are not analyzed yet
-- *8* ???*9*["nodeType"]
-  ⚠️  unknown object
   ⚠️  This value might have side effects
-- *9* FreeVar(window)
+- *7* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
+- *8* ???*9*["parentNode"]
+  ⚠️  unknown object
+- *9* arguments[2]
+  ⚠️  function calls are not analyzed yet
 - *10* ???*11*["parentNode"]
   ⚠️  unknown object
-- *11* arguments[2]
-  ⚠️  function calls are not analyzed yet
-- *12* ???*13*["parentNode"]
-  ⚠️  unknown object
   ⚠️  This value might have side effects
-- *13* FreeVar(window)
+- *11* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *14* arguments[2]
+- *12* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *15* ???*16*["target"]
+- *13* ???*14*["target"]
   ⚠️  unknown object
-- *16* a
+- *14* a
   ⚠️  circular variable reference
-- *17* FreeVar(window)
+- *15* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *18* ???*19*["textContent"]
+- *16* ???*17*["textContent"]
   ⚠️  unknown object
-- *19* (???*20* ? (???*25* | ???*27*) : (???*29* | ???*30* | ???*32*))
+- *17* (???*18* ? (???*23* | ???*25*) : (???*27* | ???*28* | ???*30*))
   ⚠️  nested operation
-- *20* (3 === (???*21* | ???*23*))
+- *18* (3 === (???*19* | ???*21*))
   ⚠️  nested operation
+- *19* ???*20*["nodeType"]
+  ⚠️  unknown object
+- *20* arguments[2]
+  ⚠️  function calls are not analyzed yet
 - *21* ???*22*["nodeType"]
   ⚠️  unknown object
-- *22* arguments[2]
-  ⚠️  function calls are not analyzed yet
-- *23* ???*24*["nodeType"]
-  ⚠️  unknown object
   ⚠️  This value might have side effects
-- *24* FreeVar(window)
+- *22* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
+- *23* ???*24*["parentNode"]
+  ⚠️  unknown object
+- *24* arguments[2]
+  ⚠️  function calls are not analyzed yet
 - *25* ???*26*["parentNode"]
   ⚠️  unknown object
-- *26* arguments[2]
-  ⚠️  function calls are not analyzed yet
-- *27* ???*28*["parentNode"]
-  ⚠️  unknown object
   ⚠️  This value might have side effects
-- *28* FreeVar(window)
+- *26* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *29* arguments[2]
+- *27* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *30* ???*31*["target"]
+- *28* ???*29*["target"]
   ⚠️  unknown object
-- *31* a
+- *29* a
   ⚠️  circular variable reference
-- *32* FreeVar(window)
+- *30* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
@@ -10190,12 +9368,13 @@ c#275 = (0 | ???*0*)
 - *0* updated with update expression
   ⚠️  This value might have side effects
 
-c#280 = (???*0* | ???*2*)
+c#280 = (???*0* | side-effectful(new ???*2*()))
 - *0* ???*1*[of]
   ⚠️  unknown object
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *2* assignment expression
+- *2* FreeVar(Set)
+  ⚠️  unknown global
   ⚠️  This value might have side effects
 
 c#281 = ???*0*
@@ -10409,23 +9588,49 @@ c#400 = (
   | ???*0*
   | {
         "baseState": ???*2*,
-        "firstBaseUpdate": (null | undefined | ???*5*),
+        "firstBaseUpdate": (
+          | null
+          | undefined
+          | side-effectful((
+              | {
+                    "eventTime": ???*5*,
+                    "lane": ???*7*,
+                    "tag": ???*9*,
+                    "payload": ???*11*,
+                    "callback": ???*13*,
+                    "next": null
+                }
+              | undefined
+            ))
+          | side-effectful(???*15*)
+        ),
         "lastBaseUpdate": (
           | null
           | undefined
           | {
-                "eventTime": ???*6*,
-                "lane": ???*8*,
-                "tag": ???*10*,
-                "payload": ???*12*,
-                "callback": ???*14*,
+                "eventTime": ???*16*,
+                "lane": ???*18*,
+                "tag": ???*20*,
+                "payload": ???*22*,
+                "callback": ???*24*,
                 "next": null
             }
-          | ???*16*
-          | ???*17*
+          | side-effectful((
+              | {
+                    "eventTime": ???*26*,
+                    "lane": ???*28*,
+                    "tag": ???*30*,
+                    "payload": ???*32*,
+                    "callback": ???*34*,
+                    "next": null
+                }
+              | undefined
+            ))
+          | ???*36*
+          | side-effectful(???*37*)
         ),
-        "shared": ???*18*,
-        "effects": ???*21*
+        "shared": ???*38*,
+        "effects": ???*41*
     }
 )
 - *0* ???*1*["updateQueue"]
@@ -10438,43 +9643,83 @@ c#400 = (
   ⚠️  unknown object
 - *4* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *5* assignment expression
-  ⚠️  This value might have side effects
-- *6* ???*7*["eventTime"]
+- *5* ???*6*["eventTime"]
   ⚠️  unknown object
-- *7* c
+- *6* c
   ⚠️  circular variable reference
-- *8* ???*9*["lane"]
+- *7* ???*8*["lane"]
   ⚠️  unknown object
-- *9* c
+- *8* c
   ⚠️  circular variable reference
-- *10* ???*11*["tag"]
+- *9* ???*10*["tag"]
   ⚠️  unknown object
-- *11* c
+- *10* c
   ⚠️  circular variable reference
-- *12* ???*13*["payload"]
+- *11* ???*12*["payload"]
   ⚠️  unknown object
-- *13* c
+- *12* c
   ⚠️  circular variable reference
-- *14* ???*15*["callback"]
+- *13* ???*14*["callback"]
   ⚠️  unknown object
-- *15* c
+- *14* c
   ⚠️  circular variable reference
-- *16* assignment expression
-  ⚠️  This value might have side effects
-- *17* arguments[1]
+- *15* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *18* ???*19*["shared"]
+- *16* ???*17*["eventTime"]
   ⚠️  unknown object
-- *19* ???*20*["alternate"]
+- *17* c
+  ⚠️  circular variable reference
+- *18* ???*19*["lane"]
   ⚠️  unknown object
-- *20* arguments[0]
+- *19* c
+  ⚠️  circular variable reference
+- *20* ???*21*["tag"]
+  ⚠️  unknown object
+- *21* c
+  ⚠️  circular variable reference
+- *22* ???*23*["payload"]
+  ⚠️  unknown object
+- *23* c
+  ⚠️  circular variable reference
+- *24* ???*25*["callback"]
+  ⚠️  unknown object
+- *25* c
+  ⚠️  circular variable reference
+- *26* ???*27*["eventTime"]
+  ⚠️  unknown object
+- *27* c
+  ⚠️  circular variable reference
+- *28* ???*29*["lane"]
+  ⚠️  unknown object
+- *29* c
+  ⚠️  circular variable reference
+- *30* ???*31*["tag"]
+  ⚠️  unknown object
+- *31* c
+  ⚠️  circular variable reference
+- *32* ???*33*["payload"]
+  ⚠️  unknown object
+- *33* c
+  ⚠️  circular variable reference
+- *34* ???*35*["callback"]
+  ⚠️  unknown object
+- *35* c
+  ⚠️  circular variable reference
+- *36* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *21* ???*22*["effects"]
+- *37* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *38* ???*39*["shared"]
   ⚠️  unknown object
-- *22* ???*23*["alternate"]
+- *39* ???*40*["alternate"]
   ⚠️  unknown object
-- *23* arguments[0]
+- *40* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *41* ???*42*["effects"]
+  ⚠️  unknown object
+- *42* ???*43*["alternate"]
+  ⚠️  unknown object
+- *43* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 c#404 = ???*0*
@@ -10530,7 +9775,7 @@ c#419 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -10544,8 +9789,8 @@ c#419 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 c#420 = ???*0*
 - *0* arguments[2]
@@ -10649,11 +9894,17 @@ c#485 = ???*0*
   ⚠️  function calls are not analyzed yet
 
 c#494 = ???*0*
-- *0* node limit reached
+- *0* ???*1*["queue"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *1* node limit reached
   ⚠️  This value might have side effects
 
 c#501 = ???*0*
-- *0* node limit reached
+- *0* ???*1*["queue"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *1* node limit reached
   ⚠️  This value might have side effects
 
 c#504 = (
@@ -10661,66 +9912,59 @@ c#504 = (
   | ???*0*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*1*
-      | ???*2*
       | undefined
-      | ???*4*
+      | ???*3*
       | {
-            "memoizedState": ???*9*,
-            "baseState": ???*11*,
-            "baseQueue": ???*13*,
-            "queue": ???*15*,
+            "memoizedState": ???*8*,
+            "baseState": ???*10*,
+            "baseQueue": ???*12*,
+            "queue": ???*14*,
             "next": null
         }
     ))
-  | (null !== (null["next"] | ???*17* | ???*19* | undefined["next"] | null | ???*22*))
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["alternate"]
+- *1* ???*2*["alternate"]
   ⚠️  unknown object
-- *3* N
+- *2* N
   ⚠️  circular variable reference
-- *4* (???*5* ? ???*7* : null)
+- *3* (???*4* ? ???*6* : null)
   ⚠️  nested operation
-- *5* (null !== ???*6*)
+- *4* (null !== ???*5*)
   ⚠️  nested operation
-- *6* a
+- *5* a
   ⚠️  circular variable reference
-- *7* ???*8*["memoizedState"]
+- *6* ???*7*["memoizedState"]
   ⚠️  unknown object
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* O
+- *9* O
   ⚠️  circular variable reference
-- *11* ???*12*["baseState"]
+- *10* ???*11*["baseState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseQueue"]
+- *12* ???*13*["baseQueue"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["queue"]
+- *14* ???*15*["queue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["next"]
+- *16* ???*17*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *18* assignment expression
-  ⚠️  This value might have side effects
-- *19* ???*20*["next"]
+- *17* ???*18*["alternate"]
   ⚠️  unknown object
-- *20* ???*21*["alternate"]
-  ⚠️  unknown object
-- *21* N
+- *18* N
   ⚠️  circular variable reference
-- *22* unknown mutation
+- *19* unknown mutation
   ⚠️  This value might have side effects
 
 c#506 = (
@@ -10729,21 +9973,21 @@ c#506 = (
   | null["updateQueue"]["stores"]
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*3*
-      | ???*4*
       | undefined
-      | ???*6*
+      | ???*5*
       | {
-            "memoizedState": ???*11*,
-            "baseState": ???*13*,
-            "baseQueue": ???*15*,
-            "queue": ???*17*,
+            "memoizedState": ???*10*,
+            "baseState": ???*12*,
+            "baseQueue": ???*14*,
+            "queue": ???*16*,
             "next": null
         }
     ))["updateQueue"]["stores"]
-  | (null !== (null["next"] | ???*19* | ???*21* | undefined["next"] | null | ???*24*))["updateQueue"]["stores"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["stores"]
   | null
-  | ???*25*
+  | ???*22*
 )
 - *0* arguments[2]
   ⚠️  function calls are not analyzed yet
@@ -10751,52 +9995,45 @@ c#506 = (
   ⚠️  unknown object
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["alternate"]
+- *3* ???*4*["alternate"]
   ⚠️  unknown object
-- *5* N
+- *4* N
   ⚠️  circular variable reference
-- *6* (???*7* ? ???*9* : null)
+- *5* (???*6* ? ???*8* : null)
   ⚠️  nested operation
-- *7* (null !== ???*8*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* a
+- *9* a
   ⚠️  circular variable reference
-- *11* ???*12*["memoizedState"]
+- *10* ???*11*["memoizedState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseState"]
+- *12* ???*13*["baseState"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["baseQueue"]
+- *14* ???*15*["baseQueue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["queue"]
+- *16* ???*17*["queue"]
   ⚠️  unknown object
-- *18* O
+- *17* O
   ⚠️  circular variable reference
-- *19* ???*20*["next"]
+- *18* ???*19*["next"]
   ⚠️  unknown object
+- *19* ???*20*["alternate"]
+  ⚠️  unknown object
+- *20* N
+  ⚠️  circular variable reference
+- *21* unknown mutation
   ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["next"]
-  ⚠️  unknown object
-- *22* ???*23*["alternate"]
-  ⚠️  unknown object
-- *23* N
-  ⚠️  circular variable reference
-- *24* unknown mutation
-  ⚠️  This value might have side effects
-- *25* unknown mutation
+- *22* unknown mutation
   ⚠️  This value might have side effects
 
 c#507 = ???*0*
@@ -10819,21 +10056,21 @@ c#515 = (
   | null["updateQueue"]["lastEffect"]
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*3*
-      | ???*4*
       | undefined
-      | ???*6*
+      | ???*5*
       | {
-            "memoizedState": ???*11*,
-            "baseState": ???*13*,
-            "baseQueue": ???*15*,
-            "queue": ???*17*,
+            "memoizedState": ???*10*,
+            "baseState": ???*12*,
+            "baseQueue": ???*14*,
+            "queue": ???*16*,
             "next": null
         }
     ))["updateQueue"]["lastEffect"]
-  | (null !== (null["next"] | ???*19* | ???*21* | undefined["next"] | null | ???*24*))["updateQueue"]["lastEffect"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["lastEffect"]
   | null
-  | ???*25*
+  | ???*22*
 )
 - *0* arguments[2]
   ⚠️  function calls are not analyzed yet
@@ -10841,52 +10078,45 @@ c#515 = (
   ⚠️  unknown object
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["alternate"]
+- *3* ???*4*["alternate"]
   ⚠️  unknown object
-- *5* N
+- *4* N
   ⚠️  circular variable reference
-- *6* (???*7* ? ???*9* : null)
+- *5* (???*6* ? ???*8* : null)
   ⚠️  nested operation
-- *7* (null !== ???*8*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* a
+- *9* a
   ⚠️  circular variable reference
-- *11* ???*12*["memoizedState"]
+- *10* ???*11*["memoizedState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseState"]
+- *12* ???*13*["baseState"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["baseQueue"]
+- *14* ???*15*["baseQueue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["queue"]
+- *16* ???*17*["queue"]
   ⚠️  unknown object
-- *18* O
+- *17* O
   ⚠️  circular variable reference
-- *19* ???*20*["next"]
+- *18* ???*19*["next"]
   ⚠️  unknown object
+- *19* ???*20*["alternate"]
+  ⚠️  unknown object
+- *20* N
+  ⚠️  circular variable reference
+- *21* unknown mutation
   ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["next"]
-  ⚠️  unknown object
-- *22* ???*23*["alternate"]
-  ⚠️  unknown object
-- *23* N
-  ⚠️  circular variable reference
-- *24* unknown mutation
-  ⚠️  This value might have side effects
-- *25* unknown mutation
+- *22* unknown mutation
   ⚠️  This value might have side effects
 
 c#517 = ???*0*
@@ -10913,209 +10143,13 @@ c#528 = (???*0* | (???*1* ? ???*3* : null))
 - *4* c
   ⚠️  circular variable reference
 
-c#530 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+c#530 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
-c#531 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+c#531 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 c#532 = (???*0* | 64 | ???*1*)
 - *0* arguments[2]
@@ -11302,107 +10336,9 @@ c#550 = (???*0* | (???*1* ? ???*3* : null))
 - *4* c
   ⚠️  circular variable reference
 
-c#553 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+c#553 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 c#554 = ???*0*
 - *0* arguments[2]
@@ -11417,7 +10353,10 @@ c#559 = (???*0* | ???*1*() | ???*2*())
   ⚠️  function calls are not analyzed yet
 
 c#56 = ???*0*
-- *0* ???*1*(???*3*, ((???*6* | ???*7*) ? "checked" : "value"))
+- *0* ???*1*(
+        ???*3*,
+        ((side-effectful(???*6*) | ???*8*) ? "checked" : "value")
+    )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
 - *1* Object*2*["getOwnPropertyDescriptor"]
@@ -11430,15 +10369,17 @@ c#56 = ???*0*
   ⚠️  unknown object
 - *5* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *6* assignment expression
-  ⚠️  This value might have side effects
-- *7* ("input" === ???*8*)
-  ⚠️  nested operation
-- *8* ???*9*()
-  ⚠️  nested operation
-- *9* ???*10*["toLowerCase"]
+- *6* ???*7*["nodeName"]
   ⚠️  unknown object
-- *10* arguments[0]
+- *7* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *8* ("input" === ???*9*)
+  ⚠️  nested operation
+- *9* ???*10*()
+  ⚠️  nested operation
+- *10* ???*11*["toLowerCase"]
+  ⚠️  unknown object
+- *11* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 c#562 = ???*0*
@@ -11602,7 +10543,10 @@ c#629 = (
   | ???*0*
   | ???*1*
   | new (...) => undefined(???*3*, ???*5*, ???*7*, ???*9*)
-  | ???*11*
+  | side-effectful((
+      | ???*11*
+      | new (...) => undefined(???*13*, ???*15*, ???*17*, ???*19*)
+    ))
 )
 - *0* arguments[2]
   ⚠️  function calls are not analyzed yet
@@ -11626,8 +10570,26 @@ c#629 = (
   ⚠️  unknown object
 - *10* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *11* assignment expression
-  ⚠️  This value might have side effects
+- *11* ???*12*["alternate"]
+  ⚠️  unknown object
+- *12* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *13* ???*14*["tag"]
+  ⚠️  unknown object
+- *14* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *15* ???*16*["pendingProps"]
+  ⚠️  unknown object
+- *16* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *17* ???*18*["key"]
+  ⚠️  unknown object
+- *18* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *19* ???*20*["mode"]
+  ⚠️  unknown object
+- *20* arguments[0]
+  ⚠️  function calls are not analyzed yet
 
 c#631 = ???*0*
 - *0* arguments[2]
@@ -11769,12 +10731,26 @@ c#69 = ((???*0* ? "" : ???*3*) | (???*5* ? ???*8* : ???*10*) | "" | undefined)
 - *10* c
   ⚠️  circular variable reference
 
-c#691 = (???*0* | undefined | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* ???*2*["next"]
+c#691 = (
+  | side-effectful((???*0* | (???*2* ? ???*4* : null)["next"]))
+  | undefined
+  | ???*6*
+)
+- *0* ???*1*["next"]
   ⚠️  unknown object
-- *2* c
+- *1* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *2* (null !== ???*3*)
+  ⚠️  nested operation
+- *3* b
+  ⚠️  circular variable reference
+- *4* ???*5*["lastEffect"]
+  ⚠️  unknown object
+- *5* b
+  ⚠️  circular variable reference
+- *6* ???*7*["next"]
+  ⚠️  unknown object
+- *7* c
   ⚠️  circular variable reference
 
 c#695 = (???*0* | undefined)
@@ -11821,12 +10797,25 @@ c#71 = (???*0* | "" | undefined)
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-c#713 = (???*0* | undefined | ???*2*)
+c#713 = (???*0* | undefined | side-effectful(new ???*2*()))
 - *0* ???*1*["stateNode"]
   ⚠️  unknown object
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *2* assignment expression
+- *2* (???*3* ? ???*6* : ???*7*)
+  ⚠️  nested operation
+- *3* ("function" === ???*4*)
+  ⚠️  nested operation
+- *4* typeof(???*5*)
+  ⚠️  nested operation
+- *5* FreeVar(WeakSet)
+  ⚠️  unknown global
+  ⚠️  This value might have side effects
+- *6* FreeVar(WeakSet)
+  ⚠️  unknown global
+  ⚠️  This value might have side effects
+- *7* FreeVar(Set)
+  ⚠️  unknown global
   ⚠️  This value might have side effects
 
 c#716 = ???*0*
@@ -12059,7 +11048,7 @@ c#916 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -12073,8 +11062,8 @@ c#916 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 c#917 = (0 | ???*0*)
 - *0* ???*1*["retryLane"]
@@ -12270,7 +11259,7 @@ c#992 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -12284,8 +11273,8 @@ c#992 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 c#994 = ((???*0* ? ???*2* : ???*3*) | undefined)
 - *0* (0 !== ???*1*)
@@ -12294,7 +11283,7 @@ c#994 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -12308,8 +11297,8 @@ c#994 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 c#997 = ((???*0* ? ???*4* : null) | undefined)
 - *0* (3 === ???*1*)
@@ -12352,11 +11341,22 @@ ce = (!(???*0*) | ???*3* | !((null | ???*4*)))
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
-cf = (undefined | ???*0* | "transitionend" | ???*1*)
+cf = (undefined | ???*0* | "transitionend" | side-effectful((???*1* | ???*3*)))
 - *0* unknown mutation
   ⚠️  This value might have side effects
-- *1* assignment expression
+- *1* {}[???*2*]
+  ⚠️  unknown object prototype methods or values
   ⚠️  This value might have side effects
+- *2* c
+  ⚠️  pattern without value
+- *3* ???*4*[(???*5* | ???*6*)]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *4* unknown mutation
+  ⚠️  This value might have side effects
+- *5* c
+  ⚠️  pattern without value
+- *6* for-in variable currently not analyzed
 
 cg = (...) => !(0)
 
@@ -12755,31 +11755,22 @@ d#285 = ???*0*
 - *0* arguments[3]
   ⚠️  function calls are not analyzed yet
 
-d#286 = (???*0* | ???*1* | ???*2*)
+d#286 = (???*0* | side-effectful((???*1* | undefined | ???*3*)) | ???*4*)
 - *0* arguments[3]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["return"]
+- *1* ???*2*["tag"]
   ⚠️  unknown object
-- *3* d
+- *2* d
+  ⚠️  circular variable reference
+- *3* node limit reached
+  ⚠️  This value might have side effects
+- *4* ???*5*["return"]
+  ⚠️  unknown object
+- *5* d
   ⚠️  circular variable reference
 
-d#292 = (???*0* | ???*1* | ???*2* | ???*4* | undefined | ???*6* | [])
-- *0* arguments[3]
-  ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["return"]
-  ⚠️  unknown object
-- *3* d
-  ⚠️  circular variable reference
-- *4* ???*5*["tag"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *5* assignment expression
-  ⚠️  This value might have side effects
-- *6* node limit reached
+d#292 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 d#30 = (???*0* | undefined)
@@ -12898,17 +11889,58 @@ d#398 = (???*0* | undefined | ???*2*)
 - *2* unsupported assign operation
   ⚠️  This value might have side effects
 
-d#400 = (???*0* | null["alternate"] | undefined["alternate"] | undefined | ???*2* | ???*3*)
+d#400 = (
+  | ???*0*
+  | null["alternate"]
+  | undefined["alternate"]
+  | undefined
+  | ???*2*
+  | side-effectful((
+      | {
+            "eventTime": ???*3*,
+            "lane": ???*5*,
+            "tag": ???*7*,
+            "payload": ???*9*,
+            "callback": ???*11*,
+            "next": null
+        }
+      | undefined
+    ))["alternate"]
+  | side-effectful(???*13*)["alternate"]
+  | ???*14*
+)
 - *0* ???*1*["alternate"]
   ⚠️  unknown object
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *2* unknown mutation
   ⚠️  This value might have side effects
-- *3* ???*4*["alternate"]
+- *3* ???*4*["eventTime"]
+  ⚠️  unknown object
+- *4* c
+  ⚠️  circular variable reference
+- *5* ???*6*["lane"]
+  ⚠️  unknown object
+- *6* c
+  ⚠️  circular variable reference
+- *7* ???*8*["tag"]
+  ⚠️  unknown object
+- *8* c
+  ⚠️  circular variable reference
+- *9* ???*10*["payload"]
+  ⚠️  unknown object
+- *10* c
+  ⚠️  circular variable reference
+- *11* ???*12*["callback"]
+  ⚠️  unknown object
+- *12* c
+  ⚠️  circular variable reference
+- *13* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *14* ???*15*["alternate"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *4* assignment expression
+- *15* unknown mutation
   ⚠️  This value might have side effects
 
 d#404 = ???*0*
@@ -12943,7 +11975,7 @@ d#417 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -12957,8 +11989,8 @@ d#417 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 d#418 = (???*0* ? ???*2* : ???*3*)
 - *0* (0 !== ???*1*)
@@ -12967,7 +11999,7 @@ d#418 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -12981,8 +12013,8 @@ d#418 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 d#419 = (
   | 1
@@ -13061,8 +12093,8 @@ d#421 = (
   | false
   | ???*0*
   | new ???*2*(???*3*, (???*4* | undefined | ???*6* | ???*7*))["contextTypes"]
-  | (null !== ???*12*)
-  | (undefined !== ???*13*)
+  | (null !== ???*13*)
+  | (undefined !== ???*14*)
 )
 - *0* ???*1*["contextTypes"]
   ⚠️  unknown object
@@ -13078,19 +12110,21 @@ d#421 = (
   ⚠️  circular variable reference
 - *6* unknown mutation
   ⚠️  This value might have side effects
-- *7* (???*8* ? ({} | ???*9*) : {})
+- *7* (side-effectful(???*8*) ? ({} | ???*10*) : {})
   ⚠️  nested operation
-- *8* assignment expression
-  ⚠️  This value might have side effects
-- *9* ???*10*["__reactInternalMemoizedMaskedChildContext"]
-  ⚠️  unknown object
-- *10* ???*11*["stateNode"]
-  ⚠️  unknown object
-- *11* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *12* d
+- *8* (null !== ???*9*)
+  ⚠️  nested operation
+- *9* d
   ⚠️  circular variable reference
+- *10* ???*11*["__reactInternalMemoizedMaskedChildContext"]
+  ⚠️  unknown object
+- *11* ???*12*["stateNode"]
+  ⚠️  unknown object
+- *12* arguments[0]
+  ⚠️  function calls are not analyzed yet
 - *13* d
+  ⚠️  circular variable reference
+- *14* d
   ⚠️  circular variable reference
 
 d#422 = ???*0*
@@ -13308,109 +12342,18 @@ d#501 = ???*0*
 - *0* ???*1*["dispatch"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *1* node limit reached
+- *1* ???*2*["queue"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *2* node limit reached
   ⚠️  This value might have side effects
 
-d#504 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+d#504 = (???*0* | ???*1*)
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
+- *1* ???*2*["queue"]
   ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
+- *2* d
   ⚠️  circular variable reference
 
 d#507 = ???*0*
@@ -13427,21 +12370,21 @@ d#515 = (
   | null["updateQueue"]["lastEffect"]["next"]
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*3*
-      | ???*4*
       | undefined
-      | ???*6*
+      | ???*5*
       | {
-            "memoizedState": ???*11*,
-            "baseState": ???*13*,
-            "baseQueue": ???*15*,
-            "queue": ???*17*,
+            "memoizedState": ???*10*,
+            "baseState": ???*12*,
+            "baseQueue": ???*14*,
+            "queue": ???*16*,
             "next": null
         }
     ))["updateQueue"]["lastEffect"]["next"]
-  | (null !== (null["next"] | ???*19* | ???*21* | undefined["next"] | null | ???*24*))["updateQueue"]["lastEffect"]["next"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["updateQueue"]["lastEffect"]["next"]
   | null["next"]
-  | ???*25*
+  | ???*22*
 )
 - *0* arguments[3]
   ⚠️  function calls are not analyzed yet
@@ -13449,55 +12392,48 @@ d#515 = (
   ⚠️  unknown object
 - *2* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["alternate"]
+- *3* ???*4*["alternate"]
   ⚠️  unknown object
-- *5* N
+- *4* N
   ⚠️  circular variable reference
-- *6* (???*7* ? ???*9* : null)
+- *5* (???*6* ? ???*8* : null)
   ⚠️  nested operation
-- *7* (null !== ???*8*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* a
+- *9* a
   ⚠️  circular variable reference
-- *11* ???*12*["memoizedState"]
+- *10* ???*11*["memoizedState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseState"]
+- *12* ???*13*["baseState"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["baseQueue"]
+- *14* ???*15*["baseQueue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["queue"]
+- *16* ???*17*["queue"]
   ⚠️  unknown object
-- *18* O
+- *17* O
   ⚠️  circular variable reference
-- *19* ???*20*["next"]
+- *18* ???*19*["next"]
+  ⚠️  unknown object
+- *19* ???*20*["alternate"]
+  ⚠️  unknown object
+- *20* N
+  ⚠️  circular variable reference
+- *21* unknown mutation
+  ⚠️  This value might have side effects
+- *22* ???*23*["next"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["next"]
-  ⚠️  unknown object
-- *22* ???*23*["alternate"]
-  ⚠️  unknown object
-- *23* N
-  ⚠️  circular variable reference
-- *24* unknown mutation
-  ⚠️  This value might have side effects
-- *25* ???*26*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* unknown mutation
+- *23* unknown mutation
   ⚠️  This value might have side effects
 
 d#517 = ???*0*
@@ -13515,11 +12451,17 @@ d#518 = (???*0* | (???*1* ? null : ???*3*))
   ⚠️  circular variable reference
 
 d#530 = ???*0*
-- *0* node limit reached
+- *0* ???*1*["memoizedState"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *1* node limit reached
   ⚠️  This value might have side effects
 
 d#531 = ???*0*
-- *0* node limit reached
+- *0* ???*1*["memoizedState"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *1* node limit reached
   ⚠️  This value might have side effects
 
 d#533 = module<react, {}>["__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED"]["ReactCurrentBatchConfig"]["transition"]
@@ -13660,173 +12602,68 @@ d#547 = (???*0* | undefined | ???*2*)
 - *2* unsupported assign operation
   ⚠️  This value might have side effects
 
-d#554 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+d#554 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 d#559 = (
   | null
   | ???*0*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*1*
-      | ???*2*
       | undefined
-      | ???*4*
+      | ???*3*
       | {
-            "memoizedState": ???*9*,
-            "baseState": ???*11*,
-            "baseQueue": ???*13*,
-            "queue": ???*15*,
+            "memoizedState": ???*8*,
+            "baseState": ???*10*,
+            "baseQueue": ???*12*,
+            "queue": ???*14*,
             "next": null
         }
     ))
-  | (null !== (null["next"] | ???*17* | ???*19* | undefined["next"] | null | ???*22*))
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*16* | undefined["next"] | null | ???*19*))
 )
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["alternate"]
+- *1* ???*2*["alternate"]
   ⚠️  unknown object
-- *3* N
+- *2* N
   ⚠️  circular variable reference
-- *4* (???*5* ? ???*7* : null)
+- *3* (???*4* ? ???*6* : null)
   ⚠️  nested operation
-- *5* (null !== ???*6*)
+- *4* (null !== ???*5*)
   ⚠️  nested operation
-- *6* a
+- *5* a
   ⚠️  circular variable reference
-- *7* ???*8*["memoizedState"]
+- *6* ???*7*["memoizedState"]
   ⚠️  unknown object
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* O
+- *9* O
   ⚠️  circular variable reference
-- *11* ???*12*["baseState"]
+- *10* ???*11*["baseState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseQueue"]
+- *12* ???*13*["baseQueue"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["queue"]
+- *14* ???*15*["queue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["next"]
+- *16* ???*17*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *18* assignment expression
-  ⚠️  This value might have side effects
-- *19* ???*20*["next"]
+- *17* ???*18*["alternate"]
   ⚠️  unknown object
-- *20* ???*21*["alternate"]
-  ⚠️  unknown object
-- *21* N
+- *18* N
   ⚠️  circular variable reference
-- *22* unknown mutation
+- *19* unknown mutation
   ⚠️  This value might have side effects
 
 d#56 = (???*0* | ???*2*)
@@ -13866,7 +12703,7 @@ d#580 = ???*0*
 d#585 = (
   | ???*0*
   | (...) => undefined["bind"](null, ???*2*, ???*3*, ???*4*)["pingCache"]
-  | ???*5*
+  | side-effectful(new ???*5*())
 )
 - *0* ???*1*["pingCache"]
   ⚠️  unknown object
@@ -13878,7 +12715,20 @@ d#585 = (
   ⚠️  function calls are not analyzed yet
 - *4* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *5* assignment expression
+- *5* (???*6* ? ???*9* : ???*10*)
+  ⚠️  nested operation
+- *6* ("function" === ???*7*)
+  ⚠️  nested operation
+- *7* typeof(???*8*)
+  ⚠️  nested operation
+- *8* FreeVar(WeakMap)
+  ⚠️  unknown global
+  ⚠️  This value might have side effects
+- *9* FreeVar(WeakMap)
+  ⚠️  unknown global
+  ⚠️  This value might have side effects
+- *10* FreeVar(Map)
+  ⚠️  unknown global
   ⚠️  This value might have side effects
 
 d#589 = ???*0*
@@ -14068,26 +12918,31 @@ d#639 = (???*0* | ???*1*)
 - *11* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-d#64 = ("" | ((???*0* | ???*1*) ? ???*5* : ???*8*))
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* ("input" === ???*2*)
-  ⚠️  nested operation
-- *2* ???*3*()
-  ⚠️  nested operation
-- *3* ???*4*["toLowerCase"]
+d#64 = (
+  | ""
+  | ((side-effectful(???*0*) | ???*2*) ? ???*6* : ???*9*)
+)
+- *0* ???*1*["nodeName"]
   ⚠️  unknown object
-- *4* arguments[0]
+- *1* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *5* (???*6* ? "true" : "false")
+- *2* ("input" === ???*3*)
   ⚠️  nested operation
-- *6* ???*7*["checked"]
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["toLowerCase"]
   ⚠️  unknown object
-- *7* arguments[0]
+- *5* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *8* ???*9*["value"]
+- *6* (???*7* ? "true" : "false")
+  ⚠️  nested operation
+- *7* ???*8*["checked"]
   ⚠️  unknown object
-- *9* arguments[0]
+- *8* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *9* ???*10*["value"]
+  ⚠️  unknown object
+- *10* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 d#644 = ???*0*
@@ -14152,17 +13007,29 @@ d#69 = (???*0* ? ???*3* : ???*5*)
 - *6* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-d#691 = (???*0* | undefined["create"] | ???*2* | undefined)
-- *0* ???*1*["create"]
+d#691 = (
+  | side-effectful((???*0* | (???*2* ? ???*4* : null)["next"]))["create"]
+  | undefined["create"]
+  | ???*6*
+  | undefined
+)
+- *0* ???*1*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["create"]
+- *1* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *2* (null !== ???*3*)
+  ⚠️  nested operation
+- *3* b
+  ⚠️  circular variable reference
+- *4* ???*5*["lastEffect"]
   ⚠️  unknown object
-- *3* ???*4*["next"]
+- *5* b
+  ⚠️  circular variable reference
+- *6* ???*7*["create"]
   ⚠️  unknown object
-- *4* c
+- *7* ???*8*["next"]
+  ⚠️  unknown object
+- *8* c
   ⚠️  circular variable reference
 
 d#7 = ???*0*
@@ -14243,16 +13110,16 @@ d#802 = ???*0*
 
 d#803 = (
   | 0
-  | (???*0* ? (0 | ???*19*) : 0)
-  | ???*20*
-  | ???*22*
+  | (???*0* ? (0 | side-effectful((???*19* | 0 | ???*20*))) : 0)
+  | ???*21*
+  | ???*23*
   | 1
   | 2
   | 4
   | 8
   | 16
   | 32
-  | ???*23*
+  | ???*24*
   | 134217728
   | 268435456
   | 536870912
@@ -14297,15 +13164,17 @@ d#803 = (
   ⚠️  unknown object
 - *18* a
   ⚠️  circular variable reference
-- *19* assignment expression
-  ⚠️  This value might have side effects
-- *20* ???*21*["entangledLanes"]
-  ⚠️  unknown object
-- *21* arguments[0]
+- *19* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *22* unsupported assign operation
+- *20* updated with update expression
   ⚠️  This value might have side effects
-- *23* unsupported expression
+- *21* ???*22*["entangledLanes"]
+  ⚠️  unknown object
+- *22* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *23* unsupported assign operation
+  ⚠️  This value might have side effects
+- *24* unsupported expression
   ⚠️  This value might have side effects
 
 d#807 = ???*0*
@@ -14390,69 +13259,62 @@ d#843 = (
   | ???*0*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*2*
-      | ???*3*
       | undefined
-      | ???*5*
+      | ???*4*
       | {
-            "memoizedState": ???*10*,
-            "baseState": ???*12*,
-            "baseQueue": ???*14*,
-            "queue": ???*16*,
+            "memoizedState": ???*9*,
+            "baseState": ???*11*,
+            "baseQueue": ???*13*,
+            "queue": ???*15*,
             "next": null
         }
     ))["memoizedState"]
-  | (null !== (null["next"] | ???*18* | ???*20* | undefined["next"] | null | ???*23*))["memoizedState"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*17* | undefined["next"] | null | ???*20*))["memoizedState"]
   | undefined
 )
 - *0* ???*1*["memoizedState"]
   ⚠️  unknown object
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *2* assignment expression
-  ⚠️  This value might have side effects
-- *3* ???*4*["alternate"]
+- *2* ???*3*["alternate"]
   ⚠️  unknown object
-- *4* N
+- *3* N
   ⚠️  circular variable reference
-- *5* (???*6* ? ???*8* : null)
+- *4* (???*5* ? ???*7* : null)
   ⚠️  nested operation
-- *6* (null !== ???*7*)
+- *5* (null !== ???*6*)
   ⚠️  nested operation
-- *7* a
+- *6* a
   ⚠️  circular variable reference
-- *8* ???*9*["memoizedState"]
+- *7* ???*8*["memoizedState"]
   ⚠️  unknown object
-- *9* a
+- *8* a
   ⚠️  circular variable reference
-- *10* ???*11*["memoizedState"]
+- *9* ???*10*["memoizedState"]
   ⚠️  unknown object
-- *11* O
+- *10* O
   ⚠️  circular variable reference
-- *12* ???*13*["baseState"]
+- *11* ???*12*["baseState"]
   ⚠️  unknown object
-- *13* O
+- *12* O
   ⚠️  circular variable reference
-- *14* ???*15*["baseQueue"]
+- *13* ???*14*["baseQueue"]
   ⚠️  unknown object
-- *15* O
+- *14* O
   ⚠️  circular variable reference
-- *16* ???*17*["queue"]
+- *15* ???*16*["queue"]
   ⚠️  unknown object
-- *17* O
+- *16* O
   ⚠️  circular variable reference
-- *18* ???*19*["next"]
+- *17* ???*18*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *19* assignment expression
-  ⚠️  This value might have side effects
-- *20* ???*21*["next"]
+- *18* ???*19*["alternate"]
   ⚠️  unknown object
-- *21* ???*22*["alternate"]
-  ⚠️  unknown object
-- *22* N
+- *19* N
   ⚠️  circular variable reference
-- *23* unknown mutation
+- *20* unknown mutation
   ⚠️  This value might have side effects
 
 d#863 = (???*0* ? {
@@ -14680,7 +13542,7 @@ d#960 = (???*0* | (???*1* ? ???*3* : ???*4*))
   ⚠️  This value might have side effects
 - *3* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *4* (???*5* ? (???*9* | ???*10*) : ???*11*)
+- *4* (???*5* ? (???*9* | ???*10*) : side-effectful(???*11*))
   ⚠️  nested operation
 - *5* (???*6* !== (???*7* | ???*8*))
   ⚠️  nested operation
@@ -14694,8 +13556,8 @@ d#960 = (???*0* | (???*1* ? ???*3* : ???*4*))
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* assignment expression
-  ⚠️  This value might have side effects
+- *11* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 d#961 = (???*0* | (???*1* ? null : ???*3*))
 - *0* arguments[3]
@@ -14722,7 +13584,7 @@ d#997 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -14736,8 +13598,8 @@ d#997 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 da = new ???*0*()
 - *0* FreeVar(Set)
@@ -15453,9 +14315,64 @@ e#396 = (???*0* | undefined)
 - *2* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-e#400 = (null | undefined | ???*0*)
-- *0* assignment expression
+e#400 = (
+  | null
+  | undefined
+  | side-effectful((
+      | {
+            "eventTime": (???*0* | undefined | ???*3*),
+            "lane": (???*4* | undefined | ???*7*),
+            "tag": (???*8* | undefined | ???*11*),
+            "payload": (???*12* | undefined | ???*15*),
+            "callback": (???*16* | undefined | ???*19*),
+            "next": null
+        }
+      | undefined
+    ))
+  | side-effectful(???*20*)
+)
+- *0* ???*1*["eventTime"]
+  ⚠️  unknown object
+- *1* ???*2*["updateQueue"]
+  ⚠️  unknown object
+- *2* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *3* unknown mutation
   ⚠️  This value might have side effects
+- *4* ???*5*["lane"]
+  ⚠️  unknown object
+- *5* ???*6*["updateQueue"]
+  ⚠️  unknown object
+- *6* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *7* unknown mutation
+  ⚠️  This value might have side effects
+- *8* ???*9*["tag"]
+  ⚠️  unknown object
+- *9* ???*10*["updateQueue"]
+  ⚠️  unknown object
+- *10* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *11* unknown mutation
+  ⚠️  This value might have side effects
+- *12* ???*13*["payload"]
+  ⚠️  unknown object
+- *13* ???*14*["updateQueue"]
+  ⚠️  unknown object
+- *14* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *15* unknown mutation
+  ⚠️  This value might have side effects
+- *16* ???*17*["callback"]
+  ⚠️  unknown object
+- *17* ???*18*["updateQueue"]
+  ⚠️  unknown object
+- *18* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *19* unknown mutation
+  ⚠️  This value might have side effects
+- *20* arguments[1]
+  ⚠️  function calls are not analyzed yet
 
 e#404 = (???*0* | ???*2*)
 - *0* ???*1*["updateQueue"]
@@ -15659,7 +14576,7 @@ e#419 = {
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -15673,8 +14590,8 @@ e#419 = {
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 - *11* unsupported expression
   ⚠️  This value might have side effects
 - *12* Ck
@@ -15733,8 +14650,8 @@ e#420 = ???*0*
 - *0* arguments[4]
   ⚠️  function calls are not analyzed yet
 
-e#421 = ({} | (???*0* ? ({} | ???*14*) : ({} | ???*15*)))
-- *0* (null !== (???*1* | ???*2* | ???*12*))
+e#421 = ({} | (???*0* ? ({} | ???*16*) : ({} | ???*17*)))
+- *0* (null !== (???*1* | ???*2* | ???*14*))
   ⚠️  nested operation
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
@@ -15750,21 +14667,25 @@ e#421 = ({} | (???*0* ? ({} | ???*14*) : ({} | ???*15*)))
   ⚠️  circular variable reference
 - *7* unknown mutation
   ⚠️  This value might have side effects
-- *8* (???*9* ? ({} | ???*10*) : {})
+- *8* (side-effectful(???*9*) ? ({} | ???*12*) : {})
   ⚠️  nested operation
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* ???*11*["__reactInternalMemoizedMaskedChildContext"]
+- *9* (null !== (false | ???*10* | ???*11*))
+  ⚠️  nested operation
+- *10* ...[...]
   ⚠️  unknown object
-- *11* ???["stateNode"]
+- *11* (... !== ...)
+  ⚠️  nested operation
+- *12* ???*13*["__reactInternalMemoizedMaskedChildContext"]
   ⚠️  unknown object
-- *12* ???*13*["childContextTypes"]
+- *13* ???["stateNode"]
   ⚠️  unknown object
-- *13* a
+- *14* ???*15*["childContextTypes"]
+  ⚠️  unknown object
+- *15* a
   ⚠️  circular variable reference
-- *14* unknown mutation
+- *16* unknown mutation
   ⚠️  This value might have side effects
-- *15* unknown mutation
+- *17* unknown mutation
   ⚠️  This value might have side effects
 
 e#423 = ???*0*
@@ -15815,224 +14736,31 @@ e#494 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-e#501 = (???*0* | ???*2*)
+e#501 = (???*0* | ???*3*)
 - *0* ???*1*["pending"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *1* node limit reached
-  ⚠️  This value might have side effects
-- *2* ???*3*["next"]
+- *1* ???*2*["queue"]
   ⚠️  unknown object
-- *3* e
+  ⚠️  This value might have side effects
+- *2* node limit reached
+  ⚠️  This value might have side effects
+- *3* ???*4*["next"]
+  ⚠️  unknown object
+- *4* e
   ⚠️  circular variable reference
 
 e#504 = ???*0*()
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-e#517 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+e#517 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
-e#518 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+e#518 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 e#537 = ((???*0* ? ???*2* : ???*3*) | undefined)
 - *0* (0 !== ???*1*)
@@ -16041,7 +14769,7 @@ e#537 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -16055,8 +14783,8 @@ e#537 = ((???*0* ? ???*2* : ???*3*) | undefined)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 e#539 = (
   | {
@@ -16152,7 +14880,7 @@ e#539 = (
   ⚠️  This value might have side effects
 - *33* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *34* (???*35* ? (???*39* | ???*40*) : ???*41*)
+- *34* (???*35* ? (???*39* | ???*40*) : side-effectful(???*41*))
   ⚠️  nested operation
 - *35* (???*36* !== (???*37* | ???*38*))
   ⚠️  nested operation
@@ -16166,116 +14894,21 @@ e#539 = (
   ⚠️  This value might have side effects
 - *40* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *41* assignment expression
-  ⚠️  This value might have side effects
+- *41* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
-e#559 = (
-  | null
-  | ???*0*
-  | {"memoizedState": null, "baseState": null, "baseQueue": null, "queue": null, "next": null}
-  | (???*1* ? (null["memoizedState"] | ???*3*) : ???*5*)
-  | null["alternate"]
-  | ???*7*
-  | (null !== (null | ???*9* | ???*10*))["alternate"]
-  | (null !== (null["next"] | ???*11* | ???*13*))["alternate"]
-  | undefined
-  | (???*15* ? ???*17* : null)
-  | null["next"]
-  | ???*19*
-  | {
-        "memoizedState": (null["memoizedState"] | ???*21* | ???*23*),
-        "baseState": (null["baseState"] | ???*25* | ???*27*),
-        "baseQueue": (null["baseQueue"] | ???*29* | ???*31*),
-        "queue": (null["queue"] | ???*33* | ???*35*),
-        "next": null
-    }
-)
-- *0* assignment expression
+e#559 = ???*0*
+- *0* node limit reached
   ⚠️  This value might have side effects
-- *1* (null === ???*2*)
-  ⚠️  nested operation
-- *2* P
-  ⚠️  circular variable reference
-- *3* ???*4*["memoizedState"]
-  ⚠️  unknown object
-- *4* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *5* ???*6*["next"]
-  ⚠️  unknown object
-- *6* P
-  ⚠️  circular variable reference
-- *7* ???*8*["alternate"]
-  ⚠️  unknown object
-- *8* arguments[1]
-  ⚠️  function calls are not analyzed yet
-- *9* assignment expression
-  ⚠️  This value might have side effects
-- *10* a
-  ⚠️  circular variable reference
-- *11* ???*12*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *12* assignment expression
-  ⚠️  This value might have side effects
-- *13* ???*14*["next"]
-  ⚠️  unknown object
-- *14* a
-  ⚠️  circular variable reference
-- *15* (null !== ???*16*)
-  ⚠️  nested operation
-- *16* a
-  ⚠️  circular variable reference
-- *17* ???*18*["memoizedState"]
-  ⚠️  unknown object
-- *18* a
-  ⚠️  circular variable reference
-- *19* ???*20*["next"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["memoizedState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *22* assignment expression
-  ⚠️  This value might have side effects
-- *23* ???*24*["memoizedState"]
-  ⚠️  unknown object
-- *24* a
-  ⚠️  circular variable reference
-- *25* ???*26*["baseState"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *26* assignment expression
-  ⚠️  This value might have side effects
-- *27* ???*28*["baseState"]
-  ⚠️  unknown object
-- *28* a
-  ⚠️  circular variable reference
-- *29* ???*30*["baseQueue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *30* assignment expression
-  ⚠️  This value might have side effects
-- *31* ???*32*["baseQueue"]
-  ⚠️  unknown object
-- *32* a
-  ⚠️  circular variable reference
-- *33* ???*34*["queue"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *34* assignment expression
-  ⚠️  This value might have side effects
-- *35* ???*36*["queue"]
-  ⚠️  unknown object
-- *36* a
-  ⚠️  circular variable reference
 
 e#56 = (???*0* | undefined)
 - *0* ???*1*["get"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *1* ???*2*(???*4*, ((???*7* | ???*8*) ? "checked" : "value"))
+- *1* ???*2*(
+        ???*4*,
+        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+    )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
 - *2* Object*3*["getOwnPropertyDescriptor"]
@@ -16288,13 +14921,15 @@ e#56 = (???*0* | undefined)
   ⚠️  unknown object
 - *6* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *7* assignment expression
-  ⚠️  This value might have side effects
-- *8* ("input" === ???*9*)
+- *7* ???*8*["nodeName"]
+  ⚠️  unknown object
+- *8* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *9* ("input" === ???*10*)
   ⚠️  nested operation
-- *9* ???*10*()
+- *10* ???*11*()
   ⚠️  nested operation
-- *10* ???["toLowerCase"]
+- *11* ???["toLowerCase"]
   ⚠️  unknown object
 
 e#570 = ???*0*
@@ -16307,7 +14942,7 @@ e#580 = (???*0* | undefined)
 - *1* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-e#585 = (new ???*0*() | undefined | ???*1* | ???*5* | ???*13*)
+e#585 = (new ???*0*() | undefined | ???*1* | ???*5* | side-effectful(???*13*)["get"](???*20*))
 - *0* FreeVar(Set)
   ⚠️  unknown global
   ⚠️  This value might have side effects
@@ -16335,12 +14970,24 @@ e#585 = (new ???*0*() | undefined | ???*1* | ???*5* | ???*13*)
   ⚠️  function calls are not analyzed yet
 - *12* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *13* ???*14*["get"](???*15*)
-  ⚠️  unknown callee object
+- *13* new ???*14*()
+  ⚠️  nested operation
+- *14* (???*15* ? ???*18* : ???*19*)
+  ⚠️  nested operation
+- *15* ("function" === ???*16*)
+  ⚠️  nested operation
+- *16* typeof(???*17*)
+  ⚠️  nested operation
+- *17* FreeVar(WeakMap)
+  ⚠️  unknown global
   ⚠️  This value might have side effects
-- *14* assignment expression
+- *18* FreeVar(WeakMap)
+  ⚠️  unknown global
   ⚠️  This value might have side effects
-- *15* arguments[1]
+- *19* FreeVar(Map)
+  ⚠️  unknown global
+  ⚠️  This value might have side effects
+- *20* arguments[1]
   ⚠️  function calls are not analyzed yet
 
 e#589 = ???*0*
@@ -16518,23 +15165,33 @@ e#673 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-e#687 = (???*0* | undefined | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* ???*2*["next"]
+e#687 = (
+  | side-effectful((???*0* | (???*3* ? ???*5* : null)["next"]))
+  | undefined
+  | ???*7*
+)
+- *0* ???*1*["next"]
   ⚠️  unknown object
-- *2* e
+- *1* ???*2*["updateQueue"]
+  ⚠️  unknown object
+- *2* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *3* (null !== ???*4*)
+  ⚠️  nested operation
+- *4* d
+  ⚠️  circular variable reference
+- *5* ???*6*["lastEffect"]
+  ⚠️  unknown object
+- *6* d
+  ⚠️  circular variable reference
+- *7* ???*8*["next"]
+  ⚠️  unknown object
+- *8* e
   ⚠️  circular variable reference
 
-e#706 = (false | ???*0* | true | undefined | ???*1* | ???*2*)
-- *0* e
-  ⚠️  circular variable reference
-- *1* assignment expression
+e#706 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *2* ???*3*["next"]
-  ⚠️  unknown object
-- *3* e
-  ⚠️  circular variable reference
 
 e#716 = (???*0* | undefined)
 - *0* ???*1*[d]
@@ -16656,19 +15313,19 @@ e#843 = (
   | ???*0*
   | (null !== (
       | null
+      | side-effectful(null)
       | ???*3*
-      | ???*4*
       | undefined
-      | ???*6*
+      | ???*5*
       | {
-            "memoizedState": ???*11*,
-            "baseState": ???*13*,
-            "baseQueue": ???*15*,
-            "queue": ???*17*,
+            "memoizedState": ???*10*,
+            "baseState": ???*12*,
+            "baseQueue": ???*14*,
+            "queue": ???*16*,
             "next": null
         }
     ))["memoizedState"]["queue"]
-  | (null !== (null["next"] | ???*19* | ???*21* | undefined["next"] | null | ???*24*))["memoizedState"]["queue"]
+  | (null !== (null["next"] | side-effectful(null)["next"] | ???*18* | undefined["next"] | null | ???*21*))["memoizedState"]["queue"]
   | undefined["queue"]
   | undefined
 )
@@ -16678,50 +15335,43 @@ e#843 = (
   ⚠️  unknown object
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* ???*5*["alternate"]
+- *3* ???*4*["alternate"]
   ⚠️  unknown object
-- *5* N
+- *4* N
   ⚠️  circular variable reference
-- *6* (???*7* ? ???*9* : null)
+- *5* (???*6* ? ???*8* : null)
   ⚠️  nested operation
-- *7* (null !== ???*8*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
-- *8* a
+- *7* a
   ⚠️  circular variable reference
-- *9* ???*10*["memoizedState"]
+- *8* ???*9*["memoizedState"]
   ⚠️  unknown object
-- *10* a
+- *9* a
   ⚠️  circular variable reference
-- *11* ???*12*["memoizedState"]
+- *10* ???*11*["memoizedState"]
   ⚠️  unknown object
-- *12* O
+- *11* O
   ⚠️  circular variable reference
-- *13* ???*14*["baseState"]
+- *12* ???*13*["baseState"]
   ⚠️  unknown object
-- *14* O
+- *13* O
   ⚠️  circular variable reference
-- *15* ???*16*["baseQueue"]
+- *14* ???*15*["baseQueue"]
   ⚠️  unknown object
-- *16* O
+- *15* O
   ⚠️  circular variable reference
-- *17* ???*18*["queue"]
+- *16* ???*17*["queue"]
   ⚠️  unknown object
-- *18* O
+- *17* O
   ⚠️  circular variable reference
-- *19* ???*20*["next"]
+- *18* ???*19*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* ???*22*["next"]
+- *19* ???*20*["alternate"]
   ⚠️  unknown object
-- *22* ???*23*["alternate"]
-  ⚠️  unknown object
-- *23* N
+- *20* N
   ⚠️  circular variable reference
-- *24* unknown mutation
+- *21* unknown mutation
   ⚠️  This value might have side effects
 
 e#865 = ???*0*
@@ -16811,7 +15461,7 @@ e#960 = (
   ⚠️  This value might have side effects
 - *10* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *11* (???*12* ? (???*16* | ???*17*) : ???*18*)
+- *11* (???*12* ? (???*16* | ???*17*) : side-effectful(???*18*))
   ⚠️  nested operation
 - *12* (???*13* !== (???*14* | ???*15*))
   ⚠️  nested operation
@@ -16825,8 +15475,8 @@ e#960 = (
   ⚠️  This value might have side effects
 - *17* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *18* assignment expression
-  ⚠️  This value might have side effects
+- *18* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 - *19* unsupported assign operation
   ⚠️  This value might have side effects
 - *20* arguments[7]
@@ -17203,21 +15853,8 @@ f#275 = (
 - *17* h
   ⚠️  circular variable reference
 
-f#286 = (???*0* | ???*1* | ???*2* | ???*4* | undefined | ???*6*)
-- *0* arguments[3]
-  ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["return"]
-  ⚠️  unknown object
-- *3* d
-  ⚠️  circular variable reference
-- *4* ???*5*["tag"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *5* assignment expression
-  ⚠️  This value might have side effects
-- *6* node limit reached
+f#286 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 f#30 = (???*0* | undefined["stack"]["split"]("\n") | undefined)
@@ -17336,64 +15973,9 @@ f#357 = ((???*0* + (???*1* | ???*2*)) | ???*3*)
 - *4* unsupported expression
   ⚠️  This value might have side effects
 
-f#400 = (
-  | null
-  | undefined
-  | {
-        "eventTime": (???*0* | undefined | ???*3*),
-        "lane": (???*4* | undefined | ???*7*),
-        "tag": (???*8* | undefined | ???*11*),
-        "payload": (???*12* | undefined | ???*15*),
-        "callback": (???*16* | undefined | ???*19*),
-        "next": null
-    }
-  | ???*20*
-  | ???*21*
-)
-- *0* ???*1*["eventTime"]
-  ⚠️  unknown object
-- *1* ???*2*["updateQueue"]
-  ⚠️  unknown object
-- *2* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *3* unknown mutation
+f#400 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *4* ???*5*["lane"]
-  ⚠️  unknown object
-- *5* ???*6*["updateQueue"]
-  ⚠️  unknown object
-- *6* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *7* unknown mutation
-  ⚠️  This value might have side effects
-- *8* ???*9*["tag"]
-  ⚠️  unknown object
-- *9* ???*10*["updateQueue"]
-  ⚠️  unknown object
-- *10* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *11* unknown mutation
-  ⚠️  This value might have side effects
-- *12* ???*13*["payload"]
-  ⚠️  unknown object
-- *13* ???*14*["updateQueue"]
-  ⚠️  unknown object
-- *14* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *15* unknown mutation
-  ⚠️  This value might have side effects
-- *16* ???*17*["callback"]
-  ⚠️  unknown object
-- *17* ???*18*["updateQueue"]
-  ⚠️  unknown object
-- *18* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *19* unknown mutation
-  ⚠️  This value might have side effects
-- *20* assignment expression
-  ⚠️  This value might have side effects
-- *21* arguments[1]
-  ⚠️  function calls are not analyzed yet
 
 f#404 = ???*0*
 - *0* max number of linking steps reached
@@ -17427,7 +16009,7 @@ f#417 = {
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -17441,8 +16023,8 @@ f#417 = {
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 - *11* unsupported expression
   ⚠️  This value might have side effects
 - *12* Ck
@@ -17525,7 +16107,7 @@ f#418 = {
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -17539,8 +16121,8 @@ f#418 = {
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 - *11* unsupported expression
   ⚠️  This value might have side effects
 - *12* Ck
@@ -17604,7 +16186,7 @@ f#421 = (
   | new ???*2*(???*3*, ???*4*)["contextType"]
   | undefined
   | ???*5*
-  | (???*6* ? ({} | ???*7*) : {})
+  | (side-effectful(???*6*) ? ({} | ???*11*) : {})
 )
 - *0* ???*1*["contextType"]
   ⚠️  unknown object
@@ -17618,13 +16200,21 @@ f#421 = (
   ⚠️  circular variable reference
 - *5* unknown mutation
   ⚠️  This value might have side effects
-- *6* assignment expression
-  ⚠️  This value might have side effects
-- *7* ???*8*["__reactInternalMemoizedMaskedChildContext"]
+- *6* (null !== (false | ???*7* | ???*9*))
+  ⚠️  nested operation
+- *7* ???*8*["contextTypes"]
   ⚠️  unknown object
-- *8* ???*9*["stateNode"]
+- *8* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *9* (null !== ???*10*)
+  ⚠️  nested operation
+- *10* d
+  ⚠️  circular variable reference
+- *11* ???*12*["__reactInternalMemoizedMaskedChildContext"]
   ⚠️  unknown object
-- *9* arguments[0]
+- *12* ???*13*["stateNode"]
+  ⚠️  unknown object
+- *13* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 f#423 = (???*0* | (???*2* ? ({} | ???*7*) : ({} | ???*8*)))
@@ -17698,16 +16288,19 @@ f#494 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-f#501 = (???*0* | ???*1*)
-- *0* node limit reached
+f#501 = (???*0* | ???*2*)
+- *0* ???*1*["memoizedState"]
+  ⚠️  unknown object
   ⚠️  This value might have side effects
-- *1* ???*2*(f, g["action"])
+- *1* node limit reached
+  ⚠️  This value might have side effects
+- *2* ???*3*(f, g["action"])
   ⚠️  unknown callee
-- *2* arguments[0]
+- *3* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 f#504 = !(???*0*)
-- *0* ???*1*(???*11*, ???*12*)
+- *0* ???*1*((???*11* | ???*13*), ???*16*)
   ⚠️  unknown callee
   ⚠️  This value might have side effects
 - *1* (???*2* ? ???*6* : (...) => ???*8*)
@@ -17730,55 +16323,62 @@ f#504 = !(???*0*)
   ⚠️  This value might have side effects
 - *10* unsupported expression
   ⚠️  This value might have side effects
-- *11* node limit reached
+- *11* ???*12*["memoizedState"]
+  ⚠️  unknown object
   ⚠️  This value might have side effects
-- *12* ???*13*()
+- *12* node limit reached
+  ⚠️  This value might have side effects
+- *13* ???*14*["memoizedState"]
+  ⚠️  unknown object
+- *14* ???*15*["queue"]
+  ⚠️  unknown object
+- *15* d
+  ⚠️  circular variable reference
+- *16* ???*17*()
   ⚠️  nested operation
-- *13* arguments[1]
+- *17* arguments[1]
   ⚠️  function calls are not analyzed yet
 
 f#518 = (
   | undefined
   | null["memoizedState"]["destroy"]
-  | ???*0*
+  | side-effectful(null)["memoizedState"]["destroy"]
   | null["alternate"]["memoizedState"]["destroy"]
-  | ???*3*
-  | (null !== ???*7*)["alternate"]["memoizedState"]["destroy"]
-  | (null !== ???*8*)["alternate"]["memoizedState"]["destroy"]
+  | ???*0*
+  | (null !== ???*4*)["alternate"]["memoizedState"]["destroy"]
+  | (null !== ???*5*)["alternate"]["memoizedState"]["destroy"]
   | undefined["memoizedState"]["destroy"]
-  | (???*10* ? ???*12* : null)["memoizedState"]["destroy"]
+  | (???*7* ? ???*9* : null)["memoizedState"]["destroy"]
+  | ???*11*
   | undefined["destroy"]
 )
 - *0* ???*1*["destroy"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
 - *1* ???*2*["memoizedState"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *2* assignment expression
-  ⚠️  This value might have side effects
-- *3* ???*4*["destroy"]
+- *2* ???*3*["alternate"]
   ⚠️  unknown object
-- *4* ???*5*["memoizedState"]
-  ⚠️  unknown object
-- *5* ???*6*["alternate"]
-  ⚠️  unknown object
-- *6* arguments[1]
+- *3* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *7* O
+- *4* O
   ⚠️  circular variable reference
-- *8* ???*9*["next"]
+- *5* ???*6*["next"]
   ⚠️  unknown object
-- *9* O
+- *6* O
   ⚠️  circular variable reference
-- *10* (null !== ???*11*)
+- *7* (null !== ???*8*)
   ⚠️  nested operation
-- *11* a
+- *8* a
   ⚠️  circular variable reference
-- *12* ???*13*["memoizedState"]
+- *9* ???*10*["memoizedState"]
   ⚠️  unknown object
-- *13* a
+- *10* a
   ⚠️  circular variable reference
+- *11* ???*12*["destroy"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *12* unknown mutation
+  ⚠️  This value might have side effects
 
 f#539 = (???*0* | undefined)
 - *0* ???*1*["alternate"]
@@ -17800,7 +16400,10 @@ f#56 = (???*0* | undefined)
 - *0* ???*1*["set"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *1* ???*2*(???*4*, ((???*7* | ???*8*) ? "checked" : "value"))
+- *1* ???*2*(
+        ???*4*,
+        ((side-effectful(???*7*) | ???*9*) ? "checked" : "value")
+    )
   ⚠️  unknown callee
   ⚠️  This value might have side effects
 - *2* Object*3*["getOwnPropertyDescriptor"]
@@ -17813,13 +16416,15 @@ f#56 = (???*0* | undefined)
   ⚠️  unknown object
 - *6* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *7* assignment expression
-  ⚠️  This value might have side effects
-- *8* ("input" === ???*9*)
+- *7* ???*8*["nodeName"]
+  ⚠️  unknown object
+- *8* arguments[0]
+  ⚠️  function calls are not analyzed yet
+- *9* ("input" === ???*10*)
   ⚠️  nested operation
-- *9* ???*10*()
+- *10* ???*11*()
   ⚠️  nested operation
-- *10* ???["toLowerCase"]
+- *11* ???["toLowerCase"]
   ⚠️  unknown object
 
 f#572 = ???*0*
@@ -18033,28 +16638,36 @@ f#673 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-f#687 = (???*0* | undefined["destroy"] | ???*2* | undefined)
-- *0* ???*1*["destroy"]
+f#687 = (
+  | side-effectful((???*0* | (???*3* ? ???*5* : null)["next"]))["destroy"]
+  | undefined["destroy"]
+  | ???*7*
+  | undefined
+)
+- *0* ???*1*["next"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["destroy"]
+- *1* ???*2*["updateQueue"]
   ⚠️  unknown object
-- *3* ???*4*["next"]
+- *2* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *3* (null !== ???*4*)
+  ⚠️  nested operation
+- *4* d
+  ⚠️  circular variable reference
+- *5* ???*6*["lastEffect"]
   ⚠️  unknown object
-- *4* e
+- *6* d
+  ⚠️  circular variable reference
+- *7* ???*8*["destroy"]
+  ⚠️  unknown object
+- *8* ???*9*["next"]
+  ⚠️  unknown object
+- *9* e
   ⚠️  circular variable reference
 
-f#706 = (false | ???*0* | true | undefined | ???*1* | ???*2*)
-- *0* e
-  ⚠️  circular variable reference
-- *1* assignment expression
+f#706 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
-- *2* ???*3*["next"]
-  ⚠️  unknown object
-- *3* e
-  ⚠️  circular variable reference
 
 f#716 = (???*0* | undefined)
 - *0* arguments[0]
@@ -18241,7 +16854,7 @@ f#960 = (
   ⚠️  This value might have side effects
 - *4* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *5* (???*6* ? (???*10* | ???*11*) : ???*12*)
+- *5* (???*6* ? (???*10* | ???*11*) : side-effectful(???*12*))
   ⚠️  nested operation
 - *6* (???*7* !== (???*8* | ???*9*))
   ⚠️  nested operation
@@ -18255,8 +16868,8 @@ f#960 = (
   ⚠️  This value might have side effects
 - *11* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *12* assignment expression
-  ⚠️  This value might have side effects
+- *12* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 - *13* arguments[4]
   ⚠️  function calls are not analyzed yet
 - *14* unsupported expression
@@ -18280,7 +16893,7 @@ f#960 = (
   ⚠️  This value might have side effects
 - *23* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *24* (???*25* ? (???*29* | ???*30*) : ???*31*)
+- *24* (???*25* ? (???*29* | ???*30*) : side-effectful(???*31*))
   ⚠️  nested operation
 - *25* (???*26* !== (???*27* | ???*28*))
   ⚠️  nested operation
@@ -18294,8 +16907,8 @@ f#960 = (
   ⚠️  This value might have side effects
 - *30* ...[...]()
   ⚠️  nested operation
-- *31* assignment expression
-  ⚠️  This value might have side effects
+- *31* ...[...]()
+  ⚠️  nested operation
 - *32* unsupported assign operation
   ⚠️  This value might have side effects
 - *33* arguments[7]
@@ -18352,7 +16965,7 @@ f#961 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *2* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *3* (???*4* ? (???*8* | ???*9*) : ???*10*)
+- *3* (???*4* ? (???*8* | ???*9*) : side-effectful(???*10*))
   ⚠️  nested operation
 - *4* (???*5* !== (???*6* | ???*7*))
   ⚠️  nested operation
@@ -18366,8 +16979,8 @@ f#961 = (???*0* ? ???*2* : ???*3*)
   ⚠️  This value might have side effects
 - *9* module<scheduler, {}>["unstable_now"]()
   ⚠️  nested operation
-- *10* assignment expression
-  ⚠️  This value might have side effects
+- *10* module<scheduler, {}>["unstable_now"]()
+  ⚠️  nested operation
 
 f#979 = (???*0* | (...) => undefined | undefined)
 - *0* arguments[3]
@@ -18489,17 +17102,8 @@ g#275 = (???*0* | undefined | ???*1* | 0)
 - *1* updated with update expression
   ⚠️  This value might have side effects
 
-g#286 = (???*0* | ???*2* | undefined | ???*4*)
-- *0* ???*1*["tag"]
-  ⚠️  unknown object
-- *1* arguments[3]
-  ⚠️  function calls are not analyzed yet
-- *2* ???*3*["tag"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *3* assignment expression
-  ⚠️  This value might have side effects
-- *4* node limit reached
+g#286 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 g#292 = []
@@ -18590,52 +17194,62 @@ g#494 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-g#501 = (???*0* | undefined | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* ???*2*["next"]
+g#501 = (side-effectful((???*0* | ???*4*)) | undefined | ???*7*)
+- *0* ???*1*["next"]
   ⚠️  unknown object
-- *2* g
+  ⚠️  This value might have side effects
+- *1* ???*2*["pending"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *2* ???*3*["queue"]
+  ⚠️  unknown object
+  ⚠️  This value might have side effects
+- *3* node limit reached
+  ⚠️  This value might have side effects
+- *4* ???*5*["next"]
+  ⚠️  unknown object
+- *5* ???*6*["next"]
+  ⚠️  unknown object
+- *6* e
+  ⚠️  circular variable reference
+- *7* ???*8*["next"]
+  ⚠️  unknown object
+- *8* g
   ⚠️  circular variable reference
 
 g#518 = (
   | null["memoizedState"]
-  | ???*0*
+  | side-effectful(null)["memoizedState"]
   | null["alternate"]["memoizedState"]
-  | ???*2*
-  | (null !== ???*5*)["alternate"]["memoizedState"]
-  | (null !== ???*6*)["alternate"]["memoizedState"]
+  | ???*0*
+  | (null !== ???*3*)["alternate"]["memoizedState"]
+  | (null !== ???*4*)["alternate"]["memoizedState"]
   | undefined["memoizedState"]
-  | (???*8* ? ???*10* : null)["memoizedState"]
-  | ???*12*
+  | (???*6* ? ???*8* : null)["memoizedState"]
+  | ???*10*
   | undefined
 )
 - *0* ???*1*["memoizedState"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["memoizedState"]
+- *1* ???*2*["alternate"]
   ⚠️  unknown object
-- *3* ???*4*["alternate"]
-  ⚠️  unknown object
-- *4* arguments[1]
+- *2* arguments[1]
   ⚠️  function calls are not analyzed yet
+- *3* O
+  ⚠️  circular variable reference
+- *4* ???*5*["next"]
+  ⚠️  unknown object
 - *5* O
   ⚠️  circular variable reference
-- *6* ???*7*["next"]
-  ⚠️  unknown object
-- *7* O
-  ⚠️  circular variable reference
-- *8* (null !== ???*9*)
+- *6* (null !== ???*7*)
   ⚠️  nested operation
+- *7* a
+  ⚠️  circular variable reference
+- *8* ???*9*["memoizedState"]
+  ⚠️  unknown object
 - *9* a
   ⚠️  circular variable reference
-- *10* ???*11*["memoizedState"]
-  ⚠️  unknown object
-- *11* a
-  ⚠️  circular variable reference
-- *12* unknown mutation
+- *10* unknown mutation
   ⚠️  This value might have side effects
 
 g#539 = (???*0* | undefined)
@@ -18781,15 +17395,8 @@ g#673 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-g#706 = (false["destroy"] | ???*0* | true["destroy"] | undefined["destroy"] | ???*2* | undefined)
-- *0* ???*1*["destroy"]
-  ⚠️  unknown object
-- *1* e
-  ⚠️  circular variable reference
-- *2* ???*3*["destroy"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *3* assignment expression
+g#706 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 g#716 = (???*0* | ???*1* | undefined)
@@ -19172,21 +17779,90 @@ h#275 = (
 - *15* h
   ⚠️  circular variable reference
 
-h#286 = (???*0* | ???*3* | undefined)
+h#286 = (
+  | ???*0*
+  | side-effectful((
+      | ???*3*
+      | undefined
+      | null[`__reactFiber$${???*5*}`]
+      | null["parentNode"][`__reactContainer$${???*9*}`]
+      | null[`__reactFiber$${???*13*}`][`__reactContainer$${???*16*}`]
+      | null["parentNode"][`__reactFiber$${???*20*}`]
+      | null[`__reactFiber$${???*24*}`][`__reactFiber$${???*27*}`]
+      | null["parentNode"]
+      | null[`__reactFiber$${???*31*}`]["alternate"]
+      | null
+    ))["stateNode"]["containerInfo"]
+  | undefined
+)
 - *0* ???*1*["containerInfo"]
   ⚠️  unknown object
 - *1* ???*2*["stateNode"]
   ⚠️  unknown object
 - *2* arguments[3]
   ⚠️  function calls are not analyzed yet
-- *3* ???*4*["containerInfo"]
+- *3* ???*4*["tag"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *4* ???*5*["stateNode"]
+- *4* d
+  ⚠️  circular variable reference
+- *5* ???*6*["slice"](2)
+  ⚠️  unknown callee object
+- *6* ???*7*(36)
+  ⚠️  unknown callee
+- *7* ???*8*["toString"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *5* assignment expression
-  ⚠️  This value might have side effects
+- *8* ...()
+  ⚠️  nested operation
+- *9* ???*10*["slice"](2)
+  ⚠️  unknown callee object
+- *10* ???*11*(36)
+  ⚠️  unknown callee
+- *11* ???*12*["toString"]
+  ⚠️  unknown object
+- *12* ...()
+  ⚠️  nested operation
+- *13* ???*14*["slice"](2)
+  ⚠️  unknown callee object
+- *14* ???*15*(36)
+  ⚠️  unknown callee
+- *15* ...[...]
+  ⚠️  unknown object
+- *16* ???*17*["slice"](2)
+  ⚠️  unknown callee object
+- *17* ???*18*(36)
+  ⚠️  unknown callee
+- *18* ???*19*["toString"]
+  ⚠️  unknown object
+- *19* ...()
+  ⚠️  nested operation
+- *20* ???*21*["slice"](2)
+  ⚠️  unknown callee object
+- *21* ???*22*(36)
+  ⚠️  unknown callee
+- *22* ???*23*["toString"]
+  ⚠️  unknown object
+- *23* ...()
+  ⚠️  nested operation
+- *24* ???*25*["slice"](2)
+  ⚠️  unknown callee object
+- *25* ???*26*(36)
+  ⚠️  unknown callee
+- *26* ...[...]
+  ⚠️  unknown object
+- *27* ???*28*["slice"](2)
+  ⚠️  unknown callee object
+- *28* ???*29*(36)
+  ⚠️  unknown callee
+- *29* ???*30*["toString"]
+  ⚠️  unknown object
+- *30* ...()
+  ⚠️  nested operation
+- *31* ???*32*["slice"](2)
+  ⚠️  unknown callee object
+- *32* ???*33*(36)
+  ⚠️  unknown callee
+- *33* ...[...]
+  ⚠️  unknown object
 
 h#292 = ???*0*
 - *0* max number of linking steps reached
@@ -19227,8 +17903,8 @@ h#459 = ???*0*
 - *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-h#494 = (???*0* | undefined)
-- *0* assignment expression
+h#494 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 h#539 = (???*0* | undefined)
@@ -20053,18 +18729,8 @@ k#716 = (???*0* | undefined["alternate"] | undefined)
 - *3* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-k#721 = (???*0* | undefined | undefined["memoizedProps"]["style"] | ???*2*)
-- *0* ???*1*["updateQueue"]
-  ⚠️  unknown object
-- *1* arguments[0]
-  ⚠️  function calls are not analyzed yet
-- *2* ???*3*["style"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *3* ???*4*["memoizedProps"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *4* assignment expression
+k#721 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
 k#762 = ???*0*
@@ -20415,81 +19081,79 @@ lc = (null | ???*0* | undefined)
 
 ld = (
   | null
-  | ???*0*
-  | (???*1* ? (null["value"] | ???*2*) : (null["textContent"] | ???*17*))
+  | side-effectful(null)
+  | (???*0* ? (null["value"] | ???*1*) : (null["textContent"] | ???*16*))
 )
-- *0* assignment expression
+- *0* unsupported expression
   ⚠️  This value might have side effects
-- *1* unsupported expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["value"]
+- *1* ???*2*["value"]
   ⚠️  unknown object
-- *3* (???*4* ? (???*9* | ???*11*) : (???*13* | ???*14* | ???*16*))
+- *2* (???*3* ? (???*8* | ???*10*) : (???*12* | ???*13* | ???*15*))
   ⚠️  nested operation
-- *4* (3 === (???*5* | ???*7*))
+- *3* (3 === (???*4* | ???*6*))
   ⚠️  nested operation
-- *5* ???*6*["nodeType"]
+- *4* ???*5*["nodeType"]
   ⚠️  unknown object
-- *6* arguments[2]
+- *5* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *7* ???*8*["nodeType"]
+- *6* ???*7*["nodeType"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *8* FreeVar(window)
+- *7* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *9* ???*10*["parentNode"]
+- *8* ???*9*["parentNode"]
   ⚠️  unknown object
-- *10* arguments[2]
+- *9* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *11* ???*12*["parentNode"]
+- *10* ???*11*["parentNode"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *12* FreeVar(window)
+- *11* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *13* arguments[2]
+- *12* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *14* ???*15*["target"]
+- *13* ???*14*["target"]
   ⚠️  unknown object
-- *15* a
+- *14* a
   ⚠️  circular variable reference
-- *16* FreeVar(window)
+- *15* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *17* ???*18*["textContent"]
+- *16* ???*17*["textContent"]
   ⚠️  unknown object
-- *18* (???*19* ? (???*24* | ???*26*) : (???*28* | ???*29* | ???*31*))
+- *17* (???*18* ? (???*23* | ???*25*) : (???*27* | ???*28* | ???*30*))
   ⚠️  nested operation
-- *19* (3 === (???*20* | ???*22*))
+- *18* (3 === (???*19* | ???*21*))
   ⚠️  nested operation
-- *20* ???*21*["nodeType"]
+- *19* ???*20*["nodeType"]
   ⚠️  unknown object
-- *21* arguments[2]
+- *20* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *22* ???*23*["nodeType"]
+- *21* ???*22*["nodeType"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *23* FreeVar(window)
+- *22* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *24* ???*25*["parentNode"]
+- *23* ???*24*["parentNode"]
   ⚠️  unknown object
-- *25* arguments[2]
+- *24* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *26* ???*27*["parentNode"]
+- *25* ???*26*["parentNode"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *27* FreeVar(window)
+- *26* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
-- *28* arguments[2]
+- *27* arguments[2]
   ⚠️  function calls are not analyzed yet
-- *29* ???*30*["target"]
+- *28* ???*29*["target"]
   ⚠️  unknown object
-- *30* a
+- *29* a
   ⚠️  circular variable reference
-- *31* FreeVar(window)
+- *30* FreeVar(window)
   ⚠️  unknown global
   ⚠️  This value might have side effects
 
@@ -20619,7 +19283,7 @@ mb = (???*0* | ???*1* | ???*2*)
 
 mc = (...) => undefined
 
-md = (null | ???*0* | ???*13*)
+md = (null | ???*0* | side-effectful(side-effectful(null)))
 - *0* ???*1*((???*8* | 0 | ???*9*), ???*10*)
   ⚠️  unknown callee
   ⚠️  This value might have side effects
@@ -20646,8 +19310,6 @@ md = (null | ???*0* | ???*13*)
 - *11* unsupported expression
   ⚠️  This value might have side effects
 - *12* unsupported expression
-  ⚠️  This value might have side effects
-- *13* assignment expression
   ⚠️  This value might have side effects
 
 me = (...) => (("input" === b) ? !(!(le[a["type"]])) : (("textarea" === b) ? !(0) : !(1)))
@@ -20697,12 +19359,25 @@ n#404 = (
   | ???*0*
   | undefined
   | ???*1*
-  | undefined["lastBaseUpdate"]["payload"]
   | ???*6*
-  | undefined["payload"]
   | undefined["next"]["payload"]
   | null["next"]["payload"]
-  | (???*9* ? ???*12* : ???*14*)["next"]["payload"]
+  | undefined["payload"]
+  | side-effectful(null)["payload"]
+  | side-effectful((
+      | ???*8*
+      | undefined
+      | ???*10*
+      | {
+            "eventTime": ???*11*,
+            "lane": (???*12* | undefined | ???*14* | (???*15* ? ???*18* : ???*20*) | ???*21*),
+            "tag": ???*22*,
+            "payload": ???*24*,
+            "callback": ???*26*,
+            "next": null
+        }
+    ))["payload"]
+  | (???*28* ? ???*31* : ???*33*)["next"]["payload"]
 )
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
@@ -20719,22 +19394,59 @@ n#404 = (
 - *6* ???*7*["payload"]
   ⚠️  unknown object
   ⚠️  This value might have side effects
-- *7* ???*8*["lastBaseUpdate"]
+- *7* node limit reached
+  ⚠️  This value might have side effects
+- *8* ???*9*["eventTime"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *8* assignment expression
-  ⚠️  This value might have side effects
-- *9* ("function" === ???*10*)
-  ⚠️  nested operation
-- *10* typeof(???*11*)
-  ⚠️  nested operation
-- *11* n
+- *9* h
   ⚠️  circular variable reference
-- *12* ???*13*["call"](y, q, r)
+- *10* arguments[2]
+  ⚠️  function calls are not analyzed yet
+- *11* y
+  ⚠️  circular variable reference
+- *12* ???*13*["lane"]
+  ⚠️  unknown object
+- *13* h
+  ⚠️  circular variable reference
+- *14* arguments[1]
+  ⚠️  function calls are not analyzed yet
+- *15* ("function" === ???*16*)
+  ⚠️  nested operation
+- *16* typeof(???*17*)
+  ⚠️  nested operation
+- *17* n
+  ⚠️  circular variable reference
+- *18* ???*19*["call"](y, q, r)
   ⚠️  unknown callee object
-- *13* n
+- *19* n
   ⚠️  circular variable reference
-- *14* n
+- *20* n
+  ⚠️  circular variable reference
+- *21* h
+  ⚠️  circular variable reference
+- *22* ???*23*["tag"]
+  ⚠️  unknown object
+- *23* h
+  ⚠️  circular variable reference
+- *24* ???*25*["payload"]
+  ⚠️  unknown object
+- *25* h
+  ⚠️  circular variable reference
+- *26* ???*27*["callback"]
+  ⚠️  unknown object
+- *27* h
+  ⚠️  circular variable reference
+- *28* ("function" === ???*29*)
+  ⚠️  nested operation
+- *29* typeof(???*30*)
+  ⚠️  nested operation
+- *30* n
+  ⚠️  circular variable reference
+- *31* ???*32*["call"](y, q, r)
+  ⚠️  unknown callee object
+- *32* n
+  ⚠️  circular variable reference
+- *33* n
   ⚠️  circular variable reference
 
 n#431 = (...) => (???*0* | l)
@@ -20807,8 +19519,13 @@ nc = (...) => ((0 === a) ? 32 : ???*0*)
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-nd = (...) => (md | ???*0*)
-- *0* assignment expression
+nd = (...) => (
+  | md
+  | side-effectful(e["slice"](a, (???*0* ? ???*1* : undefined)))
+)
+- *0* unsupported expression
+  ⚠️  This value might have side effects
+- *1* unsupported expression
   ⚠️  This value might have side effects
 
 ne = (...) => undefined
@@ -20824,13 +19541,11 @@ ng = (0 | ???*0* | ???*1*)
   ⚠️  This value might have side effects
 
 nh = {
-    "isMounted": (...) => (???*0* ? (Vb(a) === a) : !(1)),
+    "isMounted": (...) => (side-effectful(a["_reactInternals"]) ? (Vb(a) === a) : !(1)),
     "enqueueSetState": (...) => undefined,
     "enqueueReplaceState": (...) => undefined,
     "enqueueForceUpdate": (...) => undefined
 }
-- *0* assignment expression
-  ⚠️  This value might have side effects
 
 ni = (...) => undefined
 
@@ -20840,9 +19555,7 @@ nk = module<react, {}>["__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED"]["Re
 
 nl = (...) => undefined
 
-oa = (...) => (!(0) | !(1) | ???*0*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
+oa = (...) => (!(0) | !(1) | side-effectful(!(0)))
 
 ob = (...) => undefined
 
@@ -21064,10 +19777,8 @@ qc = ???*0*
 
 qd = (...) => !(1)
 
-qe = (null | ???*0* | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* arguments[2]
+qe = (null | side-effectful(null) | ???*0*)
+- *0* arguments[2]
   ⚠️  function calls are not analyzed yet
 
 qf = (...) => undefined
@@ -21163,14 +19874,10 @@ rh = (...) => undefined
 
 ri = (...) => undefined
 
-rj = (...) => ???*0*
-- *0* assignment expression
-  ⚠️  This value might have side effects
+rj = (...) => side-effectful(b)
 
-rk = (0 | ???*0* | ???*1*)
+rk = (0 | ???*0* | side-effectful(0))
 - *0* unsupported assign operation
-  ⚠️  This value might have side effects
-- *1* assignment expression
   ⚠️  This value might have side effects
 
 rl = (...) => (g | k)
@@ -21209,10 +19916,8 @@ sj = (...) => (???*0* | f | tj(a, b, g, null) | tj(a, b, g, d) | b)
   ⚠️  sequence with side effects
   ⚠️  This value might have side effects
 
-sk = (0 | ???*0* | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* unsupported assign operation
+sk = (0 | side-effectful(side-effectful(0)) | ???*0*)
+- *0* unsupported assign operation
   ⚠️  This value might have side effects
 
 sl = (...) => hl(g)
@@ -21487,35 +20192,16 @@ vl = {
 - *4* unknown mutation
   ⚠️  This value might have side effects
 
-w#292 = (???*0* | ???*1* | ???*2* | ???*4* | undefined | ???*6* | [] | "mouse" | "pointer" | 0 | ???*7*)
-- *0* arguments[3]
-  ⚠️  function calls are not analyzed yet
-- *1* assignment expression
-  ⚠️  This value might have side effects
-- *2* ???*3*["return"]
-  ⚠️  unknown object
-- *3* d
-  ⚠️  circular variable reference
-- *4* ???*5*["tag"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *5* assignment expression
-  ⚠️  This value might have side effects
-- *6* node limit reached
-  ⚠️  This value might have side effects
-- *7* updated with update expression
+w#292 = ???*0*
+- *0* max number of linking steps reached
   ⚠️  This value might have side effects
 
-w#449 = (???*0* | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* updated with update expression
+w#449 = (side-effectful(0) | ???*0*)
+- *0* updated with update expression
   ⚠️  This value might have side effects
 
-w#454 = (???*0* | ???*1*)
-- *0* assignment expression
-  ⚠️  This value might have side effects
-- *1* updated with update expression
+w#454 = (side-effectful(0) | ???*0*)
+- *0* updated with update expression
   ⚠️  This value might have side effects
 
 w#673 = ???*0*
@@ -21638,12 +20324,10 @@ xc = (...) => ((0 !== a) ? a : (???*0* ? 1073741824 : 0))
 - *0* unsupported expression
   ⚠️  This value might have side effects
 
-xd = (???*0* | ???*1* | ???*2*)
+xd = (???*0* | ???*1* | side-effectful(0))
 - *0* xd
   ⚠️  pattern without value
 - *1* unsupported expression
-  ⚠️  This value might have side effects
-- *2* assignment expression
   ⚠️  This value might have side effects
 
 xe = (???*0* | ???*1* | undefined | ("function" === ???*2*) | false)

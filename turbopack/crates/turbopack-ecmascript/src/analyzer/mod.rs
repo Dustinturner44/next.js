@@ -524,6 +524,8 @@ pub enum JsValue {
     FreeVar(Atom),
     /// This is a reference to a imported module.
     Module(ModuleValue),
+    // A known value with a side effect.
+    Effectful(u32, Box<JsValue>),
 }
 
 impl From<&'_ str> for JsValue {
@@ -805,6 +807,7 @@ impl Display for JsValue {
             JsValue::TypeOf(_, operand) => write!(f, "typeof({operand})"),
             JsValue::Promise(_, operand) => write!(f, "Promise<{operand}>"),
             JsValue::Awaited(_, operand) => write!(f, "await({operand})"),
+            JsValue::Effectful(_, operand) => write!(f, "effectful({operand})"),
         }
     }
 }
@@ -867,6 +870,7 @@ impl JsValue {
             | JsValue::Alternatives { .. }
             | JsValue::Function(..)
             | JsValue::Promise(..)
+            | JsValue::Effectful(..)
             | JsValue::Member(..) => JsValueMetaKind::Nested,
             JsValue::Concat(..)
             | JsValue::Add(..)
@@ -1129,6 +1133,10 @@ impl JsValue {
             value
         }
     }
+
+    pub fn effectful(value: JsValue) -> JsValue {
+        Self::Effectful(1 + value.total_nodes(), Box::new(value))
+    }
 }
 
 // Methods regarding node count
@@ -1167,7 +1175,8 @@ impl JsValue {
             | JsValue::Iterated(c, ..)
             | JsValue::Promise(c, ..)
             | JsValue::Awaited(c, ..)
-            | JsValue::TypeOf(c, ..) => *c,
+            | JsValue::TypeOf(c, ..)
+            | JsValue::Effectful(c, ..) => *c,
         }
     }
 
@@ -1195,7 +1204,8 @@ impl JsValue {
             }
             | JsValue::Concat(c, list)
             | JsValue::Add(c, list)
-            | JsValue::Logical(c, _, list) => {
+            | JsValue::Logical(c, _, list)
+            | JsValue::SuperCall(c, list) => {
                 *c = 1 + total_nodes(list);
             }
 
@@ -1205,13 +1215,13 @@ impl JsValue {
             JsValue::Tenary(c, test, cons, alt) => {
                 *c = 1 + test.total_nodes() + cons.total_nodes() + alt.total_nodes();
             }
-            JsValue::Not(c, r) => {
-                *c = 1 + r.total_nodes();
-            }
-            JsValue::Promise(c, r) => {
-                *c = 1 + r.total_nodes();
-            }
-            JsValue::Awaited(c, r) => {
+            JsValue::Effectful(c, r)
+            | JsValue::Awaited(c, r)
+            | JsValue::Promise(c, r)
+            | JsValue::Not(c, r)
+            | JsValue::Function(c, _, r)
+            | JsValue::Iterated(c, r)
+            | JsValue::TypeOf(c, r) => {
                 *c = 1 + r.total_nodes();
             }
 
@@ -1228,31 +1238,14 @@ impl JsValue {
                     })
                     .sum::<u32>();
             }
-            JsValue::New(c, f, list) => {
+            JsValue::Call(c, f, list) | JsValue::New(c, f, list) => {
                 *c = 1 + f.total_nodes() + total_nodes(list);
-            }
-            JsValue::Call(c, f, list) => {
-                *c = 1 + f.total_nodes() + total_nodes(list);
-            }
-            JsValue::SuperCall(c, list) => {
-                *c = 1 + total_nodes(list);
             }
             JsValue::MemberCall(c, o, m, list) => {
                 *c = 1 + o.total_nodes() + m.total_nodes() + total_nodes(list);
             }
             JsValue::Member(c, o, p) => {
                 *c = 1 + o.total_nodes() + p.total_nodes();
-            }
-            JsValue::Function(c, _, r) => {
-                *c = 1 + r.total_nodes();
-            }
-
-            JsValue::Iterated(c, iterable) => {
-                *c = 1 + iterable.total_nodes();
-            }
-
-            JsValue::TypeOf(c, operand) => {
-                *c = 1 + operand.total_nodes();
             }
         }
     }
@@ -1272,6 +1265,7 @@ impl JsValue {
     pub fn debug_assert_total_nodes_up_to_date(&mut self) {}
 
     pub fn ensure_node_limit(&mut self, limit: u32) {
+        const REASON: &str = "node limit reached";
         fn cmp_nodes(a: &JsValue, b: &JsValue) -> Ordering {
             a.total_nodes().cmp(&b.total_nodes())
         }
@@ -1284,7 +1278,7 @@ impl JsValue {
                     max = item;
                 }
             }
-            max.make_unknown_without_content(side_effects, "node limit reached");
+            max.make_unknown_without_content(side_effects, REASON);
         }
         if self.total_nodes() > limit {
             match self {
@@ -1295,14 +1289,12 @@ impl JsValue {
                 | JsValue::Module(..)
                 | JsValue::WellKnownObject(_)
                 | JsValue::WellKnownFunction(_)
-                | JsValue::Argument(..) => {
-                    self.make_unknown_without_content(false, "node limit reached")
-                }
+                | JsValue::Argument(..) => self.make_unknown_without_content(false, REASON),
                 &mut JsValue::Unknown {
                     original_value: _,
                     reason: _,
                     has_side_effects,
-                } => self.make_unknown_without_content(has_side_effects, "node limit reached"),
+                } => self.make_unknown_without_content(has_side_effects, REASON),
 
                 JsValue::Array { items: list, .. }
                 | JsValue::Alternatives {
@@ -1317,13 +1309,13 @@ impl JsValue {
                     self.update_total_nodes();
                 }
                 JsValue::Not(_, r) => {
-                    r.make_unknown_without_content(false, "node limit reached");
+                    r.make_unknown_without_content(false, REASON);
                 }
                 JsValue::Binary(_, a, _, b) => {
                     if a.total_nodes() > b.total_nodes() {
-                        a.make_unknown_without_content(b.has_side_effects(), "node limit reached");
+                        a.make_unknown_without_content(b.has_side_effects(), REASON);
                     } else {
-                        b.make_unknown_without_content(a.has_side_effects(), "node limit reached");
+                        b.make_unknown_without_content(a.has_side_effects(), REASON);
                     }
                     self.update_total_nodes();
                 }
@@ -1356,23 +1348,26 @@ impl JsValue {
                     self.update_total_nodes();
                 }
                 JsValue::Iterated(_, iterable) => {
-                    iterable.make_unknown_without_content(false, "node limit reached");
+                    iterable.make_unknown_without_content(false, REASON);
                 }
                 JsValue::TypeOf(_, operand) => {
-                    operand.make_unknown_without_content(false, "node limit reached");
+                    operand.make_unknown_without_content(false, REASON);
                 }
                 JsValue::Awaited(_, operand) => {
-                    operand.make_unknown_without_content(false, "node limit reached");
+                    operand.make_unknown_without_content(false, REASON);
                 }
                 JsValue::Promise(_, operand) => {
-                    operand.make_unknown_without_content(false, "node limit reached");
+                    operand.make_unknown_without_content(false, REASON);
                 }
                 JsValue::Member(_, o, p) => {
                     make_max_unknown([&mut **o, &mut **p].into_iter());
                     self.update_total_nodes();
                 }
                 JsValue::Function(_, _, r) => {
-                    r.make_unknown_without_content(false, "node limit reached");
+                    r.make_unknown_without_content(false, REASON);
+                }
+                JsValue::Effectful(_, r) => {
+                    r.make_unknown(true, REASON);
                 }
             }
         }
@@ -1851,16 +1846,16 @@ impl JsValue {
             JsValue::WellKnownFunction(func) => {
                 let (name, explainer) = match func {
                     WellKnownFunctionKind::ArrayFilter => (
-                      "Array.prototype.filter".to_string(),
-                      "The standard Array.prototype.filter method: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter"
+                        "Array.prototype.filter".to_string(),
+                        "The standard Array.prototype.filter method: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter"
                     ),
                     WellKnownFunctionKind::ArrayForEach => (
-                      "Array.prototype.forEach".to_string(),
-                      "The standard Array.prototype.forEach method: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach"
+                        "Array.prototype.forEach".to_string(),
+                        "The standard Array.prototype.forEach method: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach"
                     ),
                     WellKnownFunctionKind::ArrayMap => (
-                      "Array.prototype.map".to_string(),
-                      "The standard Array.prototype.map method: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map"
+                        "Array.prototype.map".to_string(),
+                        "The standard Array.prototype.map method: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map"
                     ),
                     WellKnownFunctionKind::ObjectAssign => (
                         "Object.assign".to_string(),
@@ -1946,32 +1941,32 @@ impl JsValue {
                         "require('express')().set('view engine', 'jade')  https://github.com/expressjs/express"
                     ),
                     WellKnownFunctionKind::NodeStrongGlobalize => (
-                      "SetRootDir".to_string(),
-                      "require('strong-globalize')()  https://github.com/strongloop/strong-globalize"
+                        "SetRootDir".to_string(),
+                        "require('strong-globalize')()  https://github.com/strongloop/strong-globalize"
                     ),
                     WellKnownFunctionKind::NodeStrongGlobalizeSetRootDir => (
-                      "SetRootDir".to_string(),
-                      "require('strong-globalize').SetRootDir(__dirname)  https://github.com/strongloop/strong-globalize"
+                        "SetRootDir".to_string(),
+                        "require('strong-globalize').SetRootDir(__dirname)  https://github.com/strongloop/strong-globalize"
                     ),
                     WellKnownFunctionKind::NodeResolveFrom => (
-                      "resolveFrom".to_string(),
-                      "require('resolve-from')(__dirname, 'node-gyp/bin/node-gyp')  https://github.com/sindresorhus/resolve-from"
+                        "resolveFrom".to_string(),
+                        "require('resolve-from')(__dirname, 'node-gyp/bin/node-gyp')  https://github.com/sindresorhus/resolve-from"
                     ),
                     WellKnownFunctionKind::NodeProtobufLoad => (
-                      "load/loadSync".to_string(),
-                      "require('@grpc/proto-loader').load(filepath, { includeDirs: [root] }) https://github.com/grpc/grpc-node"
+                        "load/loadSync".to_string(),
+                        "require('@grpc/proto-loader').load(filepath, { includeDirs: [root] }) https://github.com/grpc/grpc-node"
                     ),
                     WellKnownFunctionKind::NodeWorkerConstructor => (
-                      "Worker".to_string(),
-                      "The Node.js worker_threads Worker constructor: https://nodejs.org/api/worker_threads.html#worker_threads_class_worker"
+                        "Worker".to_string(),
+                        "The Node.js worker_threads Worker constructor: https://nodejs.org/api/worker_threads.html#worker_threads_class_worker"
                     ),
                     WellKnownFunctionKind::WorkerConstructor => (
-                      "Worker".to_string(),
-                      "The standard Worker constructor: https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker"
+                        "Worker".to_string(),
+                        "The standard Worker constructor: https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker"
                     ),
                     WellKnownFunctionKind::URLConstructor => (
-                      "URL".to_string(),
-                      "The standard URL constructor: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL"
+                        "URL".to_string(),
+                        "The standard URL constructor: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL"
                     ),
                 };
                 if depth > 0 {
@@ -1996,6 +1991,12 @@ impl JsValue {
                 } else {
                     "(...) => ...".to_string()
                 }
+            }
+            JsValue::Effectful(_, operand) => {
+                format!(
+                    "side-effectful({})",
+                    operand.explain_internal_inner(hints, indent_depth, depth, unknown_depth)
+                )
             }
         }
     }
@@ -2249,11 +2250,6 @@ impl JsValue {
                 ObjectPart::KeyValue(k, v) => k.has_side_effects() || v.has_side_effects(),
                 ObjectPart::Spread(v) => v.has_side_effects(),
             }),
-            // As function bodies aren't analyzed for side-effects, we have to assume every call can
-            // have sideeffects as well.
-            // Otherwise it would be
-            // `func_body(callee).has_side_effects() ||
-            //      callee.has_side_effects() || args.iter().any(JsValue::has_side_effects`
             JsValue::New(_, _callee, _args) => true,
             JsValue::Call(_, _callee, _args) => true,
             JsValue::SuperCall(_, _args) => true,
@@ -2274,6 +2270,7 @@ impl JsValue {
             JsValue::TypeOf(_, operand) => operand.has_side_effects(),
             JsValue::Promise(_, operand) => operand.has_side_effects(),
             JsValue::Awaited(_, operand) => operand.has_side_effects(),
+            JsValue::Effectful(_, _) => true,
         }
     }
 
@@ -2457,8 +2454,6 @@ impl JsValue {
             JsValue::Constant(ConstantValue::Str(..))
             | JsValue::Concat(..)
             | JsValue::TypeOf(..) => Some(true),
-
-            // Objects are not strings
             JsValue::Constant(..)
             | JsValue::Array { .. }
             | JsValue::Object { .. }
@@ -2468,10 +2463,7 @@ impl JsValue {
             | JsValue::WellKnownObject(_)
             | JsValue::WellKnownFunction(_)
             | JsValue::Promise(_, _) => Some(false),
-
-            // Booleans are not strings
             JsValue::Not(..) | JsValue::Binary(..) => Some(false),
-
             JsValue::Add(_, list) => any_if_known(list, JsValue::is_string),
             JsValue::Logical(_, op, list) => match op {
                 LogicalOperator::And => {
@@ -2484,13 +2476,11 @@ impl JsValue {
                     shortcircuit_if_known(list, JsValue::is_not_nullish, JsValue::is_string)
                 }
             },
-
             JsValue::Alternatives {
                 total_nodes: _,
                 values,
                 logical_property: _,
             } => merge_if_known(values, JsValue::is_string),
-
             JsValue::Call(
                 _,
                 box JsValue::WellKnownFunction(
@@ -2505,12 +2495,10 @@ impl JsValue {
                 ),
                 _,
             ) => Some(true),
-
             JsValue::Awaited(_, operand) => match &**operand {
                 JsValue::Promise(_, v) => v.is_string(),
                 v => v.is_string(),
             },
-
             JsValue::FreeVar(..)
             | JsValue::Variable(_)
             | JsValue::Unknown { .. }
@@ -2522,6 +2510,7 @@ impl JsValue {
             | JsValue::Tenary(..)
             | JsValue::SuperCall(..)
             | JsValue::Iterated(..) => None,
+            JsValue::Effectful(_, js_value) => js_value.is_string(),
         }
     }
 
@@ -2813,7 +2802,8 @@ impl JsValue {
             JsValue::Iterated(_, operand)
             | JsValue::TypeOf(_, operand)
             | JsValue::Promise(_, operand)
-            | JsValue::Awaited(_, operand) => {
+            | JsValue::Awaited(_, operand)
+            | JsValue::Effectful(_, operand) => {
                 let modified = visitor(operand);
                 if modified {
                     self.update_total_nodes();
@@ -3010,7 +3000,8 @@ impl JsValue {
             JsValue::Iterated(_, operand)
             | JsValue::TypeOf(_, operand)
             | JsValue::Promise(_, operand)
-            | JsValue::Awaited(_, operand) => {
+            | JsValue::Awaited(_, operand)
+            | JsValue::Effectful(_, operand) => {
                 visitor(operand);
             }
 
@@ -3411,7 +3402,8 @@ impl JsValue {
             JsValue::Iterated(_, operand)
             | JsValue::TypeOf(_, operand)
             | JsValue::Promise(_, operand)
-            | JsValue::Awaited(_, operand) => {
+            | JsValue::Awaited(_, operand)
+            | JsValue::Effectful(_, operand) => {
                 operand.similar_hash(state, depth - 1);
             }
             JsValue::Module(ModuleValue {

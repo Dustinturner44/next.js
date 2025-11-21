@@ -90,6 +90,7 @@ enum IssueSnapshotMode {
 //
 // "Skip" directories named `__skipped__`, which include test directories to
 // skip.
+// Edit this number to force the macro to regenerate: 4
 #[testing::fixture(
     "tests/execution/*/*/*/input/index.js",
     exclude("node_modules|__skipped__")
