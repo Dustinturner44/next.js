@@ -571,21 +571,29 @@
       "cache-components-dev-warmup - with runtime prefetch configs initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - with runtime prefetch configs initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - with runtime prefetch configs initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - with runtime prefetch configs initial load sync IO in the runtime phase",
+      "cache-components-dev-warmup - with runtime prefetch configs initial load sync IO in the static phase",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - with runtime prefetch configs navigation request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - with runtime prefetch configs navigation sync IO in the runtime phase",
+      "cache-components-dev-warmup - with runtime prefetch configs navigation sync IO in the static phase",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - without runtime prefetch configs initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - without runtime prefetch configs initial load sync IO in the runtime phase",
+      "cache-components-dev-warmup - without runtime prefetch configs initial load sync IO in the static phase",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + short-lived cached data",
-      "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase"
+      "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the runtime phase",
+      "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the static phase"
     ],
     "failed": [],
     "pending": [],
@@ -1172,14 +1180,13 @@
   },
   "test/development/app-hmr/hmr.test.ts": {
     "passed": [
+      "app-dir-hmr filesystem changes can navigate cleanly to a page that requires a change in the Webpack runtime",
       "app-dir-hmr filesystem changes should have no unexpected action error for hmr",
       "app-dir-hmr filesystem changes should not break when renaming a folder",
       "app-dir-hmr filesystem changes should not continously poll when hitting a not found page",
       "app-dir-hmr filesystem changes should update server components after navigating to a page with a different runtime"
     ],
-    "failed": [
-      "app-dir-hmr filesystem changes can navigate cleanly to a page that requires a change in the Webpack runtime"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -3851,7 +3858,7 @@
       "app dir - basic searchParams prop server component should have the correct search params on middleware rewrite",
       "app dir - basic searchParams prop server component should have the correct search params on rewrite",
       "app dir - basic server components Loading should render loading.js in browser for slow layout",
-      "app dir - basic server components Loading should render loading.js in browser for slow page",
+      "app dir - basic server components Loading should render loading.js in browser for slow layout and page",
       "app dir - basic server components Loading should render loading.js in initial html for slow layout",
       "app dir - basic server components Loading should render loading.js in initial html for slow layout and page",
       "app dir - basic server components Loading should render loading.js in initial html for slow page",
@@ -3909,7 +3916,7 @@
     ],
     "failed": [
       "app dir - basic <Link /> should navigate to pages dynamic route from pages page if it overlaps with an app page",
-      "app dir - basic server components Loading should render loading.js in browser for slow layout and page"
+      "app dir - basic server components Loading should render loading.js in browser for slow page"
     ],
     "pending": [
       "app dir - basic HMR should HMR correctly when changing the component type",
@@ -5648,7 +5655,6 @@
       "app-dir - logging with fetches verbose logging should not contain trailing word page for app router routes",
       "app-dir - logging with fetches verbose logging should not limit the number of requests that are logged",
       "app-dir - logging with fetches verbose logging should not log _rsc query for client navigation RSC request",
-      "app-dir - logging with fetches verbose logging should only log requests in development mode",
       "app-dir - logging with fetches verbose logging should respect request.init.cache when use with fetch input is instance",
       "app-dir - logging with fetches verbose logging should show cache reason of noStore when use with fetch",
       "app-dir - logging with fetches verbose logging when logging.fetches.hmrRefreshes is true should log requests for HMR refreshes",
@@ -5669,7 +5675,9 @@
       "app-dir - logging with verbose logging for edge runtime should show cache reason of noStore when use with fetch",
       "app-dir - logging with verbose logging for edge runtime when logging.fetches.hmrRefreshes is true should log requests for HMR refreshes"
     ],
-    "failed": [],
+    "failed": [
+      "app-dir - logging with fetches verbose logging should only log requests in development mode"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -6267,10 +6275,8 @@
       "app dir - navigation hash-with-scroll-offset should scroll to the specified hash",
       "app dir - navigation locale warnings should have no warnings in pages router",
       "app dir - navigation locale warnings should warn about using the `locale` prop with `next/link` in app router",
-      "app dir - navigation middleware redirect should change browser location when router.refresh() gets a redirect response",
       "app dir - navigation navigating to a page with async metadata shows a fallback when prefetch completed",
       "app dir - navigation navigating to a page with async metadata shows a fallback when prefetch was pending",
-      "app dir - navigation navigating to dynamic params & changing the casing should load the page correctly",
       "app dir - navigation navigation between pages and app should not contain _rsc query while navigating from app to pages",
       "app dir - navigation navigation between pages and app should not contain _rsc query while navigating from pages to app",
       "app dir - navigation navigation between pages and app should not omit the hash while navigating from app to pages",
@@ -6306,10 +6312,13 @@
       "app dir - navigation relative hashes and queries should work with a query-only href",
       "app dir - navigation relative hashes and queries should work with both relative hashes and queries",
       "app dir - navigation scroll restoration should restore original scroll position when navigating back",
-      "app dir - navigation useRouter identity between navigations should preserve identity when navigating between different pages",
       "app dir - navigation useRouter identity between navigations should preserve identity when navigating to the same page"
     ],
-    "failed": [],
+    "failed": [
+      "app dir - navigation middleware redirect should change browser location when router.refresh() gets a redirect response",
+      "app dir - navigation navigating to dynamic params & changing the casing should load the page correctly",
+      "app dir - navigation useRouter identity between navigations should preserve identity when navigating between different pages"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -9385,13 +9394,14 @@
   },
   "test/e2e/app-dir/use-cache-hanging-inputs/use-cache-hanging-inputs.test.ts": {
     "passed": [
+      "use-cache-hanging-inputs when an error is thrown should show an error overlay with only one error"
+    ],
+    "failed": [],
+    "pending": [
       "use-cache-hanging-inputs when a \"use cache\" function is closing over an uncached promise should show an error toast after a timeout",
-      "use-cache-hanging-inputs when an error is thrown should show an error overlay with only one error",
       "use-cache-hanging-inputs when an uncached promise is used inside of \"use cache\" should show an error toast after a timeout",
       "use-cache-hanging-inputs when an uncached promise is used inside of a nested \"use cache\" should show an error toast after a timeout"
     ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
