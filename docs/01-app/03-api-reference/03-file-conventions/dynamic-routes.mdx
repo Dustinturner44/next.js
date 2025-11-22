@@ -190,7 +190,7 @@ async function Content({ slug }: { slug: Promise<string> }) {
 }
 ```
 
-#### With `generateStaticParams` + `<Suspense>`
+#### With `generateStaticParams` and Suspense
 
 Good for frequently updating content where you don't need disk persistence.
 
@@ -229,7 +229,7 @@ async function Content({ slug }: { slug: Promise<string> }) {
 }
 ```
 
-#### With `generateStaticParams` + `<Suspense>` + `use cache` on page
+#### With `generateStaticParams`, Suspense, and `use cache` on page
 
 Recommended for most use cases. Provides immediate UI for prerendered and previously visited routes, with disk persistence similar to ISR.
 
@@ -271,7 +271,7 @@ async function Content({ slug }: { slug: Promise<string> }) {
 }
 ```
 
-#### With `generateStaticParams` + `use cache` on page (no Suspense)
+#### With `generateStaticParams` and `use cache` on page
 
 Full page waits but cached to disk. Good for less-frequently-changing content.
 
