@@ -325,7 +325,7 @@ export async function generateStaticParams() {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteContext<'/api/posts/[id]'>
 ) {
   const { id } = await params
   // This will be statically generated for IDs 1, 2, and 3

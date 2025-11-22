@@ -443,13 +443,7 @@ When using `fetch` inside the `generateStaticParams` function, the requests are 
 
 ```ts filename="app/api/posts/[id]/route.ts" switcher
 export async function generateStaticParams() {
-  const posts = await fetch('https://api.vercel.app/blog').then((res) =>
-    res.json()
-  )
-
-  return posts.map((post: { id: number }) => ({
-    id: String(post.id),
-  }))
+  return [{ id: '1' }, { id: '2' }, { id: '3' }]
 }
 
 export async function GET(
@@ -457,34 +451,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const posts = await fetch('https://api.vercel.app/blog').then((res) =>
-    res.json()
-  )
-  const post = posts.find((p: { id: number }) => p.id === Number(id))
-
-  return Response.json(post)
+  // Fetch and return post data
+  return Response.json({ id, title: `Post ${id}` })
 }
 ```
 
 ```js filename="app/api/posts/[id]/route.js" switcher
 export async function generateStaticParams() {
-  const posts = await fetch('https://api.vercel.app/blog').then((res) =>
-    res.json()
-  )
-
-  return posts.map((post) => ({
-    id: String(post.id),
-  }))
+  return [{ id: '1' }, { id: '2' }, { id: '3' }]
 }
 
 export async function GET(request, { params }) {
   const { id } = await params
-  const posts = await fetch('https://api.vercel.app/blog').then((res) =>
-    res.json()
-  )
-  const post = posts.find((p) => p.id === Number(id))
-
-  return Response.json(post)
+  // Fetch and return post data
+  return Response.json({ id, title: `Post ${id}` })
 }
 ```
 
