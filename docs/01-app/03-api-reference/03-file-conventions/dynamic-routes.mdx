@@ -402,8 +402,8 @@ async function BlogContent({ slug }: { slug: Promise<string> }) {
 This pattern gives you:
 
 - **Static shell** from layout and page-level elements outside Suspense
-- **Efficient client-side navigation** - Static layout UI is reused when navigating between different params (e.g., `/blog/1` to `/blog/2`), only the page content re-renders
-- **Streaming with Suspense** for dynamic content (good UX)
+- **Efficient client-side navigation** - Static layout UI is reused when navigating between different params (e.g., `/blog/1` to `/blog/2`)
+- **Fallback UI with Suspense** - Provides immediate feedback while content loads, fallback elements are replaced when content resolves
 - **Full page ISR** - Runtime params generate `.html` files cached to disk (persists across server restarts)
 - **Immediate UI** for prerendered and previously visited routes
 - **Build-time prerendering** for sampled params (from `generateStaticParams`)
@@ -448,7 +448,7 @@ export async function generateStaticParams() {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: RouteContext<'/api/posts/[id]'>
 ) {
   const { id } = await params
   // Fetch and return post data
