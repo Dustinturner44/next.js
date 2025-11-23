@@ -489,6 +489,11 @@ async function run(): Promise<void> {
       opts.ultracite = false
       preferences.linter = 'none'
       preferences.eslint = false
+    } else if (opts.api) {
+      // When using --api without an explicit linter flag, default to no linter
+      opts.eslint = false
+      opts.biome = false
+      opts.ultracite = false
     }
 
     if (
