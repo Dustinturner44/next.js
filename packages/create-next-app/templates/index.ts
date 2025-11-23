@@ -72,6 +72,10 @@ export const installTemplate = async ({
   if (!biome) copySource.push("!biome.json");
   if (!ultracite) {
     copySource.push("!biome.jsonc");
+    // Ultracite-specific configuration directories
+    copySource.push("!.vscode/**");
+    copySource.push("!.claude/**");
+    copySource.push("!.cursor/**");
   }
   if (!tailwind) copySource.push("!postcss.config.mjs");
 
