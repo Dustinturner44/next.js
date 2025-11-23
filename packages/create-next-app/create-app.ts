@@ -33,6 +33,7 @@ export async function createApp({
   tailwind,
   eslint,
   biome,
+  ultracite,
   app,
   srcDir,
   importAlias,
@@ -51,6 +52,7 @@ export async function createApp({
   tailwind: boolean
   eslint: boolean
   biome: boolean
+  ultracite: boolean
   app: boolean
   srcDir: boolean
   importAlias: string
@@ -247,6 +249,7 @@ export async function createApp({
       tailwind,
       eslint,
       biome,
+      ultracite,
       srcDir,
       importAlias,
       skipInstall,

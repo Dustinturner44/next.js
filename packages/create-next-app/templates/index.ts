@@ -51,6 +51,7 @@ export const installTemplate = async ({
   tailwind,
   eslint,
   biome,
+  ultracite,
   srcDir,
   importAlias,
   skipInstall,
@@ -67,7 +68,11 @@ export const installTemplate = async ({
   const templatePath = path.join(__dirname, template, mode);
   const copySource = ["**"];
   if (!eslint) copySource.push("!eslint.config.mjs");
+  // biome.json is for regular Biome, biome.jsonc is for Ultracite
   if (!biome) copySource.push("!biome.json");
+  if (!ultracite) {
+    copySource.push("!biome.jsonc");
+  }
   if (!tailwind) copySource.push("!postcss.config.mjs");
 
   await copy(copySource, root, {
@@ -221,6 +226,7 @@ export const installTemplate = async ({
       start: "next start",
       ...(eslint && { lint: "eslint" }),
       ...(biome && { lint: "biome check", format: "biome format --write" }),
+      ...(ultracite && { lint: "ultracite" }),
     },
     /**
      * Default dependencies.
@@ -288,6 +294,15 @@ export const installTemplate = async ({
     packageJson.devDependencies = {
       ...packageJson.devDependencies,
       "@biomejs/biome": "2.2.0",
+    };
+  }
+
+  /* Ultracite dependencies. */
+  if (ultracite) {
+    packageJson.devDependencies = {
+      ...packageJson.devDependencies,
+      "@biomejs/biome": "latest",
+      ultracite: "latest",
     };
   }
 
