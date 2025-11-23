@@ -571,21 +571,29 @@
       "cache-components-dev-warmup - with runtime prefetch configs initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - with runtime prefetch configs initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - with runtime prefetch configs initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - with runtime prefetch configs initial load sync IO in the runtime phase",
+      "cache-components-dev-warmup - with runtime prefetch configs initial load sync IO in the static phase",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - with runtime prefetch configs navigation request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - with runtime prefetch configs navigation sync IO in the runtime phase",
+      "cache-components-dev-warmup - with runtime prefetch configs navigation sync IO in the static phase",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - without runtime prefetch configs initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - without runtime prefetch configs initial load sync IO in the runtime phase",
+      "cache-components-dev-warmup - without runtime prefetch configs initial load sync IO in the static phase",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + short-lived cached data",
-      "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase"
+      "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the runtime phase",
+      "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the static phase"
     ],
     "failed": [],
     "pending": [],
@@ -1172,14 +1180,13 @@
   },
   "test/development/app-hmr/hmr.test.ts": {
     "passed": [
+      "app-dir-hmr filesystem changes can navigate cleanly to a page that requires a change in the Webpack runtime",
       "app-dir-hmr filesystem changes should have no unexpected action error for hmr",
       "app-dir-hmr filesystem changes should not break when renaming a folder",
       "app-dir-hmr filesystem changes should not continously poll when hitting a not found page",
       "app-dir-hmr filesystem changes should update server components after navigating to a page with a different runtime"
     ],
-    "failed": [
-      "app-dir-hmr filesystem changes can navigate cleanly to a page that requires a change in the Webpack runtime"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -8875,6 +8882,13 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/segment-cache/force-stale/force-stale.test.ts": {
+    "passed": ["force stale prefetching is disabled in dev"],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/segment-cache/memory-pressure/segment-cache-memory-pressure.test.ts": {
     "passed": [
       "segment cache memory pressure disabled in development / deployment"
@@ -9385,13 +9399,14 @@
   },
   "test/e2e/app-dir/use-cache-hanging-inputs/use-cache-hanging-inputs.test.ts": {
     "passed": [
+      "use-cache-hanging-inputs when an error is thrown should show an error overlay with only one error"
+    ],
+    "failed": [],
+    "pending": [
       "use-cache-hanging-inputs when a \"use cache\" function is closing over an uncached promise should show an error toast after a timeout",
-      "use-cache-hanging-inputs when an error is thrown should show an error overlay with only one error",
       "use-cache-hanging-inputs when an uncached promise is used inside of \"use cache\" should show an error toast after a timeout",
       "use-cache-hanging-inputs when an uncached promise is used inside of a nested \"use cache\" should show an error toast after a timeout"
     ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
