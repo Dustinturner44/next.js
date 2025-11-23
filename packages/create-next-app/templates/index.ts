@@ -72,10 +72,10 @@ export const installTemplate = async ({
   if (!biome) copySource.push("!biome.json");
   if (!ultracite) {
     copySource.push("!biome.jsonc");
-    // Ultracite-specific configuration directories
-    copySource.push("!.vscode/**");
-    copySource.push("!.claude/**");
-    copySource.push("!.cursor/**");
+    // Ultracite-specific configuration directories (without dots in source)
+    copySource.push("!vscode/**");
+    copySource.push("!claude/**");
+    copySource.push("!cursor/**");
   }
   if (!tailwind) copySource.push("!postcss.config.mjs");
 
@@ -91,6 +91,12 @@ export const installTemplate = async ({
         // https://github.com/vercel/webpack-asset-relocator-loader/blob/e9308683d47ff507253e37c9bcbb99474603192b/src/asset-relocator.js#L227
         case "README-template.md": {
           return "README.md";
+        }
+        // Directories without leading dots to avoid being filtered by ncc
+        case "claude":
+        case "cursor":
+        case "vscode": {
+          return `.${name}`;
         }
         default: {
           return name;
