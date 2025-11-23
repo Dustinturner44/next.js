@@ -230,7 +230,10 @@ export const installTemplate = async ({
       start: "next start",
       ...(eslint && { lint: "eslint" }),
       ...(biome && { lint: "biome check", format: "biome format --write" }),
-      ...(ultracite && { lint: "ultracite" }),
+      ...(ultracite && {
+        check: "npx ultracite@latest check",
+        fix: "npx ultracite@latest fix",
+      }),
     },
     /**
      * Default dependencies.
