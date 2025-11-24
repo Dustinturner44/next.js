@@ -26,7 +26,9 @@ export default function ClientPage() {
     console.warn('Client: This is a warning message from client component')
   }, [])
 
-  console.error('globalThis', globalThis)
+  if (typeof window !== 'undefined') {
+    console.error('window', window)
+  }
 
   return <p>client page with logging</p>
 }

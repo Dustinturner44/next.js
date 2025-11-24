@@ -336,7 +336,11 @@ const createErrorArg = (error: Error) => {
   }
 }
 
-const createLogEntry = (level: LogMethod, args: any[]) => {
+const createLogEntry = (
+  level: LogMethod,
+  args: any[],
+  capturedStack?: string | null
+) => {
   // Always log to client file logger with args (formatting done inside log method)
   clientFileLogger.log(level, args)
 
@@ -345,9 +349,9 @@ const createLogEntry = (level: LogMethod, args: any[]) => {
     return
   }
 
-  // do not abstract this, it implicitly relies on which functions call it. forcing the inlined implementation makes you think about callers
-  // error capture stack trace maybe
-  const stack = stackWithOwners(new Error())
+  // Prefer a stack captured at the original console.* callsite (from the patched
+  // console wrapper) if one was provided; otherwise, fall back to capturing here.
+  const stack = capturedStack ?? stackWithOwners(new Error())
   const stackLines = stack?.split('\n')
   const cleanStack = stackLines?.slice(3).join('\n') // this is probably ignored anyways
   const entry: ConsoleEntry<unknown> = {
@@ -561,13 +565,16 @@ export const initializeDebugLogForwarding = (router: 'app' | 'pages'): void => {
   try {
     methods.forEach((method) =>
       patchConsoleMethod(method, (_, ...args) => {
+        // Capture the stack as close as possible to the original console.* call.
+        const stack = stackWithOwners(new Error())
+
         if (isHMR(args)) {
           return
         }
         if (isReactServerReplayedLog(args)) {
           return
         }
-        createLogEntry(method, args)
+        createLogEntry(method, args, stack)
       })
     )
   } catch {}
