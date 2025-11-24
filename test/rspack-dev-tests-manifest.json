@@ -404,7 +404,6 @@
       "ReactRefreshRequire can continue hot updates after module-level errors with module.exports",
       "ReactRefreshRequire can replace a module before it is loaded",
       "ReactRefreshRequire does not accumulate stale exports over time",
-      "ReactRefreshRequire propagates a hot update to closest accepted module",
       "ReactRefreshRequire propagates a module that stops accepting in next version",
       "ReactRefreshRequire propagates hot update to all inverse dependencies",
       "ReactRefreshRequire provides fresh value for ES6 default import in parents",
@@ -415,20 +414,22 @@
       "ReactRefreshRequire runs dependencies before dependents",
       "ReactRefreshRequire stops update propagation after module-level errors"
     ],
-    "failed": [],
+    "failed": [
+      "ReactRefreshRequire propagates a hot update to closest accepted module"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
   },
   "test/development/acceptance/error-recovery.test.ts": {
     "passed": [
-      "pages/ error recovery logbox: can recover from a component error",
       "pages/ error recovery logbox: can recover from a event handler error",
       "pages/ error recovery render error not shown right after syntax error",
       "pages/ error recovery stuck error",
       "pages/ error recovery syntax > runtime error"
     ],
     "failed": [
+      "pages/ error recovery logbox: can recover from a component error",
       "pages/ error recovery logbox: can recover from a syntax error without losing state"
     ],
     "pending": [],
@@ -571,21 +572,29 @@
       "cache-components-dev-warmup - with runtime prefetch configs initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - with runtime prefetch configs initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - with runtime prefetch configs initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - with runtime prefetch configs initial load sync IO in the runtime phase",
+      "cache-components-dev-warmup - with runtime prefetch configs initial load sync IO in the static phase",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - with runtime prefetch configs navigation cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - with runtime prefetch configs navigation request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - with runtime prefetch configs navigation sync IO in the runtime phase",
+      "cache-components-dev-warmup - with runtime prefetch configs navigation sync IO in the static phase",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - without runtime prefetch configs initial load cached data resolves in the correct phase cached data + short-lived cached data",
       "cache-components-dev-warmup - without runtime prefetch configs initial load request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - without runtime prefetch configs initial load sync IO in the runtime phase",
+      "cache-components-dev-warmup - without runtime prefetch configs initial load sync IO in the static phase",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cache reads that reveal more components with more caches",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + cached fetch",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + private cache",
       "cache-components-dev-warmup - without runtime prefetch configs navigation cached data resolves in the correct phase cached data + short-lived cached data",
-      "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase"
+      "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase",
+      "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the runtime phase",
+      "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the static phase"
     ],
     "failed": [],
     "pending": [],
@@ -8875,6 +8884,13 @@
     "flakey": [],
     "runtimeError": false
   },
+  "test/e2e/app-dir/segment-cache/force-stale/force-stale.test.ts": {
+    "passed": ["force stale prefetching is disabled in dev"],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
   "test/e2e/app-dir/segment-cache/memory-pressure/segment-cache-memory-pressure.test.ts": {
     "passed": [
       "segment cache memory pressure disabled in development / deployment"
@@ -9081,7 +9097,6 @@
       "shallow-routing pushState should support setting a different pathname reflected on usePathname",
       "shallow-routing pushState should support setting a different searchParam reflected on useSearchParams",
       "shallow-routing pushState should support setting a different url using a string",
-      "shallow-routing pushState should support setting data",
       "shallow-routing pushState should work when given a null state value",
       "shallow-routing replaceState should support setting a different pathname reflected on usePathname",
       "shallow-routing replaceState should support setting a different searchParam reflected on useSearchParams",
@@ -9091,7 +9106,7 @@
       "shallow-routing replaceState should work when given an undefined state value",
       "shallow-routing should work when given an undefined state value"
     ],
-    "failed": [],
+    "failed": ["shallow-routing pushState should support setting data"],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -9385,13 +9400,14 @@
   },
   "test/e2e/app-dir/use-cache-hanging-inputs/use-cache-hanging-inputs.test.ts": {
     "passed": [
+      "use-cache-hanging-inputs when an error is thrown should show an error overlay with only one error"
+    ],
+    "failed": [],
+    "pending": [
       "use-cache-hanging-inputs when a \"use cache\" function is closing over an uncached promise should show an error toast after a timeout",
-      "use-cache-hanging-inputs when an error is thrown should show an error overlay with only one error",
       "use-cache-hanging-inputs when an uncached promise is used inside of \"use cache\" should show an error toast after a timeout",
       "use-cache-hanging-inputs when an uncached promise is used inside of a nested \"use cache\" should show an error toast after a timeout"
     ],
-    "failed": [],
-    "pending": [],
     "flakey": [],
     "runtimeError": false
   },
