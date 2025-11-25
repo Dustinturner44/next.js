@@ -185,7 +185,7 @@ export default async function Page({
 }
 
 async function Content({ slug }: { slug: Promise<string> }) {
-  const { slug: resolvedSlug } = await slug
+  const resolvedSlug = await slug
   return <article>{/* Your content */}</article>
 }
 ```
@@ -224,7 +224,7 @@ export default async function Page({
 }
 
 async function Content({ slug }: { slug: Promise<string> }) {
-  const { slug: resolvedSlug } = await slug
+  const resolvedSlug = await slug
   return <article>{/* Your content */}</article>
 }
 ```
@@ -266,7 +266,7 @@ export default async function Page({
 }
 
 async function Content({ slug }: { slug: Promise<string> }) {
-  const { slug: resolvedSlug } = await slug
+  const resolvedSlug = await slug
   return <article>{/* Your content */}</article>
 }
 ```
