@@ -153,13 +153,11 @@ You should use [`generateStaticParams`](/docs/app/api-reference/functions/genera
 
 > **Good to know**: You can check the `X-Nextjs-Cache` response header to verify your caching strategy. It will show `HIT` or `MISS` for disk-cached routes, and won't appear for memory-only caching.
 
-The sections below show different patterns, from simplest (all runtime) to most optimized (prerendered samples + caching).
+The sections below show different patterns, from simplest (all runtime) to most optimized (prerendered samples, and caching). We recommend wrapping param access in Suspense boundaries to provide meaningful loading states.
 
 #### Without `generateStaticParams`
 
 The simplest approach. All params are runtime data.
-
-**Properties:**
 
 - **Build time**: No validation, no prerendering
 - **Prerendered params**: None
@@ -169,11 +167,7 @@ The simplest approach. All params are runtime data.
 ```tsx filename="app/blog/[slug]/page.tsx"
 import { Suspense } from 'react'
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
   return (
     <div>
       <h1>Blog Post</h1>
@@ -190,11 +184,9 @@ async function Content({ slug }: { slug: Promise<string> }) {
 }
 ```
 
-#### With `generateStaticParams` and Suspense
+#### With `generateStaticParams`
 
-Good for frequently updating content where you don't need disk persistence.
-
-**Properties:**
+Enables build-time validation and prerendering of popular routes, with memory caching for runtime params.
 
 - **Build time**: Validates route, prerenders samples (e.g., `/1`, `/2`, `/3`)
 - **Prerendered params**: Instant - served from disk
@@ -208,53 +200,7 @@ export async function generateStaticParams() {
   return [{ slug: '1' }, { slug: '2' }, { slug: '3' }]
 }
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  return (
-    <div>
-      <h1>Blog Post</h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Content slug={params.then((p) => p.slug)} />
-      </Suspense>
-    </div>
-  )
-}
-
-async function Content({ slug }: { slug: Promise<string> }) {
-  const resolvedSlug = await slug
-  return <article>{/* Your content */}</article>
-}
-```
-
-#### With `generateStaticParams`, Suspense, and `use cache` on page
-
-Recommended for most use cases. Provides immediate UI for prerendered and previously visited routes, with disk persistence similar to ISR.
-
-**Properties:**
-
-- **Build time**: Validates route, prerenders samples
-- **Prerendered params**: Instant - served from disk
-- **Runtime params**: Shell renders immediately, UI updates when content resolves
-- **Caching**: Disk (persists across server restarts)
-
-```tsx filename="app/blog/[slug]/page.tsx"
-import { Suspense } from 'react'
-import { cacheLife } from 'next/cache'
-
-export async function generateStaticParams() {
-  return [{ slug: '1' }, { slug: '2' }, { slug: '3' }]
-}
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  'use cache'
-  cacheLife('days')
+export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
   return (
     <div>
       <h1>Blog Post</h1>
@@ -273,93 +219,12 @@ async function Content({ slug }: { slug: Promise<string> }) {
 
 #### With `generateStaticParams` and `use cache` on page
 
-Full page waits but cached to disk. Good for less-frequently-changing content.
-
-**Properties:**
+Provides immediate UI for prerendered and previously visited routes, with disk persistence similar to ISR.
 
 - **Build time**: Validates route, prerenders samples
 - **Prerendered params**: Instant - served from disk
-- **Runtime params**: Full page waits to render, then cached to disk
+- **Runtime params**: Shell renders immediately, UI updates when content resolves
 - **Caching**: Disk (persists across server restarts)
-
-```tsx filename="app/blog/[slug]/page.tsx"
-import { cacheLife } from 'next/cache'
-
-export async function generateStaticParams() {
-  return [{ slug: '1' }, { slug: '2' }, { slug: '3' }]
-}
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  'use cache'
-  cacheLife('days')
-  const { slug } = await params
-  return <div>{/* Full page content */}</div>
-}
-```
-
-#### Parent Suspense boundaries override disk caching
-
-When you have a parent Suspense boundary that wraps the page, it takes precedence over page-level `use cache` for runtime params. This happens with [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or when a layout wraps children in a Suspense boundary to defer to request time. This means:
-
-- **Build-time params** (from `generateStaticParams`) are still fully prerendered and cached to disk
-- **Runtime params** will always use the parent fallback UI and stream, with memory caching only
-- No disk files are created for runtime params, even with `use cache` on the page
-- The `X-Nextjs-Cache` header will not appear for runtime params
-
-```tsx filename="app/blog/[slug]/loading.tsx"
-export default function Loading() {
-  return <div>Loading post...</div>
-}
-```
-
-```tsx filename="app/blog/[slug]/page.tsx"
-export async function generateStaticParams() {
-  return [{ slug: '1' }, { slug: '2' }, { slug: '3' }]
-}
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
-  'use cache' // This will be overridden by parent loading.tsx for runtime params
-  const { slug } = await params
-  return <div>Content for {slug}</div>
-}
-```
-
-In this example:
-
-- `/blog/1`, `/blog/2`, `/blog/3` are fully cached to disk at build time
-- `/blog/10` (runtime param) shows `loading.tsx` fallback, then streams the page content with memory caching only
-
-If you need disk caching for runtime params, avoid parent Suspense boundaries and use page-level `use cache` with direct param access (no Suspense in the page).
-
-#### Recommended pattern
-
-For the most flexible approach that provides full page ISR for runtime params:
-
-1. **Place static UI in the layout** - Content that doesn't depend on params goes in the layout, which is always part of the static shell
-2. **Use `use cache` on the page component** - This enables disk caching for the full page (persists across server restarts)
-3. **Read params within a Suspense boundary** - This enables streaming and provides good UX with fallback UI
-
-```tsx filename="app/blog/[slug]/layout.tsx"
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <div>
-      {/* Static navigation - always in the shell */}
-      <nav>
-        <a href="/">Home</a> | <a href="/blog">Blog</a>
-      </nav>
-      <main>{children}</main>
-    </div>
-  )
-}
-```
 
 ```tsx filename="app/blog/[slug]/page.tsx"
 import { Suspense } from 'react'
@@ -369,45 +234,28 @@ export async function generateStaticParams() {
   return [{ slug: '1' }, { slug: '2' }, { slug: '3' }]
 }
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
   'use cache'
   cacheLife('days')
   return (
     <div>
       <h1>Blog Post</h1>
-      <Suspense fallback={<div>Loading content...</div>}>
-        <BlogContent slug={params.then((p) => p.slug)} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Content slug={params.then((p) => p.slug)} />
       </Suspense>
     </div>
   )
 }
 
-async function BlogContent({ slug }: { slug: Promise<string> }) {
+async function Content({ slug }: { slug: Promise<string> }) {
   const resolvedSlug = await slug
-  const response = await fetch(`https://api.vercel.app/blog/${resolvedSlug}`)
-  const data = await response.json()
-  return (
-    <article>
-      <h2>{data.title}</h2>
-      <p>{data.content}</p>
-    </article>
-  )
+  return <article>{/* Your content */}</article>
 }
 ```
 
-This pattern gives you:
-
-- **Static shell** from layout and page-level elements outside Suspense
-- **Efficient client-side navigation** - Static layout UI is reused when navigating between different params (e.g., `/blog/1` to `/blog/2`)
-- **Fallback UI with Suspense** - Provides immediate feedback while content loads, fallback elements are replaced when content resolves
-- **Full page ISR** - Runtime params generate `.html` files cached to disk (persists across server restarts)
-- **Immediate UI** for prerendered and previously visited routes
-- **Build-time prerendering** for sampled params (from `generateStaticParams`)
-- **On-demand rendering and caching** for runtime params
+> **Good to know**:
+>
+> - Parent Suspense boundaries (like [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or a layout Suspense wrapping children) take precedence over page-level `use cache` for runtime params. While build-time params from `generateStaticParams` are still fully cached to disk, runtime params will use the parent fallback UI and stream with memory caching only - no disk files are created.
 
 ## Examples
 
