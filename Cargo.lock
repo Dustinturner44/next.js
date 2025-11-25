@@ -4412,6 +4412,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "next-persistence-tools"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "next-api",
+ "rustc-hash 2.1.1",
+ "turbo-persistence",
+ "twox-hash 2.1.0",
+]
+
+[[package]]
 name = "next-swc-napi"
 version = "0.0.0"
 dependencies = [

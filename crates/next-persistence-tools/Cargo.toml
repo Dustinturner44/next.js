@@ -1,0 +1,23 @@
+[package]
+name = "next-persistence-tools"
+version = "0.1.0"
+description = "CLI tools for analyzing Next.js persistence cache"
+license = "MIT"
+edition = "2024"
+autobenches = false
+
+[[bin]]
+name = "next-persistence-tools"
+path = "src/main.rs"
+bench = false
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+next-api = { workspace = true }
+rustc-hash = { workspace = true }
+turbo-persistence = { workspace = true }
+twox-hash = { workspace = true }
