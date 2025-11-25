@@ -149,11 +149,13 @@ export default async function Page(props: PageProps<'/[locale]'>) {
 
 When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, params are runtime data that require special handling. During prerendering, Next.js doesn't know which params users will request (like `/blog/hello-world` or `/blog/123`), so you need to provide fallback UI using `<Suspense>` boundaries.
 
-You should use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params) to prerender your most popular routes at build time (e.g., `/blog/1`, `/blog/2`, `/blog/3`). This serves two purposes: it validates your route doesn't incorrectly access dynamic APIs like `cookies()` or `headers()`, and it creates static HTML files for instant loading of those specific routes. Any other routes will render on-demand when requested at runtime.
+You should use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params) to prerender your most popular routes at build time (e.g., `/blog/1`, `/blog/2`, `/blog/3`). This serves two purposes: it validates your route doesn't incorrectly access dynamic APIs like `cookies()` or `headers()`, and it creates static HTML files for instant loading of those specific routes.
 
-> **Good to know**: You can check the `X-Nextjs-Cache` response header to verify your caching strategy. It will show `HIT` or `MISS` for disk-cached routes, and won't appear for memory-only caching.
+When you use `generateStaticParams`, Next.js also generates a static shell where params are treated as dynamic. When users request params not prerendered at build time, Next.js immediately sends this static shell (containing content like headers, navigation, and layout), while param-dependent content updates the UI when it's ready. This provides a better user experience than waiting for the entire page to render.
 
 The sections below show different patterns, from simplest (all runtime) to most optimized (prerendered samples, and caching). We recommend wrapping param access in Suspense boundaries to provide meaningful loading states.
+
+> **Good to know**: You can check the `X-Nextjs-Cache` response header to verify your caching strategy. It will show `HIT` or `MISS` for disk-cached routes, and won't appear for memory-only caching. Your hosting provider might replace this header with their own version.
 
 #### Without `generateStaticParams`
 
@@ -186,12 +188,12 @@ async function Content({ slug }: { slug: Promise<string> }) {
 
 #### With `generateStaticParams`
 
-Enables build-time validation and prerendering of popular routes, with memory caching for runtime params.
+Enables build-time validation and prerendering of popular routes. Next.js generates both the prerendered param pages and a static shell (where params are treated as dynamic). When a runtime param is encountered, Next.js uses this static shell to render immediately while streaming param-dependent content.
 
-- **Build time**: Validates route, prerenders samples (e.g., `/1`, `/2`, `/3`)
+- **Build time**: Validates route, prerenders samples (e.g., `/1`, `/2`, `/3`), generates static shell
 - **Prerendered params**: Instant - served from disk
-- **Runtime params**: Shell renders immediately, UI updates when content resolves
-- **Caching**: Memory only (cleared on server restart)
+- **Runtime params**: Static shell renders immediately, UI updates when param-dependent content resolves
+- **Caching**: Memory only for runtime params (cleared on server restart)
 
 ```tsx filename="app/blog/[slug]/page.tsx"
 import { Suspense } from 'react'
@@ -219,11 +221,11 @@ async function Content({ slug }: { slug: Promise<string> }) {
 
 #### With `generateStaticParams` and `use cache` on page
 
-Provides immediate UI for prerendered and previously visited routes, with disk persistence similar to ISR.
+Provides immediate UI for prerendered and previously visited routes, with disk persistence similar to ISR. When a runtime param is encountered, Next.js uses the static shell if it has visible content, or prerenders the full page (ISR-style) if the shell is empty.
 
-- **Build time**: Validates route, prerenders samples
+- **Build time**: Validates route, prerenders samples, generates static shell
 - **Prerendered params**: Instant - served from disk
-- **Runtime params**: Shell renders immediately, UI updates when content resolves
+- **Runtime params**: Static shell renders immediately (if it has content), then streams param-dependent content. Full page is cached to disk after first visit.
 - **Caching**: Disk (persists across server restarts)
 
 ```tsx filename="app/blog/[slug]/page.tsx"
@@ -255,7 +257,8 @@ async function Content({ slug }: { slug: Promise<string> }) {
 
 > **Good to know**:
 >
-> - Parent Suspense boundaries (like [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or a layout Suspense wrapping children) take precedence over page-level `use cache` for runtime params. While build-time params from `generateStaticParams` are still fully cached to disk, runtime params will use the parent fallback UI and stream with memory caching only - no disk files are created.
+> - **Prefetching**: When navigating via `<Link>`, Next.js prefetches the static shell. For runtime params (not in `generateStaticParams`), any content that depends on the param value (such as `use cache` functions after `await params`) is not included in the prefetch and will be fetched during navigation, showing the Suspense fallback until ready.
+> - **Parent Suspense boundaries** (like [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or a layout Suspense wrapping children) take precedence over page-level `use cache` for runtime params. While build-time params from `generateStaticParams` are still fully cached to disk, runtime params will use the parent fallback UI and stream with memory caching only - no disk files are created.
 
 ## Examples
 
