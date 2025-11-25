@@ -308,7 +308,6 @@ export async function generateStaticParams() {
 > **Good to know:**
 >
 > - You must always return an array from `generateStaticParams`, even if it's empty. Otherwise, the route will be dynamically rendered.
-> - **With Cache Components**, returning an empty array is **not allowed** and will cause a [build error](/docs/messages/empty-generate-static-params). You must return at least one param for build-time validation.
 
 ```jsx filename="app/changelog/[slug]/page.js"
 export const dynamic = 'force-static'
