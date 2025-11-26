@@ -50,13 +50,14 @@ fn deserialize_as_pot_value(bytes: &[u8]) -> Result<pot::Value<'_>> {
         .context("Failed to deserialize as pot::Value")
 }
 
-/// Extract enum variant name from a pot::Value that represents a CachedDataItem
-fn extract_variant_name(value: &pot::Value) -> Result<String> {
+/// Extract enum variant name and value from a pot::Value that represents a CachedDataItem
+/// Returns (variant_name, variant_value)
+fn extract_variant<'a>(value: &'a pot::Value<'a>) -> Result<(String, pot::Value<'a>)> {
     // A CachedDataItem enum is serialized as mappings with the variant name as key
     if let pot::Value::Mappings(mappings) = value {
-        if let Some((key, _)) = mappings.first() {
+        if let Some((key, val)) = mappings.first() {
             if let pot::Value::String(variant_name) = key {
-                return Ok(variant_name.to_string());
+                return Ok((variant_name.to_string(), val.clone()));
             }
         }
     }
@@ -347,9 +348,11 @@ impl FamilyStats {
 
         // Process each item
         for item in items {
-            let variant_name = extract_variant_name(&item)?;
-            // Serialize the item to get its size and hash
-            let (bytes, value_hash) = serialize_and_hash_pot_value(&item)?;
+            // Extract the variant name and value
+            let (variant_name, variant_value) = extract_variant(&item)?;
+
+            // Serialize only the variant value (not the full enum with variant name)
+            let (bytes, value_hash) = serialize_and_hash_pot_value(&variant_value)?;
             let size = bytes.len() as u64;
             stats.add_variant(variant_name.clone(), value_hash, size);
 
