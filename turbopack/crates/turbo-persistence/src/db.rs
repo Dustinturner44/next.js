@@ -285,6 +285,10 @@ impl<S: ParallelScheduler> TurboPersistence<S> {
         for entry in entries {
             let entry = entry?;
             let path = entry.path();
+            let file_name = path.file_name();
+            if file_name.is_some_and(|s| s.as_encoded_bytes().starts_with(b".")) {
+                continue;
+            }
             if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
                 let seq: u32 = path
                     .file_stem()
@@ -331,17 +335,12 @@ impl<S: ParallelScheduler> TurboPersistence<S> {
                             // ignore blobs and sst, they are read when needed
                         }
                         _ => {
-                            if !path
-                                .file_name()
-                                .is_some_and(|s| s.as_encoded_bytes().starts_with(b"."))
-                            {
-                                bail!("Unexpected file in persistence directory: {:?}", path);
-                            }
+                            bail!("Unexpected file in persistence directory: {:?}", path);
                         }
                     }
                 }
             } else {
-                match path.file_stem().and_then(|s| s.to_str()) {
+                match file_name.and_then(|s| s.to_str()) {
                     Some("CURRENT") => {
                         // Already read
                     }
@@ -349,12 +348,7 @@ impl<S: ParallelScheduler> TurboPersistence<S> {
                         // Ignored, write-only
                     }
                     _ => {
-                        if !path
-                            .file_name()
-                            .is_some_and(|s| s.as_encoded_bytes().starts_with(b"."))
-                        {
-                            bail!("Unexpected file in persistence directory: {:?}", path);
-                        }
+                        bail!("Unexpected file in persistence directory: {:?}", path);
                     }
                 }
             }
@@ -403,6 +397,11 @@ impl<S: ParallelScheduler> TurboPersistence<S> {
     /// Returns true if the database is empty.
     pub fn is_empty(&self) -> bool {
         self.inner.read().meta_files.is_empty()
+    }
+
+    /// Returns true if the database is opened in read-only mode.
+    pub fn is_read_only(&self) -> bool {
+        self.read_only
     }
 
     /// Starts a new WriteBatch for the database. Only a single write operation is allowed at a

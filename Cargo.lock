@@ -4418,6 +4418,7 @@ dependencies = [
  "anyhow",
  "clap",
  "next-api",
+ "pot",
  "rustc-hash 2.1.1",
  "turbo-persistence",
  "twox-hash 2.1.0",
