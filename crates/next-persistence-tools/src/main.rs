@@ -149,56 +149,106 @@ impl CachedDataItemStats {
 /// Statistics for ReverseTaskCache function IDs
 #[derive(Default, Debug)]
 struct FunctionIdStats {
-    /// Maps function_id to count
-    function_counts: FxHashMap<u64, u64>,
+    /// Maps function_id to (count, total_size)
+    function_counts: FxHashMap<u64, (u64, u64)>,
 }
 
 impl FunctionIdStats {
-    fn add_function(&mut self, function_id: u64) {
-        *self.function_counts.entry(function_id).or_insert(0) += 1;
+    fn add_function(&mut self, function_id: u64, size: u64) {
+        self.function_counts
+            .entry(function_id)
+            .and_modify(|(count, total_size)| {
+                *count += 1;
+                *total_size += size;
+            })
+            .or_insert((1, size));
     }
 
     fn total(&self) -> u64 {
-        self.function_counts.values().sum()
+        self.function_counts.values().map(|(count, _)| count).sum()
     }
 
-    fn top_n(&self, n: usize) -> Vec<(&u64, &u64)> {
+    fn total_size(&self) -> u64 {
+        self.function_counts.values().map(|(_, size)| size).sum()
+    }
+
+    fn top_n_by_count(&self, n: usize) -> Vec<(&u64, &(u64, u64))> {
         let mut entries: Vec<_> = self.function_counts.iter().collect();
-        entries.sort_by(|a, b| b.1.cmp(a.1).then_with(|| a.0.cmp(b.0)));
+        entries.sort_by(|a, b| b.1.0.cmp(&a.1.0).then_with(|| a.0.cmp(b.0)));
         entries.into_iter().take(n).collect()
+    }
+
+    fn top_n_by_size(&self, n: usize) -> Vec<(&u64, &(u64, u64))> {
+        let mut entries: Vec<_> = self.function_counts.iter().collect();
+        entries.sort_by(|a, b| b.1.1.cmp(&a.1.1).then_with(|| a.0.cmp(b.0)));
+        entries.into_iter().take(n).collect()
+    }
+}
+
+/// Per-function statistics including variant breakdown
+#[derive(Default, Debug)]
+struct FunctionStats {
+    total_size: u64,
+    count: u64,
+    /// Maps variant name to (count, total_size)
+    variant_breakdown: FxHashMap<String, (u64, u64)>,
+}
+
+impl FunctionStats {
+    fn add_entry(&mut self, size: u64) {
+        self.total_size += size;
+        self.count += 1;
+    }
+
+    fn add_variant(&mut self, variant_name: String, size: u64) {
+        self.variant_breakdown
+            .entry(variant_name)
+            .and_modify(|(count, total_size)| {
+                *count += 1;
+                *total_size += size;
+            })
+            .or_insert((1, size));
     }
 }
 
 /// Statistics for TaskMeta/TaskData sizes by function ID
 #[derive(Default, Debug)]
 struct SizeByFunctionStats {
-    /// Maps function_id to (total_size, count)
-    function_stats: FxHashMap<u64, (u64, u64)>,
+    /// Maps function_id to FunctionStats
+    function_stats: FxHashMap<u64, FunctionStats>,
 }
 
 impl SizeByFunctionStats {
     fn add_size(&mut self, function_id: u64, size: u64) {
         self.function_stats
             .entry(function_id)
-            .and_modify(|(total_size, count)| {
-                *total_size += size;
-                *count += 1;
-            })
-            .or_insert((size, 1));
+            .or_default()
+            .add_entry(size);
+    }
+
+    fn add_variant(&mut self, function_id: u64, variant_name: String, size: u64) {
+        self.function_stats
+            .entry(function_id)
+            .or_default()
+            .add_variant(variant_name, size);
     }
 
     fn total_size(&self) -> u64 {
-        self.function_stats.values().map(|(size, _)| size).sum()
+        self.function_stats.values().map(|s| s.total_size).sum()
     }
 
     fn total_count(&self) -> u64 {
-        self.function_stats.values().map(|(_, count)| count).sum()
+        self.function_stats.values().map(|s| s.count).sum()
     }
 
-    fn top_n(&self, n: usize) -> Vec<(&u64, &(u64, u64))> {
+    fn top_n(&self, n: usize) -> Vec<(&u64, &FunctionStats)> {
         let mut entries: Vec<_> = self.function_stats.iter().collect();
         // Sort by size (descending)
-        entries.sort_by(|a, b| b.1.0.cmp(&a.1.0).then_with(|| a.0.cmp(b.0)));
+        entries.sort_by(|a, b| {
+            b.1.total_size
+                .cmp(&a.1.total_size)
+                .then_with(|| a.0.cmp(b.0))
+        });
         entries.into_iter().take(n).collect()
     }
 }
@@ -275,7 +325,11 @@ impl FamilyStats {
         );
     }
 
-    fn process_cached_data_items(&mut self, entry: &OwnedLookupEntry) -> Result<()> {
+    fn process_cached_data_items(
+        &mut self,
+        entry: &OwnedLookupEntry,
+        task_to_function_map: &FxHashMap<Vec<u8>, u64>,
+    ) -> Result<()> {
         // Deserialize the value as pot::Value to get a Vec of items
         let pot_value = deserialize_as_pot_value(&entry.value)?;
 
@@ -288,13 +342,24 @@ impl FamilyStats {
         // Ensure we have stats tracking initialized
         let stats = self.cached_data_stats.get_or_insert_with(Default::default);
 
+        // Look up the function ID for this task ID (key)
+        let function_id_opt = task_to_function_map.get(entry.key.as_ref()).copied();
+
         // Process each item
         for item in items {
             let variant_name = extract_variant_name(&item)?;
             // Serialize the item to get its size and hash
             let (bytes, value_hash) = serialize_and_hash_pot_value(&item)?;
             let size = bytes.len() as u64;
-            stats.add_variant(variant_name, value_hash, size);
+            stats.add_variant(variant_name.clone(), value_hash, size);
+
+            // If we have a function ID, also track variant stats per function
+            if let Some(function_id) = function_id_opt {
+                let size_stats = self
+                    .size_by_function_stats
+                    .get_or_insert_with(Default::default);
+                size_stats.add_variant(function_id, variant_name, size);
+            }
         }
 
         Ok(())
@@ -307,9 +372,12 @@ impl FamilyStats {
         // Extract the function ID
         let function_id = extract_function_id(&pot_value)?;
 
+        // Get the size of the entry
+        let size = entry.value.len() as u64;
+
         // Ensure we have stats tracking initialized
         let stats = self.function_id_stats.get_or_insert_with(Default::default);
-        stats.add_function(function_id);
+        stats.add_function(function_id, size);
 
         Ok(())
     }
@@ -475,16 +543,19 @@ fn main() -> Result<()> {
                             stats.add_entry(&entry);
 
                             // For TaskMeta (1) and TaskData (2), also deserialize and analyze
-                            // CachedDataItems and track size by function ID
+                            // CachedDataItems and track size by function ID (including variant
+                            // breakdown)
                             if family == 1 || family == 2 {
-                                if let Err(e) = stats.process_cached_data_items(&entry) {
+                                if let Err(e) =
+                                    stats.process_cached_data_items(&entry, &task_to_function_map)
+                                {
                                     stats.deserialization_failures += 1;
                                     // Capture first 10 errors
                                     if stats.deserialization_errors.len() < 10 {
                                         stats.deserialization_errors.push(format!("{:#}", e));
                                     }
                                 }
-                                // Track size by function ID
+                                // Track total size by function ID
                                 stats.track_size_by_function(&entry, &task_to_function_map);
                             }
 
@@ -768,15 +839,34 @@ fn main() -> Result<()> {
                         );
                         println!("  {}", separator);
 
-                        for (function_id, (size, count)) in top_functions {
+                        for (function_id, func_stats) in top_functions {
                             let func_name = format_function_name(*function_id, &function_names);
                             println!(
                                 "    {:<width$} {:>15} {:>15}",
                                 func_name,
-                                count,
-                                format_size(*size),
+                                func_stats.count,
+                                format_size(func_stats.total_size),
                                 width = max_func_len
                             );
+
+                            // Display variant breakdown for this function
+                            if !func_stats.variant_breakdown.is_empty() {
+                                let mut variants: Vec<_> =
+                                    func_stats.variant_breakdown.iter().collect();
+                                // Sort by size descending
+                                variants
+                                    .sort_by(|a, b| b.1.1.cmp(&a.1.1).then_with(|| a.0.cmp(b.0)));
+
+                                for (variant_name, (var_count, var_size)) in variants {
+                                    println!(
+                                        "      └─ {:<width$} {:>15} {:>15}",
+                                        variant_name,
+                                        var_count,
+                                        format_size(*var_size),
+                                        width = max_func_len.saturating_sub(3)
+                                    );
+                                }
+                            }
                         }
 
                         println!("  {}", separator);
@@ -801,15 +891,18 @@ fn main() -> Result<()> {
             // Display Function ID statistics for ReverseTaskCache
             if family == 4 {
                 if let Some(func_stats) = &stats.function_id_stats {
-                    println!();
-                    println!("  Top 20 Functions:");
-
                     let total_funcs = func_stats.total();
+                    let total_size = func_stats.total_size();
+
                     if total_funcs > 0 {
-                        let top_functions = func_stats.top_n(20);
+                        // First table: Top 20 by Size
+                        println!();
+                        println!("  Top 20 Functions by Size:");
+
+                        let top_by_size = func_stats.top_n_by_size(20);
 
                         // Measure the maximum function name length in top 20
-                        let max_func_len = top_functions
+                        let max_func_len = top_by_size
                             .iter()
                             .map(|(function_id, _)| {
                                 format_function_name(**function_id, &function_names).len()
@@ -819,39 +912,86 @@ fn main() -> Result<()> {
                             .max(20); // Minimum width of 20
 
                         // Calculate separator length
-                        let separator_len = max_func_len + 4 + 15 + 3; // padding + one column + spaces
+                        let separator_len = max_func_len + 4 + 15 + 15 + 6; // padding + two columns + spaces
                         let separator = "─".repeat(separator_len);
 
                         println!("  {}", separator);
                         println!(
-                            "    {:<width$} {:>15}",
+                            "    {:<width$} {:>15} {:>15}",
                             "Function",
                             "Count",
+                            "Total Size",
                             width = max_func_len
                         );
                         println!("  {}", separator);
 
-                        for (function_id, count) in top_functions {
+                        for (function_id, (count, size)) in top_by_size {
                             let func_name = format_function_name(*function_id, &function_names);
                             println!(
-                                "    {:<width$} {:>15}",
+                                "    {:<width$} {:>15} {:>15}",
                                 func_name,
                                 count,
+                                format_size(*size),
+                                width = max_func_len
+                            );
+                        }
+
+                        println!("  {}", separator);
+
+                        // Second table: Top 20 by Count
+                        println!();
+                        println!("  Top 20 Functions by Count:");
+
+                        let top_by_count = func_stats.top_n_by_count(20);
+
+                        // Measure the maximum function name length in top 20
+                        let max_func_len = top_by_count
+                            .iter()
+                            .map(|(function_id, _)| {
+                                format_function_name(**function_id, &function_names).len()
+                            })
+                            .max()
+                            .unwrap_or(50)
+                            .max(20); // Minimum width of 20
+
+                        // Calculate separator length
+                        let separator_len = max_func_len + 4 + 15 + 15 + 6; // padding + two columns + spaces
+                        let separator = "─".repeat(separator_len);
+
+                        println!("  {}", separator);
+                        println!(
+                            "    {:<width$} {:>15} {:>15}",
+                            "Function",
+                            "Count",
+                            "Total Size",
+                            width = max_func_len
+                        );
+                        println!("  {}", separator);
+
+                        for (function_id, (count, size)) in top_by_count {
+                            let func_name = format_function_name(*function_id, &function_names);
+                            println!(
+                                "    {:<width$} {:>15} {:>15}",
+                                func_name,
+                                count,
+                                format_size(*size),
                                 width = max_func_len
                             );
                         }
 
                         println!("  {}", separator);
                         println!(
-                            "    {:<width$} {:>15}",
+                            "    {:<width$} {:>15} {:>15}",
                             "Total Functions:",
                             func_stats.function_counts.len(),
+                            "",
                             width = max_func_len
                         );
                         println!(
-                            "    {:<width$} {:>15}",
-                            "Total Entries:",
+                            "    {:<width$} {:>15} {:>15}",
+                            "Total:",
                             total_funcs,
+                            format_size(total_size),
                             width = max_func_len
                         );
                     }
