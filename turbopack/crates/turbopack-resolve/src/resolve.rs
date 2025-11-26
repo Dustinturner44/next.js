@@ -200,7 +200,6 @@ async fn base_resolve_options(
         },
         default_files: vec![rcstr!("index")],
         import_map: Some(import_map),
-        resolved_map: opt.resolved_map,
         after_resolve_plugins: opt.after_resolve_plugins.clone(),
         before_resolve_plugins: opt.before_resolve_plugins.clone(),
         loose_errors: opt.loose_errors,

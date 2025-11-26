@@ -1873,8 +1873,6 @@ async fn resolve_internal_inline(
                                 resolved(
                                     RequestKey::new(matched_pattern.clone()),
                                     path.clone(),
-                                    lookup_path.clone(),
-                                    request,
                                     options_value,
                                     options,
                                     query.clone(),
@@ -1902,7 +1900,6 @@ async fn resolve_internal_inline(
             } => {
                 resolve_relative_request(
                     lookup_path.clone(),
-                    request,
                     options,
                     options_value,
                     path,
@@ -1920,7 +1917,6 @@ async fn resolve_internal_inline(
             } => {
                 resolve_module_request(
                     lookup_path.clone(),
-                    request,
                     options,
                     options_value,
                     module,
@@ -2214,7 +2210,6 @@ async fn resolve_into_folder(
 #[tracing::instrument(level = Level::TRACE, skip_all)]
 async fn resolve_relative_request(
     lookup_path: FileSystemPath,
-    request: Vc<Request>,
     options: Vc<ResolveOptions>,
     options_value: &ResolveOptions,
     path_pattern: &Pattern,
@@ -2337,8 +2332,6 @@ async fn resolve_relative_request(
                                 resolved(
                                     RequestKey::new(matched_pattern.into()),
                                     path.clone(),
-                                    lookup_path.clone(),
-                                    request,
                                     options_value,
                                     options,
                                     query.clone(),
@@ -2354,8 +2347,6 @@ async fn resolve_relative_request(
                             resolved(
                                 RequestKey::new(matched_pattern.into()),
                                 path.clone(),
-                                lookup_path.clone(),
-                                request,
                                 options_value,
                                 options,
                                 query.clone(),
@@ -2374,8 +2365,6 @@ async fn resolve_relative_request(
                         resolved(
                             RequestKey::new(matched_pattern.into()),
                             path.clone(),
-                            lookup_path.clone(),
-                            request,
                             options_value,
                             options,
                             query.clone(),
@@ -2392,8 +2381,6 @@ async fn resolve_relative_request(
                     resolved(
                         RequestKey::new(matched_pattern.clone()),
                         path.clone(),
-                        lookup_path.clone(),
-                        request,
                         options_value,
                         options,
                         query.clone(),
@@ -2558,7 +2545,6 @@ async fn find_self_reference(
 #[tracing::instrument(level = Level::TRACE, skip_all)]
 async fn resolve_module_request(
     lookup_path: FileSystemPath,
-    request: Vc<Request>,
     options: Vc<ResolveOptions>,
     options_value: &ResolveOptions,
     module: &Pattern,
@@ -2642,8 +2628,6 @@ async fn resolve_module_request(
                     let resolved = resolved(
                         RequestKey::new(rcstr!(".")),
                         file.clone(),
-                        lookup_path.clone(),
-                        request,
                         options_value,
                         options,
                         query.clone(),
@@ -2861,8 +2845,6 @@ async fn resolve_import_map_result(
 async fn resolved(
     request_key: RequestKey,
     fs_path: FileSystemPath,
-    original_context: FileSystemPath,
-    original_request: Vc<Request>,
     options_value: &ResolveOptions,
     options: Vc<ResolveOptions>,
     query: RcStr,
@@ -2889,25 +2871,6 @@ async fn resolved(
         return Ok(result);
     }
 
-    if let Some(resolved_map) = options_value.resolved_map {
-        let result = resolved_map
-            .lookup(path.clone(), original_context.clone(), original_request)
-            .await?;
-
-        let resolved_result = resolve_import_map_result(
-            &result,
-            path.parent(),
-            original_context.clone(),
-            original_request,
-            options,
-            query.clone(),
-        )
-        .await?;
-
-        if let Some(result) = resolved_result {
-            return Ok(result);
-        }
-    }
     let source = ResolvedVc::upcast(
         FileSource::new_with_query_and_fragment(path.clone(), query, fragment)
             .to_resolved()

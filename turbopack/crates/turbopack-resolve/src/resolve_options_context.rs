@@ -6,7 +6,7 @@ use turbopack_core::{
     condition::ContextCondition,
     environment::Environment,
     resolve::{
-        options::{ImportMap, ResolvedMap},
+        options::ImportMap,
         plugin::{AfterResolvePlugin, BeforeResolvePlugin},
     },
 };
@@ -66,9 +66,6 @@ pub struct ResolveOptionsContext {
     /// `ResolveOption::fallback_import_map`. It is always applied last, so
     /// any mapping defined within will take precedence over any other.
     pub fallback_import_map: Option<ResolvedVc<ImportMap>>,
-    #[serde(default)]
-    /// An additional resolved map to use after modules have been resolved.
-    pub resolved_map: Option<ResolvedVc<ResolvedMap>>,
     #[serde(default)]
     /// A list of rules to use a different resolve option context for certain
     /// context paths. The first matching is used.

@@ -7,7 +7,7 @@ use turbo_tasks::{
     FxIndexSet, NonLocalValue, ResolvedVc, TryJoinIterExt, ValueToString, Vc,
     debug::ValueDebugFormat, trace::TraceRawVcs,
 };
-use turbo_tasks_fs::{FileSystemPath, glob::Glob};
+use turbo_tasks_fs::FileSystemPath;
 
 use super::{
     AliasPattern, ExternalType, ResolveResult, ResolveResultItem,
@@ -402,12 +402,6 @@ impl ImportMap {
 }
 
 #[turbo_tasks::value(shared)]
-#[derive(Clone, Default)]
-pub struct ResolvedMap {
-    pub by_glob: Vec<(FileSystemPath, ResolvedVc<Glob>, ResolvedVc<ImportMapping>)>,
-}
-
-#[turbo_tasks::value(shared)]
 #[derive(Clone)]
 pub enum ImportMapResult {
     Result(ResolvedVc<ResolveResult>),
@@ -594,32 +588,6 @@ impl ImportMap {
     }
 }
 
-#[turbo_tasks::value_impl]
-impl ResolvedMap {
-    #[turbo_tasks::function]
-    pub async fn lookup(
-        &self,
-        resolved: FileSystemPath,
-        lookup_path: FileSystemPath,
-        request: Vc<Request>,
-    ) -> Result<Vc<ImportMapResult>> {
-        for (root, glob, mapping) in self.by_glob.iter() {
-            if let Some(path) = root.get_path_to(&resolved)
-                && glob.await?.matches(path)
-            {
-                return Ok(import_mapping_to_result(
-                    *mapping.convert().await?,
-                    lookup_path,
-                    request,
-                )
-                .await?
-                .cell());
-            }
-        }
-        Ok(ImportMapResult::NoEntry.cell())
-    }
-}
-
 #[turbo_tasks::value(shared)]
 #[derive(Clone, Debug, Default)]
 pub struct ResolveOptions {
@@ -643,7 +611,6 @@ pub struct ResolveOptions {
     pub import_map: Option<ResolvedVc<ImportMap>>,
     /// An import map to use when a request is otherwise unresolvable.
     pub fallback_import_map: Option<ResolvedVc<ImportMap>>,
-    pub resolved_map: Option<ResolvedVc<ResolvedMap>>,
     pub before_resolve_plugins: Vec<ResolvedVc<Box<dyn BeforeResolvePlugin>>>,
     pub after_resolve_plugins: Vec<ResolvedVc<Box<dyn AfterResolvePlugin>>>,
     /// Support resolving *.js requests to *.ts files

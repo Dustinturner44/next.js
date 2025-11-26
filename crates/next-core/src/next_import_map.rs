@@ -12,7 +12,7 @@ use turbopack_core::{
     resolve::{
         AliasPattern, ExternalTraced, ExternalType, ResolveAliasMap, SubpathValue,
         node::node_cjs_resolve_options,
-        options::{ConditionValue, ImportMap, ImportMapping, ResolvedMap},
+        options::{ConditionValue, ImportMap, ImportMapping},
         parse::Request,
         pattern::Pattern,
         resolve,
@@ -594,18 +594,6 @@ async fn insert_unsupported_node_internal_aliases(import_map: &mut ImportMap) ->
         import_map.insert_alias(AliasPattern::exact(module.clone()), unsupported_replacer);
     });
     Ok(())
-}
-
-pub fn get_next_client_resolved_map(
-    _context: FileSystemPath,
-    _root: FileSystemPath,
-    _mode: NextMode,
-) -> Vc<ResolvedMap> {
-    let glob_mappings = vec![];
-    ResolvedMap {
-        by_glob: glob_mappings,
-    }
-    .cell()
 }
 
 static NEXT_ALIASES: LazyLock<[(RcStr, RcStr); 23]> = LazyLock::new(|| {

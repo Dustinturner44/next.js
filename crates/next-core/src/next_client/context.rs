@@ -41,10 +41,7 @@ use crate::{
     next_client::runtime_entry::{RuntimeEntries, RuntimeEntry},
     next_config::NextConfig,
     next_font::local::NextFontLocalResolvePlugin,
-    next_import_map::{
-        get_next_client_fallback_import_map, get_next_client_import_map,
-        get_next_client_resolved_map,
-    },
+    next_import_map::{get_next_client_fallback_import_map, get_next_client_import_map},
     next_shared::{
         resolve::{
             ModuleFeatureReportResolvePlugin, NextSharedRuntimeResolvePlugin,
@@ -146,10 +143,6 @@ pub async fn get_client_resolve_options_context(
     let next_client_fallback_import_map = get_next_client_fallback_import_map(ty.clone())
         .to_resolved()
         .await?;
-    let next_client_resolved_map =
-        get_next_client_resolved_map(project_path.clone(), project_path.clone(), *mode.await?)
-            .to_resolved()
-            .await?;
     let mut custom_conditions: Vec<_> = mode.await?.custom_resolve_conditions().collect();
 
     if *next_config.enable_cache_components().await? {
@@ -161,7 +154,6 @@ pub async fn get_client_resolve_options_context(
         custom_conditions,
         import_map: Some(next_client_import_map),
         fallback_import_map: Some(next_client_fallback_import_map),
-        resolved_map: Some(next_client_resolved_map),
         browser: true,
         module: true,
         before_resolve_plugins: vec![
