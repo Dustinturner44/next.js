@@ -149,9 +149,12 @@ export default async function Page(props: PageProps<'/[locale]'>) {
 
 When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, params are runtime data that require special handling. During prerendering, Next.js doesn't know which params users will request (like `/blog/hello-world` or `/blog/123`), so you need to provide fallback UI using `<Suspense>` boundaries.
 
-You should use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params) to prerender your most popular routes at build time (e.g., `/blog/1`, `/blog/2`, `/blog/3`). This serves two purposes: it validates your route doesn't incorrectly access dynamic APIs like `cookies()` or `headers()`, and it creates static HTML files for instant loading of those specific routes.
+You should use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params) to prerender your most popular routes at build time (e.g., `/blog/1`, `/blog/2`, `/blog/3`). This serves two purposes:
 
-When you use `generateStaticParams`, Next.js also generates a static shell where params are treated as dynamic. When users request params not prerendered at build time, Next.js immediately sends this static shell (containing content like headers, navigation, and layout), while param-dependent content updates the UI when it's ready. This provides a better user experience than waiting for the entire page to render.
+- It validates that your route doesn't access dynamic APIs like `cookies()` or `headers()` during prerendering
+- It generates static HTML files for both the specific routes you list and a static shell for runtime params
+
+Prerendered routes load instantly, while runtime params use the static shell to show static content (like headers and navigation) immediately while param-dependent content updates when ready.
 
 The sections below show different patterns, from simplest (all runtime) to most optimized (prerendered samples, and caching). We recommend wrapping param access in Suspense boundaries to provide meaningful loading states.
 
