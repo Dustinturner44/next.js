@@ -301,6 +301,50 @@ export type Route =
       endpoint: Endpoint
     }
 
+/** Represents a reference from one module to another */
+export interface ModuleReference {
+  /** Index of the referenced module in the modules array */
+  index: number
+  /** The export name being used (e.g., "default", "named", "*") */
+  export: string
+  /**
+   * How the module is chunked:
+   * - "hoisted": Module is hoisted to a parent chunk
+   * - "sync": Synchronously imported
+   * - "async": Dynamically imported
+   * - "isolated": Isolated in its own chunk
+   * - "shared": Shared across multiple chunks
+   * - "traced": Traced for analysis
+   */
+  chunkingType: string
+}
+
+/** Information about a single module in the graph */
+export interface ModuleInfo {
+  /** Unique identifier for the module */
+  ident: string
+  /** File path of the module */
+  path: string
+  /** Depth in the module graph from the entry point */
+  depth: number
+  /** Size of the module in bytes */
+  size: number
+  /** Retained size including all dependencies */
+  retainedSize: number
+  /** Modules this module imports */
+  references: ModuleReference[]
+  /** Modules that import this module */
+  incomingReferences: ModuleReference[]
+}
+
+/** Snapshot of a module graph for an endpoint */
+export interface ModuleGraphSnapshot {
+  /** All modules in the graph */
+  modules: ModuleInfo[]
+  /** Indices of entry point modules */
+  entries: number[]
+}
+
 export interface Endpoint {
   /** Write files for the endpoint to disk. */
   writeToDisk(): Promise<TurbopackResult<WrittenEndpoint>>
@@ -320,6 +364,13 @@ export interface Endpoint {
   serverChanged(
     includeIssues: boolean
   ): Promise<AsyncIterableIterator<TurbopackResult>>
+
+  /**
+   * Get the module graph snapshot for this endpoint.
+   * Returns information about all modules and their dependencies.
+   * Note: This method may not be available in all Turbopack versions.
+   */
+  getModuleGraph?(): Promise<TurbopackResult<ModuleGraphSnapshot>>
 }
 
 interface EndpointConfig {

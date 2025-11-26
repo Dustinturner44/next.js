@@ -256,10 +256,14 @@ export const EVENT_MCP_TOOL_USAGE = 'NEXT_MCP_TOOL_USAGE'
 export type McpToolName =
   | 'mcp/get_errors'
   | 'mcp/get_logs'
+  | 'mcp/get_module_graph'
   | 'mcp/get_page_metadata'
   | 'mcp/get_project_metadata'
   | 'mcp/get_routes'
   | 'mcp/get_server_action_by_id'
+  | 'mcp/get_turbopack_entrypoints'
+  | 'mcp/query_turbopack_issues'
+  | 'mcp/query_module_in_entry'
 
 export type EventMcpToolUsage = {
   toolName: McpToolName

@@ -29,6 +29,8 @@ import type {
   Endpoint,
   HmrIdentifiers,
   Lockfile,
+  ModuleGraphSnapshot,
+  ModuleReference,
   PartialProjectOptions,
   Project,
   ProjectOptions,
@@ -845,6 +847,57 @@ function bindingToApi(
       )
       await serverSubscription.next()
       return serverSubscription
+    }
+
+    async getModuleGraph(): Promise<TurbopackResult<ModuleGraphSnapshot>> {
+      const bindingWithModuleGraph = binding as typeof binding & {
+        endpointGetModuleGraph?: (
+          endpoint: { __napiType: 'Endpoint' }
+        ) => Promise<
+          TurbopackResult<{ moduleGraphs: ModuleGraphSnapshot[] }>
+        >
+      }
+      if (!bindingWithModuleGraph.endpointGetModuleGraph) {
+        throw new Error(
+          'getModuleGraph is not available. This feature requires a newer version of Turbopack.'
+        )
+      }
+      const result = await bindingWithModuleGraph.endpointGetModuleGraph(
+        this._nativeEndpoint
+      )
+      // Combine all module graphs into a single snapshot
+      const combinedModules: ModuleGraphSnapshot['modules'] = []
+      const combinedEntries: ModuleGraphSnapshot['entries'] = []
+      let moduleOffset = 0
+      for (const graph of result.moduleGraphs) {
+        // Adjust entry indices by the current offset
+        for (const entryIdx of graph.entries) {
+          combinedEntries.push(entryIdx + moduleOffset)
+        }
+        // Add modules with adjusted reference indices
+        for (const module of graph.modules) {
+          combinedModules.push({
+            ...module,
+            references: module.references.map((ref: ModuleReference) => ({
+              ...ref,
+              index: ref.index + moduleOffset,
+            })),
+            incomingReferences: module.incomingReferences.map(
+              (ref: ModuleReference) => ({
+                ...ref,
+                index: ref.index + moduleOffset,
+              })
+            ),
+          })
+        }
+        moduleOffset += graph.modules.length
+      }
+      return {
+        modules: combinedModules,
+        entries: combinedEntries,
+        issues: result.issues,
+        diagnostics: result.diagnostics,
+      }
     }
   }
 

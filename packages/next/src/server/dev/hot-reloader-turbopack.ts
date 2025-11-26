@@ -793,6 +793,10 @@ export async function createHotReloaderTurbopack(
             getActiveConnectionCount: () =>
               clientsWithoutHtmlRequestId.size + clientsByHtmlRequestId.size,
             getDevServerUrl: () => process.env.__NEXT_PRIVATE_ORIGIN,
+            // Turbopack-specific options
+            getTurbopackProject: () => project,
+            getCurrentEntrypoints: () => currentEntrypoints,
+            getCurrentIssues: () => currentEntryIssues,
           }),
         ]
       : []),

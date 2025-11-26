@@ -921,6 +921,29 @@ impl ModuleGraph {
                 binding_usage: self.binding_usage,
             })
     }
+
+    pub async fn entries(&self) -> Result<Vec<ResolvedVc<Box<dyn Module>>>> {
+        let mut result = Vec::new();
+        for graph in &self.graphs {
+            let graph = graph.await?;
+            for entry in &graph.entries {
+                for module in entry.entries() {
+                    result.push(module);
+                }
+            }
+        }
+        Ok(result)
+    }
+
+    pub async fn has_entry(&self, entry: ResolvedVc<Box<dyn Module>>) -> Result<bool> {
+        for graph in &self.graphs {
+            let graph = graph.await?;
+            if graph.modules.contains_key(&entry) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
 }
 
 #[derive(

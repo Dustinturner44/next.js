@@ -951,5 +951,6 @@
   "950": "The manifests singleton was not initialized.",
   "951": "The client reference manifest for route \"%s\" does not exist.",
   "952": "Cannot access \"%s\" without a work store.",
-  "953": "This is a proxied client reference manifest. The property \"%s\" is not handled."
+  "953": "This is a proxied client reference manifest. The property \"%s\" is not handled.",
+  "954": "getModuleGraph is not available. This feature requires a newer version of Turbopack."
 }
