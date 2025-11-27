@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { redirectToServerAction } from './custom-action'
 
 export default function ClientPage() {
   useEffect(() => {
@@ -24,6 +25,8 @@ export default function ClientPage() {
     console.log('Client: Complex circular object:', circularObj)
     console.error('Client: This is an error message from client component')
     console.warn('Client: This is a warning message from client component')
+
+    redirectToServerAction()
   }, [])
 
   console.error('globalThis', globalThis)

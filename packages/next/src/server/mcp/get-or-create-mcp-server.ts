@@ -76,7 +76,9 @@ export const getOrCreateMcpServer = (options: McpServerOptions) => {
     registerGetModuleGraphTool(
       mcpServer,
       options.getTurbopackProject,
-      options.getCurrentEntrypoints
+      options.getCurrentEntrypoints,
+      () => options.projectPath,
+      () => options.distDir
     )
 
     registerQueryModuleInEntryTool(

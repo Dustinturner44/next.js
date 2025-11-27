@@ -3,6 +3,28 @@
  *
  * This tool checks whether a given module (package name or file path) is included
  * in an entry's bundle across different layers (server, client, etc.).
+ *
+ * Example inputs and expected outputs:
+ *
+ * 1. Package name query:
+ *    Input: module="react", entry="/client/page"
+ *    Output: Finds all modules containing "node_modules/react" in their path
+ *
+ * 2. File path query:
+ *    Input: module="app/client/page.tsx", entry="/client/page"
+ *    Output: Finds the page component module in both server (RSC) and client (HTML) layers
+ *
+ * 3. Partial path query:
+ *    Input: module="components/Button", entry="/dashboard"
+ *    Output: Finds any module whose path contains "components/Button"
+ *
+ * 4. Server Action query (NOTE: Server Actions are compiled differently):
+ *    Input: module="app/client/custom-action.ts", entry="/client/page"
+ *    Output: NOT FOUND - Server Actions with 'use server' are compiled into virtual
+ *            modules with paths like "app/client/data:abc123" (where abc123 is a hash).
+ *            The original filename is NOT preserved in the module graph.
+ *            To find server action references, search for "action-client-wrapper" or
+ *            the virtual module pattern "data:" instead.
  */
 import type { McpServer } from 'next/dist/compiled/@modelcontextprotocol/sdk/server/mcp'
 import type {
@@ -63,12 +85,17 @@ function matchesQuery(module: ModuleInfo, query: string): boolean {
   return false
 }
 
-function formatMatchResult(match: ModuleMatch): string {
+function formatMatchResult(match: ModuleMatch, showIdent = false): string {
   const lines = [
     `  [${match.index}] ${match.module.path}`,
     `      Size: ${formatBytes(match.module.size)} (retained: ${formatBytes(match.module.retainedSize)})`,
     `      Depth: ${match.module.depth}`,
   ]
+
+  // Show ident if it differs from path (useful for debugging virtual modules)
+  if (showIdent && match.module.ident !== match.module.path) {
+    lines.push(`      Ident: ${match.module.ident}`)
+  }
 
   if (match.module.incomingReferences.length > 0) {
     const importedBy = match.module.incomingReferences
@@ -246,10 +273,79 @@ export function registerQueryModuleInEntryTool(
         }
 
         if (results.size === 0) {
-          content.push({
-            type: 'text',
-            text: `\nModule "${moduleQuery}" was NOT found in any layer of this entry.`,
-          })
+          // Check if query might be a server action file - look for data: virtual modules
+          // in the same directory that could be compiled server actions
+          const queryDir = moduleQuery
+            .replace(/\\/g, '/')
+            .split('/')
+            .slice(0, -1)
+            .join('/')
+          const serverActionMatches: ModuleMatch[] = []
+
+          // Re-scan for potential server action virtual modules
+          for (const { layer, endpoint } of layers) {
+            if (typeof endpoint.getModuleGraph !== 'function') continue
+            try {
+              const graphResult = await endpoint.getModuleGraph()
+              const graph = graphResult as ModuleGraphSnapshot
+              if (!graph || !graph.modules) continue
+
+              for (let i = 0; i < graph.modules.length; i++) {
+                const module = graph.modules[i]
+                // Check for data: virtual modules in a matching directory
+                if (
+                  module.path.includes('data:') &&
+                  queryDir &&
+                  module.path.toLowerCase().includes(queryDir.toLowerCase())
+                ) {
+                  // Avoid duplicates
+                  if (
+                    !serverActionMatches.some(
+                      (m) => m.module.path === module.path && m.layer === layer
+                    )
+                  ) {
+                    serverActionMatches.push({ layer, module, index: i })
+                  }
+                }
+              }
+            } catch {
+              // Ignore errors
+            }
+          }
+
+          if (serverActionMatches.length > 0) {
+            content.push({
+              type: 'text',
+              text: `\nModule "${moduleQuery}" was NOT found directly, but found potential Server Action reference(s):`,
+            })
+            content.push({
+              type: 'text',
+              text: `\nNote: Files with 'use server' are compiled into virtual modules with "data:" paths.`,
+            })
+            content.push({
+              type: 'text',
+              text: `The original filename is not preserved in the module graph.\n`,
+            })
+
+            for (const match of serverActionMatches.slice(0, 5)) {
+              content.push({
+                type: 'text',
+                text: formatMatchResult(match, true),
+              })
+            }
+
+            if (serverActionMatches.length > 5) {
+              content.push({
+                type: 'text',
+                text: `  ... and ${serverActionMatches.length - 5} more potential matches`,
+              })
+            }
+          } else {
+            content.push({
+              type: 'text',
+              text: `\nModule "${moduleQuery}" was NOT found in any layer of this entry.`,
+            })
+          }
 
           if (unavailableLayers.length > 0) {
             content.push({

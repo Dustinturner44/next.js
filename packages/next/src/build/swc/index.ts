@@ -850,21 +850,14 @@ function bindingToApi(
     }
 
     async getModuleGraph(): Promise<TurbopackResult<ModuleGraphSnapshot>> {
-      const bindingWithModuleGraph = binding as typeof binding & {
-        endpointGetModuleGraph?: (
-          endpoint: { __napiType: 'Endpoint' }
-        ) => Promise<
-          TurbopackResult<{ moduleGraphs: ModuleGraphSnapshot[] }>
-        >
-      }
-      if (!bindingWithModuleGraph.endpointGetModuleGraph) {
+      if (!binding.endpointGetModuleGraph) {
         throw new Error(
           'getModuleGraph is not available. This feature requires a newer version of Turbopack.'
         )
       }
-      const result = await bindingWithModuleGraph.endpointGetModuleGraph(
+      const result = (await binding.endpointGetModuleGraph(
         this._nativeEndpoint
-      )
+      )) as TurbopackResult<{ moduleGraphs: ModuleGraphSnapshot[] }>
       // Combine all module graphs into a single snapshot
       const combinedModules: ModuleGraphSnapshot['modules'] = []
       const combinedEntries: ModuleGraphSnapshot['entries'] = []
