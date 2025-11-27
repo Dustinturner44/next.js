@@ -147,7 +147,7 @@ export default async function Page(props: PageProps<'/[locale]'>) {
 
 ### With Cache Components
 
-When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, params are runtime data that require special handling. During prerendering, Next.js doesn't know which params users will request (like `/blog/hello-world` or `/blog/123`), so you need to provide fallback UI using `<Suspense>` boundaries.
+When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, params are runtime data that require special handling. During prerendering, param values are unknown (like `/blog/hello-world` or `/blog/123`), so fallback UI using `<Suspense>` boundaries is required when accessing them.
 
 You should use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params) to prerender your most popular routes at build time (e.g., `/blog/1`, `/blog/2`, `/blog/3`). This serves two purposes:
 
@@ -162,12 +162,7 @@ The sections below show different patterns, from simplest (all runtime) to most 
 
 #### Without `generateStaticParams`
 
-The simplest approach. All params are runtime data.
-
-- **Build time**: No validation, no prerendering
-- **Prerendered params**: None
-- **Runtime params**: Reading params requires Suspense fallback UI (build fails without it), shell renders on-demand, UI updates when content resolves
-- **Caching**: Memory only (cleared on server restart)
+The simplest approach. All params are runtime data. Param access must be wrapped by Suspense fallback UI. Next.js generates a static shell at build time, and content loads on each request.
 
 ```tsx filename="app/blog/[slug]/page.tsx"
 import { Suspense } from 'react'
@@ -185,20 +180,26 @@ export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
 
 async function Content({ slug }: { slug: Promise<string> }) {
   const resolvedSlug = await slug
-  return <article>{/* Your content */}</article>
+  const res = await fetch(`https://api.vercel.app/blog/${resolvedSlug}`)
+  const post = await res.json()
+  return (
+    <article>
+      <h2>{post.title}</h2>
+      <p>{post.content}</p>
+    </article>
+  )
 }
 ```
 
 #### With `generateStaticParams`
 
-Enables build-time validation and prerendering of popular routes. Next.js generates both the prerendered param pages and a static shell (where params are treated as dynamic). When a runtime param is encountered, Next.js uses this static shell to render immediately while streaming param-dependent content.
+Prerender your most popular or high-value pages by providing params ahead of time. These pages are generated at build time for instant loading.
 
-- **Build time**: Validates route, prerenders samples (e.g., `/1`, `/2`, `/3`), generates static shell
-- **Prerendered params**: Instant - served from disk
-- **Runtime params**: Static shell renders immediately, UI updates when param-dependent content resolves
-- **Caching**: Memory only for runtime params (cleared on server restart)
+During the build process, the route is executed with the values returned from `generateStaticParams` to validate that any dynamic content or runtime data access is properly handled with Suspense or `use cache`.
 
-```tsx filename="app/blog/[slug]/page.tsx"
+For runtime params, the build process attempts to prerender a static shell treating params as runtime data. To enable disk caching (ISR-style) for runtime params and include param-specific content in the initial HTML, access params outside any Suspense boundaries, including parent boundaries like [`loading.tsx`](/docs/app/api-reference/file-conventions/loading):
+
+```tsx filename="app/blog/[slug]/page.tsx" highlight={5-7,10,22,24}
 import { Suspense } from 'react'
 
 export async function generateStaticParams() {
@@ -206,57 +207,34 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
+  const { slug } = await params
+
   return (
     <div>
       <h1>Blog Post</h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Content slug={params.then((p) => p.slug)} />
-      </Suspense>
+      <Content slug={slug} />
     </div>
   )
 }
 
-async function Content({ slug }: { slug: Promise<string> }) {
-  const resolvedSlug = await slug
-  return <article>{/* Your content */}</article>
-}
-```
-
-#### With `generateStaticParams` and `use cache`
-
-Provides disk persistence similar to ISR. Prerendered routes are instant, while runtime params wait for the full page to render on first request, then are cached to disk for subsequent visits.
-
-- **Build time**: Validates route, prerenders samples
-- **Prerendered params**: Instant - served from disk
-- **Runtime params**: First request waits for full page render, then cached to disk. Subsequent visits are instant.
-- **Caching**: Disk (persists across server restarts)
-
-Parent Suspense boundaries such as [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or layout Suspense wrapping children will prevent disk caching for runtime params.
-
-```tsx filename="app/blog/[slug]/page.tsx"
-import { cacheLife } from 'next/cache'
-
-export async function generateStaticParams() {
-  return [{ slug: '1' }, { slug: '2' }, { slug: '3' }]
-}
-
-export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
+async function Content({ slug }: { slug: string }) {
+  const post = await getPost(slug)
   return (
-    <div>
-      <h1>Blog Post</h1>
-      <Content slug={params.then((p) => p.slug)} />
-    </div>
+    <article>
+      <h2>{post.title}</h2>
+      <p>{post.content}</p>
+    </article>
   )
 }
 
-async function Content({ slug }: { slug: Promise<string> }) {
+async function getPost(slug: string) {
   'use cache'
-  cacheLife('days')
-  const resolvedSlug = await slug
-  // Fetch your data here
-  return <article>{/* Your content */}</article>
+  const res = await fetch(`https://api.vercel.app/blog/${slug}`)
+  return res.json()
 }
 ```
+
+Build-time validation only covers code paths that execute with the sample params. If your route has conditional logic that accesses runtime APIs (like `cookies()`) for certain param values not in your samples, those branches won't be validated at build time.
 
 ## Examples
 
