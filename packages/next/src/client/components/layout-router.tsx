@@ -187,105 +187,122 @@ class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerPr
     const { focusAndScrollRef, segmentPath } = this.props
 
     if (focusAndScrollRef.apply) {
-      // segmentPaths is an array of segment paths that should be scrolled to
-      // if the current segment path is not in the array, the scroll is not applied
-      // unless the array is empty, in which case the scroll is always applied
-      if (
-        focusAndScrollRef.segmentPaths.length !== 0 &&
-        !focusAndScrollRef.segmentPaths.some((scrollRefSegmentPath) =>
-          segmentPath.every((segment, index) =>
-            matchSegment(segment, scrollRefSegmentPath[index])
-          )
-        )
-      ) {
-        return
-      }
-
-      let domNode:
-        | ReturnType<typeof getHashFragmentDomNode>
-        | ReturnType<typeof findDOMNode> = null
-      const hashFragment = focusAndScrollRef.hashFragment
-
-      if (hashFragment) {
-        domNode = getHashFragmentDomNode(hashFragment)
-      }
-
-      // `findDOMNode` is tricky because it returns just the first child if the component is a fragment.
-      // This already caused a bug where the first child was a <link/> in head.
-      if (!domNode) {
-        domNode = findDOMNode(this)
-      }
-
-      // If there is no DOM node this layout-router level is skipped. It'll be handled higher-up in the tree.
-      if (!(domNode instanceof Element)) {
-        return
-      }
-
-      // Verify if the element is a HTMLElement and if we want to consider it for scroll behavior.
-      // If the element is skipped, try to select the next sibling and try again.
-      while (!(domNode instanceof HTMLElement) || shouldSkipElement(domNode)) {
-        if (process.env.NODE_ENV !== 'production') {
-          if (domNode.parentElement?.localName === 'head') {
-            // TODO: We enter this state when metadata was rendered as part of the page or via Next.js.
-            // This is always a bug in Next.js and caused by React hoisting metadata.
-            // We need to replace `findDOMNode` in favor of Fragment Refs (when available) so that we can skip over metadata.
-          }
-        }
-
-        // No siblings found that match the criteria are found, so handle scroll higher up in the tree instead.
-        if (domNode.nextElementSibling === null) {
-          return
-        }
-        domNode = domNode.nextElementSibling
-      }
-
-      // State is mutated to ensure that the focus and scroll is applied only once.
+      // Immediately clear apply flag to prevent duplicate scroll attempts
       focusAndScrollRef.apply = false
-      focusAndScrollRef.hashFragment = null
-      focusAndScrollRef.segmentPaths = []
+      // Capture values synchronously before async work
+      const hashFragment = focusAndScrollRef.hashFragment
+      const segmentPaths = focusAndScrollRef.segmentPaths
+      const onlyHashChange = focusAndScrollRef.onlyHashChange
 
-      disableSmoothScrollDuringRouteTransition(
-        () => {
-          // In case of hash scroll, we only need to scroll the element into view
+      // Use double rAF to guarantee scroll happens after paint and never blocks the commit
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // segmentPaths is an array of segment paths that should be scrolled to
+          // if the current segment path is not in the array, the scroll is not applied
+          // unless the array is empty, in which case the scroll is always applied
+          if (
+            segmentPaths.length !== 0 &&
+            !segmentPaths.some((scrollRefSegmentPath) =>
+              segmentPath.every((segment, index) =>
+                matchSegment(segment, scrollRefSegmentPath[index])
+              )
+            )
+          ) {
+            return
+          }
+
+          let domNode:
+            | ReturnType<typeof getHashFragmentDomNode>
+            | ReturnType<typeof findDOMNode> = null
+
           if (hashFragment) {
-            ;(domNode as HTMLElement).scrollIntoView()
+            domNode = getHashFragmentDomNode(hashFragment)
+          }
 
+          // `findDOMNode` is tricky because it returns just the first child if the component is a fragment.
+          // This already caused a bug where the first child was a <link/> in head.
+          if (!domNode) {
+            domNode = findDOMNode(this)
+          }
+
+          // If there is no DOM node this layout-router level is skipped. It'll be handled higher-up in the tree.
+          if (!(domNode instanceof Element)) {
             return
           }
-          // Store the current viewport height because reading `clientHeight` causes a reflow,
-          // and it won't change during this function.
-          const htmlElement = document.documentElement
-          const viewportHeight = htmlElement.clientHeight
 
-          // If the element's top edge is already in the viewport, exit early.
-          if (topOfElementInViewport(domNode as HTMLElement, viewportHeight)) {
-            return
+          // Verify if the element is a HTMLElement and if we want to consider it for scroll behavior.
+          // If the element is skipped, try to select the next sibling and try again.
+          while (
+            !(domNode instanceof HTMLElement) ||
+            shouldSkipElement(domNode)
+          ) {
+            if (process.env.NODE_ENV !== 'production') {
+              if (domNode.parentElement?.localName === 'head') {
+                // TODO: We enter this state when metadata was rendered as part of the page or via Next.js.
+                // This is always a bug in Next.js and caused by React hoisting metadata.
+                // We need to replace `findDOMNode` in favor of Fragment Refs (when available) so that we can skip over metadata.
+              }
+            }
+
+            // No siblings found that match the criteria are found, so handle scroll higher up in the tree instead.
+            if (domNode.nextElementSibling === null) {
+              return
+            }
+            domNode = domNode.nextElementSibling
           }
 
-          // Otherwise, try scrolling go the top of the document to be backward compatible with pages
-          // scrollIntoView() called on `<html/>` element scrolls horizontally on chrome and firefox (that shouldn't happen)
-          // We could use it to scroll horizontally following RTL but that also seems to be broken - it will always scroll left
-          // scrollLeft = 0 also seems to ignore RTL and manually checking for RTL is too much hassle so we will scroll just vertically
-          htmlElement.scrollTop = 0
+          // Clear remaining state to ensure the focus and scroll is applied only once.
+          focusAndScrollRef.hashFragment = null
+          focusAndScrollRef.segmentPaths = []
 
-          // Scroll to domNode if domNode is not in viewport when scrolled to top of document
-          if (!topOfElementInViewport(domNode as HTMLElement, viewportHeight)) {
-            // Scroll into view doesn't scroll horizontally by default when not needed
-            ;(domNode as HTMLElement).scrollIntoView()
-          }
-        },
-        {
-          // We will force layout by querying domNode position
-          dontForceLayout: true,
-          onlyHashChange: focusAndScrollRef.onlyHashChange,
-        }
-      )
+          disableSmoothScrollDuringRouteTransition(
+            () => {
+              // In case of hash scroll, we only need to scroll the element into view
+              if (hashFragment) {
+                ;(domNode as HTMLElement).scrollIntoView()
 
-      // Mutate after scrolling so that it can be read by `disableSmoothScrollDuringRouteTransition`
-      focusAndScrollRef.onlyHashChange = false
+                return
+              }
+              // Store the current viewport height because reading `clientHeight` causes a reflow,
+              // and it won't change during this function.
+              const htmlElement = document.documentElement
+              const viewportHeight = htmlElement.clientHeight
 
-      // Set focus on the element
-      domNode.focus()
+              // If the element's top edge is already in the viewport, exit early.
+              if (
+                topOfElementInViewport(domNode as HTMLElement, viewportHeight)
+              ) {
+                return
+              }
+
+              // Otherwise, try scrolling go the top of the document to be backward compatible with pages
+              // scrollIntoView() called on `<html/>` element scrolls horizontally on chrome and firefox (that shouldn't happen)
+              // We could use it to scroll horizontally following RTL but that also seems to be broken - it will always scroll left
+              // scrollLeft = 0 also seems to ignore RTL and manually checking for RTL is too much hassle so we will scroll just vertically
+              htmlElement.scrollTop = 0
+
+              // Scroll to domNode if domNode is not in viewport when scrolled to top of document
+              if (
+                !topOfElementInViewport(domNode as HTMLElement, viewportHeight)
+              ) {
+                // Scroll into view doesn't scroll horizontally by default when not needed
+                ;(domNode as HTMLElement).scrollIntoView()
+              }
+            },
+            {
+              // We will force layout by querying domNode position
+              dontForceLayout: true,
+              onlyHashChange: onlyHashChange,
+            }
+          )
+
+          // Mutate after scrolling so that it can be read by `disableSmoothScrollDuringRouteTransition`
+          focusAndScrollRef.onlyHashChange = false
+
+          // Set focus on the element
+          domNode.focus()
+        })
+      })
     }
   }
 
