@@ -222,17 +222,18 @@ async function Content({ slug }: { slug: Promise<string> }) {
 }
 ```
 
-#### With `generateStaticParams` and `use cache` on page
+#### With `generateStaticParams` and `use cache`
 
-Provides immediate UI for prerendered and previously visited routes, with disk persistence similar to ISR. When a runtime param is encountered, Next.js uses the static shell if it has visible content, or prerenders the full page (ISR-style) if the shell is empty.
+Provides disk persistence similar to ISR. Prerendered routes are instant, while runtime params wait for the full page to render on first request, then are cached to disk for subsequent visits.
 
-- **Build time**: Validates route, prerenders samples, generates static shell
+- **Build time**: Validates route, prerenders samples
 - **Prerendered params**: Instant - served from disk
-- **Runtime params**: Static shell renders immediately (if it has content), then streams param-dependent content. Full page is cached to disk after first visit.
+- **Runtime params**: First request waits for full page render, then cached to disk. Subsequent visits are instant.
 - **Caching**: Disk (persists across server restarts)
 
+Parent Suspense boundaries such as [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or layout Suspense wrapping children will prevent disk caching for runtime params.
+
 ```tsx filename="app/blog/[slug]/page.tsx"
-import { Suspense } from 'react'
 import { cacheLife } from 'next/cache'
 
 export async function generateStaticParams() {
@@ -240,28 +241,22 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
-  'use cache'
-  cacheLife('days')
   return (
     <div>
       <h1>Blog Post</h1>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Content slug={params.then((p) => p.slug)} />
-      </Suspense>
+      <Content slug={params.then((p) => p.slug)} />
     </div>
   )
 }
 
 async function Content({ slug }: { slug: Promise<string> }) {
+  'use cache'
+  cacheLife('days')
   const resolvedSlug = await slug
+  // Fetch your data here
   return <article>{/* Your content */}</article>
 }
 ```
-
-> **Good to know**:
->
-> - **Prefetching**: When navigating via `<Link>`, Next.js prefetches the static shell. For runtime params (not in `generateStaticParams`), any content that depends on the param value (such as `use cache` functions after `await params`) is not included in the prefetch and will be fetched during navigation, showing the Suspense fallback until ready.
-> - **Parent Suspense boundaries** (like [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) or a layout Suspense wrapping children) take precedence over page-level `use cache` for runtime params. While build-time params from `generateStaticParams` are still fully cached to disk, runtime params will use the parent fallback UI and stream with memory caching only - no disk files are created.
 
 ## Examples
 
