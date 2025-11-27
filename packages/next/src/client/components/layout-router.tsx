@@ -182,11 +182,24 @@ interface ScrollAndFocusHandlerProps {
   segmentPath: FlightSegmentPath
 }
 class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerProps> {
+  private rafId1: number | null = null
+  private rafId2: number | null = null
+
   handlePotentialScroll = () => {
     // Handle scroll and focus, it's only applied once in the first useEffect that triggers that changed.
     const { focusAndScrollRef, segmentPath } = this.props
 
     if (focusAndScrollRef.apply) {
+      // Cancel any pending scroll from a previous navigation
+      if (this.rafId1 !== null) {
+        cancelAnimationFrame(this.rafId1)
+        this.rafId1 = null
+      }
+      if (this.rafId2 !== null) {
+        cancelAnimationFrame(this.rafId2)
+        this.rafId2 = null
+      }
+
       // Immediately clear apply flag to prevent duplicate scroll attempts
       focusAndScrollRef.apply = false
       // Capture values synchronously before async work
@@ -195,8 +208,10 @@ class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerPr
       const onlyHashChange = focusAndScrollRef.onlyHashChange
 
       // Use double rAF to guarantee scroll happens after paint and never blocks the commit
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      this.rafId1 = requestAnimationFrame(() => {
+        this.rafId2 = requestAnimationFrame(() => {
+          this.rafId1 = null
+          this.rafId2 = null
           // segmentPaths is an array of segment paths that should be scrolled to
           // if the current segment path is not in the array, the scroll is not applied
           // unless the array is empty, in which case the scroll is always applied
@@ -314,6 +329,16 @@ class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerPr
     // Because this property is overwritten in handlePotentialScroll it's fine to always run it when true as it'll be set to false for subsequent renders.
     if (this.props.focusAndScrollRef.apply) {
       this.handlePotentialScroll()
+    }
+  }
+
+  componentWillUnmount() {
+    // Cancel any pending scroll operations
+    if (this.rafId1 !== null) {
+      cancelAnimationFrame(this.rafId1)
+    }
+    if (this.rafId2 !== null) {
+      cancelAnimationFrame(this.rafId2)
     }
   }
 

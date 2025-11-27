@@ -246,5 +246,117 @@ describe('router autoscrolling on navigation', () => {
         expect(await browser.eval(`window.scrollY`)).toBe(0)
       })
     })
+
+    it('should defer scroll to after requestAnimationFrame', async () => {
+      const browser = await webdriver(next.url, '/0/0/100/10000/page1')
+
+      await scrollTo(browser, { x: 0, y: 1000 })
+      expect(await getTopScroll(browser)).toBe(1000)
+
+      // Track when scroll happens relative to rAF callbacks
+      await browser.eval(`
+        window.scrollEvents = [];
+        window.rafCount = 0;
+
+        const originalRAF = window.requestAnimationFrame;
+        window.requestAnimationFrame = function(callback) {
+          window.rafCount++;
+          const rafId = window.rafCount;
+          return originalRAF.call(this, function() {
+            window.scrollEvents.push({ type: 'raf', id: rafId, scrollY: window.scrollY });
+            callback.apply(this, arguments);
+          });
+        };
+
+        const observer = new MutationObserver(() => {
+          window.scrollEvents.push({ type: 'mutation', scrollY: window.scrollY });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        const originalScrollTop = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop');
+        Object.defineProperty(document.documentElement, 'scrollTop', {
+          get() { return originalScrollTop.get.call(this); },
+          set(value) {
+            window.scrollEvents.push({ type: 'scroll', value, rafCount: window.rafCount });
+            originalScrollTop.set.call(this, value);
+          }
+        });
+      `)
+
+      // Trigger navigation
+      await browser.eval(`window.router.push("/0/0/100/10000/page2")`)
+
+      await waitForScrollToComplete(browser, { x: 0, y: 0 })
+
+      // Verify scroll happened after at least 2 rAF calls (double rAF)
+      const scrollEvents = await browser.eval('window.scrollEvents')
+      const scrollEvent = scrollEvents.find(
+        (e: any) => e.type === 'scroll' && e.value === 0
+      )
+
+      expect(scrollEvent).toBeDefined()
+      expect(scrollEvent.rafCount).toBeGreaterThanOrEqual(2)
+    })
+
+    it('should cancel pending scroll when new navigation occurs', async () => {
+      const browser = await webdriver(next.url, '/0/1000/100/3000/page1')
+
+      await scrollTo(browser, { x: 0, y: 2000 })
+      expect(await getTopScroll(browser)).toBe(2000)
+
+      // Track all scroll attempts with their target positions
+      await browser.eval(`
+        window.scrollAttempts = [];
+
+        const originalScrollTop = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop');
+        Object.defineProperty(document.documentElement, 'scrollTop', {
+          get() { return originalScrollTop.get.call(this); },
+          set(value) {
+            window.scrollAttempts.push({
+              time: performance.now(),
+              targetScrollY: value,
+              currentScrollY: originalScrollTop.get.call(this),
+              url: window.location.pathname
+            });
+            originalScrollTop.set.call(this, value);
+          }
+        });
+      `)
+
+      // Trigger rapid successive navigations
+      // page2 would scroll to y=1000, page3 would scroll to y=1000
+      // But the first navigation's rAF should be cancelled by the second
+      await browser.eval(`
+        window.router.push("/0/1000/100/3000/page2")
+        // Immediately push again before first navigation's rAF can fire
+        Promise.resolve().then(() => {
+          window.router.push("/0/1000/100/3000/page3")
+        })
+      `)
+
+      // Wait for scroll to the padded position (1000px from layout padding)
+      await waitForScrollToComplete(browser, { x: 0, y: 1000 })
+
+      // Wait to catch any delayed scrolls
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      const scrollAttempts = await browser.eval('window.scrollAttempts')
+      const finalUrl = await browser.eval('window.location.pathname')
+      const finalScrollY = await getTopScroll(browser)
+
+      // Should only have one scroll operation (setting scrollTop = 1000)
+      // Without the fix, we'd have 2 scroll operations
+      const scrollToPositionAttempts = scrollAttempts.filter(
+        (a: any) => a.targetScrollY === 1000
+      )
+      expect(scrollToPositionAttempts.length).toBe(1)
+
+      // Should end at page3 with correct scroll position
+      expect(finalUrl).toBe('/0/1000/100/3000/page3')
+      expect(finalScrollY).toBe(1000)
+
+      // The scroll should have happened after we reached page3, not page2
+      expect(scrollToPositionAttempts[0].url).toBe('/0/1000/100/3000/page3')
+    })
   })
 })
