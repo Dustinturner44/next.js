@@ -72,6 +72,8 @@ export function handleMutable(
         ? (mutable?.scrollableSegments ?? state.focusAndScrollRef.segmentPaths)
         : // If shouldScroll is false then we should not apply scroll and focus management.
           [],
+      rafId1: state.focusAndScrollRef.rafId1,
+      rafId2: state.focusAndScrollRef.rafId2,
     },
     // Apply cache.
     cache: mutable.cache ? mutable.cache : state.cache,

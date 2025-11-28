@@ -182,22 +182,19 @@ interface ScrollAndFocusHandlerProps {
   segmentPath: FlightSegmentPath
 }
 class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerProps> {
-  private rafId1: number | null = null
-  private rafId2: number | null = null
-
   handlePotentialScroll = () => {
     // Handle scroll and focus, it's only applied once in the first useEffect that triggers that changed.
     const { focusAndScrollRef, segmentPath } = this.props
 
     if (focusAndScrollRef.apply) {
       // Cancel any pending scroll from a previous navigation
-      if (this.rafId1 !== null) {
-        cancelAnimationFrame(this.rafId1)
-        this.rafId1 = null
+      if (focusAndScrollRef.rafId1 !== null) {
+        cancelAnimationFrame(focusAndScrollRef.rafId1)
+        focusAndScrollRef.rafId1 = null
       }
-      if (this.rafId2 !== null) {
-        cancelAnimationFrame(this.rafId2)
-        this.rafId2 = null
+      if (focusAndScrollRef.rafId2 !== null) {
+        cancelAnimationFrame(focusAndScrollRef.rafId2)
+        focusAndScrollRef.rafId2 = null
       }
 
       // Immediately clear apply flag to prevent duplicate scroll attempts
@@ -208,10 +205,10 @@ class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerPr
       const onlyHashChange = focusAndScrollRef.onlyHashChange
 
       // Use double rAF to guarantee scroll happens after paint and never blocks the commit
-      this.rafId1 = requestAnimationFrame(() => {
-        this.rafId2 = requestAnimationFrame(() => {
-          this.rafId1 = null
-          this.rafId2 = null
+      focusAndScrollRef.rafId1 = requestAnimationFrame(() => {
+        // Schedule second rAF before clearing rafId1 to avoid race condition
+        focusAndScrollRef.rafId2 = requestAnimationFrame(() => {
+          focusAndScrollRef.rafId2 = null
           // segmentPaths is an array of segment paths that should be scrolled to
           // if the current segment path is not in the array, the scroll is not applied
           // unless the array is empty, in which case the scroll is always applied
@@ -317,6 +314,8 @@ class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerPr
           // Set focus on the element
           domNode.focus()
         })
+        // Clear rafId1 after rafId2 is scheduled
+        focusAndScrollRef.rafId1 = null
       })
     }
   }
@@ -333,13 +332,8 @@ class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerPr
   }
 
   componentWillUnmount() {
-    // Cancel any pending scroll operations
-    if (this.rafId1 !== null) {
-      cancelAnimationFrame(this.rafId1)
-    }
-    if (this.rafId2 !== null) {
-      cancelAnimationFrame(this.rafId2)
-    }
+    // Don't cancel rAF on unmount - the callbacks need to execute even if this instance unmounts
+    // The rafId1/rafId2 are stored in the shared focusAndScrollRef, and the next navigation will cancel them if needed
   }
 
   render() {

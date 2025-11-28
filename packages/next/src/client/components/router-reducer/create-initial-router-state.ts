@@ -90,6 +90,8 @@ export function createInitialRouterState({
       onlyHashChange: false,
       hashFragment: null,
       segmentPaths: [],
+      rafId1: null,
+      rafId2: null,
     },
     canonicalUrl,
     renderedSearch: initialRenderedSearch,
