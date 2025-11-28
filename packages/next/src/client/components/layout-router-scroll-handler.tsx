@@ -179,7 +179,7 @@ function scrollToTarget(
         return
       }
 
-      // Otherwise, try scrolling go the top of the document to be backward compatible with pages
+      // Otherwise, try scrolling to the top of the document to be backward compatible with pages
       // scrollIntoView() called on `<html/>` element scrolls horizontally on chrome and firefox (that shouldn't happen)
       // We could use it to scroll horizontally following RTL but that also seems to be broken - it will always scroll left
       // scrollLeft = 0 also seems to ignore RTL and manually checking for RTL is too much hassle so we will scroll just vertically
@@ -223,9 +223,9 @@ class ScrollRestorationState {
     // First rAF runs after React commit, second rAF runs after browser paint.
     // This ensures the scroll never blocks React's rendering work and doesn't cause layout thrashing.
     this.rafId1 = requestAnimationFrame(() => {
-      this.rafId1 = null
+      this.rafId1 = null // Clear after first rAF completes
       this.rafId2 = requestAnimationFrame(() => {
-        this.rafId2 = null
+        this.rafId2 = null // Clear after second rAF completes
         callback()
       })
     })
@@ -253,9 +253,13 @@ export class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHa
       // Cancel any pending scroll from a previous navigation
       scrollRestorationState.cancelPendingScroll()
 
-      // Immediately clear apply flag to prevent duplicate scroll attempts
+      // Immediately clear apply flag to prevent duplicate scroll attempts.
+      // This is the only state cleared synchronously - it acts as a lock to ensure
+      // only the first component that sees apply=true will handle the scroll.
       focusAndScrollRef.apply = false
-      // Capture values synchronously before async work
+
+      // Capture values synchronously before async work to avoid race conditions
+      // with subsequent navigations that might mutate focusAndScrollRef.
       const hashFragment = focusAndScrollRef.hashFragment
       const segmentPaths = focusAndScrollRef.segmentPaths
       const onlyHashChange = focusAndScrollRef.onlyHashChange
@@ -272,7 +276,9 @@ export class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHa
           return
         }
 
-        // Clear state before scrolling
+        // Clear state only after successfully finding the target.
+        // We don't clear these synchronously because if the callback bails out early,
+        // a higher-level component might need these values to handle the scroll instead.
         focusAndScrollRef.hashFragment = null
         focusAndScrollRef.segmentPaths = []
 
