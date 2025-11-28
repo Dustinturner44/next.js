@@ -45,6 +45,7 @@ import {
 } from '../../shared/lib/hooks-client-context.shared-runtime'
 import { getParamValueFromCacheKey } from '../route-params'
 import type { Params } from '../../server/request/params'
+import { matchSegment } from './match-segments'
 
 /**
  * Add refetch marker to router state at the point of the current layout segment.
