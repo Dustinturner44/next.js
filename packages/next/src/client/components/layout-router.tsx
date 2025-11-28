@@ -11,10 +11,7 @@ import type {
   Segment,
 } from '../../shared/lib/app-router-types'
 import type { ErrorComponent } from './error-boundary'
-import {
-  ACTION_SERVER_PATCH,
-  type FocusAndScrollRef,
-} from './router-reducer/router-reducer-types'
+import { ACTION_SERVER_PATCH } from './router-reducer/router-reducer-types'
 
 import React, {
   Activity,
@@ -26,7 +23,6 @@ import React, {
   type JSX,
   type ActivityProps,
 } from 'react'
-import ReactDOM from 'react-dom'
 import {
   LayoutRouterContext,
   GlobalLayoutRouterContext,
@@ -35,9 +31,8 @@ import {
 import { fetchServerResponse } from './router-reducer/fetch-server-response'
 import { unresolvedThenable } from './unresolved-thenable'
 import { ErrorBoundary } from './error-boundary'
-import { matchSegment } from './match-segments'
-import { disableSmoothScrollDuringRouteTransition } from '../../shared/lib/router/utils/disable-smooth-scroll'
 import { RedirectBoundary } from './redirect-boundary'
+import { InnerScrollAndFocusHandler } from './layout-router-scroll-handler'
 import { HTTPAccessFallbackBoundary } from './http-access-fallback/error-boundary'
 import { createRouterCacheKey } from './router-reducer/create-router-cache-key'
 import { hasInterceptionRouteInCurrentTree } from './router-reducer/reducers/has-interception-route-in-current-tree'
@@ -99,246 +94,6 @@ function walkAddRefetch(
   }
 
   return treeToRecreate
-}
-
-const __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = (
-  ReactDOM as any
-).__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
-
-// TODO-APP: Replace with new React API for finding dom nodes without a `ref` when available
-/**
- * Wraps ReactDOM.findDOMNode with additional logic to hide React Strict Mode warning
- */
-function findDOMNode(
-  instance: React.ReactInstance | null | undefined
-): Element | Text | null {
-  // Tree-shake for server bundle
-  if (typeof window === 'undefined') return null
-
-  // __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE.findDOMNode is null during module init.
-  // We need to lazily reference it.
-  const internal_reactDOMfindDOMNode =
-    __DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE.findDOMNode
-  return internal_reactDOMfindDOMNode(instance)
-}
-
-const rectProperties = [
-  'bottom',
-  'height',
-  'left',
-  'right',
-  'top',
-  'width',
-  'x',
-  'y',
-] as const
-/**
- * Check if a HTMLElement is hidden or fixed/sticky position
- */
-function shouldSkipElement(element: HTMLElement) {
-  // we ignore fixed or sticky positioned elements since they'll likely pass the "in-viewport" check
-  // and will result in a situation we bail on scroll because of something like a fixed nav,
-  // even though the actual page content is offscreen
-  if (['sticky', 'fixed'].includes(getComputedStyle(element).position)) {
-    return true
-  }
-
-  // Uses `getBoundingClientRect` to check if the element is hidden instead of `offsetParent`
-  // because `offsetParent` doesn't consider document/body
-  const rect = element.getBoundingClientRect()
-  return rectProperties.every((item) => rect[item] === 0)
-}
-
-/**
- * Check if the top corner of the HTMLElement is in the viewport.
- */
-function topOfElementInViewport(element: HTMLElement, viewportHeight: number) {
-  const rect = element.getBoundingClientRect()
-  return rect.top >= 0 && rect.top <= viewportHeight
-}
-
-/**
- * Find the DOM node for a hash fragment.
- * If `top` the page has to scroll to the top of the page. This mirrors the browser's behavior.
- * If the hash fragment is an id, the page has to scroll to the element with that id.
- * If the hash fragment is a name, the page has to scroll to the first element with that name.
- */
-function getHashFragmentDomNode(hashFragment: string) {
-  // If the hash fragment is `top` the page has to scroll to the top of the page.
-  if (hashFragment === 'top') {
-    return document.body
-  }
-
-  // If the hash fragment is an id, the page has to scroll to the element with that id.
-  return (
-    document.getElementById(hashFragment) ??
-    // If the hash fragment is a name, the page has to scroll to the first element with that name.
-    document.getElementsByName(hashFragment)[0]
-  )
-}
-interface ScrollAndFocusHandlerProps {
-  focusAndScrollRef: FocusAndScrollRef
-  children: React.ReactNode
-  segmentPath: FlightSegmentPath
-}
-class InnerScrollAndFocusHandler extends React.Component<ScrollAndFocusHandlerProps> {
-  handlePotentialScroll = () => {
-    // Handle scroll and focus, it's only applied once in the first useEffect that triggers that changed.
-    const { focusAndScrollRef, segmentPath } = this.props
-
-    if (focusAndScrollRef.apply) {
-      // Cancel any pending scroll from a previous navigation
-      if (focusAndScrollRef.rafId1 !== null) {
-        cancelAnimationFrame(focusAndScrollRef.rafId1)
-        focusAndScrollRef.rafId1 = null
-      }
-      if (focusAndScrollRef.rafId2 !== null) {
-        cancelAnimationFrame(focusAndScrollRef.rafId2)
-        focusAndScrollRef.rafId2 = null
-      }
-
-      // Immediately clear apply flag to prevent duplicate scroll attempts
-      focusAndScrollRef.apply = false
-      // Capture values synchronously before async work
-      const hashFragment = focusAndScrollRef.hashFragment
-      const segmentPaths = focusAndScrollRef.segmentPaths
-      const onlyHashChange = focusAndScrollRef.onlyHashChange
-
-      // Use double rAF to guarantee scroll happens after paint and never blocks the commit
-      focusAndScrollRef.rafId1 = requestAnimationFrame(() => {
-        // Schedule second rAF before clearing rafId1 to avoid race condition
-        focusAndScrollRef.rafId2 = requestAnimationFrame(() => {
-          focusAndScrollRef.rafId2 = null
-          // segmentPaths is an array of segment paths that should be scrolled to
-          // if the current segment path is not in the array, the scroll is not applied
-          // unless the array is empty, in which case the scroll is always applied
-          if (
-            segmentPaths.length !== 0 &&
-            !segmentPaths.some((scrollRefSegmentPath) =>
-              segmentPath.every((segment, index) =>
-                matchSegment(segment, scrollRefSegmentPath[index])
-              )
-            )
-          ) {
-            return
-          }
-
-          let domNode:
-            | ReturnType<typeof getHashFragmentDomNode>
-            | ReturnType<typeof findDOMNode> = null
-
-          if (hashFragment) {
-            domNode = getHashFragmentDomNode(hashFragment)
-          }
-
-          // `findDOMNode` is tricky because it returns just the first child if the component is a fragment.
-          // This already caused a bug where the first child was a <link/> in head.
-          if (!domNode) {
-            domNode = findDOMNode(this)
-          }
-
-          // If there is no DOM node this layout-router level is skipped. It'll be handled higher-up in the tree.
-          if (!(domNode instanceof Element)) {
-            return
-          }
-
-          // Verify if the element is a HTMLElement and if we want to consider it for scroll behavior.
-          // If the element is skipped, try to select the next sibling and try again.
-          while (
-            !(domNode instanceof HTMLElement) ||
-            shouldSkipElement(domNode)
-          ) {
-            if (process.env.NODE_ENV !== 'production') {
-              if (domNode.parentElement?.localName === 'head') {
-                // TODO: We enter this state when metadata was rendered as part of the page or via Next.js.
-                // This is always a bug in Next.js and caused by React hoisting metadata.
-                // We need to replace `findDOMNode` in favor of Fragment Refs (when available) so that we can skip over metadata.
-              }
-            }
-
-            // No siblings found that match the criteria are found, so handle scroll higher up in the tree instead.
-            if (domNode.nextElementSibling === null) {
-              return
-            }
-            domNode = domNode.nextElementSibling
-          }
-
-          // Clear remaining state to ensure the focus and scroll is applied only once.
-          focusAndScrollRef.hashFragment = null
-          focusAndScrollRef.segmentPaths = []
-
-          disableSmoothScrollDuringRouteTransition(
-            () => {
-              // In case of hash scroll, we only need to scroll the element into view
-              if (hashFragment) {
-                ;(domNode as HTMLElement).scrollIntoView()
-
-                return
-              }
-              // Store the current viewport height because reading `clientHeight` causes a reflow,
-              // and it won't change during this function.
-              const htmlElement = document.documentElement
-              const viewportHeight = htmlElement.clientHeight
-
-              // If the element's top edge is already in the viewport, exit early.
-              if (
-                topOfElementInViewport(domNode as HTMLElement, viewportHeight)
-              ) {
-                return
-              }
-
-              // Otherwise, try scrolling go the top of the document to be backward compatible with pages
-              // scrollIntoView() called on `<html/>` element scrolls horizontally on chrome and firefox (that shouldn't happen)
-              // We could use it to scroll horizontally following RTL but that also seems to be broken - it will always scroll left
-              // scrollLeft = 0 also seems to ignore RTL and manually checking for RTL is too much hassle so we will scroll just vertically
-              htmlElement.scrollTop = 0
-
-              // Scroll to domNode if domNode is not in viewport when scrolled to top of document
-              if (
-                !topOfElementInViewport(domNode as HTMLElement, viewportHeight)
-              ) {
-                // Scroll into view doesn't scroll horizontally by default when not needed
-                ;(domNode as HTMLElement).scrollIntoView()
-              }
-            },
-            {
-              // We will force layout by querying domNode position
-              dontForceLayout: true,
-              onlyHashChange: onlyHashChange,
-            }
-          )
-
-          // Mutate after scrolling so that it can be read by `disableSmoothScrollDuringRouteTransition`
-          focusAndScrollRef.onlyHashChange = false
-
-          // Set focus on the element
-          domNode.focus()
-        })
-        // Clear rafId1 after rafId2 is scheduled
-        focusAndScrollRef.rafId1 = null
-      })
-    }
-  }
-
-  componentDidMount() {
-    this.handlePotentialScroll()
-  }
-
-  componentDidUpdate() {
-    // Because this property is overwritten in handlePotentialScroll it's fine to always run it when true as it'll be set to false for subsequent renders.
-    if (this.props.focusAndScrollRef.apply) {
-      this.handlePotentialScroll()
-    }
-  }
-
-  componentWillUnmount() {
-    // Don't cancel rAF on unmount - the callbacks need to execute even if this instance unmounts
-    // The rafId1/rafId2 are stored in the shared focusAndScrollRef, and the next navigation will cancel them if needed
-  }
-
-  render() {
-    return this.props.children
-  }
 }
 
 function ScrollAndFocusHandler({

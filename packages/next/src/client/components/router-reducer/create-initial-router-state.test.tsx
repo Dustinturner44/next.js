@@ -115,8 +115,6 @@ describe('createInitialRouterState', () => {
         onlyHashChange: false,
         hashFragment: null,
         segmentPaths: [],
-        rafId1: null,
-        rafId2: null,
       },
       cache: expectedCache,
       nextUrl: '/linking',

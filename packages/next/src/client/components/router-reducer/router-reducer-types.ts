@@ -195,14 +195,6 @@ export type FocusAndScrollRef = {
    * If only the URLs hash fragment changed
    */
   onlyHashChange: boolean
-  /**
-   * Request animation frame ID for the first rAF in double rAF pattern
-   */
-  rafId1: number | null
-  /**
-   * Request animation frame ID for the second rAF in double rAF pattern
-   */
-  rafId2: number | null
 }
 
 /**
