@@ -736,6 +736,16 @@ export async function createHotReloaderTurbopack(
                   console.log(
                     `  Import: ${boundary.importInfo.importStatement}`
                   )
+                  if (boundary.jsxLocation) {
+                    console.log(
+                      `  JSX Location: ${boundary.jsxLocation.file}:${boundary.jsxLocation.line}:${boundary.jsxLocation.column}`
+                    )
+                    console.log(
+                      `  JSX Span: ${boundary.jsxLocation.spanStart}-${boundary.jsxLocation.spanEnd}`
+                    )
+                  } else {
+                    console.log(`  JSX Location: Not found`)
+                  }
                 }
                 console.log('==========================================\n')
               }

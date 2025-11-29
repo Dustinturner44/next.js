@@ -77,6 +77,7 @@ export interface NapiBoundary {
   clientFile: string
   importInfo: NapiImportInfo
   props: Array<NapiProp>
+  jsxLocation?: NapiJsxLocation
 }
 /** Information about the import statement */
 export interface NapiImportInfo {
@@ -96,6 +97,14 @@ export interface NapiSourceLocation {
   file: string
   line: number
   column: number
+}
+/** JSX element location with span information */
+export interface NapiJsxLocation {
+  file: string
+  line: number
+  column: number
+  spanStart: number
+  spanEnd: number
 }
 export interface NapiEndpointConfig {}
 export interface NapiServerPath {

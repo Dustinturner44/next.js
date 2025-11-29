@@ -17,7 +17,9 @@ use turbo_tasks::{Completion, Effects, OperationVc, ReadRef, Vc};
 use turbopack_core::{diagnostics::PlainDiagnostic, issue::PlainIssue};
 
 use crate::next_api::{
-    boundary::{NapiBoundary, NapiBoundaryAnalysis, NapiImportInfo, NapiSourceLocation},
+    boundary::{
+        NapiBoundary, NapiBoundaryAnalysis, NapiImportInfo, NapiJsxLocation, NapiSourceLocation,
+    },
     utils::{
         DetachedVc, NapiDiagnostic, NapiIssue, RootTask, TurbopackResult,
         strongly_consistent_catch_collectables, subscribe,
@@ -324,6 +326,13 @@ pub async fn endpoint_get_boundaries(
                 import_statement: "// Client component imported".to_string(),
             },
             props: vec![],
+            jsx_location: data.jsx_location.map(|loc| NapiJsxLocation {
+                file: loc.file,
+                line: loc.line,
+                column: loc.column,
+                span_start: loc.span_start,
+                span_end: loc.span_end,
+            }),
         })
         .collect();
 

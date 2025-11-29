@@ -18,6 +18,7 @@ pub struct NapiBoundary {
     pub client_file: String,
     pub import_info: NapiImportInfo,
     pub props: Vec<NapiProp>,
+    pub jsx_location: Option<NapiJsxLocation>,
 }
 
 /// Information about the import statement
@@ -46,4 +47,15 @@ pub struct NapiSourceLocation {
     pub file: String,
     pub line: u32,
     pub column: u32,
+}
+
+/// JSX element location with span information
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct NapiJsxLocation {
+    pub file: String,
+    pub line: u32,
+    pub column: u32,
+    pub span_start: u32,
+    pub span_end: u32,
 }
