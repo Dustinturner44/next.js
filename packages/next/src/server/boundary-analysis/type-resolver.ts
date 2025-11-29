@@ -37,6 +37,13 @@ export interface PropsTypeInfo {
    * Map of prop names to their actual JSX attribute values (source code)
    */
   propValues: Record<string, string>
+
+  /**
+   * Map tracking the source of each sensitive detection
+   * Key: full path like "credentials.password"
+   * Value: source expression like "(z=user).credentials.password" or "y=user.credentials.password"
+   */
+  sensitiveSource: Record<string, string>
 }
 
 export interface JsxLocation {
@@ -129,75 +136,13 @@ export async function resolvePropsType(
       ? jsxElement.openingElement
       : jsxElement
 
-    // Instead of analyzing the component's props type,
-    // analyze the types of the actual expressions being passed as props
+    // Analyze the types of the actual expressions being passed as props
     const attributes = openingElement.attributes.properties
     const propNames: string[] = []
     const propValues: Record<string, string> = {}
-    const propsToAnalyze: Array<{ name: string; type: ts.Type }> = []
+    const sensitiveSource: Record<string, string> = {}
+    const typeParts: string[] = []
 
-    // Extract each prop and its expression type
-    for (const attr of attributes) {
-      if (typescript.isJsxAttribute(attr)) {
-        const propName = attr.name.getText(sourceFile)
-        propNames.push(propName)
-
-        if (attr.initializer) {
-          let expression: ts.Expression | undefined
-
-          if (typescript.isJsxExpression(attr.initializer)) {
-            // Get the expression inside {}
-            expression = attr.initializer.expression
-          } else if (typescript.isStringLiteral(attr.initializer)) {
-            // String literal value
-            expression = attr.initializer
-          }
-
-          if (expression) {
-            // Get the source text
-            propValues[propName] = expression.getText(sourceFile)
-
-            // Get the TYPE of the expression being passed
-            const exprType = typeChecker.getTypeAtLocation(expression)
-            propsToAnalyze.push({ name: propName, type: exprType })
-
-            console.log(
-              `[TYPE_RESOLVER] Prop ${propName}: ${typeChecker.typeToString(exprType)}`
-            )
-          }
-        }
-      } else if (typescript.isJsxSpreadAttribute(attr)) {
-        // Handle spread attributes
-        const spreadExpr = attr.expression
-        const spreadText = spreadExpr.getText(sourceFile)
-        propValues['...' + spreadText] = spreadText
-
-        // Get the type of the spread expression
-        const spreadType = typeChecker.getTypeAtLocation(spreadExpr)
-        const spreadProps = spreadType.getProperties()
-
-        // Expand properties from spread
-        for (const spreadProp of spreadProps) {
-          const spreadPropName = spreadProp.getName()
-          propNames.push(spreadPropName)
-          const spreadPropType = typeChecker.getTypeOfSymbolAtLocation(
-            spreadProp,
-            spreadExpr
-          )
-          propsToAnalyze.push({ name: spreadPropName, type: spreadPropType })
-        }
-      }
-    }
-
-    // Build type string from actual expression types
-    const typeString = propsToAnalyze
-      .map(
-        (p) =>
-          `${p.name}: ${typeChecker.typeToString(p.type, undefined, typescript.TypeFormatFlags.NoTruncation)}`
-      )
-      .join('; ')
-
-    // Analyze each prop's expression type recursively
     const sensitivePatterns = {
       password: /password|pwd|passwd/i,
       secret: /secret|private/i,
@@ -222,26 +167,184 @@ export async function resolvePropsType(
       credential: [] as string[],
     }
 
-    // Analyze the type of each expression being passed
-    for (const { name, type } of propsToAnalyze) {
-      analyzePropType(
-        name,
-        type,
-        typeChecker,
-        typescript,
-        sensitivePatterns,
-        sensitiveFlags,
-        sensitiveProps,
-        '' // empty path prefix for top-level props
-      )
+    // Process each JSX attribute
+    for (const attr of attributes) {
+      if (typescript.isJsxAttribute(attr)) {
+        const propName = attr.name.getText(sourceFile)
+        propNames.push(propName)
+
+        if (attr.initializer) {
+          let expression: ts.Expression | undefined
+
+          if (typescript.isJsxExpression(attr.initializer)) {
+            expression = attr.initializer.expression
+          } else if (typescript.isStringLiteral(attr.initializer)) {
+            expression = attr.initializer
+          }
+
+          if (expression) {
+            const exprText = expression.getText(sourceFile)
+            propValues[propName] = exprText
+
+            // Get the TYPE of the expression
+            const exprType = typeChecker.getTypeAtLocation(expression)
+            const typeStr = typeChecker.typeToString(exprType)
+            typeParts.push(`${propName}: ${typeStr}`)
+
+            console.log(`[TYPE_RESOLVER] Prop ${propName}: ${typeStr}`)
+
+            // Check if type is a function
+            const signatures = exprType.getCallSignatures()
+            const isFunctionType = signatures.length > 0
+
+            // Check if type is primitive
+            const isPrimitive =
+              (exprType.flags & typescript.TypeFlags.String) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.Number) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.Boolean) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.StringLiteral) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.NumberLiteral) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.BooleanLiteral) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.Null) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.Undefined) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.Void) !== 0 ||
+              (exprType.flags & typescript.TypeFlags.Any) !== 0
+
+            // Check if type is an object (not primitive, not function, has properties)
+            const properties = exprType.getProperties()
+            const isObjectType =
+              !isPrimitive && !isFunctionType && properties.length > 0
+
+            if (isFunctionType) {
+              console.log(
+                `[TYPE_RESOLVER] Warning: ${propName} is a function (non-serializable)`
+              )
+            } else if (isObjectType) {
+              // OBJECT TYPE: Recursive type analysis
+              // Source format: (propName=identifier).path
+              let sourcePrefix = propName
+              if (typescript.isIdentifier(expression)) {
+                const identifier = exprText
+                sourcePrefix = `(${propName}=${identifier})`
+                console.log(
+                  `[TYPE_RESOLVER] Object type - will recurse with source: ${sourcePrefix}`
+                )
+              }
+
+              analyzePropType(
+                propName,
+                exprType,
+                typeChecker,
+                typescript,
+                sensitivePatterns,
+                sensitiveFlags,
+                sensitiveProps,
+                '',
+                sourcePrefix,
+                sensitiveSource
+              )
+            } else {
+              // PRIMITIVE TYPE: Check identifier/property name
+              if (typescript.isIdentifier(expression)) {
+                // Simple identifier: x={apiKey}
+                // Check identifier name, source: x=apiKey
+                const identifier = exprText
+                console.log(
+                  `[TYPE_RESOLVER] Primitive with identifier: ${identifier}`
+                )
+
+                const matches = matchesSensitivePattern(
+                  identifier,
+                  sensitivePatterns
+                )
+                if (matches.length > 0) {
+                  const source = `${propName}=${identifier}`
+                  const fullPath = identifier
+
+                  for (const matchType of matches) {
+                    sensitiveFlags[
+                      `has${matchType.charAt(0).toUpperCase() + matchType.slice(1)}` as keyof SensitiveFlags
+                    ] = true
+                    sensitiveProps[matchType].push(fullPath)
+                  }
+
+                  sensitiveSource[fullPath] = source
+                  console.log(
+                    `[TYPE_RESOLVER] Detected sensitive identifier: ${fullPath} from ${source}`
+                  )
+                }
+              } else if (typescript.isPropertyAccessExpression(expression)) {
+                // Property chain: y={user.credentials.password}
+                // Check LAST property, source: y=user.credentials.password
+                const lastProp = expression.name.getText(sourceFile)
+                console.log(
+                  `[TYPE_RESOLVER] Primitive with property chain, checking last prop: ${lastProp}`
+                )
+
+                const matches = matchesSensitivePattern(
+                  lastProp,
+                  sensitivePatterns
+                )
+                if (matches.length > 0) {
+                  const source = `${propName}=${exprText}`
+                  const fullPath = lastProp
+
+                  for (const matchType of matches) {
+                    sensitiveFlags[
+                      `has${matchType.charAt(0).toUpperCase() + matchType.slice(1)}` as keyof SensitiveFlags
+                    ] = true
+                    sensitiveProps[matchType].push(fullPath)
+                  }
+
+                  sensitiveSource[fullPath] = source
+                  console.log(
+                    `[TYPE_RESOLVER] Detected sensitive property: ${fullPath} from ${source}`
+                  )
+                }
+              }
+            }
+          }
+        }
+      } else if (typescript.isJsxSpreadAttribute(attr)) {
+        // Handle spread attributes
+        const spreadExpr = attr.expression
+        const spreadText = spreadExpr.getText(sourceFile)
+        propValues['...' + spreadText] = spreadText
+
+        const spreadType = typeChecker.getTypeAtLocation(spreadExpr)
+        const spreadProps = spreadType.getProperties()
+
+        for (const spreadProp of spreadProps) {
+          const spreadPropName = spreadProp.getName()
+          propNames.push(spreadPropName)
+          const spreadPropType = typeChecker.getTypeOfSymbolAtLocation(
+            spreadProp,
+            spreadExpr
+          )
+
+          analyzePropType(
+            spreadPropName,
+            spreadPropType,
+            typeChecker,
+            typescript,
+            sensitivePatterns,
+            sensitiveFlags,
+            sensitiveProps,
+            '',
+            `(...${spreadText}).${spreadPropName}`,
+            sensitiveSource
+          )
+        }
+      }
     }
 
     return {
-      typeString,
+      typeString: `{ ${typeParts.join('; ')} }`,
       propNames,
       sensitiveFlags,
       sensitiveProps,
       propValues,
+      sensitiveSource,
     }
   } catch (error) {
     console.log('[TYPE_RESOLVER] Error:', error)
@@ -308,7 +411,26 @@ interface SensitivePropsMap {
 }
 
 /**
+ * Check if a name matches sensitive patterns
+ */
+function matchesSensitivePattern(
+  name: string,
+  patterns: SensitivePatterns
+): Array<keyof SensitivePropsMap> {
+  const matches: Array<keyof SensitivePropsMap> = []
+
+  if (patterns.password.test(name)) matches.push('password')
+  if (patterns.secret.test(name)) matches.push('secret')
+  if (patterns.token.test(name)) matches.push('token')
+  if (patterns.apiKey.test(name)) matches.push('apiKey')
+  if (patterns.credential.test(name)) matches.push('credential')
+
+  return matches
+}
+
+/**
  * Recursively analyze a prop's type for sensitive data patterns
+ * @param sourcePrefix - Source expression like "(z=user)" or "y=user.credentials.password"
  */
 function analyzePropType(
   propPath: string,
@@ -318,7 +440,9 @@ function analyzePropType(
   patterns: SensitivePatterns,
   flags: SensitiveFlags,
   propsMap: SensitivePropsMap,
-  pathPrefix: string
+  pathPrefix: string,
+  sourcePrefix: string,
+  sourceMap: Record<string, string>
 ): void {
   const fullPath = pathPrefix ? `${pathPrefix}.${propPath}` : propPath
 
@@ -345,25 +469,29 @@ function analyzePropType(
 
   if (isPrimitive) {
     // For primitives, check the property name for sensitive patterns
-    if (patterns.password.test(propPath)) {
-      flags.hasPassword = true
-      propsMap.password.push(fullPath)
-    }
-    if (patterns.secret.test(propPath)) {
-      flags.hasSecret = true
-      propsMap.secret.push(fullPath)
-    }
-    if (patterns.token.test(propPath)) {
-      flags.hasToken = true
-      propsMap.token.push(fullPath)
-    }
-    if (patterns.apiKey.test(propPath)) {
-      flags.hasApiKey = true
-      propsMap.apiKey.push(fullPath)
-    }
-    if (patterns.credential.test(propPath)) {
-      flags.hasCredential = true
-      propsMap.credential.push(fullPath)
+    const matches = matchesSensitivePattern(propPath, patterns)
+
+    if (matches.length > 0) {
+      // Record the source for this detection
+      // For fullPath like "z.credentials.password", extract the nested part after first dot
+      const dotIndex = fullPath.indexOf('.')
+      const sourcePath =
+        dotIndex !== -1
+          ? `${sourcePrefix}${fullPath.substring(dotIndex)}` // e.g., "(z=user).credentials.password"
+          : `${sourcePrefix}.${propPath}` // e.g., "(x=apiKey).someField"
+
+      // Add fullPath to each matched category
+      for (const matchType of matches) {
+        flags[
+          `has${matchType.charAt(0).toUpperCase() + matchType.slice(1)}` as keyof SensitiveFlags
+        ] = true
+        propsMap[matchType].push(fullPath) // Store fullPath, not just propPath
+      }
+
+      sourceMap[fullPath] = sourcePath
+      console.log(
+        `[TYPE_RESOLVER] Detected sensitive: ${fullPath} from ${sourcePath}`
+      )
     }
     return
   }
@@ -390,7 +518,9 @@ function analyzePropType(
         patterns,
         flags,
         propsMap,
-        fullPath
+        fullPath,
+        sourcePrefix,
+        sourceMap
       )
     }
   }

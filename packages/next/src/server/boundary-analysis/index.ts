@@ -91,10 +91,7 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
         boundary.propsType.sensitiveProps.password.length > 0
       ) {
         const propDetails = boundary.propsType.sensitiveProps.password
-          .map((p) => {
-            const value = boundary.propsType!.propValues[p]
-            return value ? `${p} = {${value}}` : p
-          })
+          .map((p) => boundary.propsType!.sensitiveSource[p] || p)
           .join(', ')
         sensitiveWarnings.push(`PASSWORD (${propDetails})`)
       }
@@ -103,10 +100,7 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
         boundary.propsType.sensitiveProps.secret.length > 0
       ) {
         const propDetails = boundary.propsType.sensitiveProps.secret
-          .map((p) => {
-            const value = boundary.propsType!.propValues[p]
-            return value ? `${p} = {${value}}` : p
-          })
+          .map((p) => boundary.propsType!.sensitiveSource[p] || p)
           .join(', ')
         sensitiveWarnings.push(`SECRET (${propDetails})`)
       }
@@ -115,10 +109,7 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
         boundary.propsType.sensitiveProps.token.length > 0
       ) {
         const propDetails = boundary.propsType.sensitiveProps.token
-          .map((p) => {
-            const value = boundary.propsType!.propValues[p]
-            return value ? `${p} = {${value}}` : p
-          })
+          .map((p) => boundary.propsType!.sensitiveSource[p] || p)
           .join(', ')
         sensitiveWarnings.push(`TOKEN (${propDetails})`)
       }
@@ -127,10 +118,7 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
         boundary.propsType.sensitiveProps.apiKey.length > 0
       ) {
         const propDetails = boundary.propsType.sensitiveProps.apiKey
-          .map((p) => {
-            const value = boundary.propsType!.propValues[p]
-            return value ? `${p} = {${value}}` : p
-          })
+          .map((p) => boundary.propsType!.sensitiveSource[p] || p)
           .join(', ')
         sensitiveWarnings.push(`API_KEY (${propDetails})`)
       }
@@ -139,10 +127,7 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
         boundary.propsType.sensitiveProps.credential.length > 0
       ) {
         const propDetails = boundary.propsType.sensitiveProps.credential
-          .map((p) => {
-            const value = boundary.propsType!.propValues[p]
-            return value ? `${p} = {${value}}` : p
-          })
+          .map((p) => boundary.propsType!.sensitiveSource[p] || p)
           .join(', ')
         sensitiveWarnings.push(`CREDENTIAL (${propDetails})`)
       }
