@@ -21,6 +21,22 @@ export interface PropsTypeInfo {
     hasApiKey: boolean
     hasCredential: boolean
   }
+
+  /**
+   * Specific prop names that matched sensitive patterns
+   */
+  sensitiveProps: {
+    password: string[]
+    secret: string[]
+    token: string[]
+    apiKey: string[]
+    credential: string[]
+  }
+
+  /**
+   * Map of prop names to their actual JSX attribute values (source code)
+   */
+  propValues: Record<string, string>
 }
 
 export interface JsxLocation {
@@ -123,6 +139,32 @@ export async function resolvePropsType(
       return null
     }
 
+    // Extract JSX attribute values
+    const propValues: Record<string, string> = {}
+    const attributes = openingElement.attributes.properties
+
+    for (const attr of attributes) {
+      if (typescript.isJsxAttribute(attr)) {
+        const propName = attr.name.getText(sourceFile)
+        if (attr.initializer) {
+          if (typescript.isJsxExpression(attr.initializer)) {
+            // Get the expression inside {}
+            const expression = attr.initializer.expression
+            if (expression) {
+              propValues[propName] = expression.getText(sourceFile)
+            }
+          } else if (typescript.isStringLiteral(attr.initializer)) {
+            // String literal value
+            propValues[propName] = attr.initializer.getText(sourceFile)
+          }
+        }
+      } else if (typescript.isJsxSpreadAttribute(attr)) {
+        // Handle spread attributes
+        const spreadExpr = attr.expression.getText(sourceFile)
+        propValues['...' + spreadExpr] = spreadExpr
+      }
+    }
+
     // Extract type string
     const typeString = typeChecker.typeToString(
       propsType,
@@ -154,22 +196,43 @@ export async function resolvePropsType(
       hasCredential: false,
     }
 
+    const sensitiveProps = {
+      password: [] as string[],
+      secret: [] as string[],
+      token: [] as string[],
+      apiKey: [] as string[],
+      credential: [] as string[],
+    }
+
     for (const propName of propNames) {
-      if (sensitivePatterns.password.test(propName))
+      if (sensitivePatterns.password.test(propName)) {
         sensitiveFlags.hasPassword = true
-      if (sensitivePatterns.secret.test(propName))
+        sensitiveProps.password.push(propName)
+      }
+      if (sensitivePatterns.secret.test(propName)) {
         sensitiveFlags.hasSecret = true
-      if (sensitivePatterns.token.test(propName)) sensitiveFlags.hasToken = true
-      if (sensitivePatterns.apiKey.test(propName))
+        sensitiveProps.secret.push(propName)
+      }
+      if (sensitivePatterns.token.test(propName)) {
+        sensitiveFlags.hasToken = true
+        sensitiveProps.token.push(propName)
+      }
+      if (sensitivePatterns.apiKey.test(propName)) {
         sensitiveFlags.hasApiKey = true
-      if (sensitivePatterns.credential.test(propName))
+        sensitiveProps.apiKey.push(propName)
+      }
+      if (sensitivePatterns.credential.test(propName)) {
         sensitiveFlags.hasCredential = true
+        sensitiveProps.credential.push(propName)
+      }
     }
 
     return {
       typeString,
       propNames,
       sensitiveFlags,
+      sensitiveProps,
+      propValues,
     }
   } catch (error) {
     console.log('[TYPE_RESOLVER] Error:', error)

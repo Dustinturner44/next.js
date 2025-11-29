@@ -84,17 +84,74 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
       )
 
       const flags = boundary.propsType.sensitiveFlags
-      const sensitiveProps: string[] = []
-      if (flags.hasPassword) sensitiveProps.push('PASSWORD')
-      if (flags.hasSecret) sensitiveProps.push('SECRET')
-      if (flags.hasToken) sensitiveProps.push('TOKEN')
-      if (flags.hasApiKey) sensitiveProps.push('API_KEY')
-      if (flags.hasCredential) sensitiveProps.push('CREDENTIAL')
+      const sensitiveWarnings: string[] = []
 
-      if (sensitiveProps.length > 0) {
-        lines.push(
-          `  ⚠️  SENSITIVE DATA DETECTED: ${sensitiveProps.join(', ')}`
-        )
+      if (
+        flags.hasPassword &&
+        boundary.propsType.sensitiveProps.password.length > 0
+      ) {
+        const propDetails = boundary.propsType.sensitiveProps.password
+          .map((p) => {
+            const value = boundary.propsType!.propValues[p]
+            return value ? `${p} = {${value}}` : p
+          })
+          .join(', ')
+        sensitiveWarnings.push(`PASSWORD (${propDetails})`)
+      }
+      if (
+        flags.hasSecret &&
+        boundary.propsType.sensitiveProps.secret.length > 0
+      ) {
+        const propDetails = boundary.propsType.sensitiveProps.secret
+          .map((p) => {
+            const value = boundary.propsType!.propValues[p]
+            return value ? `${p} = {${value}}` : p
+          })
+          .join(', ')
+        sensitiveWarnings.push(`SECRET (${propDetails})`)
+      }
+      if (
+        flags.hasToken &&
+        boundary.propsType.sensitiveProps.token.length > 0
+      ) {
+        const propDetails = boundary.propsType.sensitiveProps.token
+          .map((p) => {
+            const value = boundary.propsType!.propValues[p]
+            return value ? `${p} = {${value}}` : p
+          })
+          .join(', ')
+        sensitiveWarnings.push(`TOKEN (${propDetails})`)
+      }
+      if (
+        flags.hasApiKey &&
+        boundary.propsType.sensitiveProps.apiKey.length > 0
+      ) {
+        const propDetails = boundary.propsType.sensitiveProps.apiKey
+          .map((p) => {
+            const value = boundary.propsType!.propValues[p]
+            return value ? `${p} = {${value}}` : p
+          })
+          .join(', ')
+        sensitiveWarnings.push(`API_KEY (${propDetails})`)
+      }
+      if (
+        flags.hasCredential &&
+        boundary.propsType.sensitiveProps.credential.length > 0
+      ) {
+        const propDetails = boundary.propsType.sensitiveProps.credential
+          .map((p) => {
+            const value = boundary.propsType!.propValues[p]
+            return value ? `${p} = {${value}}` : p
+          })
+          .join(', ')
+        sensitiveWarnings.push(`CREDENTIAL (${propDetails})`)
+      }
+
+      if (sensitiveWarnings.length > 0) {
+        lines.push(`  ⚠️  SENSITIVE DATA DETECTED:`)
+        for (const warning of sensitiveWarnings) {
+          lines.push(`     - ${warning}`)
+        }
       }
     } else if (boundary.analysisError) {
       lines.push(`  ⚠️  Type analysis failed: ${boundary.analysisError}`)

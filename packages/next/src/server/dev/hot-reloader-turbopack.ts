@@ -28,6 +28,8 @@ import type {
 import { createDefineEnv, getBindingsSync } from '../../build/swc'
 import * as Log from '../../build/output/log'
 import { BLOCKED_PAGES } from '../../shared/lib/constants'
+ 
+import { analyzeBoundaries, formatBoundaryAnalysis } from '../boundary-analysis'
 import {
   getOverlayMiddleware,
   getSourceMapMiddleware,
@@ -726,11 +728,6 @@ export async function createHotReloaderTurbopack(
             )
             return
           }
-
-          // Import boundary analysis module
-          const { analyzeBoundaries, formatBoundaryAnalysis } = await import(
-            '../boundary-analysis'
-          )
 
           // Small delay to let initial compilation complete
           await new Promise((resolve) => setTimeout(resolve, 15000))
