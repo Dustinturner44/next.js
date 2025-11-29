@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::Result;
 use next_api::{operation::OptionEndpoint, route::Endpoint};
 use next_core::next_client_reference::ClientReferenceType;
@@ -31,6 +33,7 @@ pub async fn extract_boundaries_internal(
     let client_references = endpoint_vc.client_references().await?;
 
     let mut boundaries = Vec::new();
+    let mut seen = HashSet::new();
 
     for client_ref in &client_references.client_references {
         // We only care about Ecmascript client references for now (not CSS)
@@ -60,6 +63,14 @@ pub async fn extract_boundaries_internal(
 
             // Skip if either file is a Next.js internal component
             if is_nextjs_internal(&server_file) || is_nextjs_internal(&client_file) {
+                continue;
+            }
+
+            // Create a unique key for deduplication
+            let boundary_key = (server_file.clone(), client_file.clone(), local_name.clone());
+
+            // Skip if we've already seen this boundary
+            if !seen.insert(boundary_key) {
                 continue;
             }
 
