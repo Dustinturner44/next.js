@@ -715,44 +715,47 @@ export async function createHotReloaderTurbopack(
       // Give it a moment to complete, then analyze boundaries
       ;(async () => {
         try {
+          // Load TypeScript module
+          let typescript: typeof import('typescript/lib/tsserverlibrary')
+          try {
+            // eslint-disable-next-line import/no-extraneous-dependencies -- dev-only code
+            typescript = require('typescript') as typeof import('typescript')
+          } catch (e) {
+            console.log(
+              '[BOUNDARY] TypeScript not available, skipping type analysis'
+            )
+            return
+          }
+
+          // Import boundary analysis module
+          const { analyzeBoundaries, formatBoundaryAnalysis } = await import(
+            '../boundary-analysis'
+          )
+
           // Small delay to let initial compilation complete
           await new Promise((resolve) => setTimeout(resolve, 15000))
 
           console.log('[BOUNDARY] Starting boundary analysis...')
-          for (const [pathname, route] of currentEntrypoints.app) {
+          for (const [_pathname, route] of currentEntrypoints.app) {
             if (route.type === 'app-page' && route.htmlEndpoint) {
               const boundaries = await route.htmlEndpoint.getBoundaries()
-              console.log(
-                `[BOUNDARY] Route ${pathname}: ${boundaries.boundaries.length} boundaries`
-              )
+
               if (boundaries.boundaries.length > 0) {
-                console.log('\n=== Server→Client Boundaries Detected ===')
-                console.log(`Route: ${pathname}`)
-                console.log(`Total boundaries: ${boundaries.totalCount}`)
-                for (const boundary of boundaries.boundaries) {
-                  console.log(
-                    `\n  Boundary: ${boundary.serverFile} → ${boundary.clientFile}`
-                  )
-                  console.log(
-                    `  Import: ${boundary.importInfo.importStatement}`
-                  )
-                  if (boundary.jsxLocation) {
-                    console.log(
-                      `  JSX Location: ${boundary.jsxLocation.file}:${boundary.jsxLocation.line}:${boundary.jsxLocation.column}`
-                    )
-                    console.log(
-                      `  JSX Span: ${boundary.jsxLocation.spanStart}-${boundary.jsxLocation.spanEnd}`
-                    )
-                  } else {
-                    console.log(`  JSX Location: Not found`)
-                  }
-                }
-                console.log('==========================================\n')
+                // Analyze boundaries with TypeScript
+                const analyzed = await analyzeBoundaries(
+                  typescript,
+                  projectPath,
+                  boundaries.boundaries
+                )
+
+                // Format and log
+                const output = formatBoundaryAnalysis(analyzed)
+                console.log(output)
               }
             }
           }
         } catch (err) {
-          console.log('[BOUNDARY] Error:', err)
+          console.log('[BOUNDARY] Analysis error:', err)
         }
       })()
       // === END BOUNDARY ANALYSIS ===
