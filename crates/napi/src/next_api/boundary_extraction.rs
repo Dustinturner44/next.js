@@ -18,25 +18,17 @@ pub struct SimpleBoundaryData {
 pub async fn extract_boundaries_internal(
     endpoint_op: OperationVc<OptionEndpoint>,
 ) -> Result<Vec<SimpleBoundaryData>> {
-    eprintln!("[RUST] extract_boundaries_internal called");
     let endpoint = endpoint_op.connect().await?;
 
     if endpoint.is_none() {
-        eprintln!("[RUST] endpoint is None");
         return Ok(vec![]);
     }
 
     let endpoint = endpoint.unwrap();
-    eprintln!("[RUST] endpoint exists");
 
     // Access client_references through the Endpoint trait
     let endpoint_vc: Vc<Box<dyn Endpoint>> = *endpoint;
     let client_references = endpoint_vc.client_references().await?;
-
-    eprintln!(
-        "[RUST] Got {} client references",
-        client_references.client_references.len()
-    );
 
     let mut boundaries = Vec::new();
 
@@ -60,10 +52,16 @@ pub async fn extract_boundaries_internal(
             // Get the local name (export name) from the client module
             let local_name = extract_export_name(&client_file);
 
-            eprintln!(
-                "[RUST] Boundary: {} -> {} ({})",
-                server_file, client_file, local_name
-            );
+            // Filter out unwanted boundaries
+            // Skip if server is unknown
+            if server_file == "<unknown>" {
+                continue;
+            }
+
+            // Skip if either file is a Next.js internal component
+            if is_nextjs_internal(&server_file) || is_nextjs_internal(&client_file) {
+                continue;
+            }
 
             boundaries.push(SimpleBoundaryData {
                 server_file,
@@ -72,8 +70,6 @@ pub async fn extract_boundaries_internal(
             });
         }
     }
-
-    eprintln!("[RUST] Total boundaries found: {}", boundaries.len());
 
     Ok(boundaries)
 }
@@ -97,4 +93,26 @@ fn extract_export_name(path: &str) -> String {
     } else {
         name.to_string()
     }
+}
+
+/// Check if a file path is a Next.js internal component
+fn is_nextjs_internal(path: &str) -> bool {
+    let normalized = path.replace('\\', "/");
+
+    // Check for Next.js package paths
+    if normalized.contains("packages/next/dist/") {
+        return true;
+    }
+
+    // Check for Next.js built-in components
+    if normalized.contains("/next/dist/") {
+        return true;
+    }
+
+    // Check for node_modules next.js paths
+    if normalized.contains("node_modules/next/") {
+        return true;
+    }
+
+    false
 }
