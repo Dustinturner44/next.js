@@ -124,62 +124,80 @@ export async function resolvePropsType(
       return null
     }
 
-    // Get the component type
+    // Get the opening element
     const openingElement = typescript.isJsxElement(jsxElement)
       ? jsxElement.openingElement
       : jsxElement
 
-    const tagType = typeChecker.getTypeAtLocation(openingElement.tagName)
-
-    // Get props type from component signature
-    const propsType = getPropsType(tagType, typeChecker, openingElement)
-
-    if (!propsType) {
-      console.log('[TYPE_RESOLVER] Could not resolve props type')
-      return null
-    }
-
-    // Extract JSX attribute values
-    const propValues: Record<string, string> = {}
+    // Instead of analyzing the component's props type,
+    // analyze the types of the actual expressions being passed as props
     const attributes = openingElement.attributes.properties
+    const propNames: string[] = []
+    const propValues: Record<string, string> = {}
+    const propsToAnalyze: Array<{ name: string; type: ts.Type }> = []
 
+    // Extract each prop and its expression type
     for (const attr of attributes) {
       if (typescript.isJsxAttribute(attr)) {
         const propName = attr.name.getText(sourceFile)
+        propNames.push(propName)
+
         if (attr.initializer) {
+          let expression: ts.Expression | undefined
+
           if (typescript.isJsxExpression(attr.initializer)) {
             // Get the expression inside {}
-            const expression = attr.initializer.expression
-            if (expression) {
-              propValues[propName] = expression.getText(sourceFile)
-            }
+            expression = attr.initializer.expression
           } else if (typescript.isStringLiteral(attr.initializer)) {
             // String literal value
-            propValues[propName] = attr.initializer.getText(sourceFile)
+            expression = attr.initializer
+          }
+
+          if (expression) {
+            // Get the source text
+            propValues[propName] = expression.getText(sourceFile)
+
+            // Get the TYPE of the expression being passed
+            const exprType = typeChecker.getTypeAtLocation(expression)
+            propsToAnalyze.push({ name: propName, type: exprType })
+
+            console.log(
+              `[TYPE_RESOLVER] Prop ${propName}: ${typeChecker.typeToString(exprType)}`
+            )
           }
         }
       } else if (typescript.isJsxSpreadAttribute(attr)) {
         // Handle spread attributes
-        const spreadExpr = attr.expression.getText(sourceFile)
-        propValues['...' + spreadExpr] = spreadExpr
+        const spreadExpr = attr.expression
+        const spreadText = spreadExpr.getText(sourceFile)
+        propValues['...' + spreadText] = spreadText
+
+        // Get the type of the spread expression
+        const spreadType = typeChecker.getTypeAtLocation(spreadExpr)
+        const spreadProps = spreadType.getProperties()
+
+        // Expand properties from spread
+        for (const spreadProp of spreadProps) {
+          const spreadPropName = spreadProp.getName()
+          propNames.push(spreadPropName)
+          const spreadPropType = typeChecker.getTypeOfSymbolAtLocation(
+            spreadProp,
+            spreadExpr
+          )
+          propsToAnalyze.push({ name: spreadPropName, type: spreadPropType })
+        }
       }
     }
 
-    // Extract type string
-    const typeString = typeChecker.typeToString(
-      propsType,
-      undefined,
-      typescript.TypeFormatFlags.NoTruncation
-    )
+    // Build type string from actual expression types
+    const typeString = propsToAnalyze
+      .map(
+        (p) =>
+          `${p.name}: ${typeChecker.typeToString(p.type, undefined, typescript.TypeFormatFlags.NoTruncation)}`
+      )
+      .join('; ')
 
-    // Get prop names
-    const propNames: string[] = []
-    const properties = propsType.getProperties()
-    for (const prop of properties) {
-      propNames.push(prop.getName())
-    }
-
-    // Analyze each prop's type recursively
+    // Analyze each prop's expression type recursively
     const sensitivePatterns = {
       password: /password|pwd|passwd/i,
       secret: /secret|private/i,
@@ -204,17 +222,11 @@ export async function resolvePropsType(
       credential: [] as string[],
     }
 
-    // Analyze each prop's type
-    for (const prop of properties) {
-      const propName = prop.getName()
-      const propType = typeChecker.getTypeOfSymbolAtLocation(
-        prop,
-        openingElement
-      )
-
+    // Analyze the type of each expression being passed
+    for (const { name, type } of propsToAnalyze) {
       analyzePropType(
-        propName,
-        propType,
+        name,
+        type,
         typeChecker,
         typescript,
         sensitivePatterns,
@@ -269,35 +281,6 @@ function findJsxElement(
     return node
   }
   return node.parent ? findJsxElement(node.parent, typescript) : null
-}
-
-/**
- * Extract props type from component type
- */
-function getPropsType(
-  componentType: ts.Type,
-  typeChecker: ts.TypeChecker,
-  openingElement: ts.JsxOpeningElement | ts.JsxSelfClosingElement
-): ts.Type | null {
-  // Try call signatures (function components)
-  const callSignatures = componentType.getCallSignatures()
-  if (callSignatures.length > 0) {
-    const firstParam = callSignatures[0].parameters[0]
-    if (firstParam) {
-      return typeChecker.getTypeOfSymbolAtLocation(firstParam, openingElement)
-    }
-  }
-
-  // Try constructor signatures (class components)
-  const constructSignatures = componentType.getConstructSignatures()
-  if (constructSignatures.length > 0) {
-    const firstParam = constructSignatures[0].parameters[0]
-    if (firstParam) {
-      return typeChecker.getTypeOfSymbolAtLocation(firstParam, openingElement)
-    }
-  }
-
-  return null
 }
 
 interface SensitivePatterns {
