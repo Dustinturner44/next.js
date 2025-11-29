@@ -843,6 +843,10 @@ function bindingToApi(
       await serverSubscription.next()
       return serverSubscription
     }
+
+    async getBoundaries() {
+      return binding.endpointGetBoundaries(this._nativeEndpoint)
+    }
   }
 
   async function serializeNextConfig(

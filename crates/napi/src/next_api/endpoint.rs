@@ -16,9 +16,12 @@ use tracing::Instrument;
 use turbo_tasks::{Completion, Effects, OperationVc, ReadRef, Vc};
 use turbopack_core::{diagnostics::PlainDiagnostic, issue::PlainIssue};
 
-use crate::next_api::utils::{
-    DetachedVc, NapiDiagnostic, NapiIssue, RootTask, TurbopackResult,
-    strongly_consistent_catch_collectables, subscribe,
+use crate::next_api::{
+    boundary::{NapiBoundary, NapiBoundaryAnalysis, NapiImportInfo, NapiSourceLocation},
+    utils::{
+        DetachedVc, NapiDiagnostic, NapiIssue, RootTask, TurbopackResult,
+        strongly_consistent_catch_collectables, subscribe,
+    },
 };
 
 #[napi(object)]
@@ -280,4 +283,55 @@ pub fn endpoint_client_changed_subscribe(
             }])
         },
     )
+}
+
+/// Get boundary analysis for this endpoint
+/// This is called from JavaScript/TypeScript during dev compilation
+#[tracing::instrument(level = "info", name = "get boundary analysis", skip_all)]
+#[napi]
+pub async fn endpoint_get_boundaries(
+    #[napi(ts_arg_type = "{ __napiType: \"Endpoint\" }")] endpoint: External<ExternalEndpoint>,
+) -> napi::Result<NapiBoundaryAnalysis> {
+    use crate::next_api::boundary_extraction::extract_boundaries_internal;
+
+    let ctx = endpoint.turbopack_ctx();
+    let endpoint_op = ***endpoint;
+
+    // Extract boundaries within a Turbo Tasks context
+    // Returns simple data that can be converted to NAPI types
+    let boundaries_data = endpoint
+        .turbopack_ctx()
+        .turbo_tasks()
+        .run(async move { extract_boundaries_internal(endpoint_op).await })
+        .or_else(|e| ctx.throw_turbopack_internal_result(&e.into()))
+        .await?;
+
+    // Convert to NAPI types outside the Turbo Tasks context
+    let boundaries: Vec<NapiBoundary> = boundaries_data
+        .into_iter()
+        .enumerate()
+        .map(|(idx, data)| NapiBoundary {
+            id: format!("boundary-{:03}", idx),
+            server_file: data.server_file.clone(),
+            client_file: data.client_file.clone(),
+            import_info: NapiImportInfo {
+                local_name: data.local_name,
+                import_location: NapiSourceLocation {
+                    file: data.server_file,
+                    line: 1,
+                    column: 0,
+                },
+                import_statement: "// Client component imported".to_string(),
+            },
+            props: vec![],
+        })
+        .collect();
+
+    let result = NapiBoundaryAnalysis {
+        version: "1.0.0".to_string(),
+        total_count: boundaries.len() as u32,
+        boundaries,
+    };
+
+    Ok(result)
 }

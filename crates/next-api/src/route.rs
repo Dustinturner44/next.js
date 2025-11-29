@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use anyhow::Result;
+use next_core::next_client_reference::ClientReferenceGraphResult;
 use serde::{Deserialize, Serialize};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
@@ -72,6 +73,12 @@ pub trait Endpoint {
     }
     #[turbo_tasks::function]
     fn module_graphs(self: Vc<Self>) -> Vc<ModuleGraphs>;
+    /// Returns client references for this endpoint (for App Router endpoints).
+    /// Default implementation returns an empty result for non-App endpoints.
+    #[turbo_tasks::function]
+    fn client_references(self: Vc<Self>) -> Vc<ClientReferenceGraphResult> {
+        ClientReferenceGraphResult::default().cell()
+    }
 }
 
 #[derive(

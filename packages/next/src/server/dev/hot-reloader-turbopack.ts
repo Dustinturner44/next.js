@@ -710,6 +710,43 @@ export async function createHotReloaderTurbopack(
         },
       })
 
+      // === BOUNDARY ANALYSIS PROOF OF CONCEPT ===
+      // handleEntrypoints above triggers subscribeToChanges which initiates compilation
+      // Give it a moment to complete, then analyze boundaries
+      ;(async () => {
+        try {
+          // Small delay to let initial compilation complete
+          await new Promise((resolve) => setTimeout(resolve, 15000))
+
+          console.log('[BOUNDARY] Starting boundary analysis...')
+          for (const [pathname, route] of currentEntrypoints.app) {
+            if (route.type === 'app-page' && route.htmlEndpoint) {
+              const boundaries = await route.htmlEndpoint.getBoundaries()
+              console.log(
+                `[BOUNDARY] Route ${pathname}: ${boundaries.boundaries.length} boundaries`
+              )
+              if (boundaries.boundaries.length > 0) {
+                console.log('\n=== Server→Client Boundaries Detected ===')
+                console.log(`Route: ${pathname}`)
+                console.log(`Total boundaries: ${boundaries.totalCount}`)
+                for (const boundary of boundaries.boundaries) {
+                  console.log(
+                    `\n  Boundary: ${boundary.serverFile} → ${boundary.clientFile}`
+                  )
+                  console.log(
+                    `  Import: ${boundary.importInfo.importStatement}`
+                  )
+                }
+                console.log('==========================================\n')
+              }
+            }
+          }
+        } catch (err) {
+          console.log('[BOUNDARY] Error:', err)
+        }
+      })()
+      // === END BOUNDARY ANALYSIS ===
+
       // Reload matchers when the files have been compiled
       await propagateServerField(opts, 'reloadMatchers', undefined)
 

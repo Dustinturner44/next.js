@@ -320,6 +320,13 @@ export interface Endpoint {
   serverChanged(
     includeIssues: boolean
   ): Promise<AsyncIterableIterator<TurbopackResult>>
+
+  /**
+   * Get boundary analysis for server→client boundaries.
+   * Returns information about all boundaries where Server Components
+   * pass data to Client Components.
+   */
+  getBoundaries(): Promise<import('./generated-native').NapiBoundaryAnalysis>
 }
 
 interface EndpointConfig {

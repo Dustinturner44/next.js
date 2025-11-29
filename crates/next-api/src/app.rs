@@ -78,7 +78,7 @@ use crate::{
     dynamic_imports::{NextDynamicChunkAvailability, collect_next_dynamic_chunks},
     font::FontManifest,
     loadable_manifest::create_react_loadable_manifest,
-    module_graph::{ClientReferencesGraphs, NextDynamicGraphs, ServerActionsGraphs},
+    module_graph::{NextDynamicGraphs, ServerActionsGraphs},
     nft_json::NftJsonAsset,
     paths::{
         all_paths_in_root, all_server_paths, get_asset_paths_from_root, get_js_paths_from_root,
@@ -1169,6 +1169,45 @@ impl AppEndpoint {
         Ok(app_entry)
     }
 
+    /// Computes client references for this endpoint
+    /// This is memoized by Turbo Tasks, so multiple calls return the cached result
+    #[turbo_tasks::function]
+    pub async fn client_references(self: Vc<Self>) -> Result<Vc<ClientReferenceGraphResult>> {
+        use crate::module_graph::ClientReferencesGraphs;
+
+        let this = self.await?;
+        let project = this.app_project.project();
+        let app_entry = self.app_endpoint_entry().await?;
+        let rsc_entry = app_entry.rsc_entry;
+        let is_app_page = matches!(this.ty, AppEndpointType::Page { .. });
+
+        let module_graphs = this
+            .app_project
+            .app_module_graphs(
+                self,
+                *rsc_entry,
+                if is_app_page {
+                    this.app_project.client_runtime_entries()
+                } else {
+                    EvaluatableAssets::empty()
+                },
+                is_app_page,
+            )
+            .await?;
+
+        let per_page_module_graph = *project.per_page_module_graph().await?;
+
+        let client_references =
+            ClientReferencesGraphs::new(*module_graphs.base, per_page_module_graph)
+                .get_client_references_for_endpoint(
+                    *rsc_entry,
+                    is_app_page,
+                    project.next_mode().await?.is_production(),
+                );
+
+        Ok(client_references)
+    }
+
     #[turbo_tasks::function]
     async fn output(self: Vc<Self>) -> Result<Vc<AppEndpointOutput>> {
         let this = self.await?;
@@ -1282,15 +1321,8 @@ impl AppEndpoint {
                 .get_next_dynamic_imports_for_endpoint(*rsc_entry)
                 .await?;
 
-        let client_references =
-            ClientReferencesGraphs::new(*module_graphs.base, per_page_module_graph)
-                .get_client_references_for_endpoint(
-                    *rsc_entry,
-                    matches!(this.ty, AppEndpointType::Page { .. }),
-                    project.next_mode().await?.is_production(),
-                )
-                .to_resolved()
-                .await?;
+        // Use the memoized client_references function
+        let client_references = self.client_references().to_resolved().await?;
 
         let client_references_chunks = get_app_client_references_chunks(
             *client_references,
@@ -2093,6 +2125,12 @@ impl Endpoint for AppEndpoint {
             )
             .await?;
         Ok(Vc::cell(vec![module_graphs.full]))
+    }
+
+    #[turbo_tasks::function]
+    fn client_references(self: Vc<Self>) -> Vc<ClientReferenceGraphResult> {
+        // Call the standalone implementation defined in the AppEndpoint impl block
+        AppEndpoint::client_references(self)
     }
 }
 

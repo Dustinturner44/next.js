@@ -64,6 +64,39 @@ export declare function minify(
   signal?: AbortSignal | undefined | null
 ): Promise<TransformOutput>
 export declare function minifySync(input: Buffer, opts: Buffer): TransformOutput
+/** Root structure for boundary data passed from Turbopack to Next.js */
+export interface NapiBoundaryAnalysis {
+  version: string
+  boundaries: Array<NapiBoundary>
+  totalCount: number
+}
+/** A single server→client boundary */
+export interface NapiBoundary {
+  id: string
+  serverFile: string
+  clientFile: string
+  importInfo: NapiImportInfo
+  props: Array<NapiProp>
+}
+/** Information about the import statement */
+export interface NapiImportInfo {
+  localName: string
+  importLocation: NapiSourceLocation
+  importStatement: string
+}
+/** A single prop passed to the client component */
+export interface NapiProp {
+  name: string
+  location: NapiSourceLocation
+  expressionRaw: string
+  expressionType: string
+}
+/** Location in source code */
+export interface NapiSourceLocation {
+  file: string
+  line: number
+  column: number
+}
 export interface NapiEndpointConfig {}
 export interface NapiServerPath {
   path: string
@@ -88,6 +121,13 @@ export declare function endpointClientChangedSubscribe(
   endpoint: { __napiType: 'Endpoint' },
   func: (...args: any[]) => any
 ): { __napiType: 'RootTask' }
+/**
+ * Get boundary analysis for this endpoint
+ * This is called from JavaScript/TypeScript during dev compilation
+ */
+export declare function endpointGetBoundaries(endpoint: {
+  __napiType: 'Endpoint'
+}): Promise<NapiBoundaryAnalysis>
 export interface NapiEnvVar {
   name: RcStr
   value: RcStr
