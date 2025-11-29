@@ -28,7 +28,7 @@ import type {
 import { createDefineEnv, getBindingsSync } from '../../build/swc'
 import * as Log from '../../build/output/log'
 import { BLOCKED_PAGES } from '../../shared/lib/constants'
- 
+
 import { analyzeBoundaries, formatBoundaryAnalysis } from '../boundary-analysis'
 import {
   getOverlayMiddleware,
@@ -730,7 +730,7 @@ export async function createHotReloaderTurbopack(
           }
 
           // Small delay to let initial compilation complete
-          await new Promise((resolve) => setTimeout(resolve, 15000))
+          await new Promise((resolve) => setTimeout(resolve, 5000))
 
           console.log('[BOUNDARY] Starting boundary analysis...')
           for (const [_pathname, route] of currentEntrypoints.app) {

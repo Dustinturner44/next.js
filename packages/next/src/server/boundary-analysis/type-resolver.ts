@@ -179,7 +179,7 @@ export async function resolvePropsType(
       propNames.push(prop.getName())
     }
 
-    // Check for sensitive patterns
+    // Analyze each prop's type recursively
     const sensitivePatterns = {
       password: /password|pwd|passwd/i,
       secret: /secret|private/i,
@@ -204,27 +204,24 @@ export async function resolvePropsType(
       credential: [] as string[],
     }
 
-    for (const propName of propNames) {
-      if (sensitivePatterns.password.test(propName)) {
-        sensitiveFlags.hasPassword = true
-        sensitiveProps.password.push(propName)
-      }
-      if (sensitivePatterns.secret.test(propName)) {
-        sensitiveFlags.hasSecret = true
-        sensitiveProps.secret.push(propName)
-      }
-      if (sensitivePatterns.token.test(propName)) {
-        sensitiveFlags.hasToken = true
-        sensitiveProps.token.push(propName)
-      }
-      if (sensitivePatterns.apiKey.test(propName)) {
-        sensitiveFlags.hasApiKey = true
-        sensitiveProps.apiKey.push(propName)
-      }
-      if (sensitivePatterns.credential.test(propName)) {
-        sensitiveFlags.hasCredential = true
-        sensitiveProps.credential.push(propName)
-      }
+    // Analyze each prop's type
+    for (const prop of properties) {
+      const propName = prop.getName()
+      const propType = typeChecker.getTypeOfSymbolAtLocation(
+        prop,
+        openingElement
+      )
+
+      analyzePropType(
+        propName,
+        propType,
+        typeChecker,
+        typescript,
+        sensitivePatterns,
+        sensitiveFlags,
+        sensitiveProps,
+        '' // empty path prefix for top-level props
+      )
     }
 
     return {
@@ -301,4 +298,117 @@ function getPropsType(
   }
 
   return null
+}
+
+interface SensitivePatterns {
+  password: RegExp
+  secret: RegExp
+  token: RegExp
+  apiKey: RegExp
+  credential: RegExp
+}
+
+interface SensitiveFlags {
+  hasPassword: boolean
+  hasSecret: boolean
+  hasToken: boolean
+  hasApiKey: boolean
+  hasCredential: boolean
+}
+
+interface SensitivePropsMap {
+  password: string[]
+  secret: string[]
+  token: string[]
+  apiKey: string[]
+  credential: string[]
+}
+
+/**
+ * Recursively analyze a prop's type for sensitive data patterns
+ */
+function analyzePropType(
+  propPath: string,
+  propType: ts.Type,
+  typeChecker: ts.TypeChecker,
+  typescript: typeof ts,
+  patterns: SensitivePatterns,
+  flags: SensitiveFlags,
+  propsMap: SensitivePropsMap,
+  pathPrefix: string
+): void {
+  const fullPath = pathPrefix ? `${pathPrefix}.${propPath}` : propPath
+
+  // Check if type is a function
+  const signatures = propType.getCallSignatures()
+  if (signatures.length > 0) {
+    console.log(
+      `[TYPE_RESOLVER] Warning: ${fullPath} is a function (non-serializable)`
+    )
+    return
+  }
+
+  // Check if type is primitive (string, number, boolean, etc.)
+  const isPrimitive =
+    (propType.flags & typescript.TypeFlags.String) !== 0 ||
+    (propType.flags & typescript.TypeFlags.Number) !== 0 ||
+    (propType.flags & typescript.TypeFlags.Boolean) !== 0 ||
+    (propType.flags & typescript.TypeFlags.StringLiteral) !== 0 ||
+    (propType.flags & typescript.TypeFlags.NumberLiteral) !== 0 ||
+    (propType.flags & typescript.TypeFlags.BooleanLiteral) !== 0 ||
+    (propType.flags & typescript.TypeFlags.Null) !== 0 ||
+    (propType.flags & typescript.TypeFlags.Undefined) !== 0 ||
+    (propType.flags & typescript.TypeFlags.Void) !== 0
+
+  if (isPrimitive) {
+    // For primitives, check the property name for sensitive patterns
+    if (patterns.password.test(propPath)) {
+      flags.hasPassword = true
+      propsMap.password.push(fullPath)
+    }
+    if (patterns.secret.test(propPath)) {
+      flags.hasSecret = true
+      propsMap.secret.push(fullPath)
+    }
+    if (patterns.token.test(propPath)) {
+      flags.hasToken = true
+      propsMap.token.push(fullPath)
+    }
+    if (patterns.apiKey.test(propPath)) {
+      flags.hasApiKey = true
+      propsMap.apiKey.push(fullPath)
+    }
+    if (patterns.credential.test(propPath)) {
+      flags.hasCredential = true
+      propsMap.credential.push(fullPath)
+    }
+    return
+  }
+
+  // For objects, recursively analyze nested properties
+  const properties = propType.getProperties()
+  if (properties.length > 0) {
+    console.log(
+      `[TYPE_RESOLVER] Recursing into object ${fullPath} with ${properties.length} properties`
+    )
+    for (const nestedProp of properties) {
+      const nestedName = nestedProp.getName()
+      const nestedType = typeChecker.getTypeOfSymbolAtLocation(
+        nestedProp,
+        nestedProp.valueDeclaration || (nestedProp.declarations?.[0] as any)
+      )
+
+      // Recursively analyze nested property
+      analyzePropType(
+        nestedName,
+        nestedType,
+        typeChecker,
+        typescript,
+        patterns,
+        flags,
+        propsMap,
+        fullPath
+      )
+    }
+  }
 }
