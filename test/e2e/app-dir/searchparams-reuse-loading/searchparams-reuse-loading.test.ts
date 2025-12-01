@@ -175,7 +175,7 @@ describe('searchparams-reuse-loading', () => {
       it('should correctly return different RSC data for full prefetches with different searchParam values', async () => {
         const rscRequestPromise = new Map<
           string,
-          { resolve: () => Promise<void> }
+          { resolve: () => Promise<void>; headers: Record<string, string> }
         >()
 
         // Track prefetch requests to know when initial prefetching is done
@@ -235,7 +235,14 @@ describe('searchparams-reuse-loading', () => {
                   })
 
                   if (rscRequestPromise.has(promiseKey)) {
-                    throw new Error('Duplicate request')
+                    const previousHeaders =
+                      rscRequestPromise.get(promiseKey)!.headers
+                    throw new Error(
+                      '' +
+                        `Duplicate request for '${promiseKey}'\n` +
+                        `previous headers: ${JSON.stringify(previousHeaders)}\n` +
+                        `new headers: ${JSON.stringify(headers)} `
+                    )
                   }
 
                   rscRequestPromise.set(promiseKey, {
@@ -245,6 +252,7 @@ describe('searchparams-reuse-loading', () => {
                       await new Promise((res) => setTimeout(res, 500))
                       resolvePromise()
                     },
+                    headers,
                   })
 
                   // Await the promise to effectively stall the request
