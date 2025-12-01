@@ -792,7 +792,6 @@ jobs:
           test/e2e/app-dir/app/index.test.ts \
           test/e2e/app-dir/app-edge/app-edge.test.ts \
           test/e2e/app-dir/proxy-runtime-nodejs/proxy-runtime-nodejs.test.ts \
-          test/e2e/externals-transitive/externals-transitive.test.ts \
           test/development/app-dir/segment-explorer/segment-explorer.test.ts
       stepName: 'test-turbopack-dev-windows'
       runs_on_labels: '["windows","self-hosted","x64"]'
@@ -1116,8 +1115,11 @@ jobs:
         'test-turbopack-production-integration',
         'test-unit-windows',
         'test-dev-windows',
+        'test-turbopack-dev-windows',
         'test-integration-windows',
+        'test-turbopack-integration-windows',
         'test-prod-windows',
+        'test-turbopack-prod-windows',
       ]
 
     if: always()
