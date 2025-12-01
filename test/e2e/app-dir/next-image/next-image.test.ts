@@ -11,6 +11,17 @@ describe('app dir - next-image', () => {
   }
 
   describe('ssr content', () => {
+    it('should handle HEAD requests for uncached images', async () => {
+      // Run this test first to ensure the image cache is empty
+      const $ = await next.render$('/')
+      const imageUrl = $('#app-layout').attr('src')
+
+      // With an empty cache, HEAD requests should return 200
+      const headRes = await next.fetch(imageUrl, { method: 'HEAD' })
+      expect(headRes.status).toBe(200)
+      expect(headRes.headers.get('content-type')).toMatch(/^image\//)
+    })
+
     it('should render images on / route', async () => {
       const $ = await next.render$('/')
 
