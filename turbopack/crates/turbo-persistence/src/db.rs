@@ -846,6 +846,8 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
             }
 
             fn category(&self) -> u8 {
+                // Cold and non-cold files are placed separately so we pass different category
+                // values to ensure they are not merged together.
                 if self.flags.cold() { 1 } else { 0 }
             }
         }
@@ -1335,6 +1337,7 @@ impl<S: ParallelScheduler, const FAMILIES: usize> TurboPersistence<S, FAMILIES> 
     /// Get a value from the database. Returns None if the key is not found. The returned value
     /// might hold onto a block of the database and it should not be hold long-term.
     pub fn get<K: QueryKey>(&self, family: usize, key: &K) -> Result<Option<ArcSlice<u8>>> {
+        debug_assert!(family < FAMILIES, "Family index out of bounds");
         let hash = hash_key(key);
         let inner = self.inner.read();
         for meta in inner.meta_files.iter().rev() {

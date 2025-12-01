@@ -40,8 +40,8 @@ fn main() -> Result<()> {
         } in meta_file.entries
         {
             println!(
-                "  SST {sequence_number:08}.sst: {} {min_hash:016x} - {max_hash:016x} (p = 1/{})",
-                flags,
+                "  SST {sequence_number:08}.sst: {flags} {min_hash:016x} - {max_hash:016x} (p = \
+                 1/{})",
                 u64::MAX / (max_hash - min_hash + 1)
             );
             println!("    AMQF {amqf_entries} entries = {} KiB", amqf_size / 1024);
