@@ -6,6 +6,7 @@ import {
   RouteInfoBody,
 } from '../components/errors/dev-tools-indicator/dev-tools-info/route-info'
 import { PageSegmentTree } from '../components/overview/segment-explorer'
+import { ModuleGraph } from '../components/module-graph/module-graph'
 import { DevToolsHeader } from '../components/errors/dev-tools-indicator/dev-tools-info/dev-tools-header'
 import { useDelayedRender } from '../hooks/use-delayed-render'
 import {
@@ -110,6 +111,14 @@ const MenuPanel = () => {
           onClick: () => setPanel('segment-explorer'),
           attributes: {
             'data-segment-explorer': true,
+          },
+        },
+        !!process.env.TURBOPACK && {
+          label: 'Module Graph',
+          value: <ChevronRight />,
+          onClick: () => setPanel('module-graph'),
+          attributes: {
+            'data-module-graph': true,
           },
         },
         {
@@ -240,6 +249,30 @@ export const PanelRouter = () => {
             header={<DevToolsHeader title="Route Info" />}
           >
             <PageSegmentTree page={state.page} />
+          </DynamicPanel>
+        </PanelRoute>
+      )}
+
+      {!!process.env.TURBOPACK && (
+        <PanelRoute name="module-graph">
+          <DynamicPanel
+            sharePanelSizeGlobally={false}
+            sharePanelPositionGlobally={false}
+            draggable
+            sizeConfig={{
+              kind: 'resizable',
+              maxHeight: '90vh',
+              maxWidth: '90vw',
+              minHeight: 300 / state.scale,
+              minWidth: 350 / state.scale,
+              initialSize: {
+                height: 450 / state.scale,
+                width: 500 / state.scale,
+              },
+            }}
+            header={<DevToolsHeader title="Module Graph" />}
+          >
+            <ModuleGraph page={state.page} />
           </DynamicPanel>
         </PanelRoute>
       )}

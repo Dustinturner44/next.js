@@ -10,6 +10,7 @@ export type PanelStateKind =
   | 'route-type'
   | 'segment-explorer'
   | 'panel-selector'
+  | 'module-graph'
 
 export const PanelRouterContext = createContext<{
   panel: PanelStateKind | null
