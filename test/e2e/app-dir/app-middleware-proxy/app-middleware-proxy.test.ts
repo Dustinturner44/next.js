@@ -5,9 +5,18 @@ import { nextTestSetup } from 'e2e-utils'
 import type { Response } from 'node-fetch'
 
 describe('app-dir with proxy', () => {
-  const { next, isNextDeploy } = nextTestSetup({
+  const { next, isNextDev, isNextDeploy } = nextTestSetup({
     files: __dirname,
   })
+
+  if (isNextDev) {
+    it('should log compilation time', async () => {
+      await next.browser('/')
+      expect(next.cliOutput).toMatch(
+        /GET \/ 200 in .* \(compile:.*, proxy.ts:.*, render:.*\)/
+      )
+    })
+  }
 
   it('should filter correctly after proxy rewrite', async () => {
     const browser = await next.browser('/start')
@@ -108,7 +117,9 @@ describe('app-dir with proxy', () => {
       expect(res.headers.get('x-middleware-request-x-from-client3')).toBeNull()
     })
 
-    it(`Supports draft mode`, async () => {
+    // Cannot set draftMode in nodejs runtime
+    // TODO: Investigate https://github.com/vercel/next.js/pull/85174
+    it.skip(`Supports draft mode`, async () => {
       const res = await next.fetch(`${path}?draft=true`)
       const headers: string = res.headers.get('set-cookie') || ''
       const bypassCookie = headers

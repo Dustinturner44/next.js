@@ -82,7 +82,7 @@ type InternalLinkProps = {
    * - `false`: Prefetching will not happen when entering the viewport, but will still happen on hover.
    * @defaultValue `true` (pages router) or `null` (app router)
    */
-  prefetch?: boolean | 'auto' | null | 'unstable_forceStale'
+  prefetch?: boolean | 'auto' | null
   /**
    * The active locale is automatically prepended. `locale` allows for providing a different locale.
    * When `false` `href` has to include the locale as the default behavior is disabled.
@@ -363,7 +363,6 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkPropsReal>(
           }
         } else {
           // TypeScript trick for type-guarding:
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = key
         }
       })
@@ -446,7 +445,6 @@ const Link = React.forwardRef<HTMLAnchorElement, LinkPropsReal>(
           }
         } else {
           // TypeScript trick for type-guarding:
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = key
         }
       })
