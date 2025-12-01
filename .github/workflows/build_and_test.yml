@@ -758,12 +758,14 @@ jobs:
       # Should this be using turbopack? a variation?
       afterBuild: |
         export NEXT_TEST_MODE=dev
-        export IS_WEBPACK_TEST=1
+        export IS_TURBOPACK_TEST=1
+        export TURBOPACK_DEV=1
 
         node run-tests.js \
           test/e2e/app-dir/app/index.test.ts \
           test/e2e/app-dir/app-edge/app-edge.test.ts \
           test/e2e/app-dir/proxy-runtime-nodejs/proxy-runtime-nodejs.test.ts \
+          test/e2e/externals-transitive/externals-transitive.test.ts \
           test/development/app-dir/segment-explorer/segment-explorer.test.ts
       stepName: 'test-dev-windows'
       runs_on_labels: '["windows","self-hosted","x64"]'
@@ -815,14 +817,16 @@ jobs:
     with:
       afterBuild: |
         export NEXT_TEST_MODE=start
-        export IS_WEBPACK_TEST=1
+        export IS_TURBOPACK_TEST=1
+        export TURBOPACK_BUILD=1
 
         node run-tests.js --type production \
           test/e2e/app-dir/app/index.test.ts \
           test/e2e/app-dir/app-edge/app-edge.test.ts \
           test/e2e/app-dir/metadata-edge/index.test.ts \
           test/e2e/app-dir/non-root-project-monorepo/non-root-project-monorepo.test.ts \
-          test/e2e/app-dir/proxy-runtime-nodejs/proxy-runtime-nodejs.test.ts
+          test/e2e/app-dir/proxy-runtime-nodejs/proxy-runtime-nodejs.test.ts \
+          test/e2e/externals-transitive/externals-transitive.test.ts
       stepName: 'test-prod-windows'
       runs_on_labels: '["windows","self-hosted","x64"]'
       buildNativeTarget: 'x86_64-pc-windows-msvc'
