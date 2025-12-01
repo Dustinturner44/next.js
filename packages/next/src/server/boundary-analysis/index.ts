@@ -138,6 +138,18 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
           lines.push(`     - ${warning}`)
         }
       }
+
+      if (
+        boundary.propsType.functionProps &&
+        boundary.propsType.functionProps.length > 0
+      ) {
+        lines.push(`  ⚠️  NON-SERIALIZABLE PROPS DETECTED:`)
+        for (const funcProp of boundary.propsType.functionProps) {
+          const value = boundary.propsType.propValues[funcProp]
+          const propDetail = value ? `${funcProp} = {${value}}` : funcProp
+          lines.push(`     - ${propDetail} (function type)`)
+        }
+      }
     } else if (boundary.analysisError) {
       lines.push(`  ⚠️  Type analysis failed: ${boundary.analysisError}`)
     }

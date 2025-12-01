@@ -39,6 +39,11 @@ export interface PropsTypeInfo {
   propValues: Record<string, string>
 
   /**
+   * List of non-serializable function props
+   */
+  functionProps: string[]
+
+  /**
    * Map tracking the source of each sensitive detection
    * Key: full path like "credentials.password"
    * Value: source expression like "(z=user).credentials.password" or "y=user.credentials.password"
@@ -141,6 +146,7 @@ export async function resolvePropsType(
     const propNames: string[] = []
     const propValues: Record<string, string> = {}
     const sensitiveSource: Record<string, string> = {}
+    const functionProps: string[] = []
     const typeParts: string[] = []
 
     const sensitivePatterns = {
@@ -219,6 +225,7 @@ export async function resolvePropsType(
               console.log(
                 `[TYPE_RESOLVER] Warning: ${propName} is a function (non-serializable)`
               )
+              functionProps.push(propName)
             } else if (isObjectType) {
               // OBJECT TYPE: Recursive type analysis
               // Source format: (propName=identifier).path
@@ -344,6 +351,7 @@ export async function resolvePropsType(
       sensitiveFlags,
       sensitiveProps,
       propValues,
+      functionProps,
       sensitiveSource,
     }
   } catch (error) {
