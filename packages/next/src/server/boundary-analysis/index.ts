@@ -1,6 +1,10 @@
 import type { PropsTypeInfo, JsxLocation } from './type-resolver'
 import { resolvePropsType } from './type-resolver'
 import type ts from 'typescript/lib/tsserverlibrary'
+import {
+  generateSensitiveDataPrompt,
+  generateNonSerializablePrompt,
+} from './expert-prompts'
 
 export interface AnalyzedBoundary {
   id: string
@@ -132,10 +136,84 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
         sensitiveWarnings.push(`CREDENTIAL (${propDetails})`)
       }
 
+      const boundaryContext = {
+        serverFile: boundary.serverFile,
+        clientFile: boundary.clientFile,
+        componentName: boundary.localName,
+      }
+
+      // Generate expert prompts for each type of detection
       if (sensitiveWarnings.length > 0) {
         lines.push(`  ⚠️  SENSITIVE DATA DETECTED:`)
         for (const warning of sensitiveWarnings) {
           lines.push(`     - ${warning}`)
+        }
+        lines.push('')
+
+        // Generate a prompt for each sensitive data category
+        if (
+          flags.hasPassword &&
+          boundary.propsType.sensitiveProps.password.length > 0
+        ) {
+          const prompt = generateSensitiveDataPrompt({
+            category: 'PASSWORD',
+            propPaths: boundary.propsType.sensitiveProps.password,
+            propValues: boundary.propsType.sensitiveSource,
+            boundaryContext,
+          })
+          lines.push(prompt)
+        }
+
+        if (
+          flags.hasSecret &&
+          boundary.propsType.sensitiveProps.secret.length > 0
+        ) {
+          const prompt = generateSensitiveDataPrompt({
+            category: 'SECRET',
+            propPaths: boundary.propsType.sensitiveProps.secret,
+            propValues: boundary.propsType.sensitiveSource,
+            boundaryContext,
+          })
+          lines.push(prompt)
+        }
+
+        if (
+          flags.hasToken &&
+          boundary.propsType.sensitiveProps.token.length > 0
+        ) {
+          const prompt = generateSensitiveDataPrompt({
+            category: 'TOKEN',
+            propPaths: boundary.propsType.sensitiveProps.token,
+            propValues: boundary.propsType.sensitiveSource,
+            boundaryContext,
+          })
+          lines.push(prompt)
+        }
+
+        if (
+          flags.hasApiKey &&
+          boundary.propsType.sensitiveProps.apiKey.length > 0
+        ) {
+          const prompt = generateSensitiveDataPrompt({
+            category: 'API_KEY',
+            propPaths: boundary.propsType.sensitiveProps.apiKey,
+            propValues: boundary.propsType.sensitiveSource,
+            boundaryContext,
+          })
+          lines.push(prompt)
+        }
+
+        if (
+          flags.hasCredential &&
+          boundary.propsType.sensitiveProps.credential.length > 0
+        ) {
+          const prompt = generateSensitiveDataPrompt({
+            category: 'CREDENTIAL',
+            propPaths: boundary.propsType.sensitiveProps.credential,
+            propValues: boundary.propsType.sensitiveSource,
+            boundaryContext,
+          })
+          lines.push(prompt)
         }
       }
 
@@ -149,6 +227,15 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
           const propDetail = value ? `${funcProp} = {${value}}` : funcProp
           lines.push(`     - ${propDetail} (function type)`)
         }
+        lines.push('')
+
+        // Generate expert prompt for non-serializable props
+        const prompt = generateNonSerializablePrompt({
+          functionProps: boundary.propsType.functionProps,
+          propValues: boundary.propsType.propValues,
+          boundaryContext,
+        })
+        lines.push(prompt)
       }
     } else if (boundary.analysisError) {
       lines.push(`  ⚠️  Type analysis failed: ${boundary.analysisError}`)
