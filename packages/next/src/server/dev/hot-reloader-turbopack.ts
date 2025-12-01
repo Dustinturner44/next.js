@@ -29,10 +29,10 @@ import { createDefineEnv, getBindingsSync } from '../../build/swc'
 import * as Log from '../../build/output/log'
 import { BLOCKED_PAGES } from '../../shared/lib/constants'
 
-import { analyzeBoundaries, formatBoundaryAnalysis } from '../boundary-analysis'
 import {
   getOverlayMiddleware,
   getSourceMapMiddleware,
+  getInsightsMiddleware,
   getOriginalStackFrames,
 } from './middleware-turbopack'
 import { PageNotFoundError } from '../../shared/lib/utils'
@@ -712,51 +712,6 @@ export async function createHotReloaderTurbopack(
         },
       })
 
-      // === BOUNDARY ANALYSIS PROOF OF CONCEPT ===
-      // handleEntrypoints above triggers subscribeToChanges which initiates compilation
-      // Give it a moment to complete, then analyze boundaries
-      ;(async () => {
-        try {
-          // Load TypeScript module
-          let typescript: typeof import('typescript/lib/tsserverlibrary')
-          try {
-            // eslint-disable-next-line import/no-extraneous-dependencies -- dev-only code
-            typescript = require('typescript') as typeof import('typescript')
-          } catch (e) {
-            console.log(
-              '[BOUNDARY] TypeScript not available, skipping type analysis'
-            )
-            return
-          }
-
-          // Small delay to let initial compilation complete
-          await new Promise((resolve) => setTimeout(resolve, 5000))
-
-          console.log('[BOUNDARY] Starting boundary analysis...')
-          for (const [_pathname, route] of currentEntrypoints.app) {
-            if (route.type === 'app-page' && route.htmlEndpoint) {
-              const boundaries = await route.htmlEndpoint.getBoundaries()
-
-              if (boundaries.boundaries.length > 0) {
-                // Analyze boundaries with TypeScript
-                const analyzed = await analyzeBoundaries(
-                  typescript,
-                  projectPath,
-                  boundaries.boundaries
-                )
-
-                // Format and log
-                const output = formatBoundaryAnalysis(analyzed)
-                console.log(output)
-              }
-            }
-          }
-        } catch (err) {
-          console.log('[BOUNDARY] Analysis error:', err)
-        }
-      })()
-      // === END BOUNDARY ANALYSIS ===
-
       // Reload matchers when the files have been compiled
       await propagateServerField(opts, 'reloadMatchers', undefined)
 
@@ -811,6 +766,11 @@ export async function createHotReloaderTurbopack(
       isSrcDir: opts.isSrcDir,
     }),
     getSourceMapMiddleware(project),
+    getInsightsMiddleware({
+      project,
+      projectPath,
+      currentEntrypoints: currentEntrypoints.app,
+    }),
     getNextErrorFeedbackMiddleware(opts.telemetry),
     getDevOverlayFontMiddleware(),
     getDisableDevIndicatorMiddleware(),

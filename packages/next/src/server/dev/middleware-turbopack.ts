@@ -403,6 +403,284 @@ export function getOverlayMiddleware({
   }
 }
 
+export function getInsightsMiddleware({
+  project: _project,
+  projectPath,
+  currentEntrypoints,
+}: {
+  project: Project
+  projectPath: string
+  currentEntrypoints: Map<
+    string,
+    { type: string; htmlEndpoint?: any; [key: string]: any }
+  >
+}) {
+  return async function (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void
+  ): Promise<void> {
+    const { pathname } = new URL(req.url!, 'http://n')
+
+    if (pathname !== '/__nextjs_insights') {
+      return next()
+    }
+
+    if (req.method !== 'GET') {
+      return middlewareResponse.badRequest(res)
+    }
+
+    try {
+      // Load TypeScript module
+      let typescript: typeof import('typescript/lib/tsserverlibrary')
+      try {
+        // eslint-disable-next-line import/no-extraneous-dependencies -- dev-only code
+        typescript = require('typescript') as typeof import('typescript')
+      } catch (e) {
+        return middlewareResponse.json(res, {
+          insights: [],
+          error: 'TypeScript not available',
+        })
+      }
+
+      const { analyzeBoundaries } = await import(
+        '../boundary-analysis/index.js'
+      )
+      const { generateSensitiveDataPrompt, generateNonSerializablePrompt } =
+        await import('../boundary-analysis/expert-prompts.js')
+
+      const allInsights: Array<{
+        id: string
+        category: 'sensitive-data' | 'non-serializable'
+        severity: 'warning' | 'error'
+        serverFile: string
+        clientFile: string
+        componentName: string
+        propPath: string
+        message: string
+        expertPrompt: string
+        jsxLocation?: { line: number; column: number }
+      }> = []
+
+      // Analyze all app router pages
+      for (const [_pathname, route] of currentEntrypoints) {
+        if (route.type === 'app-page' && route.htmlEndpoint) {
+          const boundaries = await route.htmlEndpoint.getBoundaries()
+
+          if (boundaries.boundaries.length > 0) {
+            const analyzed = await analyzeBoundaries(
+              typescript,
+              projectPath,
+              boundaries.boundaries
+            )
+
+            // Flatten: create one insight per warning, not grouped by boundary
+            for (const boundary of analyzed) {
+              if (!boundary.propsType) continue
+
+              const boundaryContext = {
+                serverFile: boundary.serverFile,
+                clientFile: boundary.clientFile,
+                componentName: boundary.localName,
+              }
+
+              const flags = boundary.propsType.sensitiveFlags
+
+              // Add insights for sensitive data
+              if (flags.hasPassword) {
+                for (const propName of boundary.propsType.sensitiveProps
+                  .password) {
+                  allInsights.push({
+                    id: `${boundary.id}-password-${propName}`,
+                    category: 'sensitive-data',
+                    severity: 'warning',
+                    serverFile: boundary.serverFile,
+                    clientFile: boundary.clientFile,
+                    componentName: boundary.localName,
+                    propPath:
+                      boundary.propsType.sensitiveSource[propName] || propName,
+                    message:
+                      'Password data is being passed to a client component',
+                    expertPrompt: generateSensitiveDataPrompt({
+                      category: 'PASSWORD',
+                      propPaths: [propName],
+                      propValues: boundary.propsType.sensitiveSource,
+                      boundaryContext,
+                    }),
+                    jsxLocation: boundary.jsxLocation
+                      ? {
+                          line: boundary.jsxLocation.line,
+                          column: boundary.jsxLocation.column,
+                        }
+                      : undefined,
+                  })
+                }
+              }
+
+              if (flags.hasSecret) {
+                for (const propName of boundary.propsType.sensitiveProps
+                  .secret) {
+                  allInsights.push({
+                    id: `${boundary.id}-secret-${propName}`,
+                    category: 'sensitive-data',
+                    severity: 'warning',
+                    serverFile: boundary.serverFile,
+                    clientFile: boundary.clientFile,
+                    componentName: boundary.localName,
+                    propPath:
+                      boundary.propsType.sensitiveSource[propName] || propName,
+                    message:
+                      'Secret data is being passed to a client component',
+                    expertPrompt: generateSensitiveDataPrompt({
+                      category: 'SECRET',
+                      propPaths: [propName],
+                      propValues: boundary.propsType.sensitiveSource,
+                      boundaryContext,
+                    }),
+                    jsxLocation: boundary.jsxLocation
+                      ? {
+                          line: boundary.jsxLocation.line,
+                          column: boundary.jsxLocation.column,
+                        }
+                      : undefined,
+                  })
+                }
+              }
+
+              if (flags.hasToken) {
+                for (const propName of boundary.propsType.sensitiveProps
+                  .token) {
+                  allInsights.push({
+                    id: `${boundary.id}-token-${propName}`,
+                    category: 'sensitive-data',
+                    severity: 'warning',
+                    serverFile: boundary.serverFile,
+                    clientFile: boundary.clientFile,
+                    componentName: boundary.localName,
+                    propPath:
+                      boundary.propsType.sensitiveSource[propName] || propName,
+                    message: 'Token data is being passed to a client component',
+                    expertPrompt: generateSensitiveDataPrompt({
+                      category: 'TOKEN',
+                      propPaths: [propName],
+                      propValues: boundary.propsType.sensitiveSource,
+                      boundaryContext,
+                    }),
+                    jsxLocation: boundary.jsxLocation
+                      ? {
+                          line: boundary.jsxLocation.line,
+                          column: boundary.jsxLocation.column,
+                        }
+                      : undefined,
+                  })
+                }
+              }
+
+              if (flags.hasApiKey) {
+                for (const propName of boundary.propsType.sensitiveProps
+                  .apiKey) {
+                  allInsights.push({
+                    id: `${boundary.id}-apikey-${propName}`,
+                    category: 'sensitive-data',
+                    severity: 'warning',
+                    serverFile: boundary.serverFile,
+                    clientFile: boundary.clientFile,
+                    componentName: boundary.localName,
+                    propPath:
+                      boundary.propsType.sensitiveSource[propName] || propName,
+                    message: 'API key is being passed to a client component',
+                    expertPrompt: generateSensitiveDataPrompt({
+                      category: 'API_KEY',
+                      propPaths: [propName],
+                      propValues: boundary.propsType.sensitiveSource,
+                      boundaryContext,
+                    }),
+                    jsxLocation: boundary.jsxLocation
+                      ? {
+                          line: boundary.jsxLocation.line,
+                          column: boundary.jsxLocation.column,
+                        }
+                      : undefined,
+                  })
+                }
+              }
+
+              if (flags.hasCredential) {
+                for (const propName of boundary.propsType.sensitiveProps
+                  .credential) {
+                  allInsights.push({
+                    id: `${boundary.id}-credential-${propName}`,
+                    category: 'sensitive-data',
+                    severity: 'warning',
+                    serverFile: boundary.serverFile,
+                    clientFile: boundary.clientFile,
+                    componentName: boundary.localName,
+                    propPath:
+                      boundary.propsType.sensitiveSource[propName] || propName,
+                    message:
+                      'Credential data is being passed to a client component',
+                    expertPrompt: generateSensitiveDataPrompt({
+                      category: 'CREDENTIAL',
+                      propPaths: [propName],
+                      propValues: boundary.propsType.sensitiveSource,
+                      boundaryContext,
+                    }),
+                    jsxLocation: boundary.jsxLocation
+                      ? {
+                          line: boundary.jsxLocation.line,
+                          column: boundary.jsxLocation.column,
+                        }
+                      : undefined,
+                  })
+                }
+              }
+
+              // Add insights for non-serializable props
+              if (
+                boundary.propsType.functionProps &&
+                boundary.propsType.functionProps.length > 0
+              ) {
+                for (const funcProp of boundary.propsType.functionProps) {
+                  const value = boundary.propsType.propValues[funcProp]
+                  allInsights.push({
+                    id: `${boundary.id}-function-${funcProp}`,
+                    category: 'non-serializable',
+                    severity: 'warning',
+                    serverFile: boundary.serverFile,
+                    clientFile: boundary.clientFile,
+                    componentName: boundary.localName,
+                    propPath: value ? `${funcProp} = {${value}}` : funcProp,
+                    message:
+                      'Function is being passed to a client component (not a Server Action)',
+                    expertPrompt: generateNonSerializablePrompt({
+                      functionProps: [funcProp],
+                      propValues: boundary.propsType.propValues,
+                      boundaryContext,
+                    }),
+                    jsxLocation: boundary.jsxLocation
+                      ? {
+                          line: boundary.jsxLocation.line,
+                          column: boundary.jsxLocation.column,
+                        }
+                      : undefined,
+                  })
+                }
+              }
+            }
+          }
+        }
+      }
+
+      return middlewareResponse.json(res, { insights: allInsights })
+    } catch (error) {
+      return middlewareResponse.internalServerError(
+        res,
+        error instanceof Error ? error.message : String(error)
+      )
+    }
+  }
+}
+
 export function getSourceMapMiddleware(project: Project) {
   return async function (
     req: IncomingMessage,

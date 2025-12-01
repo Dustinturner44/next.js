@@ -11,6 +11,7 @@ export type PanelStateKind =
   | 'segment-explorer'
   | 'panel-selector'
   | 'turbo-info'
+  | 'insights'
 
 export const PanelRouterContext = createContext<{
   panel: PanelStateKind | null

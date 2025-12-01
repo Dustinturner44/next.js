@@ -8,6 +8,7 @@ import {
 import { PageSegmentTree } from '../components/overview/segment-explorer'
 import { TurbopackInfoBody } from '../components/errors/dev-tools-indicator/dev-tools-info/turbopack-info'
 import { DevToolsHeader } from '../components/errors/dev-tools-indicator/dev-tools-info/dev-tools-header'
+import { BoundaryInsightsPanel } from '../components/boundary-insights/boundary-insights-panel'
 import { useDelayedRender } from '../hooks/use-delayed-render'
 import {
   MENU_CURVE,
@@ -59,6 +60,15 @@ const MenuPanel = () => {
                 type: ACTION_ERROR_OVERLAY_OPEN,
               })
             }
+          },
+        },
+        {
+          title: 'View application insights and recommendations',
+          label: 'Insights',
+          value: <ChevronRight />,
+          onClick: () => setPanel('insights'),
+          attributes: {
+            'data-insights': true,
           },
         },
         state.staticIndicator === 'disabled'
@@ -252,6 +262,27 @@ export const PanelRouter = () => {
             <TurbopackInfoBody />
             <InfoFooter href="https://nextjs.org/docs/app/api-reference/turbopack" />
           </div>
+        </DynamicPanel>
+      </PanelRoute>
+
+      <PanelRoute name="insights">
+        <DynamicPanel
+          sharePanelSizeGlobally={false}
+          draggable
+          sizeConfig={{
+            kind: 'resizable',
+            maxHeight: '90vh',
+            maxWidth: '90vw',
+            minHeight: 300 / state.scale,
+            minWidth: 450 / state.scale,
+            initialSize: {
+              height: 500 / state.scale,
+              width: 600 / state.scale,
+            },
+          }}
+          header={<DevToolsHeader title="Insights" />}
+        >
+          <BoundaryInsightsPanel />
         </DynamicPanel>
       </PanelRoute>
     </>

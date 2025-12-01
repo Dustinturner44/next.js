@@ -697,3 +697,28 @@ export function getSourceMapMiddleware(options: {
     return middlewareResponse.json(res, source.sourceMap)
   }
 }
+
+export function getInsightsMiddleware() {
+  return async function (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void
+  ): Promise<void> {
+    const { pathname } = new URL(`http://n${req.url}`)
+
+    if (pathname !== '/__nextjs_insights') {
+      return next()
+    }
+
+    if (req.method !== 'GET') {
+      return middlewareResponse.badRequest(res)
+    }
+
+    // Insights are currently only supported in Turbopack
+    // Return empty insights for webpack mode
+    return middlewareResponse.json(res, {
+      insights: [],
+      error: 'Insights are only available with Turbopack',
+    })
+  }
+}

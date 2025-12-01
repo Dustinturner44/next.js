@@ -13,6 +13,7 @@ export interface AnalyzedBoundary {
   localName: string
   propsType: PropsTypeInfo | null
   analysisError: string | null
+  jsxLocation?: JsxLocation
 }
 
 export interface BoundaryWithLocation {
@@ -60,6 +61,7 @@ export async function analyzeBoundaries(
       localName: boundary.importInfo.localName,
       propsType,
       analysisError,
+      jsxLocation: boundary.jsxLocation,
     })
   }
 
@@ -247,4 +249,137 @@ export function formatBoundaryAnalysis(analyzed: AnalyzedBoundary[]): string {
   lines.push('==========================================\n')
 
   return lines.join('\n')
+}
+
+/**
+ * Converts analyzed boundaries to BoundaryInsights for DevTools panel display.
+ */
+export function toBoundaryInsights(analyzed: AnalyzedBoundary[]): Array<{
+  id: string
+  serverFile: string
+  clientFile: string
+  localName: string
+  warnings: Array<{
+    category: 'sensitive-data' | 'non-serializable'
+    severity: 'warning' | 'error'
+    propName: string
+    propPath: string
+    message: string
+  }>
+  jsxLocation?: {
+    line: number
+    column: number
+  }
+}> {
+  return analyzed
+    .map((boundary) => {
+      if (!boundary.propsType) return null
+
+      const warnings: Array<{
+        category: 'sensitive-data' | 'non-serializable'
+        severity: 'warning' | 'error'
+        propName: string
+        propPath: string
+        message: string
+      }> = []
+
+      // Collect sensitive data warnings
+      const flags = boundary.propsType.sensitiveFlags
+
+      if (flags.hasPassword) {
+        for (const propName of boundary.propsType.sensitiveProps.password) {
+          warnings.push({
+            category: 'sensitive-data',
+            severity: 'warning',
+            propName,
+            propPath: boundary.propsType.sensitiveSource[propName] || propName,
+            message: `Password data is being passed to a client component`,
+          })
+        }
+      }
+
+      if (flags.hasSecret) {
+        for (const propName of boundary.propsType.sensitiveProps.secret) {
+          warnings.push({
+            category: 'sensitive-data',
+            severity: 'warning',
+            propName,
+            propPath: boundary.propsType.sensitiveSource[propName] || propName,
+            message: `Secret data is being passed to a client component`,
+          })
+        }
+      }
+
+      if (flags.hasToken) {
+        for (const propName of boundary.propsType.sensitiveProps.token) {
+          warnings.push({
+            category: 'sensitive-data',
+            severity: 'warning',
+            propName,
+            propPath: boundary.propsType.sensitiveSource[propName] || propName,
+            message: `Token data is being passed to a client component`,
+          })
+        }
+      }
+
+      if (flags.hasApiKey) {
+        for (const propName of boundary.propsType.sensitiveProps.apiKey) {
+          warnings.push({
+            category: 'sensitive-data',
+            severity: 'warning',
+            propName,
+            propPath: boundary.propsType.sensitiveSource[propName] || propName,
+            message: `API key is being passed to a client component`,
+          })
+        }
+      }
+
+      if (flags.hasCredential) {
+        for (const propName of boundary.propsType.sensitiveProps.credential) {
+          warnings.push({
+            category: 'sensitive-data',
+            severity: 'warning',
+            propName,
+            propPath: boundary.propsType.sensitiveSource[propName] || propName,
+            message: `Credential data is being passed to a client component`,
+          })
+        }
+      }
+
+      // Collect non-serializable warnings
+      if (
+        boundary.propsType.functionProps &&
+        boundary.propsType.functionProps.length > 0
+      ) {
+        for (const funcProp of boundary.propsType.functionProps) {
+          const value = boundary.propsType.propValues[funcProp]
+          warnings.push({
+            category: 'non-serializable',
+            severity: 'warning',
+            propName: funcProp,
+            propPath: value ? `${funcProp} = {${value}}` : funcProp,
+            message: `Function is being passed to a client component (not a Server Action)`,
+          })
+        }
+      }
+
+      if (warnings.length === 0) return null
+
+      return {
+        id: boundary.id,
+        serverFile: boundary.serverFile,
+        clientFile: boundary.clientFile,
+        localName: boundary.localName,
+        warnings,
+        jsxLocation: boundary.jsxLocation
+          ? {
+              line: boundary.jsxLocation.line,
+              column: boundary.jsxLocation.column,
+            }
+          : undefined,
+      }
+    })
+    .filter(
+      (insight): insight is NonNullable<typeof insight> => insight !== null
+    )
 }
