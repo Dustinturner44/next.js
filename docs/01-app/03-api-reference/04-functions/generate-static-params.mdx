@@ -60,14 +60,6 @@ export default async function Page({ params }) {
 > - During revalidation (ISR), `generateStaticParams` will not be called again.
 > - `generateStaticParams` replaces the [`getStaticPaths`](/docs/pages/api-reference/functions/get-static-paths) function in the Pages Router.
 
-### With Cache Components
-
-When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, `generateStaticParams` must return **at least one param**. Empty arrays cause a [build error](/docs/messages/empty-generate-static-params). This allows Cache Components to validate your route doesn't incorrectly access `cookies()`, `headers()`, or `searchParams` at runtime.
-
-> **Good to know**: If you don't know the actual param values at build time, you can return a placeholder param (e.g., `[{ slug: '__placeholder__' }]`) for validation, then handle it in your page with `notFound()`. However, this prevents build time validation from working effectively and may cause runtime errors.
-
-See the [dynamic routes section](/docs/app/api-reference/file-conventions/dynamic-routes#with-cache-components) for detailed walkthroughs.
-
 ## Parameters
 
 `options.params` (optional)
@@ -313,6 +305,14 @@ export async function generateStaticParams() {
 export const dynamic = 'force-static'
 ```
 
+#### With Cache Components
+
+When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, `generateStaticParams` must return **at least one param**. Empty arrays cause a [build error](/docs/messages/empty-generate-static-params). This allows Cache Components to validate your route doesn't incorrectly access `cookies()`, `headers()`, or `searchParams` at runtime.
+
+> **Good to know**: If you don't know the actual param values at build time, you can return a placeholder param (e.g., `[{ slug: '__placeholder__' }]`) for validation, then handle it in your page with `notFound()`. However, this prevents build time validation from working effectively and may cause runtime errors.
+
+See the [dynamic routes section](/docs/app/api-reference/file-conventions/dynamic-routes#with-cache-components) for detailed walkthroughs.
+
 ### With Route Handlers
 
 You can use `generateStaticParams` with [Route Handlers](/docs/app/api-reference/file-conventions/route) to statically generate API responses at build time:
@@ -344,7 +344,7 @@ export async function GET(request, { params }) {
 }
 ```
 
-#### With Cache Components
+### Route Handlers with Cache Components
 
 When using [Cache Components](/docs/app/getting-started/cache-components), combine with `use cache` for optimal caching:
 
