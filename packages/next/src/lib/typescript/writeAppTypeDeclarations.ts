@@ -4,15 +4,9 @@ import { promises as fs } from 'fs'
 
 export async function writeAppTypeDeclarations({
   baseDir,
-  distDir,
-  imageImportsEnabled,
-  hasPagesDir,
   hasAppDir,
 }: {
   baseDir: string
-  distDir: string
-  imageImportsEnabled: boolean
-  hasPagesDir: boolean
   hasAppDir: boolean
 }): Promise<void> {
   // Reference `next` types
@@ -38,39 +32,20 @@ export async function writeAppTypeDeclarations({
 
   /**
    * "Triple-slash directives" used to create typings files for Next.js projects
-   * using Typescript .
+   * using Typescript.
+   *
+   * Dynamic types (image imports, navigation compat, routes) are generated
+   * in .next/types/ and included via tsconfig.json.
    *
    * @see https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html
    */
   const directives: string[] = [
     // Include the core Next.js typings.
     '/// <reference types="next" />',
-  ]
-
-  if (imageImportsEnabled) {
-    directives.push('/// <reference types="next/image-types/global" />')
-  }
-
-  if (hasAppDir && hasPagesDir) {
-    directives.push(
-      '/// <reference types="next/navigation-types/compat/navigation" />'
-    )
-  }
-
-  const routeTypesPath = path.posix.join(
-    distDir.replaceAll(path.win32.sep, path.posix.sep),
-    'types/routes.d.ts'
-  )
-
-  // Use ESM import instead of triple-slash reference for better ESLint compatibility
-  directives.push(`import "./${routeTypesPath}";`)
-
-  // Push the notice in.
-  directives.push(
     '',
     '// NOTE: This file should not be edited',
-    `// see https://nextjs.org/docs/${hasAppDir ? 'app' : 'pages'}/api-reference/config/typescript for more information.`
-  )
+    `// see https://nextjs.org/docs/${hasAppDir ? 'app' : 'pages'}/api-reference/config/typescript for more information.`,
+  ]
 
   const content = directives.join(eol) + eol
 

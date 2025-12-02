@@ -6,9 +6,8 @@ import { writeAppTypeDeclarations } from 'next/dist/lib/typescript/writeAppTypeD
 
 const fixtureDir = join(__dirname, 'fixtures/app-declarations')
 const declarationFile = join(fixtureDir, 'next-env.d.ts')
-const imageImportsEnabled = false
 
-describe('find config', () => {
+describe('writeAppTypeDeclarations', () => {
   beforeEach(async () => {
     await fs.ensureDir(fixtureDir)
   })
@@ -19,11 +18,6 @@ describe('find config', () => {
     const content =
       '/// <reference types="next" />' +
       eol +
-      (imageImportsEnabled
-        ? '/// <reference types="next/image-types/global" />' + eol
-        : '') +
-      `import "./.next/types/routes.d.ts";` +
-      eol +
       eol +
       '// NOTE: This file should not be edited' +
       eol +
@@ -34,9 +28,6 @@ describe('find config', () => {
 
     await writeAppTypeDeclarations({
       baseDir: fixtureDir,
-      distDir: '.next',
-      imageImportsEnabled,
-      hasPagesDir: false,
       hasAppDir: false,
     })
     expect(await fs.readFile(declarationFile, 'utf8')).toBe(content)
@@ -47,11 +38,6 @@ describe('find config', () => {
     const content =
       '/// <reference types="next" />' +
       eol +
-      (imageImportsEnabled
-        ? '/// <reference types="next/image-types/global" />' + eol
-        : '') +
-      `import "./.next/types/routes.d.ts";` +
-      eol +
       eol +
       '// NOTE: This file should not be edited' +
       eol +
@@ -62,9 +48,6 @@ describe('find config', () => {
 
     await writeAppTypeDeclarations({
       baseDir: fixtureDir,
-      distDir: '.next',
-      imageImportsEnabled,
-      hasPagesDir: false,
       hasAppDir: false,
     })
     expect(await fs.readFile(declarationFile, 'utf8')).toBe(content)
@@ -75,11 +58,6 @@ describe('find config', () => {
     const content =
       '/// <reference types="next" />' +
       eol +
-      (imageImportsEnabled
-        ? '/// <reference types="next/image-types/global" />' + eol
-        : '') +
-      `import "./.next/types/routes.d.ts";` +
-      eol +
       eol +
       '// NOTE: This file should not be edited' +
       eol +
@@ -88,37 +66,32 @@ describe('find config', () => {
 
     await writeAppTypeDeclarations({
       baseDir: fixtureDir,
-      distDir: '.next',
-      imageImportsEnabled,
-      hasPagesDir: false,
       hasAppDir: false,
     })
     expect(await fs.readFile(declarationFile, 'utf8')).toBe(content)
   })
 
-  it('should include navigation types if app directory is enabled', async () => {
+  it('should use app docs URL when hasAppDir is true', async () => {
     await writeAppTypeDeclarations({
       baseDir: fixtureDir,
-      distDir: '.next',
-      imageImportsEnabled,
-      hasPagesDir: false,
       hasAppDir: true,
     })
 
-    await expect(fs.readFile(declarationFile, 'utf8')).resolves.not.toContain(
-      'next/navigation-types/compat/navigation'
+    const content = await fs.readFile(declarationFile, 'utf8')
+    expect(content).toContain(
+      '// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.'
     )
+  })
 
+  it('should use pages docs URL when hasAppDir is false', async () => {
     await writeAppTypeDeclarations({
       baseDir: fixtureDir,
-      distDir: '.next',
-      imageImportsEnabled,
-      hasPagesDir: true,
-      hasAppDir: true,
+      hasAppDir: false,
     })
 
-    await expect(fs.readFile(declarationFile, 'utf8')).resolves.toContain(
-      'next/navigation-types/compat/navigation'
+    const content = await fs.readFile(declarationFile, 'utf8')
+    expect(content).toContain(
+      '// see https://nextjs.org/docs/pages/api-reference/config/typescript for more information.'
     )
   })
 })

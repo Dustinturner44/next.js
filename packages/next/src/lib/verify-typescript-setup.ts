@@ -40,7 +40,6 @@ export async function verifyTypeScriptSetup({
   intentDirs,
   tsconfigPath,
   typeCheckPreflight,
-  disableStaticImages,
   hasAppDir,
   hasPagesDir,
   isolatedDevBuild,
@@ -51,7 +50,6 @@ export async function verifyTypeScriptSetup({
   tsconfigPath: string | undefined
   intentDirs: string[]
   typeCheckPreflight: boolean
-  disableStaticImages: boolean
   hasAppDir: boolean
   hasPagesDir: boolean
   isolatedDevBuild: boolean | undefined
@@ -132,12 +130,10 @@ export async function verifyTypeScriptSetup({
       isolatedDevBuild
     )
     // Write out the necessary `next-env.d.ts` file to correctly register
-    // Next.js' types:
+    // Next.js' types. Dynamic types (image imports, navigation compat) are
+    // generated in .next/types/ separately.
     await writeAppTypeDeclarations({
       baseDir: dir,
-      distDir,
-      imageImportsEnabled: !disableStaticImages,
-      hasPagesDir,
       hasAppDir,
     })
 

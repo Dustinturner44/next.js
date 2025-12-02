@@ -29,6 +29,7 @@ import {
   createRouteTypesManifest,
   writeRouteTypesManifest,
   writeValidatorFile,
+  writeDynamicTypesFile,
 } from '../server/lib/router-utils/route-types-utils'
 import { writeCacheLifeTypes } from '../server/lib/router-utils/cache-life-type-utils'
 import { createValidFileMatcher } from '../server/lib/find-page-file'
@@ -60,7 +61,6 @@ const nextTypegen = async (
     intentDirs: [pagesDir, appDir].filter(Boolean) as string[],
     typeCheckPreflight: false,
     tsconfigPath: nextConfig.typescript.tsconfigPath,
-    disableStaticImages: nextConfig.images.disableStaticImages,
     hasAppDir: !!appDir,
     hasPagesDir: !!pagesDir,
     isolatedDevBuild: nextConfig.experimental.isolatedDevBuild,
@@ -169,6 +169,13 @@ const nextTypegen = async (
   )
 
   await writeValidatorFile(routeTypesManifest, validatorFilePath)
+
+  await writeDynamicTypesFile({
+    distDir,
+    imageImportsEnabled: !nextConfig.images.disableStaticImages,
+    hasPagesDir: !!pagesDir,
+    hasAppDir: !!appDir,
+  })
 
   // Generate cache-life types if cacheLife config exists
   const cacheLifeFilePath = join(distDir, 'types', 'cache-life.d.ts')

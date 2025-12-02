@@ -85,6 +85,7 @@ import {
   createRouteTypesManifest,
   writeRouteTypesManifest,
   writeValidatorFile,
+  writeDynamicTypesFile,
 } from './route-types-utils'
 import { writeCacheLifeTypes } from './cache-life-type-utils'
 import { isParallelRouteSegment } from '../../../shared/lib/segment'
@@ -146,7 +147,6 @@ async function verifyTypeScript(opts: SetupOpts) {
     intentDirs: [opts.pagesDir, opts.appDir].filter(Boolean) as string[],
     typeCheckPreflight: false,
     tsconfigPath: opts.nextConfig.typescript.tsconfigPath,
-    disableStaticImages: opts.nextConfig.images.disableStaticImages,
     hasAppDir: !!opts.appDir,
     hasPagesDir: !!opts.pagesDir,
     isolatedDevBuild: opts.nextConfig.experimental.isolatedDevBuild,
@@ -260,6 +260,12 @@ async function startWatcher(
     path.join(distTypesDir, 'routes.d.ts'),
     opts.nextConfig
   )
+  await writeDynamicTypesFile({
+    distDir,
+    imageImportsEnabled: !opts.nextConfig.images.disableStaticImages,
+    hasPagesDir: !!pagesDir,
+    hasAppDir: !!appDir,
+  })
 
   const routesManifestPath = path.join(distDir, ROUTES_MANIFEST)
   const routesManifest: DevRoutesManifest = {
