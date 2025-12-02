@@ -2,7 +2,7 @@ name: build-and-test
 
 on:
   push:
-    branches: ['canary']
+    branches: ['next-15-0-0']
   pull_request:
     types: [opened, synchronize]
 
@@ -369,8 +369,7 @@ jobs:
 
   test-new-tests-deploy:
     name: Test new tests when deployed
-    needs:
-      ['optimize-ci', 'test-prod', 'test-new-tests-dev', 'test-new-tests-start']
+    needs: ['optimize-ci', 'test-prod', 'test-new-tests-start']
     if: ${{ needs.optimize-ci.outputs.skip == 'false' && needs.changes.outputs.docs-only == 'false' && !github.event.pull_request.head.repo.fork }}
 
     strategy:
@@ -580,9 +579,6 @@ jobs:
         'test-next-swc-wasm',
         'test-turbopack-dev',
         'test-turbopack-integration',
-        'test-new-tests-dev',
-        'test-new-tests-start',
-        'test-new-tests-deploy',
         'test-turbopack-production',
         'test-turbopack-production-integration',
       ]
