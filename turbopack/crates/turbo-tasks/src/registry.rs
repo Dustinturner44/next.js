@@ -202,8 +202,9 @@ static DEVIRTUALIZED_TRAIT_METHODS: Lazy<FxHashMap<&'static TraitMethod, &'stati
                 trait_method_to_impls.entry(tm).or_default().push(nf);
             }
         }
+        let num_trait_methods = trait_method_to_impls.len();
 
-        trait_method_to_impls
+        let devirtualized = trait_method_to_impls
             .into_iter()
             .filter_map(|(k, v)| {
                 if let Impls::One(f) = v {
@@ -212,7 +213,13 @@ static DEVIRTUALIZED_TRAIT_METHODS: Lazy<FxHashMap<&'static TraitMethod, &'stati
                     None
                 }
             })
-            .collect()
+            .collect::<FxHashMap<_, _>>();
+        eprintln!(
+            "devirtualized {} out of {} trait methods",
+            devirtualized.len(),
+            num_trait_methods,
+        );
+        devirtualized
     });
 
 pub fn get_devirtualized_trait_impl(

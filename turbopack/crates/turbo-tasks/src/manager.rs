@@ -670,7 +670,12 @@ impl<B: Backend + 'static> TurboTasks<B> {
         persistence: TaskPersistence,
     ) -> RawVc {
         let arg = trait_impl.arg_meta.filter_owned(arg);
-        return self.dynamic_call(trait_impl, Some(this), arg, persistence);
+        return self.dynamic_call(
+            trait_impl,
+            (!trait_impl.filters_this).then_some(this),
+            arg,
+            persistence,
+        );
     }
 
     pub fn trait_call(
