@@ -402,6 +402,7 @@ export async function writeDynamicTypesFile({
   const typesDir = path.join(distDir, 'types')
   const filePath = path.join(typesDir, 'next-env.d.ts')
 
+  // Directory should already be created by writeRouteTypesManifest, but ensure it exists
   if (!fs.existsSync(typesDir)) {
     await fs.promises.mkdir(typesDir, { recursive: true })
   }
