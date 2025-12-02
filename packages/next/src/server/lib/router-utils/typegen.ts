@@ -609,7 +609,7 @@ export function generateValidatorFile(
   default: (req: any, res: any) => ReturnType<NextApiHandler>
   config?: {
     api?: {
-      bodyParser?: boolean | { sizeLimit?: string }
+      bodyParser?: boolean | { sizeLimit?: string | number }
       responseLimit?: string | number | boolean
       externalResolver?: boolean
     }
