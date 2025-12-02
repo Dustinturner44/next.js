@@ -147,22 +147,19 @@ export default async function Page(props: PageProps<'/[locale]'>) {
 
 ### With Cache Components
 
-When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic routes, params are runtime data that require special handling. During prerendering, param values are unknown (like `/blog/hello-world` or `/blog/123`), so fallback UI using `<Suspense>` boundaries is required when accessing them.
+When using [Cache Components](/docs/app/getting-started/cache-components) with dynamic route segments, how you handle params depends on whether you use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params).
 
-You should use [`generateStaticParams`](/docs/app/api-reference/functions/generate-static-params) to prerender your most popular routes at build time (e.g., `/blog/1`, `/blog/2`, `/blog/3`). This serves two purposes:
+Without `generateStaticParams`, param values are unknown during prerendering, making params runtime data. You must wrap param access in `<Suspense>` boundaries to provide fallback UI.
 
-- It validates that your route doesn't access dynamic APIs like `cookies()` or `headers()` during prerendering
-- It generates static HTML files for both the specific routes you list and a static shell for runtime params
+With `generateStaticParams`, you provide sample param values that can be used at build time. The build process validates that dynamic content and other runtime APIs are correctly handled, then generates static HTML files for the samples. Pages rendered with runtime params are saved to disk after a successful first request.
 
-Prerendered routes load instantly, while runtime params use the static shell to show static content (like headers and navigation) immediately while param-dependent content updates when ready.
-
-The sections below show different patterns, from simplest (all runtime) to most optimized (prerendered samples, and caching). We recommend wrapping param access in Suspense boundaries to provide meaningful loading states.
-
-> **Good to know**: You can check the `X-Nextjs-Cache` response header to verify your caching strategy. It will show `HIT` or `MISS` for disk-cached routes, and won't appear for memory-only caching. Your hosting provider might replace this header with their own version.
+The sections below demonstrate both patterns.
 
 #### Without `generateStaticParams`
 
-The simplest approach. All params are runtime data. Param access must be wrapped by Suspense fallback UI. Next.js generates a static shell at build time, and content loads on each request.
+All params are runtime data. Param access must be wrapped by Suspense fallback UI. Next.js generates a static shell at build time, and content loads on each request.
+
+> **Good to know**: You can also use [`loading.tsx`](/docs/app/api-reference/file-conventions/loading) for page-level fallback UI.
 
 ```tsx filename="app/blog/[slug]/page.tsx"
 import { Suspense } from 'react'
@@ -193,11 +190,9 @@ async function Content({ slug }: { slug: Promise<string> }) {
 
 #### With `generateStaticParams`
 
-Prerender your most popular or high-value pages by providing params ahead of time. These pages are generated at build time for instant loading.
+Provide params ahead of time to prerender pages at build time. You can prerender all routes or a subset depending on your needs.
 
-During the build process, the route is executed with the values returned from `generateStaticParams` to validate that any dynamic content or runtime data access is properly handled with Suspense or `use cache`.
-
-For runtime params, the build process attempts to prerender a static shell treating params as runtime data. To enable disk caching (ISR-style) for runtime params and include param-specific content in the initial HTML, access params outside any Suspense boundaries, including parent boundaries like [`loading.tsx`](/docs/app/api-reference/file-conventions/loading):
+During the build process, the route is executed with each sample param to collect the HTML result. If dynamic content or runtime data are accessed incorrectly, the build will fail.
 
 ```tsx filename="app/blog/[slug]/page.tsx" highlight={5-7,10,22,24}
 import { Suspense } from 'react'
@@ -234,7 +229,55 @@ async function getPost(slug: string) {
 }
 ```
 
-Build-time validation only covers code paths that execute with the sample params. If your route has conditional logic that accesses runtime APIs (like `cookies()`) for certain param values not in your samples, those branches won't be validated at build time.
+Build-time validation only covers code paths that execute with the sample params. If your route has conditional logic that accesses runtime APIs for certain param values not in your samples, those branches won't be validated at build time:
+
+```tsx filename="app/blog/[slug]/page.tsx"
+export async function generateStaticParams() {
+  return [{ slug: 'public-post' }, { slug: 'hello-world' }]
+}
+
+export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
+  const { slug } = await params
+
+  if (slug.startsWith('private-')) {
+    // This branch is never executed at build time
+    // Runtime requests for 'private-*' slugs will error
+    const token = (await cookies()).get('token')
+    return <PrivatePost slug={slug} token={token} />
+  }
+
+  return <PublicPost slug={slug} />
+}
+```
+
+For runtime params not returned by `generateStaticParams`, validation occurs during the first request. In the example above, requests for slugs starting with `private-` will fail because `cookies()` is accessed without Suspense. Other runtime params that don't hit the conditional branch will render successfully and be saved to disk for subsequent requests.
+
+If your application follows conditional paths like this, make sure to wrap runtime API access in Suspense boundaries:
+
+```tsx filename="app/blog/[slug]/page.tsx"
+export async function generateStaticParams() {
+  return [{ slug: 'public-post' }, { slug: 'hello-world' }]
+}
+
+export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
+  const { slug } = await params
+
+  if (slug.startsWith('private-')) {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <PrivatePost slug={slug} />
+      </Suspense>
+    )
+  }
+
+  return <PublicPost slug={slug} />
+}
+
+async function PrivatePost({ slug }: { slug: string }) {
+  const token = (await cookies()).get('token')
+  // ... fetch and render private post
+}
+```
 
 ## Examples
 
