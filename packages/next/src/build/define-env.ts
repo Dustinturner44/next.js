@@ -41,11 +41,14 @@ export interface DefineEnvOptions {
   }
 }
 
+const DEFINE_ENV_EXPRESSION = Symbol('DEFINE_ENV_EXPRESSION')
+
 interface DefineEnv {
   [key: string]:
     | string
     | string[]
     | boolean
+    | { [DEFINE_ENV_EXPRESSION]: string }
     | ProxyMatcher[]
     | BloomFilter
     | Partial<NextConfigComplete['images']>
@@ -64,7 +67,10 @@ function serializeDefineEnv(defineEnv: DefineEnv): SerializedDefineEnv {
   const defineEnvStringified: SerializedDefineEnv = {}
   for (const key in defineEnv) {
     const value = defineEnv[key]
-    defineEnvStringified[key] = JSON.stringify(value)
+    defineEnvStringified[key] =
+      typeof value === 'object' && DEFINE_ENV_EXPRESSION in value
+        ? value[DEFINE_ENV_EXPRESSION]
+        : JSON.stringify(value)
   }
 
   return defineEnvStringified
@@ -167,13 +173,16 @@ export function getDefineEnv({
     'process.env.__NEXT_CACHE_COMPONENTS': isCacheComponentsEnabled,
     'process.env.__NEXT_USE_CACHE': isUseCacheEnabled,
 
-    ...(!config.experimental?.useSkewCookie
+    ...(!config.experimental?.useSkewCookie || !config.deploymentId
       ? {
           'process.env.NEXT_DEPLOYMENT_ID': false,
         }
       : isClient
         ? {
-            'process.env.NEXT_DEPLOYMENT_ID': config.deploymentId || false, // TODO replace that with "globalThis.NEXT_DEPLOYMENT_ID" when deployment id is received from HTML
+            'process.env.NEXT_DEPLOYMENT_ID': {
+              [DEFINE_ENV_EXPRESSION]: 'globalThis.NEXT_DEPLOYMENT_ID',
+            },
+            'process.env.NEXT_DEPLOYMENT_ID_COMPILE_TIME': config.deploymentId,
           }
         : {}),
     // Propagates the `__NEXT_EXPERIMENTAL_STATIC_SHELL_DEBUGGING` environment
