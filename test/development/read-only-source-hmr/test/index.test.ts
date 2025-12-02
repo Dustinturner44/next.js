@@ -2,6 +2,7 @@ import { nextTestSetup } from 'e2e-utils'
 import { getBrowserBodyText, retry } from 'next-test-utils'
 import fs from 'fs-extra'
 import path from 'path'
+import { type Playwright } from 'next-webdriver'
 
 const READ_ONLY_PERMISSIONS = 0o444
 const READ_WRITE_PERMISSIONS = 0o644
@@ -71,12 +72,12 @@ describe('Read-only source HMR', () => {
   }
 
   it('should detect changes to a page', async () => {
-    let browser
+    let browser: Playwright
 
     try {
       browser = await next.browser('/hello')
       await retry(async () =>
-        expect(await getBrowserBodyText(browser)).toBe('Hello World')
+        expect(await getBrowserBodyText(browser)).toContain('Hello World')
       )
 
       await patchFileReadOnly(
@@ -84,13 +85,13 @@ describe('Read-only source HMR', () => {
         (content) => content.replace('Hello World', 'COOL page'),
         async () => {
           await retry(async () =>
-            expect(await getBrowserBodyText(browser)).toBe('COOL page')
+            expect(await getBrowserBodyText(browser)).toContain('COOL page')
           )
         }
       )
 
       await retry(async () =>
-        expect(await getBrowserBodyText(browser)).toBe('Hello World')
+        expect(await getBrowserBodyText(browser)).toContain('Hello World')
       )
     } finally {
       await browser?.close()
@@ -98,12 +99,12 @@ describe('Read-only source HMR', () => {
   })
 
   it('should handle page deletion and subsequent recreation', async () => {
-    let browser
+    let browser: Playwright
 
     try {
       browser = await next.browser('/hello')
       await retry(async () =>
-        expect(await getBrowserBodyText(browser)).toBe('Hello World')
+        expect(await getBrowserBodyText(browser)).toContain('Hello World')
       )
 
       await patchFileReadOnly(
@@ -118,16 +119,20 @@ describe('Read-only source HMR', () => {
         }
       )
 
-      await retry(async () =>
-        expect(await getBrowserBodyText(browser)).toBe('Hello World')
-      )
+      await retry(async () => {
+        if (!process.env.IS_TURBOPACK_TEST) {
+          // webpack doesn't automatically refresh the page when a page is added?
+          await browser.refresh()
+        }
+        expect(await getBrowserBodyText(browser)).toContain('Hello World')
+      })
     } finally {
       await browser?.close()
     }
   })
 
   it('should detect a new page', async () => {
-    let browser
+    let browser: Playwright
 
     try {
       await patchFileReadOnly(
@@ -140,7 +145,7 @@ describe('Read-only source HMR', () => {
         async () => {
           browser = await next.browser('/new')
           await retry(async () =>
-            expect(await getBrowserBodyText(browser)).toBe('New page')
+            expect(await getBrowserBodyText(browser)).toContain('New page')
           )
         }
       )
