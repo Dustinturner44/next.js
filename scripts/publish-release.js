@@ -61,7 +61,7 @@ const cwd = process.cwd()
             ? ['--tag', 'canary']
             : isReleaseCandidate
               ? ['--tag', 'rc']
-              : []),
+              : ['--tag', 'next-15-0-0']),
         ],
         { stdio: 'pipe' }
       )
