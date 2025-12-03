@@ -34,7 +34,7 @@ const cwd = process.cwd()
     throw err
   }
 
-  let tag = isCanary ? 'canary' : isReleaseCandidate ? 'rc' : 'latest'
+  let tag = isCanary ? 'canary' : isReleaseCandidate ? 'rc' : 'next-15-4'
 
   try {
     if (!isCanary && !isReleaseCandidate) {
