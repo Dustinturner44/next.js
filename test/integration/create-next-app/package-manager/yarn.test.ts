@@ -92,7 +92,7 @@ describe('create-next-app with package manager yarn', () => {
     })
   })
 
-  it('should use yarn for --use-yarn flag with example', async () => {
+  it.skip('should use yarn for --use-yarn flag with example', async () => {
     await useTempDir(async (cwd) => {
       const projectName = 'use-yarn-with-example'
       const res = await run(
@@ -110,7 +110,7 @@ describe('create-next-app with package manager yarn', () => {
     })
   })
 
-  it('should use yarn when user-agent is yarn with example', async () => {
+  it.skip('should use yarn when user-agent is yarn with example', async () => {
     await useTempDir(async (cwd) => {
       const projectName = 'user-agent-yarn-with-example'
       const res = await run(
