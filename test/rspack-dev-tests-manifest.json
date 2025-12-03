@@ -164,7 +164,6 @@
     "passed": [
       "Error recovery app can recover from a event handler error",
       "Error recovery app client component can recover from a component error",
-      "Error recovery app client component can recover from syntax error",
       "Error recovery app displays build error on initial page load",
       "Error recovery app render error not shown right after syntax error",
       "Error recovery app server component can recover from a component error",
@@ -173,7 +172,8 @@
       "Error recovery app syntax > runtime error"
     ],
     "failed": [
-      "Error recovery app can recover from a syntax error without losing state"
+      "Error recovery app can recover from a syntax error without losing state",
+      "Error recovery app client component can recover from syntax error"
     ],
     "pending": [],
     "flakey": [],
@@ -541,14 +541,13 @@
   },
   "test/development/app-dir/cache-components-dev-errors/cache-components-dev-errors.test.ts": {
     "passed": [
+      "Cache Components Dev Errors should clear segment errors after correcting them",
       "Cache Components Dev Errors should display error when component accessed data without suspense boundary",
       "Cache Components Dev Errors should not log unhandled rejections for persistently thrown top-level errors",
       "Cache Components Dev Errors should not show a red box error on client navigations",
       "Cache Components Dev Errors should show a red box error on the SSR render"
     ],
-    "failed": [
-      "Cache Components Dev Errors should clear segment errors after correcting them"
-    ],
+    "failed": [],
     "pending": [],
     "flakey": [],
     "runtimeError": false
@@ -594,6 +593,15 @@
       "cache-components-dev-warmup - without runtime prefetch configs navigation request APIs resolve in the correct phase",
       "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the runtime phase",
       "cache-components-dev-warmup - without runtime prefetch configs navigation sync IO in the static phase"
+    ],
+    "failed": [],
+    "pending": [],
+    "flakey": [],
+    "runtimeError": false
+  },
+  "test/development/app-dir/cache-components-reused-promise/cache-components-reused-promise.test.ts": {
+    "passed": [
+      "cache-components-dev-warmup - reused promise aborts dynamic promises when restarting the render"
     ],
     "failed": [],
     "pending": [],
