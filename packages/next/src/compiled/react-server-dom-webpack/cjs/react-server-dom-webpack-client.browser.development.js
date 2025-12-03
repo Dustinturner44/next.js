@@ -102,13 +102,11 @@
         if ("fulfilled" === moduleExports.status)
           moduleExports = moduleExports.value;
         else throw moduleExports.reason;
-      return "*" === metadata[2]
-        ? moduleExports
-        : "" === metadata[2]
-          ? moduleExports.__esModule
-            ? moduleExports.default
-            : moduleExports
-          : moduleExports[metadata[2]];
+      if ("*" === metadata[2]) return moduleExports;
+      if ("" === metadata[2])
+        return moduleExports.__esModule ? moduleExports.default : moduleExports;
+      if (hasOwnProperty.call(moduleExports, metadata[2]))
+        return moduleExports[metadata[2]];
     }
     function loadChunk(chunkId, filename) {
       chunkMap.set(chunkId, filename);
@@ -4755,6 +4753,7 @@
       ReactDOM = require("react-dom"),
       decoderOptions = { stream: !0 },
       bind = Function.prototype.bind,
+      hasOwnProperty = Object.prototype.hasOwnProperty,
       chunkCache = new Map(),
       chunkMap = new Map(),
       webpackGetChunkFilename = __webpack_require__.u;
@@ -4794,7 +4793,6 @@
       v8FrameRegExp =
         /^ {3} at (?:(.+) \((.+):(\d+):(\d+)\)|(?:async )?(.+):(\d+):(\d+))$/,
       jscSpiderMonkeyFrameRegExp = /(?:(.*)@)?(.*):(\d+):(\d+)/,
-      hasOwnProperty = Object.prototype.hasOwnProperty,
       REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"),
       supportsUserTiming =
         "undefined" !== typeof console &&
@@ -4971,10 +4969,10 @@
       return hook.checkDCE ? !0 : !1;
     })({
       bundleType: 1,
-      version: "19.3.0-canary-52684925-20251110",
+      version: "19.3.0-canary-709fe18f-20251202",
       rendererPackageName: "react-server-dom-webpack",
       currentDispatcherRef: ReactSharedInternals,
-      reconcilerVersion: "19.3.0-canary-52684925-20251110",
+      reconcilerVersion: "19.3.0-canary-709fe18f-20251202",
       getCurrentComponentInfo: function () {
         return currentOwnerInDEV;
       }
