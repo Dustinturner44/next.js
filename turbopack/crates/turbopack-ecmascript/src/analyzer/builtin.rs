@@ -6,19 +6,20 @@ use crate::analyzer::JsValueUrlKind;
 /// Replaces some builtin values with their resulting values. Called early
 /// without lazy nested values. This allows to skip a lot of work to process the
 /// arguments.
+/// Returns true if a replacement was made
 pub fn early_replace_builtin(value: &mut JsValue) -> bool {
     match value {
         // matching calls like `callee(arg1, arg2, ...)`
         JsValue::Call(_, box callee, args) => {
             let args_have_side_effects = || args.iter().any(|arg| arg.has_side_effects());
+            let (callee_side_effects, callee) = callee.without_side_effects();
             match callee {
                 // We don't know what the callee is, so we can early return
-                &mut JsValue::Unknown {
+                JsValue::Unknown {
                     original_value: _,
                     reason: _,
-                    has_side_effects,
                 } => {
-                    let has_side_effects = has_side_effects || args_have_side_effects();
+                    let has_side_effects = callee_side_effects || args_have_side_effects();
                     value.make_unknown(has_side_effects, "unknown callee");
                     true
                 }
@@ -33,7 +34,7 @@ pub fn early_replace_builtin(value: &mut JsValue) -> bool {
                 | JsValue::Concat(_, _)
                 | JsValue::Add(_, _)
                 | JsValue::Not(_, _) => {
-                    let has_side_effects = args_have_side_effects();
+                    let has_side_effects = callee_side_effects || args_have_side_effects();
                     value.make_unknown(has_side_effects, "non-function callee");
                     true
                 }
@@ -43,48 +44,49 @@ pub fn early_replace_builtin(value: &mut JsValue) -> bool {
         // matching calls with this context like `obj.prop(arg1, arg2, ...)`
         JsValue::MemberCall(_, box obj, box prop, args) => {
             let args_have_side_effects = || args.iter().any(|arg| arg.has_side_effects());
+            let (receiver_side_effects, obj) = obj.without_side_effects();
             match obj {
                 // We don't know what the callee is, so we can early return
-                &mut JsValue::Unknown {
+                JsValue::Unknown {
                     original_value: _,
                     reason: _,
-                    has_side_effects,
                 } => {
-                    let side_effects =
-                        has_side_effects || prop.has_side_effects() || args_have_side_effects();
+                    let side_effects = receiver_side_effects
+                        || prop.has_side_effects()
+                        || args_have_side_effects();
                     value.make_unknown(side_effects, "unknown callee object");
                     true
                 }
                 // otherwise we need to look at the property
-                _ => match prop {
-                    // We don't know what the property is, so we can early return
-                    &mut JsValue::Unknown {
-                        original_value: _,
-                        reason: _,
-                        has_side_effects,
-                    } => {
-                        let side_effects = has_side_effects || args_have_side_effects();
-                        value.make_unknown(side_effects, "unknown callee property");
-                        true
+                _ => {
+                    let (prop_side_effects, prop) = prop.without_side_effects();
+                    match prop {
+                        // We don't know what the property is, so we can early return
+                        JsValue::Unknown {
+                            original_value: _,
+                            reason: _,
+                        } => {
+                            let side_effects = prop_side_effects || args_have_side_effects();
+                            value.make_unknown(side_effects, "unknown callee property");
+                            true
+                        }
+                        _ => false,
                     }
-                    _ => false,
-                },
+                }
             }
         }
         // matching property access like `obj.prop` when we don't know what the obj is.
         // We can early return here
-        &mut JsValue::Member(
-            _,
-            box JsValue::Unknown {
-                original_value: _,
-                reason: _,
-                has_side_effects,
-            },
-            box ref mut prop,
-        ) => {
-            let side_effects = has_side_effects || prop.has_side_effects();
-            value.make_unknown(side_effects, "unknown object");
-            true
+        &mut JsValue::Member(_, box ref receiver, box ref mut prop) => {
+            if let (receiver_side_effects, JsValue::Unknown { .. }) =
+                receiver.without_side_effects()
+            {
+                let side_effects = receiver_side_effects || prop.has_side_effects();
+                value.make_unknown(side_effects, "unknown object");
+                true
+            } else {
+                false
+            }
         }
         _ => false,
     }
