@@ -1,5 +1,6 @@
 'use client'
 
+// @ts-ignore
 import { unstable_Activity as Activity } from 'react'
 
 export default function Page() {

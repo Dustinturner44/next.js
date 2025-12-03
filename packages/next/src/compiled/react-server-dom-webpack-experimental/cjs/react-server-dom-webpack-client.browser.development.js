@@ -123,13 +123,11 @@
         if ("fulfilled" === moduleExports.status)
           moduleExports = moduleExports.value;
         else throw moduleExports.reason;
-      return "*" === metadata[2]
-        ? moduleExports
-        : "" === metadata[2]
-          ? moduleExports.__esModule
-            ? moduleExports.default
-            : moduleExports
-          : moduleExports[metadata[2]];
+      if ("*" === metadata[2]) return moduleExports;
+      if ("" === metadata[2])
+        return moduleExports.__esModule ? moduleExports.default : moduleExports;
+      if (hasOwnProperty.call(moduleExports, metadata[2]))
+        return moduleExports[metadata[2]];
     }
     function loadChunk(chunkId, filename) {
       chunkMap.set(chunkId, filename);
@@ -2728,6 +2726,7 @@
       ReactDOM = require("react-dom"),
       decoderOptions = { stream: !0 },
       bind = Function.prototype.bind,
+      hasOwnProperty = Object.prototype.hasOwnProperty,
       chunkCache = new Map(),
       chunkMap = new Map(),
       webpackGetChunkFilename = __webpack_require__.u;
@@ -2942,10 +2941,10 @@
       return hook.checkDCE ? !0 : !1;
     })({
       bundleType: 1,
-      version: "19.2.0-experimental-3fbfb9ba-20250409",
+      version: "19.2.0-experimental-1c1fae3d-20251202",
       rendererPackageName: "react-server-dom-webpack",
       currentDispatcherRef: ReactSharedInternals,
-      reconcilerVersion: "19.2.0-experimental-3fbfb9ba-20250409",
+      reconcilerVersion: "19.2.0-experimental-1c1fae3d-20251202",
       getCurrentComponentInfo: function () {
         return currentOwnerInDEV;
       }
