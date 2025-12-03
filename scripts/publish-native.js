@@ -47,7 +47,9 @@ const cwd = process.cwd()
               `${path.join(nativePackagesDir, platform)}`,
               `--access`,
               `public`,
-              ...(version.includes('canary') ? ['--tag', 'canary'] : []),
+              ...(version.includes('canary')
+                ? ['--tag', 'canary']
+                : ['--tag', 'next-15-5']),
             ],
             { stdio: 'inherit' }
           )
@@ -105,7 +107,9 @@ const cwd = process.cwd()
               `${path.join(wasmDir, `pkg-${wasmTarget}`)}`,
               '--access',
               'public',
-              ...(version.includes('canary') ? ['--tag', 'canary'] : []),
+              ...(version.includes('canary')
+                ? ['--tag', 'canary']
+                : ['--tag', 'next-15-5']),
             ],
             { stdio: 'inherit' }
           )
