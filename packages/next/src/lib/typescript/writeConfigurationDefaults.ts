@@ -283,18 +283,12 @@ export async function writeConfigurationDefaults(
 
   if (!('include' in userTsConfig)) {
     // Always include .next/types for dynamic types (image imports, route types, etc.)
-    userTsConfig.include = [
-      'next-env.d.ts',
-      ...nextAppTypes,
-      '**/*.mts',
-      '**/*.ts',
-      '**/*.tsx',
-    ]
+    userTsConfig.include = [...nextAppTypes, '**/*.mts', '**/*.ts', '**/*.tsx']
     suggestedActions.push(
       cyan('include') +
         ' was set to ' +
         bold(
-          `['next-env.d.ts', ${nextAppTypes.map((type) => `'${type}'`).join(', ')}, '**/*.mts', '**/*.ts', '**/*.tsx']`
+          `[${nextAppTypes.map((type) => `'${type}'`).join(', ')}, '**/*.mts', '**/*.ts', '**/*.tsx']`
         )
     )
   } else {

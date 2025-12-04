@@ -56,7 +56,6 @@ describe('tsconfig module: preserve', () => {
          "jsx": "react-jsx"
        },
        "include": [
-         "next-env.d.ts",
          ".next/types/**/*.ts",
          ".next/dev/types/**/*.ts",
          "**/*.mts",
