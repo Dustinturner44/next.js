@@ -17,5 +17,10 @@
     "isolatedModules": true
   },
   "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx"],
-  "include": ["components", "pages", ".next/types/**/*.ts"]
+  "include": [
+    "components",
+    "pages",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ]
 }
