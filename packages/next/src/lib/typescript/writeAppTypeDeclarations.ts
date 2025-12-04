@@ -40,9 +40,6 @@ export async function writeAppTypeDeclarations({
    * @see https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html
    */
   const directives: string[] = [
-    // Include the core Next.js typings.
-    '/// <reference types="next" />',
-    '',
     '// NOTE: This file should not be edited',
     `// see https://nextjs.org/docs/${hasAppDir ? 'app' : 'pages'}/api-reference/config/typescript for more information.`,
   ]

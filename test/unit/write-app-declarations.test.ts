@@ -16,9 +16,6 @@ describe('writeAppTypeDeclarations', () => {
   it('should preserve CRLF EOL', async () => {
     const eol = '\r\n'
     const content =
-      '/// <reference types="next" />' +
-      eol +
-      eol +
       '// NOTE: This file should not be edited' +
       eol +
       '// see https://nextjs.org/docs/pages/api-reference/config/typescript for more information.' +
@@ -36,9 +33,6 @@ describe('writeAppTypeDeclarations', () => {
   it('should preserve LF EOL', async () => {
     const eol = '\n'
     const content =
-      '/// <reference types="next" />' +
-      eol +
-      eol +
       '// NOTE: This file should not be edited' +
       eol +
       '// see https://nextjs.org/docs/pages/api-reference/config/typescript for more information.' +
@@ -56,9 +50,6 @@ describe('writeAppTypeDeclarations', () => {
   it('should use OS EOL by default', async () => {
     const eol = os.EOL
     const content =
-      '/// <reference types="next" />' +
-      eol +
-      eol +
       '// NOTE: This file should not be edited' +
       eol +
       '// see https://nextjs.org/docs/pages/api-reference/config/typescript for more information.' +
