@@ -1,7 +1,6 @@
 import { nextTestSetup } from 'e2e-utils'
 
-// TODO: the incremental option has been removed, update to use cacheComponents
-describe.skip('app-dir - metadata-streaming-config-customized', () => {
+describe('app-dir - metadata-streaming-config-customized', () => {
   const { next } = nextTestSetup({
     files: __dirname,
     skipDeployment: true,

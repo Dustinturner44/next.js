@@ -34,21 +34,20 @@ describe('rsc-redirect', () => {
   })
 })
 
-// TODO: these tests aren't currently run at all during testing
 if (process.env.NODE_ENV === 'production') {
   describe.each([
-    { cacheComponents: true, segmentCache: true },
-    { cacheComponents: true, segmentCache: false },
-    { cacheComponents: false, segmentCache: true },
-    { cacheComponents: false, segmentCache: false },
+    { ppr: true, segmentCache: true },
+    { ppr: true, segmentCache: false },
+    { ppr: false, segmentCache: true },
+    { ppr: false, segmentCache: false },
   ] as const)(
-    'rsc-redirect /old-about -> /about (cacheComponents: $cacheComponents, segmentCache: $segmentCache)',
-    ({ cacheComponents, segmentCache }) => {
+    'rsc-redirect /old-about -> /about (ppr: $ppr, segmentCache: $segmentCache)',
+    ({ ppr, segmentCache }) => {
       beforeAll(() => {
         // Write next.config.js with the current flags
         fs.writeFileSync(
           configPath,
-          `module.exports = { experimental: { cacheComponents: ${cacheComponents}, clientSegmentCache: ${segmentCache} } }\n`
+          `module.exports = { experimental: { ppr: ${ppr}, clientSegmentCache: ${segmentCache} } }\n`
         )
       })
 

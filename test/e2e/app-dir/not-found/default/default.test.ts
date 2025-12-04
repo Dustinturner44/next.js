@@ -1,6 +1,6 @@
 import { nextTestSetup } from 'e2e-utils'
 
-const isPPREnabled = process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true'
+const isPPREnabled = process.env.__NEXT_EXPERIMENTAL_PPR === 'true'
 
 describe('app dir - not-found - default', () => {
   const { next, isNextStart } = nextTestSetup({

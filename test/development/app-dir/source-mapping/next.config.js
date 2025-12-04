@@ -15,7 +15,7 @@ const nextConfig = {
     }
   },
   experimental: {
-    cacheComponents: true,
+    ppr: true,
   },
 }
 

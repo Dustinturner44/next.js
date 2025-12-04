@@ -2,7 +2,9 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   experimental: {
-    cacheComponents: true,
+    ppr: true,
+    // until the flags are merged, test both `ppr` and `cacheComponents`
+    // cacheComponents: true,
   },
 }
 

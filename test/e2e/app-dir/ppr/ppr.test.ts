@@ -2,8 +2,7 @@ import { nextTestSetup } from 'e2e-utils'
 import { retry, findAllTelemetryEvents } from 'next-test-utils'
 import stripAnsi from 'strip-ansi'
 
-// TODO(NAR-423): Migrate to Cache Components.
-describe.skip('ppr', () => {
+describe('ppr', () => {
   const { next, isNextDev, isNextStart } = nextTestSetup({
     files: __dirname,
     env: {

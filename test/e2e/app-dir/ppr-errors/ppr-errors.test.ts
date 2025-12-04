@@ -2,8 +2,7 @@ import { nextBuild } from 'next-test-utils'
 // In order for the global isNextStart to be set
 import 'e2e-utils'
 
-// TODO(NAR-423): Migrate to Cache Components.
-describe.skip('ppr build errors', () => {
+describe('ppr build errors', () => {
   ;(Boolean((global as any).isNextStart) ? describe : describe.skip)(
     'production only',
     () => {

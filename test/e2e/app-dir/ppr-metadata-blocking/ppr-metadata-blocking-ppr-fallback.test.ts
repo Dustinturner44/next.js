@@ -4,8 +4,7 @@ function countSubstring(str: string, substr: string): number {
   return str.split(substr).length - 1
 }
 
-// TODO(NAR-423): Migrate to Cache Components.
-describe.skip('ppr-metadata-blocking-ppr-fallback', () => {
+describe('ppr-metadata-blocking-ppr-fallback', () => {
   const { next, skipped } = nextTestSetup({
     files: __dirname,
     // Need to skip deployment because the test uses the private env cannot be used in deployment

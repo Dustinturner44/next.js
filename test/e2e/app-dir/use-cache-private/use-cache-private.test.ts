@@ -1,6 +1,8 @@
 import { nextTestSetup } from 'e2e-utils'
 
-const pprEnabled = process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true'
+const pprEnabled =
+  process.env.__NEXT_EXPERIMENTAL_PPR === 'true' ||
+  process.env.__NEXT_EXPERIMENTAL_CACHE_COMPONENTS === 'true'
 
 describe('use-cache-private', () => {
   const { next, isNextDev } = nextTestSetup({

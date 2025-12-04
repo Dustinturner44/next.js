@@ -86,13 +86,13 @@ describe('loadConfig', () => {
       const loadConfigPromise = loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
         customConfig: {
           experimental: {
-            cacheComponents: true,
+            ppr: true,
           },
         },
       })
 
       await expect(loadConfigPromise).rejects.toThrow(
-        /The experimental feature "experimental.cacheComponents" can only be enabled when using the latest canary version of Next.js./
+        /The experimental feature "experimental.ppr" can only be enabled when using the latest canary version of Next.js./
       )
 
       try {
@@ -115,7 +115,7 @@ describe('loadConfig', () => {
           },
         })
       ).rejects.toThrow(
-        /`experimental\.ppr` has been merged into `experimental\.cacheComponents`/
+        /The experimental feature "experimental.ppr" can only be enabled when using the latest canary version of Next.js./
       )
     })
 
@@ -157,7 +157,22 @@ describe('loadConfig', () => {
       delete process.env.__NEXT_VERSION
     })
 
-    it('errors when rdcForNavigations is enabled but cacheComponents is disabled', async () => {
+    it('errors when cacheComponents is enabled but PPR is disabled', async () => {
+      await expect(
+        loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
+          customConfig: {
+            experimental: {
+              cacheComponents: true,
+              ppr: false,
+            },
+          },
+        })
+      ).rejects.toThrow(
+        '`experimental.ppr` can not be `false` when `experimental.cacheComponents` is `true`. PPR is implicitly enabled when Cache Components is enabled.'
+      )
+    })
+
+    it('errors when rdcForNavigations is enabled but ppr is disabled', async () => {
       await expect(
         loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
           customConfig: {
@@ -168,34 +183,48 @@ describe('loadConfig', () => {
           },
         })
       ).rejects.toThrow(
-        '`experimental.rdcForNavigations` is enabled, but `experimental.cacheComponents` is not.'
+        '`experimental.rdcForNavigations` is enabled, but `experimental.ppr` is not.'
       )
     })
 
-    it('errors when ppr is set to incremental', async () => {
-      await expect(
-        loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
-          customConfig: {
-            experimental: {
-              ppr: 'incremental',
-            },
-          },
-        })
-      ).rejects.toThrow(
-        /`experimental\.ppr` has been merged into `experimental\.cacheComponents`/
-      )
-    })
-
-    it('defaults rdcForNavigations to true when cacheComponents is enabled', async () => {
+    it('defaults rdcForNavigations to true when ppr is enabled', async () => {
       const result = await loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
         customConfig: {
           experimental: {
-            cacheComponents: true,
+            ppr: true,
           },
         },
       })
 
       expect(result.experimental.rdcForNavigations).toBe(true)
+    })
+
+    it('allows explicitly disabling rdcForNavigations when ppr is enabled', async () => {
+      const result = await loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
+        customConfig: {
+          experimental: {
+            ppr: true,
+            rdcForNavigations: false,
+          },
+        },
+      })
+
+      expect(result.experimental.rdcForNavigations).toBe(false)
+    })
+
+    it('errors when cacheComponents is enabled but PPR set to "incremental"', async () => {
+      await expect(
+        loadConfig(PHASE_PRODUCTION_BUILD, __dirname, {
+          customConfig: {
+            experimental: {
+              cacheComponents: true,
+              ppr: 'incremental',
+            },
+          },
+        })
+      ).rejects.toThrow(
+        '`experimental.ppr` can not be `"incremental"` when `experimental.cacheComponents` is `true`. PPR is implicitly enabled when Cache Components is enabled.'
+      )
     })
 
     it('migrates experimental.dynamicIO to experimental.cacheComponents', async () => {
