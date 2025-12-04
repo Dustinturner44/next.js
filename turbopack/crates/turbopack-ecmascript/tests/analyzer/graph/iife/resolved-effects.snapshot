@@ -2,5 +2,6 @@
 
 0 -> 2 conditional = true
 
-2 -> 3 call = require*0*("test")
-- *0* require: The require method from CommonJS
+2 -> 3 call = require*1**0*("test")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS

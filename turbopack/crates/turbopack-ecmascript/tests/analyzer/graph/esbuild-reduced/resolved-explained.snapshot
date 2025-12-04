@@ -1,26 +1,31 @@
-binPath = (???*0* | ???*1*)
+binPath = (???*0* | require*2**1*["resolve"](???*3*))
 - *0* binPath
   ⚠️  pattern without value
-- *1* require.resolve*2*(
-        `${(???*3* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*4* | ???*6*)}/${(???*7* | "esbuild.exe" | ???*8*)}`
-    )
-  ⚠️  require.resolve non constant
-  ⚠️  This value might have side effects
-- *2* require.resolve: The require.resolve method from CommonJS
-- *3* pkg
+- *1* ⚠️ This value might have side effects
+- *2* require: The require method from CommonJS
+- *3* `${(
+          | ???*4*
+          | "esbuild-windows-arm64"
+          | "esbuild-windows-32"
+          | "esbuild-windows-64"
+          | ???*6**5*
+          | ???*10**9*
+        )}/${(???*11* | "esbuild.exe" | ???*13**12*)}`
+  ⚠️  nested operation
+- *4* pkg
   ⚠️  pattern without value
-- *4* {}[???*5*]
+- *5* ⚠️ This value might have side effects
+- *6* {}[???*8**7*]
   ⚠️  unknown object prototype methods or values
-  ⚠️  This value might have side effects
-- *5* FreeVar(platformKey)
+- *7* ⚠️ This value might have side effects
+- *8* FreeVar(platformKey)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
-- *6* unknown mutation
-  ⚠️  This value might have side effects
-- *7* subpath
+- *9* ⚠️ This value might have side effects
+- *10* unknown mutation
+- *11* subpath
   ⚠️  pattern without value
-- *8* unknown mutation
-  ⚠️  This value might have side effects
+- *12* ⚠️ This value might have side effects
+- *13* unknown mutation
 
 e = ???*0*
 - *0* e
@@ -34,33 +39,42 @@ knownWindowsPackages = {
     "win32 x64 LE": "esbuild-windows-64"
 }
 
-path = path*0*
-- *0* path: The Node.js path module: https://nodejs.org/api/path.html
+path = require*1**0*("path")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-path2 = path*0*
-- *0* path: The Node.js path module: https://nodejs.org/api/path.html
+path2 = require*1**0*("path")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-pkg#3 = (???*0* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*1*)
+pkg#3 = (???*0* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*2**1*)
 - *0* pkg
   ⚠️  pattern without value
-- *1* {}[???*2*]
+- *1* ⚠️ This value might have side effects
+- *2* {}[???*4**3*]
   ⚠️  unknown object prototype methods or values
-  ⚠️  This value might have side effects
-- *2* FreeVar(platformKey)
+- *3* ⚠️ This value might have side effects
+- *4* FreeVar(platformKey)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
-pkg#4 = (???*0* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*1* | ???*3*)
+pkg#4 = (
+  | ???*0*
+  | "esbuild-windows-arm64"
+  | "esbuild-windows-32"
+  | "esbuild-windows-64"
+  | ???*2**1*
+  | ???*6**5*
+)
 - *0* pkg
   ⚠️  pattern without value
-- *1* {}[???*2*]
+- *1* ⚠️ This value might have side effects
+- *2* {}[???*4**3*]
   ⚠️  unknown object prototype methods or values
-  ⚠️  This value might have side effects
-- *2* FreeVar(platformKey)
+- *3* ⚠️ This value might have side effects
+- *4* FreeVar(platformKey)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
-- *3* unknown mutation
-  ⚠️  This value might have side effects
+- *5* ⚠️ This value might have side effects
+- *6* unknown mutation
 
 pkgAndSubpathForCurrentPlatform = (...) => {"pkg": pkg, "subpath": subpath}
 
@@ -68,32 +82,37 @@ subpath#3 = (???*0* | "esbuild.exe")
 - *0* subpath
   ⚠️  pattern without value
 
-subpath#4 = (???*0* | "esbuild.exe" | ???*1*)
+subpath#4 = (???*0* | "esbuild.exe" | ???*2**1*)
 - *0* subpath
   ⚠️  pattern without value
-- *1* unknown mutation
-  ⚠️  This value might have side effects
+- *1* ⚠️ This value might have side effects
+- *2* unknown mutation
 
-x = (???*0* | ???*1*)
+x = (???*0* | require*2**1*["resolve"](???*3*))
 - *0* binPath
   ⚠️  pattern without value
-- *1* require.resolve*2*(
-        `${(???*3* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*4* | ???*6*)}/${(???*7* | "esbuild.exe" | ???*8*)}`
-    )
-  ⚠️  require.resolve non constant
-  ⚠️  This value might have side effects
-- *2* require.resolve: The require.resolve method from CommonJS
-- *3* pkg
+- *1* ⚠️ This value might have side effects
+- *2* require: The require method from CommonJS
+- *3* `${(
+          | ???*4*
+          | "esbuild-windows-arm64"
+          | "esbuild-windows-32"
+          | "esbuild-windows-64"
+          | ???*6**5*
+          | ???*10**9*
+        )}/${(???*11* | "esbuild.exe" | ???*13**12*)}`
+  ⚠️  nested operation
+- *4* pkg
   ⚠️  pattern without value
-- *4* {}[???*5*]
+- *5* ⚠️ This value might have side effects
+- *6* {}[???*8**7*]
   ⚠️  unknown object prototype methods or values
-  ⚠️  This value might have side effects
-- *5* FreeVar(platformKey)
+- *7* ⚠️ This value might have side effects
+- *8* FreeVar(platformKey)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
-- *6* unknown mutation
-  ⚠️  This value might have side effects
-- *7* subpath
+- *9* ⚠️ This value might have side effects
+- *10* unknown mutation
+- *11* subpath
   ⚠️  pattern without value
-- *8* unknown mutation
-  ⚠️  This value might have side effects
+- *12* ⚠️ This value might have side effects
+- *13* unknown mutation

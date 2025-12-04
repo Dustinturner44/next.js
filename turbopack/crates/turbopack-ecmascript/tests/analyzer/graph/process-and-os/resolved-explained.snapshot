@@ -1,25 +1,140 @@
-arch = os.arch*0*
-- *0* os.arch: The Node.js os.arch method: https://nodejs.org/api/os.html#os_os_arch
+arch = require*1**0*("os")["arch"]
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-binding1 = module<esbuild-x64-linux-LE, {}>
+binding1 = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `esbuild-x64-${???*3*}-${???*8*}`
+  ⚠️  nested operation
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["platform"]
+  ⚠️  unknown object
+- *5* require*7**6*("os")
+  ⚠️  nested operation
+- *6* ⚠️ This value might have side effects
+- *7* require: The require method from CommonJS
+- *8* ???*9*()
+  ⚠️  nested operation
+- *9* ???*10*["endianness"]
+  ⚠️  unknown object
+- *10* require*12**11*("os")
+  ⚠️  nested operation
+- *11* ⚠️ This value might have side effects
+- *12* require: The require method from CommonJS
 
-binding2 = module<esbuild-x64-linux-LE, {}>
+binding2 = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `esbuild-${???*3*}-${???*8*}-${???*13*}`
+  ⚠️  nested operation
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["arch"]
+  ⚠️  unknown object
+- *5* require*7**6*("os")
+  ⚠️  nested operation
+- *6* ⚠️ This value might have side effects
+- *7* require: The require method from CommonJS
+- *8* ???*9*()
+  ⚠️  nested operation
+- *9* ???*10*["platform"]
+  ⚠️  unknown object
+- *10* require*12**11*("os")
+  ⚠️  nested operation
+- *11* ⚠️ This value might have side effects
+- *12* require: The require method from CommonJS
+- *13* ???*14*()
+  ⚠️  nested operation
+- *14* ???*15*["endianness"]
+  ⚠️  unknown object
+- *15* require*17**16*("os")
+  ⚠️  nested operation
+- *16* ⚠️ This value might have side effects
+- *17* require: The require method from CommonJS
 
-binding3 = module<esbuild-x64-linux-LE, {}>
+binding3 = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `esbuild-${???*3*}-linux-${???*8*}`
+  ⚠️  nested operation
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["arch"]
+  ⚠️  unknown object
+- *5* require*7**6*("os")
+  ⚠️  nested operation
+- *6* ⚠️ This value might have side effects
+- *7* require: The require method from CommonJS
+- *8* ???*9*()
+  ⚠️  nested operation
+- *9* ???*10*["endianness"]
+  ⚠️  unknown object
+- *10* require*12**11*("os")
+  ⚠️  nested operation
+- *11* ⚠️ This value might have side effects
+- *12* require: The require method from CommonJS
 
-binding4 = module<esbuild-x64-linux-LE, {}>
+binding4 = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `esbuild-x64-linux-${???*3*}`
+  ⚠️  nested operation
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["endianness"]
+  ⚠️  unknown object
+- *5* require*7**6*("os")
+  ⚠️  nested operation
+- *6* ⚠️ This value might have side effects
+- *7* require: The require method from CommonJS
 
-binding5 = module<esbuild-x64-linux-LE, {}>
+binding5 = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `esbuild-x64-linux-${???*3*}`
+  ⚠️  nested operation
+- *3* ???*4*()
+  ⚠️  nested operation
+- *4* ???*5*["endianness"]
+  ⚠️  unknown object
+- *5* require*7**6*("os")
+  ⚠️  nested operation
+- *6* ⚠️ This value might have side effects
+- *7* require: The require method from CommonJS
 
-binding6 = module<esbuild-x64-linux-LE, {}>
+binding6 = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `esbuild-x64-${???*3*}-${???*7*}`
+  ⚠️  nested operation
+- *3* ???*4*["platform"]
+  ⚠️  unknown object
+- *4* require*6**5*("process")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
+- *7* ???*8*()
+  ⚠️  nested operation
+- *8* ???*9*["endianness"]
+  ⚠️  unknown object
+- *9* require*11**10*("os")
+  ⚠️  nested operation
+- *10* ⚠️ This value might have side effects
+- *11* require: The require method from CommonJS
 
-endianness = os.endianness*0*
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+endianness = require*1**0*("os")["endianness"]
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 p = process*0*
 - *0* process: The Node.js process module: https://nodejs.org/api/process.html
 
-platform = os.process*0*
-- *0* os.process: The Node.js os.process method: https://nodejs.org/api/os.html#os_os_process
+platform = require*1**0*("os")["platform"]
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-processPlatform = "linux"
+processPlatform = require*1**0*("process")["platform"]
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS

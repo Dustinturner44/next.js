@@ -1,35 +1,57 @@
 0 -> 1 free var = FreeVar(require)
 
-0 -> 2 call = require*0*("./libvips")
-- *0* require: The require method from CommonJS
+0 -> 2 call = require*1**0*("./libvips")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 3 call = module<./libvips, {}>["runtimePlatformArch"]()
+0 -> 3 call = require*1**0*("./libvips")["runtimePlatformArch"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 0 -> 5 free var = FreeVar(console)
 
-0 -> 6 member call = ???*0*["log"]("runtimePlatform:", module<./libvips, {}>["runtimePlatformArch"]())
-- *0* FreeVar(console)
+0 -> 6 member call = ???*1**0*["log"]("runtimePlatform:", ???*2*())
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(console)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
+- *2* ???*3*["runtimePlatformArch"]
+  ⚠️  unknown object
+- *3* require*5**4*("./libvips")
+  ⚠️  nested operation
+- *4* ⚠️ This value might have side effects
+- *5* require: The require method from CommonJS
 
 0 -> 7 free var = FreeVar(require)
 
-0 -> 8 call = require*0*(
+0 -> 8 call = require*1**0*(
     (
-      | `../src/build/Release/sharp-${???*1*}.node`
+      | `../src/build/Release/sharp-${???*2*}.node`
       | "../src/build/Release/sharp-wasm32.node"
-      | `@img/sharp-${???*2*}/sharp.node`
+      | `@img/sharp-${???*7*}/sharp.node`
       | "@img/sharp-wasm32/sharp.node"
-      | ???*3*
+      | ???*13**12*
     )
 )
-- *0* require: The require method from CommonJS
-- *1* module<./libvips, {}>["runtimePlatformArch"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*()
   ⚠️  nested operation
-- *2* module<./libvips, {}>["runtimePlatformArch"]()
+- *3* ???*4*["runtimePlatformArch"]
+  ⚠️  unknown object
+- *4* require*6**5*("./libvips")
   ⚠️  nested operation
-- *3* unknown mutation
-  ⚠️  This value might have side effects
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
+- *7* ???*8*()
+  ⚠️  nested operation
+- *8* ???*9*["runtimePlatformArch"]
+  ⚠️  unknown object
+- *9* require*11**10*("./libvips")
+  ⚠️  nested operation
+- *10* ⚠️ This value might have side effects
+- *11* require: The require method from CommonJS
+- *12* ⚠️ This value might have side effects
+- *13* unknown mutation
 
 0 -> 10 member call = []["push"](???*0*)
 - *0* err

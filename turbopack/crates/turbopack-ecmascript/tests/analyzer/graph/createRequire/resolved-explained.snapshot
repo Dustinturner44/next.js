@@ -1,26 +1,44 @@
-moduleRequire = module*0*
-- *0* module: The Node.js `module` module: https://nodejs.org/api/module.html
+moduleRequire = require*1**0*("module")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-req_fail1 = ???*0*
-- *0* module.createRequire*1*(???*2*)
-  ⚠️  createRequire() non constant
-  ⚠️  This value might have side effects
-- *1* module.createRequire: The Node.js module.createRequire method: https://nodejs.org/api/module.html#modulecreaterequirefilename
-- *2* ???*3*["foo"]
+req_fail1 = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* ???*2*(???*7**6*)
+  ⚠️  unknown callee
+- *2* ???*3*["createRequire"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *3* FreeVar(globalThis)
+- *3* require*5**4*("module")
+  ⚠️  nested operation
+- *4* ⚠️ This value might have side effects
+- *5* require: The require method from CommonJS
+- *6* ⚠️ This value might have side effects
+- *7* ???*9**8*["foo"]
+  ⚠️  unknown object
+- *8* ⚠️ This value might have side effects
+- *9* FreeVar(globalThis)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
 req_ok1 = require*0*
 - *0* require: The require method from CommonJS
 
-req_ok2 = require*0*
-- *0* require: The require method from CommonJS
+req_ok2 = ???*0*
+- *0* ???*1*(import.meta*5*["url"])
+  ⚠️  unknown callee
+- *1* ???*2*["createRequire"]
+  ⚠️  unknown object
+- *2* require*4**3*("module")
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* require: The require method from CommonJS
+- *5* import.meta: The import.meta object
 
 req_ok3 = ???*0*
-- *0* module.createRequire*1*("__filename")
-  ⚠️  createRequire() non constant
-  ⚠️  This value might have side effects
-- *1* module.createRequire: The Node.js module.createRequire method: https://nodejs.org/api/module.html#modulecreaterequirefilename
+- *0* ???*1*("__filename")
+  ⚠️  unknown callee
+- *1* ???*2*["createRequire"]
+  ⚠️  unknown object
+- *2* require*4**3*("module")
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* require: The require method from CommonJS

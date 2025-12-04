@@ -1968,8 +1968,10 @@ impl JsValue {
                 }
             }
             JsValue::Effectful(_, operand) => {
+                let i = hints.len();
+                hints.push(format!("- *{i}* ⚠️ This value might have side effects"));
                 format!(
-                    "{}:  ⚠️  This value might have side effects",
+                    "{}*{i}*",
                     operand.explain_internal_inner(hints, indent_depth, depth, unknown_depth)
                 )
             }
@@ -2041,8 +2043,8 @@ impl JsValue {
         }
     }
     pub fn without_side_effects(&self) -> (bool, &JsValue) {
-        if let JsValue::Effectful(_size, inner) = self {
-            (true, &**inner)
+        if let JsValue::Effectful(_size, box inner) = self {
+            (true, inner)
         } else {
             (false, self)
         }
@@ -2349,6 +2351,7 @@ impl JsValue {
                 }
                 .map(|x| x ^ negate)
             }
+            JsValue::Effectful(_, box inner) => inner.is_truthy(),
             _ => None,
         }
     }
@@ -2390,6 +2393,7 @@ impl JsValue {
                 }
                 LogicalOperator::NullishCoalescing => all_if_known(list, JsValue::is_nullish),
             },
+            JsValue::Effectful(_, box inner) => inner.is_nullish(),
             _ => None,
         }
     }
@@ -2433,6 +2437,7 @@ impl JsValue {
             | JsValue::WellKnownObject(..)
             | JsValue::WellKnownFunction(..)
             | JsValue::Function(..) => Some(false),
+            JsValue::Effectful(_, box inner) => inner.is_empty_string(),
             _ => None,
         }
     }
@@ -2447,74 +2452,8 @@ impl JsValue {
                 values,
                 logical_property: _,
             } => values.iter().any(|x| x.is_unknown()),
+            JsValue::Effectful(_, inner) => inner.is_unknown(),
             _ => false,
-        }
-    }
-
-    /// Checks if we know that the value is a string. Returns None if we
-    /// don't know. Returns Some if we know if or if not the value is a string.
-    pub fn is_string(&self) -> Option<bool> {
-        match self {
-            JsValue::Constant(ConstantValue::Str(..))
-            | JsValue::Concat(..)
-            | JsValue::TypeOf(..) => Some(true),
-            JsValue::Constant(..)
-            | JsValue::Array { .. }
-            | JsValue::Object { .. }
-            | JsValue::Url(..)
-            | JsValue::Module(..)
-            | JsValue::Function(..)
-            | JsValue::WellKnownObject(_)
-            | JsValue::WellKnownFunction(_)
-            | JsValue::Promise(_, _) => Some(false),
-            JsValue::Not(..) | JsValue::Binary(..) => Some(false),
-            JsValue::Add(_, list) => any_if_known(list, JsValue::is_string),
-            JsValue::Logical(_, op, list) => match op {
-                LogicalOperator::And => {
-                    shortcircuit_if_known(list, JsValue::is_truthy, JsValue::is_string)
-                }
-                LogicalOperator::Or => {
-                    shortcircuit_if_known(list, JsValue::is_falsy, JsValue::is_string)
-                }
-                LogicalOperator::NullishCoalescing => {
-                    shortcircuit_if_known(list, JsValue::is_not_nullish, JsValue::is_string)
-                }
-            },
-            JsValue::Alternatives {
-                total_nodes: _,
-                values,
-                logical_property: _,
-            } => merge_if_known(values, JsValue::is_string),
-            JsValue::Call(
-                _,
-                box JsValue::WellKnownFunction(
-                    WellKnownFunctionKind::RequireResolve
-                    | WellKnownFunctionKind::PathJoin
-                    | WellKnownFunctionKind::PathResolve(..)
-                    | WellKnownFunctionKind::OsArch
-                    | WellKnownFunctionKind::OsPlatform
-                    | WellKnownFunctionKind::PathDirname
-                    | WellKnownFunctionKind::PathToFileUrl
-                    | WellKnownFunctionKind::ProcessCwd,
-                ),
-                _,
-            ) => Some(true),
-            JsValue::Awaited(_, operand) => match &**operand {
-                JsValue::Promise(_, v) => v.is_string(),
-                v => v.is_string(),
-            },
-            JsValue::FreeVar(..)
-            | JsValue::Variable(_)
-            | JsValue::Unknown { .. }
-            | JsValue::Argument(..)
-            | JsValue::New(..)
-            | JsValue::Call(..)
-            | JsValue::MemberCall(..)
-            | JsValue::Member(..)
-            | JsValue::Tenary(..)
-            | JsValue::SuperCall(..)
-            | JsValue::Iterated(..) => None,
-            JsValue::Effectful(_, js_value) => js_value.is_string(),
         }
     }
 
@@ -2522,10 +2461,11 @@ impl JsValue {
     /// None if we don't know. Returns Some if we know if or if not the
     /// value starts with the given string.
     pub fn starts_with(&self, str: &str) -> Option<bool> {
-        if let Some(s) = self.as_str() {
+        let (_, this) = self.without_side_effects();
+        if let Some(s) = this.as_str() {
             return Some(s.starts_with(str));
         }
-        match self {
+        match this {
             JsValue::Alternatives {
                 total_nodes: _,
                 values,
@@ -2557,10 +2497,11 @@ impl JsValue {
     /// None if we don't know. Returns Some if we know if or if not the
     /// value ends with the given string.
     pub fn ends_with(&self, str: &str) -> Option<bool> {
-        if let Some(s) = self.as_str() {
+        let (_, this) = self.without_side_effects();
+        if let Some(s) = this.as_str() {
             return Some(s.ends_with(str));
         }
-        match self {
+        match this {
             JsValue::Alternatives {
                 total_nodes: _,
                 values,

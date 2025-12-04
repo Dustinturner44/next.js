@@ -1,12 +1,14 @@
 0 -> 1 free var = FreeVar(require)
 
-0 -> 2 call = require*0*("os")
-- *0* require: The require method from CommonJS
+0 -> 2 call = require*1**0*("os")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 0 -> 3 free var = FreeVar(require)
 
-0 -> 4 call = require*0*("process")
-- *0* require: The require method from CommonJS
+0 -> 4 call = require*1**0*("process")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 0 -> 5 free var = FreeVar(process)
 
@@ -14,41 +16,107 @@
 
 0 -> 8 free var = FreeVar(process)
 
-0 -> 9 call = os.process*0*()
-- *0* os.process: The Node.js os.process method: https://nodejs.org/api/os.html#os_os_process
+0 -> 9 call = require*1**0*("os")["platform"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 10 call = os.endianness*0*()
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+0 -> 10 call = require*1**0*("os")["endianness"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 11 call = require*0*("esbuild-x64-linux-LE")
-- *0* require: The require method from CommonJS
+0 -> 11 call = require*1**0*(`esbuild-x64-${???*2*}-${???*7*}`)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*()
+  ⚠️  nested operation
+- *3* ???*4*["platform"]
+  ⚠️  unknown object
+- *4* require*6**5*("os")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
+- *7* ???*8*()
+  ⚠️  nested operation
+- *8* ???*9*["endianness"]
+  ⚠️  unknown object
+- *9* require*11**10*("os")
+  ⚠️  nested operation
+- *10* ⚠️ This value might have side effects
+- *11* require: The require method from CommonJS
 
 0 -> 12 free var = FreeVar(require)
 
-0 -> 13 call = os.arch*0*()
-- *0* os.arch: The Node.js os.arch method: https://nodejs.org/api/os.html#os_os_arch
+0 -> 13 call = require*1**0*("os")["arch"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 14 call = os.process*0*()
-- *0* os.process: The Node.js os.process method: https://nodejs.org/api/os.html#os_os_process
+0 -> 14 call = require*1**0*("os")["platform"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 15 call = os.endianness*0*()
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+0 -> 15 call = require*1**0*("os")["endianness"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 16 call = require*0*("esbuild-x64-linux-LE")
-- *0* require: The require method from CommonJS
+0 -> 16 call = require*1**0*(`esbuild-${???*2*}-${???*7*}-${???*12*}`)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*()
+  ⚠️  nested operation
+- *3* ???*4*["arch"]
+  ⚠️  unknown object
+- *4* require*6**5*("os")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
+- *7* ???*8*()
+  ⚠️  nested operation
+- *8* ???*9*["platform"]
+  ⚠️  unknown object
+- *9* require*11**10*("os")
+  ⚠️  nested operation
+- *10* ⚠️ This value might have side effects
+- *11* require: The require method from CommonJS
+- *12* ???*13*()
+  ⚠️  nested operation
+- *13* ???*14*["endianness"]
+  ⚠️  unknown object
+- *14* require*16**15*("os")
+  ⚠️  nested operation
+- *15* ⚠️ This value might have side effects
+- *16* require: The require method from CommonJS
 
 0 -> 17 free var = FreeVar(require)
 
-0 -> 18 call = os.arch*0*()
-- *0* os.arch: The Node.js os.arch method: https://nodejs.org/api/os.html#os_os_arch
+0 -> 18 call = require*1**0*("os")["arch"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 0 -> 20 free var = FreeVar(process)
 
-0 -> 21 call = os.endianness*0*()
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+0 -> 21 call = require*1**0*("os")["endianness"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 22 call = require*0*("esbuild-x64-linux-LE")
-- *0* require: The require method from CommonJS
+0 -> 22 call = require*1**0*(`esbuild-${???*2*}-linux-${???*7*}`)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*()
+  ⚠️  nested operation
+- *3* ???*4*["arch"]
+  ⚠️  unknown object
+- *4* require*6**5*("os")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
+- *7* ???*8*()
+  ⚠️  nested operation
+- *8* ???*9*["endianness"]
+  ⚠️  unknown object
+- *9* require*11**10*("os")
+  ⚠️  nested operation
+- *10* ⚠️ This value might have side effects
+- *11* require: The require method from CommonJS
 
 0 -> 23 free var = FreeVar(require)
 
@@ -56,24 +124,60 @@
 
 0 -> 27 free var = FreeVar(process)
 
-0 -> 28 call = os.endianness*0*()
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+0 -> 28 call = require*1**0*("os")["endianness"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 29 call = require*0*("esbuild-x64-linux-LE")
-- *0* require: The require method from CommonJS
+0 -> 29 call = require*1**0*(`esbuild-x64-linux-${???*2*}`)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*()
+  ⚠️  nested operation
+- *3* ???*4*["endianness"]
+  ⚠️  unknown object
+- *4* require*6**5*("os")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
 
 0 -> 30 free var = FreeVar(require)
 
-0 -> 33 call = os.endianness*0*()
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+0 -> 33 call = require*1**0*("os")["endianness"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 34 call = require*0*("esbuild-x64-linux-LE")
-- *0* require: The require method from CommonJS
+0 -> 34 call = require*1**0*(`esbuild-x64-linux-${???*2*}`)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*()
+  ⚠️  nested operation
+- *3* ???*4*["endianness"]
+  ⚠️  unknown object
+- *4* require*6**5*("os")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
 
 0 -> 35 free var = FreeVar(require)
 
-0 -> 37 call = os.endianness*0*()
-- *0* os.endianness: The Node.js os.endianness method: https://nodejs.org/api/os.html#os_os_endianness
+0 -> 37 call = require*1**0*("os")["endianness"]()
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-0 -> 38 call = require*0*("esbuild-x64-linux-LE")
-- *0* require: The require method from CommonJS
+0 -> 38 call = require*1**0*(`esbuild-x64-${???*2*}-${???*6*}`)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ???*3*["platform"]
+  ⚠️  unknown object
+- *3* require*5**4*("process")
+  ⚠️  nested operation
+- *4* ⚠️ This value might have side effects
+- *5* require: The require method from CommonJS
+- *6* ???*7*()
+  ⚠️  nested operation
+- *7* ???*8*["endianness"]
+  ⚠️  unknown object
+- *8* require*10**9*("os")
+  ⚠️  nested operation
+- *9* ⚠️ This value might have side effects
+- *10* require: The require method from CommonJS

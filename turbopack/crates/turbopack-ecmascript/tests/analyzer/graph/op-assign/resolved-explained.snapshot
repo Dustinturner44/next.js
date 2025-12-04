@@ -1,6 +1,6 @@
-*arrow function 173* = (...) => (???*0* | undefined)
-- *0* spread in function calls is not supported
-  ⚠️  This value might have side effects
+*arrow function 173* = (...) => (???*1**0* | undefined)
+- *0* ⚠️ This value might have side effects
+- *1* spread in function calls is not supported
 
 ComponentMod = ???*0*
 - *0* arguments[0]
@@ -10,40 +10,40 @@ args = ???*0*
 - *0* args
   ⚠️  pattern without value
 
-clientComponentLoadTimes = (0 | (???*0* + ???*1*))
+clientComponentLoadTimes = (0 | (???*0* + ???*2**1*))
 - *0* clientComponentLoadTimes
   ⚠️  circular variable reference
-- *1* unsupported expression
-  ⚠️  This value might have side effects
+- *1* ⚠️ This value might have side effects
+- *2* unsupported expression
 
 getClientComponentLoaderMetrics = (...) => metrics
 
-metrics = (???*0* ? undefined : {"clientComponentLoadTimes": (0 | ???*4*)})
+metrics = (???*0* ? undefined : {"clientComponentLoadTimes": (0 | ???*5*)})
 - *0* ((0 | ???*1*) === 0)
   ⚠️  nested operation
-- *1* (???*2* + ???*3*)
+- *1* (???*2* + ???*4**3*)
   ⚠️  nested operation
 - *2* clientComponentLoadTimes
   ⚠️  circular variable reference
-- *3* unsupported expression
-  ⚠️  This value might have side effects
-- *4* (???*5* + ???*6*)
+- *3* ⚠️ This value might have side effects
+- *4* unsupported expression
+- *5* (???*6* + ???*8**7*)
   ⚠️  nested operation
-- *5* clientComponentLoadTimes
+- *6* clientComponentLoadTimes
   ⚠️  circular variable reference
-- *6* unsupported expression
-  ⚠️  This value might have side effects
+- *7* ⚠️ This value might have side effects
+- *8* unsupported expression
 
 options = ???*0*
 - *0* options
   ⚠️  pattern without value
 
-startTime = ???*0*()
-- *0* ???*1*["now"]
+startTime = ???*1**0*()
+- *0* ⚠️ This value might have side effects
+- *1* ???*3**2*["now"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *1* FreeVar(performance)
+- *2* ⚠️ This value might have side effects
+- *3* FreeVar(performance)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
 wrapClientComponentLoader = (...) => {"loadChunk": *arrow function 173*}

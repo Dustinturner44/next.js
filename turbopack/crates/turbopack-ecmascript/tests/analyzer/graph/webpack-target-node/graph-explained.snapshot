@@ -1,4 +1,5 @@
-*arrow function 1213* = (...) => __webpack_require__(effectful(moduleId))
+*arrow function 1213* = (...) => __webpack_require__(moduleId*0*)
+- *0* ⚠️ This value might have side effects
 
 *arrow function 131* = (...) => undefined
 

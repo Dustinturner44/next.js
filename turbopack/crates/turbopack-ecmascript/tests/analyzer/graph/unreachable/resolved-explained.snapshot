@@ -27,6 +27,6 @@ x#10 = ???*0*
 
 x#17 = (...) => undefined
 
-y = ???*0*
-- *0* unknown mutation
-  ⚠️  This value might have side effects
+y = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* unknown mutation

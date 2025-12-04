@@ -12,7 +12,8 @@ d (const after eval) = !(x)
 
 e (const after eval) = !(!(x))
 
-n (const after eval) = ((effectful(r) && t["__esModule"]) ? t : {"default": t})
+n (const after eval) = ((r*0* && t["__esModule"]) ? t : {"default": t})
+- *0* ⚠️ This value might have side effects
 
 r (const after eval) = {}
 

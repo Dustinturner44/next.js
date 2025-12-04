@@ -8,6 +8,7 @@ use crate::analyzer::JsValueUrlKind;
 /// arguments.
 /// Returns true if a replacement was made
 pub fn early_replace_builtin(value: &mut JsValue) -> bool {
+    let (_, value) = value.without_side_effects_mut();
     match value {
         // matching calls like `callee(arg1, arg2, ...)`
         JsValue::Call(_, box callee, args) => {
@@ -96,6 +97,7 @@ pub fn early_replace_builtin(value: &mut JsValue) -> bool {
 /// contrast to early_replace_builtin this has all inner values already
 /// processed.
 pub fn replace_builtin(value: &mut JsValue) -> bool {
+    let (_, value) = value.without_side_effects_mut();
     match value {
         JsValue::Add(_, list) => {
             // numeric addition
@@ -444,17 +446,16 @@ pub fn replace_builtin(value: &mut JsValue) -> bool {
             }
 
             // matching calls on strings like `"dayjs/locale/".concat(userLocale, ".js")`
-            if obj.is_string() == Some(true)
-                && let Some(str) = prop.as_str()
+            if obj.as_str().is_some()
+                && let Some("concat") = prop.as_str()
             {
                 // The String.prototype.concat method
-                if str == "concat" {
-                    let mut values = vec![take(obj)];
-                    values.extend(take(args));
 
-                    *value = JsValue::concat(values);
-                    return true;
-                }
+                let mut values = vec![take(obj)];
+                values.extend(take(args));
+
+                *value = JsValue::concat(values);
+                return true;
             }
 
             // without special handling, we convert it into a normal call like

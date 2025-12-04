@@ -1,16 +1,16 @@
 *arrow function 907* = (...) => undefined
 
-ConstAfterEvalClass = ???*0*
-- *0* unsupported expression
-  ⚠️  This value might have side effects
+ConstAfterEvalClass = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* unsupported expression
 
 d1 = 2
 
 default_function_export_const_after_eval = (...) => undefined
 
-i = (0 | ???*0*)
-- *0* updated with update expression
-  ⚠️  This value might have side effects
+i = (0 | ???*1**0*)
+- *0* ⚠️ This value might have side effects
+- *1* updated with update expression
 
 named_const_export_const_after_eval = 3
 

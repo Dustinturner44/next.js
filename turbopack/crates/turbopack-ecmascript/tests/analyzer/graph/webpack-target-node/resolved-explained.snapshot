@@ -1,4 +1,5 @@
-*arrow function 1213* = (...) => __webpack_require__(effectful(moduleId))
+*arrow function 1213* = (...) => __webpack_require__(moduleId*0*)
+- *0* ⚠️ This value might have side effects
 
 *arrow function 131* = (...) => undefined
 
@@ -8,15 +9,26 @@ __unused_webpack_module = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-__webpack_exec__ = (...) => __webpack_require__(effectful(moduleId))
+__webpack_exec__ = (...) => __webpack_require__(moduleId*0*)
+- *0* ⚠️ This value might have side effects
 
-__webpack_exports__#3 = module<../../webpack-api-runtime.js, {}>(effectful(5166))
+__webpack_exports__#3 = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* ???*2*(5166*5*)
+  ⚠️  unknown callee
+- *2* require*4**3*("../../webpack-api-runtime.js")
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* require: The require method from CommonJS
+- *5* ⚠️ This value might have side effects
 
 __webpack_exports__#4 = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-__webpack_require__#3 = module<../../webpack-api-runtime.js, {}>
+__webpack_require__#3 = require*1**0*("../../webpack-api-runtime.js")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 __webpack_require__#4 = ???*0*
 - *0* arguments[2]
@@ -31,17 +43,22 @@ exports = {}
 handler = (...) => Promise<undefined>
 
 hello = ???*0*
-- *0* fs.readFile*1*("./hello.txt", "utf-8")
-  ⚠️  unsupported function
-  ⚠️  This value might have side effects
-- *1* fs.readFile: A file reading method from the Node.js fs module: https://nodejs.org/api/fs.html
+- *0* ???*1*("./hello.txt", "utf-8")
+  ⚠️  unknown callee
+- *1* ???*2*["readFile"]
+  ⚠️  unknown object
+- *2* require*4**3*("fs/promises")
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* require: The require method from CommonJS
 
 moduleId = ???*0*
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-promises_namespaceObject = fs*0*
-- *0* fs: The Node.js fs module: https://nodejs.org/api/fs.html
+promises_namespaceObject = require*1**0*("fs/promises")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 res = ???*0*
 - *0* arguments[1]

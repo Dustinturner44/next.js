@@ -1,11 +1,36 @@
-a = "[context: ./test]/a"
+a = ???*0*
+- *0* ???*1*("./a")
+  ⚠️  unknown callee
+- *1* ???*2*["resolve"]
+  ⚠️  unknown object
+- *2* require*4**3*["context"]("./test", false, /\.test\.js$/)
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* require: The require method from CommonJS
 
-context = require.context(...)*0*
-- *0* require.context(...): The require.context(...) method from webpack: https://webpack.js.org/api/module-methods/#requirecontext
+context = require*1**0*["context"]("./test", false, /\.test\.js$/)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
 importAll = (...) => r["keys"]()["map"](r)
 
-items = [module<[context: ./test]/a, {}>, module<[context: ./test]/b, {}>, module<[context: ./test]/c, {}>]
+items = ???*0*
+- *0* ???*1*(???*7*)
+  ⚠️  unknown callee
+- *1* ???*2*["map"]
+  ⚠️  unknown object
+- *2* ???*3*()
+  ⚠️  nested operation
+- *3* ???*4*["keys"]
+  ⚠️  unknown object
+- *4* require*6**5*["context"]("./test", false, /\.test\.js$/)
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS
+- *7* require*9**8*["context"]("./test", false, /\.test\.js$/)
+  ⚠️  nested operation
+- *8* ⚠️ This value might have side effects
+- *9* require: The require method from CommonJS
 
 r = ???*0*
 - *0* arguments[0]

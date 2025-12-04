@@ -1,8 +1,12 @@
-Redis = (???*0* ? module<ioredis, {}> : module<@upstash/redis, {}>["Redis"])
+Redis = (???*0* ? ???*4* : module<@upstash/redis, {}>["Redis"])
 - *0* (???*1* === "undefined")
   ⚠️  nested operation
-- *1* typeof(???*2*)
+- *1* typeof(???*3**2*)
   ⚠️  nested operation
-- *2* FreeVar(EdgeRuntime)
+- *2* ⚠️ This value might have side effects
+- *3* FreeVar(EdgeRuntime)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
+- *4* require*6**5*("ioredis")
+  ⚠️  nested operation
+- *5* ⚠️ This value might have side effects
+- *6* require: The require method from CommonJS

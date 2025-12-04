@@ -16,15 +16,15 @@ d = "hello"
 
 dd = "hello"
 
-e = ???*0*
-- *0* unsupported expression
-  ⚠️  This value might have side effects
+e = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* unsupported expression
 
-ee = ???*0*
-- *0* unsupported expression
-  ⚠️  This value might have side effects
+ee = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* unsupported expression
 
-ff = ???*0*
-- *0* FreeVar(f)
+ff = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(f)
   ⚠️  unknown global
-  ⚠️  This value might have side effects

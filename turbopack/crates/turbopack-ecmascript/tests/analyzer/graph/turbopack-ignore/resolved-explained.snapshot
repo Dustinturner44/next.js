@@ -1,9 +1,27 @@
-exported_t_r = module<exported_t_r, {}>
+exported_t_r = require*1**0*("exported_t_r")
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
 
-t_i = module<t_i, {}>
+t_i = import*1**0*("t_i")
+- *0* ⚠️ This value might have side effects
+- *1* import: The dynamic import() method from the ESM specification: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports
 
-t_r = (module<w_i_f, {}> | module<t_i_f, {}> | module<t_r_t, {}> | module<t_r_f, {}>)
+t_r = (require*1**0*("w_i_f") | require*3**2*("t_i_f") | require*5**4*("t_r_t") | require*7**6*("t_r_f"))
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ⚠️ This value might have side effects
+- *3* require: The require method from CommonJS
+- *4* ⚠️ This value might have side effects
+- *5* require: The require method from CommonJS
+- *6* ⚠️ This value might have side effects
+- *7* require: The require method from CommonJS
 
-w_i = module<w_i, {}>
+w_i = import*1**0*("w_i")
+- *0* ⚠️ This value might have side effects
+- *1* import: The dynamic import() method from the ESM specification: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports
 
-w_r = (module<w_r_t, {}> | module<w_r_f, {}>)
+w_r = (require*1**0*("w_r_t") | require*3**2*("w_r_f"))
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ⚠️ This value might have side effects
+- *3* require: The require method from CommonJS

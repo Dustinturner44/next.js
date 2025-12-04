@@ -1,35 +1,31 @@
-Collection = ???*0*
-- *0* require*1*(
-        `${(???*2* | "./drivers/node-mongodb-native"){truthy}}/collection`
-    )
-  ⚠️  only constant argument is supported
-  ⚠️  This value might have side effects
+Collection = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
 - *1* require: The require method from CommonJS
-- *2* ???*3*["MONGOOSE_DRIVER_PATH"]
+- *2* `${(???*4**3* | "./drivers/node-mongodb-native"){truthy}}/collection`
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* ???*6**5*["MONGOOSE_DRIVER_PATH"]
   ⚠️  unknown object
-  ⚠️  This value might have side effects
+- *5* ⚠️ This value might have side effects
+- *6* FreeVar(global)
+  ⚠️  unknown global
+
+Connection = require*1**0*(???*2*)
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* `${(???*4**3* | "./drivers/node-mongodb-native"){truthy}}/connection`
+  ⚠️  nested operation
+- *3* ⚠️ This value might have side effects
+- *4* ???*6**5*["MONGOOSE_DRIVER_PATH"]
+  ⚠️  unknown object
+- *5* ⚠️ This value might have side effects
+- *6* FreeVar(global)
+  ⚠️  unknown global
+
+driver = (???*1**0* | "./drivers/node-mongodb-native"){truthy}
+- *0* ⚠️ This value might have side effects
+- *1* ???*3**2*["MONGOOSE_DRIVER_PATH"]
+  ⚠️  unknown object
+- *2* ⚠️ This value might have side effects
 - *3* FreeVar(global)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
-
-Connection = ???*0*
-- *0* require*1*(
-        `${(???*2* | "./drivers/node-mongodb-native"){truthy}}/connection`
-    )
-  ⚠️  only constant argument is supported
-  ⚠️  This value might have side effects
-- *1* require: The require method from CommonJS
-- *2* ???*3*["MONGOOSE_DRIVER_PATH"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *3* FreeVar(global)
-  ⚠️  unknown global
-  ⚠️  This value might have side effects
-
-driver = (???*0* | "./drivers/node-mongodb-native"){truthy}
-- *0* ???*1*["MONGOOSE_DRIVER_PATH"]
-  ⚠️  unknown object
-  ⚠️  This value might have side effects
-- *1* FreeVar(global)
-  ⚠️  unknown global
-  ⚠️  This value might have side effects

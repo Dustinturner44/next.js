@@ -4,52 +4,53 @@ b = true
 
 c = true
 
-chain1 = ???*0*
-- *0* FreeVar(global)
+chain1 = ???*1**0*
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(global)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
-chain2 = (???*0* | 3){truthy}
-- *0* FreeVar(global)
+chain2 = (???*1**0* | 3){truthy}
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(global)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
 d = false
 
 e = true
 
-n = ((effectful({}) | ???*0* | undefined | ???*2*) ? (???*3* | {}) : {"default": (???*4* | {})})
-- *0* ???*1*["__esModule"]
+n = (({}*0* | ???*1* | undefined | ???*4**3*) ? (???*5* | {}) : {"default": (???*6* | {})})
+- *0* ⚠️ This value might have side effects
+- *1* ???*2*["__esModule"]
   ⚠️  unknown object
-- *1* t
+- *2* t
   ⚠️  pattern without value
-- *2* unknown mutation
-  ⚠️  This value might have side effects
-- *3* t
+- *3* ⚠️ This value might have side effects
+- *4* unknown mutation
+- *5* t
   ⚠️  pattern without value
-- *4* t
+- *6* t
   ⚠️  pattern without value
 
 r = {}
 
-resolve1 = (???*0* | 4)
-- *0* FreeVar(global)
+resolve1 = (???*1**0* | 4)
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(global)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
 resolve2 = 0
 
-resolve3 = (???*0* | true){truthy}
-- *0* FreeVar(global)
+resolve3 = (???*1**0* | true){truthy}
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(global)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
 resolve4 = true
 
-resolve5 = (???*0* | false){falsy}
-- *0* FreeVar(global)
+resolve5 = (???*1**0* | false){falsy}
+- *0* ⚠️ This value might have side effects
+- *1* FreeVar(global)
   ⚠️  unknown global
-  ⚠️  This value might have side effects
 
 resolve6 = false
 

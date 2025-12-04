@@ -10,7 +10,11 @@ b = ["../lib/a.js", "../lib/b.js"]
 
 c = [["../lib/a.js"], ["../lib/b.js"]]
 
-d = ["\"../lib/a.js\"/resolved/lib/index.js", "\"../lib/b.js\"/resolved/lib/index.js"]
+d = [require*1**0*["resolve"]("../lib/a.js"), require*3**2*["resolve"]("../lib/b.js")]
+- *0* ⚠️ This value might have side effects
+- *1* require: The require method from CommonJS
+- *2* ⚠️ This value might have side effects
+- *3* require: The require method from CommonJS
 
 file#3 = ???*0*
 - *0* arguments[0]
