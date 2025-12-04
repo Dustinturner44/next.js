@@ -97,14 +97,17 @@ pub async fn get_module_graph_snapshot(
                     get_or_create_module(&mut modules, &mut module_to_index, parent_module);
                 let parent_module_info = &mut modules[parent_index];
                 let parent_depth = parent_module_info.depth;
-                debug_assert!(parent_depth < u32::MAX);
                 parent_module_info.references.push(ModuleReference {
                     index: module_index,
                     chunking_type: ref_data.chunking_type.clone(),
                     export: ref_data.binding_usage.export.clone(),
                 });
                 let module_info = &mut modules[module_index];
-                module_info.depth = module_info.depth.min(parent_depth + 1);
+                // Only update depth if parent's depth has been set (not u32::MAX)
+                // This can happen with cycles or when traversal order doesn't guarantee parent-first
+                if parent_depth < u32::MAX {
+                    module_info.depth = module_info.depth.min(parent_depth.saturating_add(1));
+                }
                 module_info.incoming_references.push(ModuleReference {
                     index: parent_index,
                     chunking_type: ref_data.chunking_type.clone(),

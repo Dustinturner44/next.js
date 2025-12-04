@@ -18,6 +18,8 @@ import {
   isInsideApp,
 } from './utils'
 import { NEXT_TS_ERRORS } from './constant'
+import { getModuleLayer, getLayerLabel } from './module-layer'
+import { getBuildIssuesForFile, severityToCategory } from './build-issues'
 
 import entryConfig from './rules/config'
 import serverLayer from './rules/server'
@@ -54,6 +56,31 @@ export const createTSPlugin: tsModule.server.PluginModuleFactory = ({
       const x = info.languageService[k as keyof tsModule.LanguageService]
       // @ts-expect-error - JS runtime trickery which is tricky to type tersely
       proxy[k] = (...args: Array<{}>) => x.apply(info.languageService, args)
+    }
+
+    // Inlay hints - show module layer info at the start of the file
+    proxy.provideInlayHints = (
+      fileName: string,
+      span: tsModule.TextSpan
+    ): tsModule.InlayHint[] => {
+      const hints: tsModule.InlayHint[] = []
+
+      // Only show hint at the start of the file
+      if (span.start === 0) {
+        const layerInfo = getModuleLayer(fileName)
+        if (layerInfo && layerInfo.layer) {
+          const layerLabel = getLayerLabel(layerInfo.layer)
+          hints.push({
+            position: 0,
+            text: `[${layerLabel}] `,
+            kind: ts.InlayHintKind.Type,
+            whitespaceBefore: false,
+            whitespaceAfter: true,
+          })
+        }
+      }
+
+      return hints
     }
 
     // Auto completion
@@ -140,6 +167,33 @@ export const createTSPlugin: tsModule.server.PluginModuleFactory = ({
         fileName,
         position
       )
+
+      // Add module layer info at the start of the file (position 0)
+      // This shows "Server Component" or "Client Component" on hover
+      if (position === 0) {
+        const layerInfo = getModuleLayer(fileName)
+        if (layerInfo && layerInfo.layer) {
+          const layerLabel = getLayerLabel(layerInfo.layer)
+          const layerDoc: tsModule.SymbolDisplayPart[] = [
+            { kind: 'text', text: `Next.js: ${layerLabel}` },
+          ]
+
+          if (prior) {
+            return {
+              ...prior,
+              documentation: [...(prior.documentation || []), ...layerDoc],
+            }
+          }
+
+          return {
+            kind: ts.ScriptElementKind.unknown,
+            kindModifiers: '',
+            textSpan: { start: 0, length: 0 },
+            documentation: layerDoc,
+          }
+        }
+      }
+
       if (!isAppEntryFile(fileName)) return prior
 
       // Remove type suggestions for disallowed APIs in server components.
@@ -186,6 +240,38 @@ export const createTSPlugin: tsModule.server.PluginModuleFactory = ({
         })
         isClientEntry = false
         isServerEntry = false
+      }
+
+      // Add module layer info as a suggestion diagnostic (shows as "..." under first character)
+      const layerInfo = getModuleLayer(fileName)
+      if (layerInfo && layerInfo.layer) {
+        const layerLabel = getLayerLabel(layerInfo.layer)
+        prior.push({
+          file: source,
+          category: ts.DiagnosticCategory.Suggestion,
+          code: NEXT_TS_ERRORS.MODULE_LAYER_INFO,
+          messageText: `Next.js: This file is bundled as a ${layerLabel}.`,
+          start: 0,
+          length: 1,
+        })
+      }
+
+      // Add build issues (duplicate packages, etc.) from dev server analysis
+      const buildIssues = getBuildIssuesForFile(fileName)
+      for (const issue of buildIssues) {
+        const position = ts.getPositionOfLineAndCharacter(
+          source,
+          Math.max(0, issue.line - 1),
+          Math.max(0, issue.column - 1)
+        )
+        prior.push({
+          file: source,
+          category: severityToCategory(issue.severity, ts),
+          code: NEXT_TS_ERRORS.BUILD_ISSUE,
+          messageText: issue.message,
+          start: position,
+          length: 1,
+        })
       }
 
       if (isInsideApp(fileName)) {

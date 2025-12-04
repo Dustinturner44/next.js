@@ -1,6 +1,7 @@
 // 'use client'
 
 import { v4 as uuidv4New } from 'uuid'
+// @ts-ignore
 import { v4 as uuidv4Old } from 'uuid8'
 
 export default function Page() {

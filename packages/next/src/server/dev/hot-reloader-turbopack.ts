@@ -35,6 +35,9 @@ import {
 } from './middleware-turbopack'
 import { PageNotFoundError } from '../../shared/lib/utils'
 import { debounce } from '../utils'
+import { writeModuleLayerInfo } from './write-module-info'
+import { writeBuildIssues } from './write-build-issues'
+import { moduleLayerMiddleware } from './module-layer-middleware'
 import { deleteCache } from './require-cache'
 import {
   clearAllModuleContexts,
@@ -319,6 +322,18 @@ export async function createHotReloaderTurbopack(
 
   const currentTopLevelIssues: TopLevelIssuesMap = new Map()
   const currentEntryIssues: EntryIssuesMap = new Map()
+
+  // Debounced write of module layer info and build issues for TS plugin
+  const writeModuleInfoDebounced = debounce(async () => {
+    try {
+      await Promise.all([
+        writeModuleLayerInfo(distDir, currentEntrypoints),
+        writeBuildIssues(distDir, currentEntrypoints),
+      ])
+    } catch {
+      // Ignore errors writing module info
+    }
+  }, 500)
 
   const manifestLoader = new TurbopackManifestLoader({
     buildId,
@@ -711,6 +726,9 @@ export async function createHotReloaderTurbopack(
         },
       })
 
+      // Write module layer info and build issues for TS plugin (debounced)
+      writeModuleInfoDebounced()
+
       // Reload matchers when the files have been compiled
       await propagateServerField(opts, 'reloadMatchers', undefined)
 
@@ -787,6 +805,7 @@ export async function createHotReloaderTurbopack(
       getTurbopackProject: () => project,
       getCurrentEntrypoints: () => currentEntrypoints,
     }),
+    moduleLayerMiddleware({ distDir }),
     ...(nextConfig.experimental.mcpServer
       ? [
           getMcpMiddleware({
