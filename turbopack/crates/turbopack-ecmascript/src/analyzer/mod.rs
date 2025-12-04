@@ -3070,7 +3070,7 @@ impl JsValue {
                 let mut added: Vec<JsValue> = Vec::new();
                 let mut iter = take(v).into_iter();
                 while let Some(item) = iter.next() {
-                    if item.is_string() == Some(true) {
+                    if item.as_str().is_some() {
                         let mut concat = match added.len() {
                             0 => Vec::new(),
                             1 => vec![added.into_iter().next().unwrap()],
