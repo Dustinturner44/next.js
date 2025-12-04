@@ -99,13 +99,11 @@
         if ("fulfilled" === moduleExports.status)
           moduleExports = moduleExports.value;
         else throw moduleExports.reason;
-      return "*" === metadata[2]
-        ? moduleExports
-        : "" === metadata[2]
-          ? moduleExports.__esModule
-            ? moduleExports.default
-            : moduleExports
-          : moduleExports[metadata[2]];
+      if ("*" === metadata[2]) return moduleExports;
+      if ("" === metadata[2])
+        return moduleExports.__esModule ? moduleExports.default : moduleExports;
+      if (hasOwnProperty.call(moduleExports, metadata[2]))
+        return moduleExports[metadata[2]];
     }
     function getIteratorFn(maybeIterable) {
       if (null === maybeIterable || "object" !== typeof maybeIterable)
@@ -4677,6 +4675,7 @@
       ReactDOM = require("react-dom"),
       decoderOptions = { stream: !0 },
       bind = Function.prototype.bind,
+      hasOwnProperty = Object.prototype.hasOwnProperty,
       instrumentedChunks = new WeakSet(),
       loadedChunks = new WeakSet(),
       chunkIOInfoCache = new Map(),
@@ -4710,7 +4709,6 @@
       v8FrameRegExp =
         /^ {3} at (?:(.+) \((.+):(\d+):(\d+)\)|(?:async )?(.+):(\d+):(\d+))$/,
       jscSpiderMonkeyFrameRegExp = /(?:(.*)@)?(.*):(\d+):(\d+)/,
-      hasOwnProperty = Object.prototype.hasOwnProperty,
       REACT_CLIENT_REFERENCE = Symbol.for("react.client.reference"),
       supportsUserTiming =
         "undefined" !== typeof console &&
@@ -4887,10 +4885,10 @@
       return hook.checkDCE ? !0 : !1;
     })({
       bundleType: 1,
-      version: "19.3.0-experimental-3025aa39-20251007",
+      version: "19.3.0-experimental-eca90fe1-20251204",
       rendererPackageName: "react-server-dom-turbopack",
       currentDispatcherRef: ReactSharedInternals,
-      reconcilerVersion: "19.3.0-experimental-3025aa39-20251007",
+      reconcilerVersion: "19.3.0-experimental-eca90fe1-20251204",
       getCurrentComponentInfo: function () {
         return currentOwnerInDEV;
       }
