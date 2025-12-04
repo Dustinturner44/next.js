@@ -9,7 +9,6 @@ import * as log from '../build/output/log'
 
 import { getTypeScriptIntent } from './typescript/getTypeScriptIntent'
 import type { TypeCheckResult } from './typescript/runTypeCheck'
-import { writeAppTypeDeclarations } from './typescript/writeAppTypeDeclarations'
 import { writeConfigurationDefaults } from './typescript/writeConfigurationDefaults'
 import { installDependencies } from './install-dependencies'
 import { isCI } from '../server/ci-info'
@@ -129,14 +128,6 @@ export async function verifyTypeScriptSetup({
       hasPagesDir,
       isolatedDevBuild
     )
-    // Write out the necessary `next-env.d.ts` file to correctly register
-    // Next.js' types. Dynamic types (image imports, navigation compat) are
-    // generated in .next/types/ separately.
-    await writeAppTypeDeclarations({
-      baseDir: dir,
-      hasAppDir,
-    })
-
     let result
     if (typeCheckPreflight) {
       const { runTypeCheck } =
