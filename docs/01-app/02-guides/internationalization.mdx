@@ -125,8 +125,12 @@ const dictionaries = {
   nl: () => import('./dictionaries/nl.json').then((module) => module.default),
 }
 
-export const getDictionary = async (locale: 'en' | 'nl') =>
-  dictionaries[locale]()
+export type Locale = keyof typeof dictionaries
+
+export const hasLocale = (locale: string): locale is Locale =>
+  locale in dictionaries
+
+export const getDictionary = async (locale: Locale) => dictionaries[locale]()
 ```
 
 ```js filename="app/[lang]/dictionaries.js" switcher
@@ -137,31 +141,43 @@ const dictionaries = {
   nl: () => import('./dictionaries/nl.json').then((module) => module.default),
 }
 
+export const hasLocale = (locale) => locale in dictionaries
+
 export const getDictionary = async (locale) => dictionaries[locale]()
 ```
 
 Given the currently selected language, we can fetch the dictionary inside of a layout or page.
 
+Since `lang` is typed as `string`, using `hasLocale` narrows the type to your supported locales. It also ensures a 404 is returned if a translation is missing, rather than a runtime error.
+
 ```tsx filename="app/[lang]/page.tsx" switcher
-import { getDictionary } from './dictionaries'
+import { notFound } from 'next/navigation'
+import { getDictionary, hasLocale } from './dictionaries'
 
 export default async function Page({
   params,
 }: {
-  params: Promise<{ lang: 'en' | 'nl' }>
+  params: Promise<{ lang: string }>
 }) {
   const { lang } = await params
-  const dict = await getDictionary(lang) // en
+
+  if (!hasLocale(lang)) notFound()
+
+  const dict = await getDictionary(lang)
   return <button>{dict.products.cart}</button> // Add to Cart
 }
 ```
 
 ```jsx filename="app/[lang]/page.js" switcher
-import { getDictionary } from './dictionaries'
+import { notFound } from 'next/navigation'
+import { getDictionary, hasLocale } from './dictionaries'
 
 export default async function Page({ params }) {
   const { lang } = await params
-  const dict = await getDictionary(lang) // en
+
+  if (!hasLocale(lang)) notFound()
+
+  const dict = await getDictionary(lang)
   return <button>{dict.products.cart}</button> // Add to Cart
 }
 ```
