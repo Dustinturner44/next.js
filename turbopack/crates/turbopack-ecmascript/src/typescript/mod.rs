@@ -4,17 +4,13 @@ use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, ValueToString, Vc};
 use turbo_tasks_fs::DirectoryContent;
 use turbopack_core::{
-    asset::Asset,
+    asset::{Asset, AssetContent},
     ident::AssetIdent,
     module::Module,
     raw_module::RawModule,
     reference::{ModuleReference, ModuleReferences},
     reference_type::{CommonJsReferenceSubType, ReferenceType},
-    resolve::{
-        ModuleResolveResult,
-        origin::{ResolveOrigin, ResolveOriginExt},
-        parse::Request,
-    },
+    resolve::{ModuleResolveResult, origin::ResolveOrigin, parse::Request},
     source::Source,
 };
 // TODO remove this
@@ -61,8 +57,7 @@ impl Module for TsConfigModuleAsset {
             self.source,
             apply_cjs_specific_options(
                 self.origin
-                    .resolve_options(ReferenceType::CommonJs(CommonJsReferenceSubType::Undefined))
-                    .await?,
+                    .resolve_options(ReferenceType::CommonJs(CommonJsReferenceSubType::Undefined)),
             ),
         )
         .await?;
@@ -177,6 +172,14 @@ impl Module for TsConfigModuleAsset {
             }
         }
         Ok(Vc::cell(references))
+    }
+}
+
+#[turbo_tasks::value_impl]
+impl Asset for TsConfigModuleAsset {
+    #[turbo_tasks::function]
+    fn content(&self) -> Vc<AssetContent> {
+        self.source.content()
     }
 }
 

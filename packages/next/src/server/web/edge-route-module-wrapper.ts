@@ -6,7 +6,7 @@ import type {
 
 import './globals'
 
-import { adapter, type AdapterOptions } from './adapter'
+import { adapter, type EdgeHandler } from './adapter'
 import { IncrementalCache } from '../lib/incremental-cache'
 import { RouteMatcher } from '../route-matchers/route-matcher'
 import type { NextFetchEvent } from './spec-extension/fetch-event'
@@ -15,10 +15,11 @@ import { getServerUtils } from '../server-utils'
 import { searchParamsToUrlQuery } from '../../shared/lib/router/utils/querystring'
 import { CloseController, trackStreamConsumed } from './web-on-close'
 import { getEdgePreviewProps } from './get-edge-preview-props'
-import type { NextConfigComplete } from '../config-shared'
+import type { NextConfigRuntime } from '../config-shared'
 
 export interface WrapOptions {
-  nextConfig: NextConfigComplete
+  nextConfig: NextConfigRuntime
+  page: string
 }
 
 /**
@@ -37,7 +38,7 @@ export class EdgeRouteModuleWrapper {
    */
   private constructor(
     private readonly routeModule: AppRouteRouteModule,
-    private readonly nextConfig: NextConfigComplete
+    private readonly nextConfig: NextConfigRuntime
   ) {
     // TODO: (wyattjoh) possibly allow the module to define it's own matcher
     this.matcher = new RouteMatcher(routeModule.definition)
@@ -52,17 +53,21 @@ export class EdgeRouteModuleWrapper {
    *                override the ones passed from the runtime
    * @returns a function that can be used as a handler for the edge runtime
    */
-  public static wrap(routeModule: AppRouteRouteModule, options: WrapOptions) {
+  public static wrap(
+    routeModule: AppRouteRouteModule,
+    options: WrapOptions
+  ): EdgeHandler {
     // Create the module wrapper.
     const wrapper = new EdgeRouteModuleWrapper(routeModule, options.nextConfig)
 
     // Return the wrapping function.
-    return (opts: AdapterOptions) => {
+    return (opts) => {
       return adapter({
         ...opts,
         IncrementalCache,
         // Bind the handler method to the wrapper so it still has context.
         handler: wrapper.handler.bind(wrapper),
+        page: options.page,
       })
     }
   }

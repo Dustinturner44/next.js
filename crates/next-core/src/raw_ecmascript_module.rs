@@ -10,7 +10,7 @@ use turbo_tasks::{FxIndexMap, FxIndexSet, ResolvedVc, TryJoinIterExt, ValueToStr
 use turbo_tasks_fs::{FileContent, glob::Glob, rope::Rope};
 use turbopack::{ModuleAssetContext, module_options::CustomModuleType};
 use turbopack_core::{
-    asset::Asset,
+    asset::{Asset, AssetContent},
     chunk::{ChunkItem, ChunkType, ChunkableModule, ChunkingContext},
     code_builder::CodeBuilder,
     compile_time_info::{
@@ -104,6 +104,14 @@ impl Module for RawEcmascriptModule {
         _side_effect_free_packages: Vc<Glob>,
     ) -> Vc<bool> {
         Vc::cell(false)
+    }
+}
+
+#[turbo_tasks::value_impl]
+impl Asset for RawEcmascriptModule {
+    #[turbo_tasks::function]
+    fn content(&self) -> Vc<AssetContent> {
+        self.source.content()
     }
 }
 
@@ -215,15 +223,16 @@ impl EcmascriptChunkItem for RawEcmascriptChunkItem {
                                     name,
                                     if let Some(value) =
                                         replacements.get(&DefinableNameSegment::Name(name.into()))
-                                        && let Some((_, value)) = value.iter().find(|(path, _)| {
-                                            matches!(
-                                                path.as_slice(),
-                                                [
-                                                    DefinableNameSegment::Name(a),
-                                                    DefinableNameSegment::Name(b)
-                                                ] if a == "process" && b == "env"
-                                            )
-                                        })
+                                        && let Some((_, value)) =
+                                            value.0.iter().find(|(path, _)| {
+                                                matches!(
+                                                    path.as_slice(),
+                                                    [
+                                                        DefinableNameSegment::Name(a),
+                                                        DefinableNameSegment::Name(b)
+                                                    ] if a == "process" && b == "env"
+                                                )
+                                            })
                                     {
                                         let value = value.await?;
                                         let value = match &*value {
@@ -264,7 +273,8 @@ impl EcmascriptChunkItem for RawEcmascriptChunkItem {
             )
             .await?
             {
-                source_map.generate_source_map().owned().await?
+                let source_map = source_map.generate_source_map().await?;
+                source_map.as_content().map(|f| f.content().clone())
             } else {
                 None
             };

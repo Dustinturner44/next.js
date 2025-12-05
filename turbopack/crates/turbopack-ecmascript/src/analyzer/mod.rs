@@ -25,9 +25,9 @@ use swc_core::{
 };
 use turbo_esregex::EsRegex;
 use turbo_rcstr::RcStr;
-use turbo_tasks::{FxIndexMap, FxIndexSet, Vc};
+use turbo_tasks::{FxIndexMap, FxIndexSet, ResolvedVc, Vc};
 use turbopack_core::compile_time_info::{
-    CompileTimeDefineValue, DefinableNameSegment, FreeVarReference,
+    CompileTimeDefineValue, DefinableNameSegment, FreeVarReference, FreeVarReferenceVcs,
 };
 
 use self::imports::ImportAnnotations;
@@ -2097,19 +2097,16 @@ impl JsValue {
     ///
     /// Uses the `VarGraph` to verify that the first segment is not a local
     /// variable/was not reassigned.
-    pub fn match_free_var_reference<'a, T>(
+    pub fn match_free_var_reference(
         &self,
         var_graph: &VarGraph,
-        free_var_references: &'a FxIndexMap<
-            DefinableNameSegment,
-            FxIndexMap<Vec<DefinableNameSegment>, T>,
-        >,
+        free_var_references: &FxIndexMap<DefinableNameSegment, FreeVarReferenceVcs>,
         prop: &DefinableNameSegment,
-    ) -> Option<&'a T> {
+    ) -> Option<ResolvedVc<FreeVarReference>> {
         if let Some(def_name_len) = self.get_definable_name_len()
             && let Some(references) = free_var_references.get(prop)
         {
-            for (name, value) in references {
+            for (name, value) in &references.0 {
                 if name.len() != def_name_len {
                     continue;
                 }
@@ -2128,7 +2125,7 @@ impl JsValue {
                         }
                     }
 
-                    return Some(value);
+                    return Some(*value);
                 }
             }
         }
@@ -4110,14 +4107,15 @@ mod tests {
                                 .await;
                                 resolved.push((format!("{parent} -> {i} conditional"), condition));
                                 match *kind {
-                                    ConditionalKind::If { then: block }
-                                    | ConditionalKind::Else { r#else: block }
-                                    | ConditionalKind::Labeled { body: block } => {
+                                    ConditionalKind::If { then } => {
+                                        queue
+                                            .extend(then.effects.into_iter().rev().map(|e| (i, e)));
+                                    }
+                                    ConditionalKind::Else { r#else } => {
                                         queue.extend(
-                                            block.effects.into_iter().rev().map(|e| (i, e)),
+                                            r#else.effects.into_iter().rev().map(|e| (i, e)),
                                         );
                                     }
-
                                     ConditionalKind::IfElse { then, r#else }
                                     | ConditionalKind::Ternary { then, r#else } => {
                                         queue.extend(
@@ -4138,10 +4136,12 @@ mod tests {
                                             );
                                         }
                                     }
-                                    ConditionalKind::And { rhs_effects }
-                                    | ConditionalKind::Or { rhs_effects }
-                                    | ConditionalKind::NullishCoalescing { rhs_effects } => {
-                                        queue.extend(rhs_effects.into_iter().rev().map(|e| (i, e)));
+                                    ConditionalKind::And { expr }
+                                    | ConditionalKind::Or { expr }
+                                    | ConditionalKind::NullishCoalescing { expr }
+                                    | ConditionalKind::Labeled { body: expr } => {
+                                        queue
+                                            .extend(expr.effects.into_iter().rev().map(|e| (i, e)));
                                     }
                                 };
                                 steps

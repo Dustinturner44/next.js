@@ -31,7 +31,7 @@ use super::{
 use crate::{
     AnalyzeMode, SpecifiedModuleType,
     analyzer::{WellKnownObjectKind, is_unresolved},
-    references::constant_value::parse_single_expr_lit,
+    references::{constant_value::parse_single_expr_lit, for_each_ident_in_pat},
     utils::{AstPathRange, unparen},
 };
 
@@ -44,11 +44,6 @@ pub struct EffectsBlock {
 impl EffectsBlock {
     pub fn is_empty(&self) -> bool {
         self.effects.is_empty()
-    }
-    fn normalize(&mut self) {
-        for e in self.effects.iter_mut() {
-            e.normalize();
-        }
     }
 }
 
@@ -75,52 +70,47 @@ pub enum ConditionalKind {
         r#else: Box<EffectsBlock>,
     },
     /// The expression on the right side of the `&&` operator.
-    And { rhs_effects: Vec<Effect> },
+    And { expr: Box<EffectsBlock> },
     /// The expression on the right side of the `||` operator.
-    Or { rhs_effects: Vec<Effect> },
+    Or { expr: Box<EffectsBlock> },
     /// The expression on the right side of the `??` operator.
-    NullishCoalescing { rhs_effects: Vec<Effect> },
+    NullishCoalescing { expr: Box<EffectsBlock> },
     /// The expression on the right side of a labeled statement.
     Labeled { body: Box<EffectsBlock> },
 }
 
 impl ConditionalKind {
-    fn is_empty(&self) -> bool {
-        match self {
-            ConditionalKind::If { then: block }
-            | ConditionalKind::Else { r#else: block }
-            | ConditionalKind::Labeled { body: block } => block.effects.is_empty(),
-            ConditionalKind::IfElse { then, r#else, .. }
-            | ConditionalKind::Ternary { then, r#else, .. } => then.is_empty() && r#else.is_empty(),
-            ConditionalKind::And { rhs_effects, .. }
-            | ConditionalKind::Or { rhs_effects, .. }
-            | ConditionalKind::NullishCoalescing { rhs_effects, .. } => rhs_effects.is_empty(),
-            ConditionalKind::IfElseMultiple { then, r#else, .. } => {
-                then.iter().chain(r#else.iter()).all(|b| b.is_empty())
-            }
-        }
-    }
     /// Normalizes all contained values.
     pub fn normalize(&mut self) {
         match self {
             ConditionalKind::If { then: block }
             | ConditionalKind::Else { r#else: block }
-            | ConditionalKind::Labeled { body: block } => block.normalize(),
+            | ConditionalKind::And { expr: block, .. }
+            | ConditionalKind::Or { expr: block, .. }
+            | ConditionalKind::NullishCoalescing { expr: block, .. } => {
+                for effect in &mut block.effects {
+                    effect.normalize();
+                }
+            }
             ConditionalKind::IfElse { then, r#else, .. }
             | ConditionalKind::Ternary { then, r#else, .. } => {
-                then.normalize();
-                r#else.normalize();
-            }
-            ConditionalKind::And { rhs_effects, .. }
-            | ConditionalKind::Or { rhs_effects, .. }
-            | ConditionalKind::NullishCoalescing { rhs_effects, .. } => {
-                for effect in rhs_effects.iter_mut() {
+                for effect in &mut then.effects {
+                    effect.normalize();
+                }
+                for effect in &mut r#else.effects {
                     effect.normalize();
                 }
             }
             ConditionalKind::IfElseMultiple { then, r#else, .. } => {
                 for block in then.iter_mut().chain(r#else.iter_mut()) {
-                    block.normalize();
+                    for effect in &mut block.effects {
+                        effect.normalize();
+                    }
+                }
+            }
+            ConditionalKind::Labeled { body } => {
+                for effect in &mut body.effects {
+                    effect.normalize();
                 }
             }
         }
@@ -141,7 +131,9 @@ impl EffectArg {
             EffectArg::Value(value) => value.normalize(),
             EffectArg::Closure(value, effects) => {
                 value.normalize();
-                effects.normalize();
+                for effect in &mut effects.effects {
+                    effect.normalize();
+                }
             }
             EffectArg::Spread => {}
         }
@@ -315,6 +307,30 @@ impl VarMeta {
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum DeclUsage {
+    SideEffects,
+    Bindings(FxHashSet<Id>),
+}
+impl Default for DeclUsage {
+    fn default() -> Self {
+        DeclUsage::Bindings(Default::default())
+    }
+}
+impl DeclUsage {
+    fn add_usage(&mut self, user: &Id) {
+        match self {
+            Self::Bindings(set) => {
+                set.insert(user.clone());
+            }
+            Self::SideEffects => {}
+        }
+    }
+    fn make_side_effects(&mut self) {
+        *self = Self::SideEffects;
+    }
+}
+
 #[derive(Debug)]
 pub struct VarGraph {
     pub values: FxHashMap<Id, VarMeta>,
@@ -323,6 +339,13 @@ pub struct VarGraph {
     pub free_var_ids: FxHashMap<Atom, Id>,
 
     pub effects: Vec<Effect>,
+
+    // ident -> immediate usage (top level decl)
+    pub decl_usages: FxHashMap<Id, DeclUsage>,
+    // import -> immediate usage (top level decl)
+    pub import_usages: FxHashMap<usize, DeclUsage>,
+    // export name -> top level decl
+    pub exports: FxHashMap<Atom, Id>,
 }
 
 impl VarGraph {
@@ -347,14 +370,17 @@ pub fn create_graph(
         values: Default::default(),
         free_var_ids: Default::default(),
         effects: Default::default(),
+        decl_usages: Default::default(),
+        import_usages: Default::default(),
+        exports: Default::default(),
     };
 
     m.visit_with_ast_path(
         &mut Analyzer {
             analyze_mode,
             data: &mut graph,
-            state: analyzer_state::AnalyzerState::new(),
             eval_context,
+            state: Default::default(),
             effects: Default::default(),
             hoisted_effects: Default::default(),
         },
@@ -808,8 +834,10 @@ impl EvalContext {
                 ..
             }) => JsValue::WellKnownObject(WellKnownObjectKind::ImportMeta),
 
-            Expr::Assign(AssignExpr { op, right, .. }) => match op {
-                AssignOp::Assign => self.eval(right),
+            Expr::Assign(AssignExpr { op, .. }) => match op {
+                // TODO: `self.eval(right)` would be the value, but we need to handle the side
+                // effect of that expression
+                AssignOp::Assign => JsValue::unknown_empty(true, "assignment expression"),
                 _ => JsValue::unknown_empty(true, "compound assignment expression"),
             },
 
@@ -879,9 +907,9 @@ struct Analyzer<'a> {
     state: analyzer_state::AnalyzerState,
 
     effects: Vec<Effect>,
-    // Effects collected from hoisted declarations. See https://developer.mozilla.org/en-US/docs/Glossary/Hoisting
-    // Tracked separately so we can preserve effects from hoisted declarations even when we don't
-    // collect effects from the declaring context.
+    /// Effects collected from hoisted declarations. See https://developer.mozilla.org/en-US/docs/Glossary/Hoisting
+    /// Tracked separately so we can preserve effects from hoisted declarations even when we don't
+    /// collect effects from the declaring context.
     hoisted_effects: Vec<Effect>,
 
     eval_context: &'a EvalContext,
@@ -962,6 +990,7 @@ mod analyzer_state {
 
     /// Contains fields of `Analyzer` that should only be modified using helper methods. These are
     /// intentionally private to the rest of the `Analyzer` implementation.
+    #[derive(Default)]
     pub struct AnalyzerState {
         pat_value: Option<JsValue>,
         /// Return values of the current function.
@@ -973,17 +1002,14 @@ mod analyzer_state {
         early_return_stack: Vec<EarlyReturn>,
         lexical_stack: Vec<LexicalContext>,
         var_decl_kind: Option<VarDeclKind>,
+
+        cur_top_level_decl_name: Option<Id>,
     }
 
     impl AnalyzerState {
-        pub fn new() -> AnalyzerState {
-            AnalyzerState {
-                pat_value: None,
-                cur_fn_return_values: None,
-                early_return_stack: Default::default(),
-                lexical_stack: Default::default(),
-                var_decl_kind: None,
-            }
+        /// Returns the identifier of the current top level declaration.
+        pub(super) fn cur_top_level_decl_name(&self) -> &Option<Id> {
+            &self.cur_top_level_decl_name
         }
     }
 
@@ -1278,6 +1304,23 @@ mod analyzer_state {
                 }
             }
             always_returns
+        }
+
+        /// Runs `visitor` with the current top level declaration identifier
+        pub(super) fn enter_top_level_decl<T>(
+            &mut self,
+            name: &Ident,
+            visitor: impl FnOnce(&mut Self) -> T,
+        ) -> T {
+            let is_top_level_fn = self.state.cur_top_level_decl_name.is_none();
+            if is_top_level_fn {
+                self.state.cur_top_level_decl_name = Some(name.to_id());
+            }
+            let result = visitor(self);
+            if is_top_level_fn {
+                self.state.cur_top_level_decl_name = None;
+            }
+            result
         }
     }
 }
@@ -1915,9 +1958,12 @@ impl VisitAstPath for Analyzer<'_> {
         decl: &'ast FnDecl,
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
-        let fn_value = self.enter_fn(&*decl.function, |this| {
-            decl.visit_children_with_ast_path(this, ast_path);
+        let fn_value = self.enter_top_level_decl(&decl.ident, |this| {
+            this.enter_fn(&*decl.function, |this| {
+                decl.visit_children_with_ast_path(this, ast_path);
+            })
         });
+
         // Take all effects produced by the function and move them to hoisted effects since
         // function declarations are hoisted.
         // This accounts for the fact that even with `if (true) { return f} function f() {} ` `f` is
@@ -2392,6 +2438,17 @@ impl VisitAstPath for Analyzer<'_> {
         if let Some((esm_reference_index, export)) =
             self.eval_context.imports.get_binding(&ident.to_id())
         {
+            let usage = self
+                .data
+                .import_usages
+                .entry(esm_reference_index)
+                .or_default();
+            if let Some(top_level) = self.state.cur_top_level_decl_name() {
+                usage.add_usage(top_level);
+            } else {
+                usage.make_side_effects();
+            }
+
             // Optimization: Look for a MemberExpr to see if we only access a few members from the
             // module, add those specific effects instead of depending on the entire module.
             //
@@ -2437,6 +2494,24 @@ impl VisitAstPath for Analyzer<'_> {
                 ast_path: as_parent_path(ast_path),
                 span: ident.span(),
             })
+        }
+
+        if !is_unresolved(ident, self.eval_context.unresolved_mark) {
+            if let Some(top_level) = self.state.cur_top_level_decl_name() {
+                if !(ident.sym == top_level.0 && ident.ctxt == top_level.1) {
+                    self.data
+                        .decl_usages
+                        .entry(ident.to_id())
+                        .or_default()
+                        .add_usage(top_level);
+                }
+            } else {
+                self.data
+                    .decl_usages
+                    .entry(ident.to_id())
+                    .or_default()
+                    .make_side_effects();
+            }
         }
     }
 
@@ -2522,49 +2597,6 @@ impl VisitAstPath for Analyzer<'_> {
             expr.span(),
             ConditionalKind::Ternary { then, r#else },
         );
-    }
-
-    fn visit_bin_expr<'ast: 'r, 'r>(
-        &mut self,
-        expr: &'ast BinExpr,
-        ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
-    ) {
-        // Some binary operators have control flow semantics.
-        match expr.op {
-            BinaryOp::LogicalAnd | BinaryOp::LogicalOr | BinaryOp::NullishCoalescing => {
-                // Visit the left hand node
-                {
-                    let mut ast_path =
-                        ast_path.with_guard(AstParentNodeRef::BinExpr(expr, BinExprField::Left));
-                    expr.left.visit_with_ast_path(self, &mut ast_path);
-                };
-                let prev_effects = take(&mut self.effects);
-                let rhs_effects = {
-                    let mut ast_path =
-                        ast_path.with_guard(AstParentNodeRef::BinExpr(expr, BinExprField::Right));
-                    expr.right.visit_with_ast_path(self, &mut ast_path);
-                    take(&mut self.effects)
-                };
-                self.effects = prev_effects;
-                self.add_conditional_effect(
-                    &expr.left,
-                    ast_path,
-                    AstParentKind::BinExpr(BinExprField::Left),
-                    expr.span(),
-                    match expr.op {
-                        BinaryOp::LogicalAnd => ConditionalKind::And { rhs_effects },
-                        BinaryOp::LogicalOr => ConditionalKind::Or { rhs_effects },
-                        BinaryOp::NullishCoalescing => {
-                            ConditionalKind::NullishCoalescing { rhs_effects }
-                        }
-                        _ => unreachable!(),
-                    },
-                );
-            }
-            _ => <BinExpr as VisitWithAstPath<Self>>::visit_children_with_ast_path(
-                expr, self, ast_path,
-            ),
-        }
     }
 
     fn visit_if_stmt<'ast: 'r, 'r>(
@@ -2777,6 +2809,55 @@ impl VisitAstPath for Analyzer<'_> {
 
         self.effects = prev_effects;
     }
+
+    fn visit_export_decl<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast ExportDecl,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        match &node.decl {
+            Decl::Class(node) => {
+                self.data
+                    .exports
+                    .insert(node.ident.sym.clone(), node.ident.to_id());
+            }
+            Decl::Fn(node) => {
+                self.data
+                    .exports
+                    .insert(node.ident.sym.clone(), node.ident.to_id());
+            }
+            Decl::Var(node) => {
+                for VarDeclarator { name, .. } in &node.decls {
+                    for_each_ident_in_pat(name, &mut |name, ctxt| {
+                        self.data.exports.insert(name.clone(), (name.clone(), ctxt));
+                    });
+                }
+            }
+            _ => {}
+        };
+        node.visit_children_with_ast_path(self, ast_path);
+    }
+
+    fn visit_export_named_specifier<'ast: 'r, 'r>(
+        &mut self,
+        node: &'ast ExportNamedSpecifier,
+        ast_path: &mut swc_core::ecma::visit::AstNodePath<'r>,
+    ) {
+        let export_name = node
+            .exported
+            .as_ref()
+            .unwrap_or(&node.orig)
+            .atom()
+            .into_owned();
+        self.data.exports.insert(
+            export_name,
+            match &node.orig {
+                ModuleExportName::Ident(ident) => ident.to_id(),
+                ModuleExportName::Str(_) => unreachable!("exporting a string should be impossible"),
+            },
+        );
+        node.visit_children_with_ast_path(self, ast_path);
+    }
 }
 
 impl Analyzer<'_> {
@@ -2795,7 +2876,7 @@ impl Analyzer<'_> {
         {
             return;
         }
-        let condition = self.eval_context.eval(test);
+        let condition = Box::new(self.eval_context.eval(test));
         if condition.is_unknown() {
             if let Some(mut then) = then {
                 self.effects.append(&mut then.effects);
@@ -2805,7 +2886,6 @@ impl Analyzer<'_> {
             }
             return;
         }
-        let condition = Box::new(condition);
         match (early_return_when_true, early_return_when_false) {
             (true, false) => {
                 let early_return = EarlyReturn::Conditional {
@@ -2835,21 +2915,20 @@ impl Analyzer<'_> {
             }
             (false, false) | (true, true) => {
                 let kind = match (then, r#else) {
-                    (Some(then), Some(r#else)) => Some(ConditionalKind::IfElse { then, r#else }),
-                    (Some(then), None) => Some(ConditionalKind::If { then }),
-                    (None, Some(r#else)) => Some(ConditionalKind::Else { r#else }),
-                    (None, None) => None,
+                    (Some(then), Some(r#else)) => ConditionalKind::IfElse { then, r#else },
+                    (Some(then), None) => ConditionalKind::If { then },
+                    (None, Some(r#else)) => ConditionalKind::Else { r#else },
+                    (None, None) => {
+                        // No effects, ignore
+                        return;
+                    }
                 };
-                if let Some(kind) = kind
-                    && !kind.is_empty()
-                {
-                    self.add_effect(Effect::Conditional {
-                        condition,
-                        kind: Box::new(kind),
-                        ast_path: as_parent_path_with(ast_path, condition_ast_kind),
-                        span,
-                    });
-                }
+                self.add_effect(Effect::Conditional {
+                    condition,
+                    kind: Box::new(kind),
+                    ast_path: as_parent_path_with(ast_path, condition_ast_kind),
+                    span,
+                });
                 if early_return_when_false && early_return_when_true {
                     let early_return = EarlyReturn::Always {
                         prev_effects: take(&mut self.effects),
@@ -2869,10 +2948,7 @@ impl Analyzer<'_> {
         span: Span,
         mut cond_kind: ConditionalKind,
     ) {
-        if cond_kind.is_empty() {
-            return;
-        }
-        let condition = self.eval_context.eval(test);
+        let condition = Box::new(self.eval_context.eval(test));
         if condition.is_unknown() {
             match &mut cond_kind {
                 ConditionalKind::If { then } => {
@@ -2894,10 +2970,10 @@ impl Analyzer<'_> {
                         self.effects.append(&mut block.effects);
                     }
                 }
-                ConditionalKind::And { rhs_effects }
-                | ConditionalKind::Or { rhs_effects }
-                | ConditionalKind::NullishCoalescing { rhs_effects } => {
-                    self.effects.append(rhs_effects);
+                ConditionalKind::And { expr }
+                | ConditionalKind::Or { expr }
+                | ConditionalKind::NullishCoalescing { expr } => {
+                    self.effects.append(&mut expr.effects);
                 }
                 ConditionalKind::Labeled { body } => {
                     self.effects.append(&mut body.effects);
@@ -2905,7 +2981,7 @@ impl Analyzer<'_> {
             }
         } else {
             self.add_effect(Effect::Conditional {
-                condition: Box::new(condition),
+                condition,
                 kind: Box::new(cond_kind),
                 ast_path: as_parent_path_with(ast_path, ast_kind),
                 span,

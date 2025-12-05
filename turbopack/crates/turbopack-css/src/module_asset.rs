@@ -8,6 +8,7 @@ use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{FxIndexMap, IntoTraitRef, ResolvedVc, ValueToString, Vc};
 use turbo_tasks_fs::{FileSystemPath, rope::Rope};
 use turbopack_core::{
+    asset::{Asset, AssetContent},
     chunk::{ChunkItem, ChunkType, ChunkableModule, ChunkingContext, ModuleChunkItemIdExt},
     context::{AssetContext, ProcessResult},
     ident::AssetIdent,
@@ -112,6 +113,14 @@ impl Module for ModuleCssAsset {
     }
 }
 
+#[turbo_tasks::value_impl]
+impl Asset for ModuleCssAsset {
+    #[turbo_tasks::function]
+    fn content(&self) -> Vc<AssetContent> {
+        self.source.content()
+    }
+}
+
 /// A CSS class that is exported from a CSS module.
 ///
 /// See [`ModuleCssClasses`] for more information.
@@ -154,7 +163,9 @@ enum ModuleCssClass {
 /// 3. class3: [Local("exported_class3), Import("class4", "./other.module.css")]
 #[turbo_tasks::value(transparent)]
 #[derive(Debug, Clone)]
-struct ModuleCssClasses(FxIndexMap<String, Vec<ModuleCssClass>>);
+struct ModuleCssClasses(
+    #[bincode(with = "turbo_bincode::indexmap")] FxIndexMap<String, Vec<ModuleCssClass>>,
+);
 
 #[turbo_tasks::value_impl]
 impl ModuleCssAsset {

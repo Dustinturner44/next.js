@@ -1,8 +1,9 @@
 use anyhow::Result;
 use turbo_rcstr::rcstr;
 use turbo_tasks::{IntoTraitRef, ResolvedVc, TryJoinIterExt, ValueToString, Vc};
-use turbo_tasks_fs::FileSystemPath;
+use turbo_tasks_fs::{FileContent, FileSystemPath};
 use turbopack_core::{
+    asset::{Asset, AssetContent},
     chunk::{ChunkItem, ChunkType, ChunkableModule, ChunkingContext, MinifyType},
     context::AssetContext,
     environment::Environment,
@@ -109,7 +110,7 @@ impl ProcessCss for CssModuleAsset {
         let origin_source_map =
             match ResolvedVc::try_sidecast::<Box<dyn GenerateSourceMap>>(this.source) {
                 Some(gsm) => gsm.generate_source_map(),
-                None => Vc::cell(None),
+                None => FileContent::NotFound.cell(),
             };
         Ok(finalize_css(
             process_result,
@@ -162,6 +163,14 @@ impl StyleModule for CssModuleAsset {
             CssModuleAssetType::Default => StyleType::GlobalStyle.cell(),
             CssModuleAssetType::Module => StyleType::IsolatedStyle.cell(),
         }
+    }
+}
+
+#[turbo_tasks::value_impl]
+impl Asset for CssModuleAsset {
+    #[turbo_tasks::function]
+    fn content(&self) -> Vc<AssetContent> {
+        self.source.content()
     }
 }
 
@@ -337,7 +346,7 @@ impl CssChunkItem for CssModuleChunkItem {
                 inner_code: output_code.to_owned().into(),
                 imports,
                 import_context: self.module.await?.import_context,
-                source_map: source_map.owned().await?,
+                source_map: *source_map,
             }
             .cell())
         } else {
@@ -349,7 +358,7 @@ impl CssChunkItem for CssModuleChunkItem {
                 .into(),
                 imports: vec![],
                 import_context: None,
-                source_map: None,
+                source_map: FileContent::NotFound.resolved_cell(),
             }
             .cell())
         }
