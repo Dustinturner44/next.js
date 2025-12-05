@@ -232,6 +232,8 @@ async function getPost(slug: string) {
 Build-time validation only covers code paths that execute with the sample params. If your route has conditional logic that accesses runtime APIs for certain param values not in your samples, those branches won't be validated at build time:
 
 ```tsx filename="app/blog/[slug]/page.tsx"
+import { cookies } from 'next/headers'
+
 export async function generateStaticParams() {
   return [{ slug: 'public-post' }, { slug: 'hello-world' }]
 }
@@ -255,6 +257,9 @@ For runtime params not returned by `generateStaticParams`, validation occurs dur
 If your application follows conditional paths like this, make sure to wrap runtime API access in Suspense boundaries:
 
 ```tsx filename="app/blog/[slug]/page.tsx"
+import { Suspense } from 'react'
+import { cookies } from 'next/headers'
+
 export async function generateStaticParams() {
   return [{ slug: 'public-post' }, { slug: 'hello-world' }]
 }
