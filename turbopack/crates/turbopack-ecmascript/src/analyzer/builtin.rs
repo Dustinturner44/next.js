@@ -97,18 +97,25 @@ pub fn early_replace_builtin(value: &mut JsValue) -> bool {
 /// contrast to early_replace_builtin this has all inner values already
 /// processed.
 pub fn replace_builtin(value: &mut JsValue) -> bool {
+    // if there are side effects mutate the inner value instead, to preserve them.
     let (_, value) = value.without_side_effects_mut();
     match value {
         JsValue::Add(_, list) => {
             // numeric addition
             let mut sum = 0f64;
+            let mut side_effects = false;
             for arg in list {
+                let (arg_side_effects, arg) = arg.without_side_effects();
+                side_effects = side_effects || arg_side_effects;
                 let JsValue::Constant(ConstantValue::Num(num)) = arg else {
                     return false;
                 };
                 sum += num.0;
             }
-            *value = JsValue::Constant(ConstantValue::Num(ConstantNumber(sum)));
+            *value = JsValue::maybe_with_side_effect(
+                JsValue::Constant(ConstantValue::Num(ConstantNumber(sum))),
+                side_effects,
+            );
             true
         }
 

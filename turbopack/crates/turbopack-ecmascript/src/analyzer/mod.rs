@@ -3124,6 +3124,7 @@ impl JsValue {
                     self.update_total_nodes();
                 }
             }
+            JsValue::Effectful(_, box inner @ JsValue::Effectful(..)) => *self = take(inner),
             _ => {}
         }
     }
