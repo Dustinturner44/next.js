@@ -1,11 +1,14 @@
 import '../../server/web/globals'
-import { adapter, type NextRequestHint } from '../../server/web/adapter'
+import {
+  adapter,
+  type EdgeHandler,
+  type NextRequestHint,
+} from '../../server/web/adapter'
 import { IncrementalCache } from '../../server/lib/incremental-cache'
 
 import * as pageMod from 'VAR_USERLAND'
 
-import type { RequestData } from '../../server/web/types'
-import type { NextConfigComplete } from '../../server/config-shared'
+import type { NextConfigRuntime } from '../../server/config-shared'
 import { setManifestsSingleton } from '../../server/app-render/manifests-singleton'
 import { initializeCacheHandlers } from '../../server/use-cache/handlers'
 import { BaseServerSpan } from '../../server/lib/trace/constants'
@@ -26,7 +29,7 @@ import { checkIsOnDemandRevalidate } from '../../server/api-utils'
 import { CloseController } from '../../server/web/web-on-close'
 
 declare const incrementalCacheHandler: any
-declare const nextConfig: NextConfigComplete
+declare const nextConfig: NextConfigRuntime
 // OPTIONAL_IMPORT:incrementalCacheHandler
 // INJECT:nextConfig
 
@@ -353,11 +356,13 @@ async function requestHandler(
   )
 }
 
-export default function nHandler(opts: { page: string; request: RequestData }) {
+const handler: EdgeHandler = (opts) => {
   return adapter({
     ...opts,
     IncrementalCache,
     handler: requestHandler,
     incrementalCacheHandler,
+    page: 'VAR_PAGE',
   })
 }
+export default handler

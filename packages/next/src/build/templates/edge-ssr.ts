@@ -1,5 +1,9 @@
 import '../../server/web/globals'
-import { adapter, type NextRequestHint } from '../../server/web/adapter'
+import {
+  adapter,
+  type EdgeHandler,
+  type NextRequestHint,
+} from '../../server/web/adapter'
 import { IncrementalCache } from '../../server/lib/incremental-cache'
 import { initializeCacheHandlers } from '../../server/use-cache/handlers'
 
@@ -18,8 +22,7 @@ import RouteModule, {
 } from '../../server/route-modules/pages/module'
 import { WebNextRequest, WebNextResponse } from '../../server/base-http/web'
 
-import type { RequestData } from '../../server/web/types'
-import type { NextConfigComplete } from '../../server/config-shared'
+import type { NextConfigRuntime } from '../../server/config-shared'
 import type { NextFetchEvent } from '../../server/web/spec-extension/fetch-event'
 import type RenderResult from '../../server/render-result'
 import type { RenderResultMetadata } from '../../server/render-result'
@@ -28,7 +31,7 @@ import { BaseServerSpan } from '../../server/lib/trace/constants'
 import { HTML_CONTENT_TYPE_HEADER } from '../../lib/constants'
 
 // injected by the loader afterwards.
-declare const nextConfig: NextConfigComplete
+declare const nextConfig: NextConfigRuntime
 declare const pageRouteModuleOptions: any
 declare const errorRouteModuleOptions: any
 declare const user500RouteModuleOptions: any
@@ -88,7 +91,7 @@ async function requestHandler(
   req: NextRequestHint,
   _event: NextFetchEvent
 ): Promise<Response> {
-  let srcPage = 'VAR_PAGE'
+  let srcPage = 'VAR_DEFINITION_PATHNAME'
 
   const relativeUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`
   const baseReq = new WebNextRequest(req)
@@ -354,12 +357,14 @@ async function requestHandler(
   )
 }
 
-export default function nHandler(opts: { page: string; request: RequestData }) {
+const handler: EdgeHandler = (opts) => {
   return adapter({
     ...opts,
     IncrementalCache,
     handler: requestHandler,
     incrementalCacheHandler,
     bypassNextUrl: true,
+    page: 'VAR_DEFINITION_PATHNAME',
   })
 }
+export default handler

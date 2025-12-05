@@ -1,4 +1,5 @@
 use anyhow::{Context, Result, bail};
+use bincode::{Decode, Encode};
 use futures::future::BoxFuture;
 use next_core::{
     PageLoaderAsset, create_page_loader_entry_module, get_asset_path_from_pathname,
@@ -39,7 +40,6 @@ use turbo_tasks_fs::{
 use turbopack::{
     ModuleAssetContext,
     module_options::ModuleOptionsContext,
-    resolve_options_context::ResolveOptionsContext,
     transition::{FullContextTransition, Transition, TransitionOptions},
 };
 use turbopack_core::{
@@ -66,6 +66,7 @@ use turbopack_core::{
 };
 use turbopack_ecmascript::resolve::esm_resolve;
 use turbopack_nodejs::NodeJsChunkingContext;
+use turbopack_resolve::resolve_options_context::ResolveOptionsContext;
 
 use crate::{
     dynamic_imports::{
@@ -597,6 +598,8 @@ struct PageEndpoint {
     TaskInput,
     TraceRawVcs,
     NonLocalValue,
+    Encode,
+    Decode,
 )]
 enum PageEndpointType {
     Api,
@@ -728,7 +731,10 @@ impl PageEndpoint {
 
         if *project.per_page_module_graph().await? {
             let next_mode = project.next_mode();
-            let should_trace = next_mode.await?.is_production();
+            let next_mode_ref = next_mode.await?;
+            let should_trace = next_mode_ref.is_production();
+            let should_read_binding_usage = next_mode_ref.is_production();
+
             let ssr_chunk_module = self.internal_ssr_chunk_module().await?;
             // Implements layout segment optimization to compute a graph "chain" for document, app,
             // page
@@ -745,6 +751,7 @@ impl PageEndpoint {
                     vec![ChunkGroupEntry::Shared(module)],
                     visited_modules,
                     should_trace,
+                    should_read_binding_usage,
                 );
                 graphs.push(graph);
                 visited_modules = visited_modules.concatenate(graph);
@@ -754,6 +761,7 @@ impl PageEndpoint {
                 vec![ChunkGroupEntry::Entry(vec![ssr_chunk_module.ssr_module])],
                 visited_modules,
                 should_trace,
+                should_read_binding_usage,
             );
             graphs.push(graph);
 
@@ -882,12 +890,16 @@ impl PageEndpoint {
                     runtime: NextRuntime::NodeJs,
                     regions: config.preferred_region.clone(),
                 }
-            } else if runtime == NextRuntime::Edge {
+            } else {
                 let modules = create_page_ssr_entry_module(
                     this.pathname.clone(),
                     reference_type,
                     project_root,
-                    Vc::upcast(edge_module_context),
+                    if runtime == NextRuntime::Edge {
+                        Vc::upcast(edge_module_context)
+                    } else {
+                        Vc::upcast(module_context)
+                    },
                     self.source(),
                     this.original_name.clone(),
                     *this.pages_structure,
@@ -896,26 +908,6 @@ impl PageEndpoint {
                 )
                 .await?;
 
-                InternalSsrChunkModule {
-                    ssr_module: modules.ssr_module,
-                    app_module: modules.app_module,
-                    document_module: modules.document_module,
-                    runtime,
-                    regions: config.preferred_region.clone(),
-                }
-            } else {
-                let modules = create_page_ssr_entry_module(
-                    this.pathname.clone(),
-                    reference_type,
-                    project_root,
-                    Vc::upcast(module_context),
-                    self.source(),
-                    this.original_name.clone(),
-                    *this.pages_structure,
-                    runtime,
-                    this.pages_project.project().next_config(),
-                )
-                .await?;
                 InternalSsrChunkModule {
                     ssr_module: modules.ssr_module,
                     app_module: modules.app_module,
