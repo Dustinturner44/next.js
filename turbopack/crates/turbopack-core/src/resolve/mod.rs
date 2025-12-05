@@ -8,8 +8,10 @@ use std::{
 
 use anyhow::{Result, bail};
 use auto_hash_map::AutoSet;
+use once_cell::sync::Lazy;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 use tracing::{Instrument, Level};
 use turbo_rcstr::{RcStr, rcstr};
 use turbo_tasks::{
@@ -2246,10 +2248,21 @@ async fn resolve_relative_request(
 
     let mut new_path = path_pattern.clone();
 
+    #[derive(Eq, PartialEq, Clone, Hash)]
+    enum PatternModification {
+        AddedFragment,
+        AddedExtension { ext: RcStr },
+        ReplacedExtension { ext: RcStr },
+    }
+
+    let mut modifications = Vec::new();
+    modifications.push(SmallVec::<[PatternModification; 3]>::new());
+
+    // If we parsed the pattern with a fragment, it is possible the user was actually attempting to
+    // match a literal `#` in a filename
+    // So handle that as an alternative here.
     if !fragment.is_empty() {
-        // 'fragments' should not be part of the result, however it could be that the user is
-        // attempting to match a file with a '#' character in it.  In that case we need
-        // to look for it which is what this alternation does
+        modifications.push(SmallVec::from_vec(vec![PatternModification::AddedFragment]));
         new_path.push(Pattern::Alternatives(vec![
             Pattern::Constant(RcStr::default()),
             Pattern::Constant(fragment.clone()),
@@ -2257,6 +2270,21 @@ async fn resolve_relative_request(
     }
 
     if !options_value.fully_specified {
+        // For each current set of modifications append an extension modification
+        modifications = options_value
+            .extensions
+            .iter()
+            .map(|ext| Some(ext.clone()))
+            .chain(once(None))
+            .flat_map(|ext| {
+                modifications.iter().cloned().map(move |mut mods| {
+                    if let Some(ext) = &ext {
+                        mods.push(PatternModification::AddedExtension { ext: ext.clone() });
+                    }
+                    mods
+                })
+            })
+            .collect();
         // Add the extensions as alternatives to the path
         // read_matches keeps the order of alternatives intact
         new_path.push(Pattern::Alternatives(
@@ -2272,48 +2300,100 @@ async fn resolve_relative_request(
         new_path.normalize();
     };
 
+    struct ExtensionReplacements {
+        forward: FxHashMap<RcStr, SmallVec<[RcStr; 3]>>,
+        reverse: FxHashMap<RcStr, RcStr>,
+    }
+    static TS_EXTENSION_REPLACEMENTS: Lazy<ExtensionReplacements> = Lazy::new(|| {
+        let mut forward = FxHashMap::default();
+        let mut reverse = FxHashMap::default();
+        forward.insert(
+            rcstr!(".js"),
+            SmallVec::from_vec(vec![rcstr!(".ts"), rcstr!(".tsx"), rcstr!(".js")]),
+        );
+        reverse.insert(rcstr!(".ts"), rcstr!(".js"));
+        reverse.insert(rcstr!(".tsx"), rcstr!(".js"));
+
+        forward.insert(
+            rcstr!(".mjs"),
+            SmallVec::from_vec(vec![rcstr!(".mts"), rcstr!(".mjs")]),
+        );
+
+        reverse.insert(rcstr!(".mts"), rcstr!(".mjs"));
+        forward.insert(
+            rcstr!(".cjs"),
+            SmallVec::from_vec(vec![rcstr!(".cts"), rcstr!(".cjs")]),
+        );
+        reverse.insert(rcstr!(".cts"), rcstr!(".cjs"));
+        ExtensionReplacements { forward, reverse }
+    });
+
     if options_value.enable_typescript_with_output_extension {
-        new_path.replace_final_constants(&|c: &RcStr| -> Option<Pattern> {
-            let (base, replacement) = match c.rsplit_once(".") {
-                Some((base, "js")) => (
-                    base,
-                    vec![
-                        Pattern::Constant(rcstr!(".ts")),
-                        Pattern::Constant(rcstr!(".tsx")),
-                        Pattern::Constant(rcstr!(".js")),
-                    ],
-                ),
-                Some((base, "mjs")) => (
-                    base,
-                    vec![
-                        Pattern::Constant(rcstr!(".mts")),
-                        Pattern::Constant(rcstr!(".mjs")),
-                    ],
-                ),
-                Some((base, "cjs")) => (
-                    base,
-                    vec![
-                        Pattern::Constant(rcstr!(".cts")),
-                        Pattern::Constant(rcstr!(".cjs")),
-                    ],
-                ),
-                _ => {
-                    return None;
-                }
+        // there are at most 4 possible replacements (the size of the reverse map)
+        let mut replaced_extensions = SmallVec::<[RcStr; 4]>::new();
+        let replaced = new_path.replace_final_constants(&mut |c: &RcStr| -> Option<Pattern> {
+            let Some(dot) = c.rfind('.') else {
+                return None;
             };
+            let (base, ext) = c.split_at(dot);
+
+            let Some((ext, replacements)) = TS_EXTENSION_REPLACEMENTS.forward.get_key_value(ext)
+            else {
+                return None;
+            };
+            for replacement in replacements {
+                if replacement != ext && !replaced_extensions.contains(replacement) {
+                    replaced_extensions.push(replacement.clone());
+                    debug_assert!(replaced_extensions.len() <= replaced_extensions.inline_size());
+                }
+            }
+
+            let replacements = replacements
+                .iter()
+                .cloned()
+                .map(Pattern::Constant)
+                .collect();
+
             if base.is_empty() {
-                Some(Pattern::Alternatives(replacement))
+                Some(Pattern::Alternatives(replacements))
             } else {
                 Some(Pattern::Concatenation(vec![
                     Pattern::Constant(base.into()),
-                    Pattern::Alternatives(replacement),
+                    Pattern::Alternatives(replacements),
                 ]))
             }
         });
-        new_path.normalize();
+        if replaced {
+            // For each current set of modifications append an extension replacement modification
+            modifications = replaced_extensions
+                .into_iter()
+                .map(|ext| Some(ext))
+                .chain(once(None))
+                .flat_map(|ext| {
+                    modifications.iter().cloned().map({
+                        let ext = ext.clone();
+                        move |mut mods| {
+                            if let Some(ext) = &ext {
+                                mods.push(PatternModification::ReplacedExtension {
+                                    ext: ext.clone(),
+                                });
+                            }
+                            mods
+                        }
+                    })
+                })
+                .collect();
+            new_path.normalize();
+        }
     }
 
-    let mut results = Vec::new();
+    // The pattern expansions above can lead to duplicates
+    let modifications = modifications
+        .into_iter()
+        .collect::<FxIndexSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+
     let matches = read_matches(
         lookup_path.clone(),
         rcstr!(""),
@@ -2324,11 +2404,15 @@ async fn resolve_relative_request(
 
     // This loop is necessary to 'undo' the modifications to 'new_path' that were performed above.
     // e.g. we added extensions but these shouldn't be part of the request key so remove them
-    // TODO: this logic is not completely correct because it fails to account for the extension
     // replacement logic that we perform conditionally.
 
+    // For each match we need to consider if it was produced by one of the pattern modifications
+    // below and if so we will need to reverse the transform on the request key.  Then alternate
+    let mut results = Vec::new();
+
     for m in matches.iter() {
-        if let PatternMatch::File(matched_pattern, path) = m {
+            // for mods in modifications {}
+
             let mut pushed = false;
             if !options_value.fully_specified {
                 for ext in options_value.extensions.iter() {
@@ -2338,7 +2422,7 @@ async fn resolve_relative_request(
 
                     if !fragment.is_empty() {
                         // If the fragment is not empty, we need to strip it from the matched
-                        // pattern so it matches path_pattern
+                        // pattern
                         if let Some(matched_pattern) =
                             matched_pattern.strip_suffix(fragment.as_str())
                             && path_pattern.is_match(matched_pattern)
