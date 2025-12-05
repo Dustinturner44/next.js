@@ -72,11 +72,7 @@ Finally, ensure all special files inside `app/` are nested under `app/[lang]`. T
 ```tsx filename="app/[lang]/page.tsx" switcher
 // You now have access to the current locale
 // e.g. /en-US/products -> `lang` is "en-US"
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ lang: string }>
-}) {
+export default async function Page({ params }: PageProps<'/[lang]'>) {
   const { lang } = await params
   return ...
 }
@@ -90,6 +86,8 @@ export default async function Page({ params }) {
   return ...
 }
 ```
+
+> **Good to know:** `PageProps` and `LayoutProps` are globally available TypeScript helpers that provide strong typing for route parameters. See [PageProps](/docs/app/api-reference/file-conventions/page#page-props-helper) and [LayoutProps](/docs/app/api-reference/file-conventions/layout#layout-props-helper) for more details.
 
 The root layout can also be nested in the new folder (e.g. `app/[lang]/layout.js`).
 
@@ -154,11 +152,7 @@ Since `lang` is typed as `string`, using `hasLocale` narrows the type to your su
 import { notFound } from 'next/navigation'
 import { getDictionary, hasLocale } from './dictionaries'
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ lang: string }>
-}) {
+export default async function Page({ params }: PageProps<'/[lang]'>) {
   const { lang } = await params
 
   if (!hasLocale(lang)) notFound()
@@ -196,10 +190,7 @@ export async function generateStaticParams() {
 export default async function RootLayout({
   children,
   params,
-}: Readonly<{
-  children: React.ReactNode
-  params: Promise<{ lang: 'en-US' | 'de' }>
-}>) {
+}: LayoutProps<'/[lang]'>) {
   return (
     <html lang={(await params).lang}>
       <body>{children}</body>
