@@ -67,7 +67,6 @@ export default function BlogPostPage({
 ```jsx filename="app/blog/[slug]/page.js" switcher
 'use client'
 import { use } from 'react'
-import { useParams } from 'next/navigation'
 
 export default function BlogPostPage({ params }) {
   const { slug } = use(params)
@@ -169,16 +168,17 @@ export default async function Page({ params }: PageProps<'/blog/[slug]'>) {
     <div>
       <h1>Blog Post</h1>
       <Suspense fallback={<div>Loading...</div>}>
-        <Content slug={params.then((p) => p.slug)} />
+        <Content slugPromise={params.then((p) => p.slug)} />
       </Suspense>
     </div>
   )
 }
 
-async function Content({ slug }: { slug: Promise<string> }) {
-  const resolvedSlug = await slug
-  const res = await fetch(`https://api.vercel.app/blog/${resolvedSlug}`)
+async function Content({ slugPromise }: { slugPromise: Promise<string> }) {
+  const slug = await slugPromise
+  const res = await fetch(`https://api.vercel.app/blog/${slug}`)
   const post = await res.json()
+
   return (
     <article>
       <h2>{post.title}</h2>
