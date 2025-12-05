@@ -3352,7 +3352,12 @@ mod tests {
             rcstr!("./foo.js").into(),
             true,
             false,
-            vec![("./foo.ts", "foo.ts")],
+            vec![
+                // WRONG: request key is incorrect
+                ("./foo.ts", "foo.ts"),
+                // WRONG: shouldn't produce the .js file
+                ("./foo.js", "foo.js"),
+            ],
         )
         .await;
     }
@@ -3364,7 +3369,12 @@ mod tests {
             rcstr!("./foo").into(),
             true,
             false,
-            vec![("./foo", "foo.ts")], // Implicit resolution uses extensionless key
+            vec![
+                // WRONG: request key contains extension
+                ("./foo.ts", "foo.ts"),
+                // WRONG: shouldn't produce the js file
+                ("./foo", "foo.js"),
+            ],
         )
         .await;
     }
@@ -3376,7 +3386,12 @@ mod tests {
             rcstr!("./posts").into(),
             true,
             false,
-            vec![("./posts", "posts.ts")], // Implicit resolution uses extensionless key
+            vec![
+                // WRONG: request key contains extension
+                ("./posts.ts", "posts.ts"),
+                // WRONG: js file should not be produced
+                ("./posts", "posts.json"),
+            ],
         )
         .await;
     }
@@ -3414,7 +3429,12 @@ mod tests {
             rcstr!("./client#component.js").into(),
             true,
             false,
-            vec![("./client#component.ts", "client#component.ts")],
+            vec![
+                // WRONG: request key is incorrect
+                ("./client#component.ts", "client#component.ts"),
+                // WRONG: js file should not be produced
+                ("./client#component.js", "client#component.js"),
+            ],
         )
         .await;
     }
@@ -3427,7 +3447,12 @@ mod tests {
             rcstr!("./page#section").into(),
             true,
             false,
-            vec![("./page#section", "page#section.ts")],
+            vec![
+                // WRONG: request key contains extension
+                ("./page#section.ts", "page#section.ts"),
+                // WRONG: js file should not be produced
+                ("./page#section", "page#section.js"),
+            ],
         )
         .await;
     }
@@ -3448,8 +3473,11 @@ mod tests {
             true,
             false,
             vec![
+                // WRONG: request key doesn't match pattern
                 ("./src/foo.ts", "src/foo.ts"),
                 ("./src/bar.js", "src/bar.js"),
+                // WRONG: source file is redundant with extension rewriting
+                ("./src/foo.js", "src/foo.js"),
             ],
         )
         .await;
@@ -3468,8 +3496,11 @@ mod tests {
             vec![
                 ("./src/bar", "src/bar.js"),
                 ("./src/bar.js", "src/bar.js"),
+                // WRONG: all three should point at the .ts file
                 ("./src/foo", "src/foo.js"),
                 ("./src/foo.js", "src/foo.js"),
+                // WRONG: the request key should be .js
+                ("./src/foo.ts", "src/foo.ts"),
             ],
         )
         .await;
@@ -3502,7 +3533,7 @@ mod tests {
         let path: RcStr = scratch.path().to_str().unwrap().into();
         let expected_owned: Vec<(String, String)> = expected
             .iter()
-            .map(|(k, v)| (k.to_string(), format!("[temp]/{}", v)))
+            .map(|(k, v)| (k.to_string(), v.to_string()))
             .collect();
 
         let tt = turbo_tasks::TurboTasks::new(TurboTasksBackend::new(
@@ -3529,7 +3560,7 @@ mod tests {
                     Ok((
                         k.to_string(),
                         if let ResolveResultItem::Source(source) = v {
-                            source.ident().to_string().await?.to_string()
+                            source.ident().await?.path.path.to_string()
                         } else {
                             unreachable!()
                         },
