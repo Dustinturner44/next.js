@@ -2,13 +2,11 @@ a = ("" | `${???*0*}x`)
 - *0* a
   ⚠️  circular variable reference
 
-b = (0 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unsupported assign operation
+b = (0 | ???*0*)
+- *0* unsupported assign operation
 
-c = (0 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* updated with update expression
+c = (0 | ???*0*)
+- *0* updated with update expression
 
 d = (0 | 1)
 

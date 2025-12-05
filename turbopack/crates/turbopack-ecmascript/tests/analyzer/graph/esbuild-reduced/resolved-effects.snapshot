@@ -2,15 +2,13 @@
 
 0 -> 2 free var = FreeVar(require)
 
-0 -> 3 call = require*1**0*("path")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+0 -> 3 call = require*0*("path")
+- *0* require: The require method from CommonJS
 
 0 -> 4 free var = FreeVar(require)
 
-0 -> 5 call = require*1**0*("path")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+0 -> 5 call = require*0*("path")
+- *0* require: The require method from CommonJS
 
 0 -> 7 free var = FreeVar(platformKey)
 
@@ -22,32 +20,20 @@
 
 0 -> 11 free var = FreeVar(require)
 
-0 -> 12 member call = require*1**0*["resolve"](
-    `${(
-          | ???*2*
-          | "esbuild-windows-arm64"
-          | "esbuild-windows-32"
-          | "esbuild-windows-64"
-          | ???*4**3*
-          | ???*8**7*
-        )}/${(???*9* | "esbuild.exe" | ???*11**10*)}`
+0 -> 12 member call = require*0*["resolve"](
+    `${(???*1* | "esbuild-windows-arm64" | "esbuild-windows-32" | "esbuild-windows-64" | ???*2* | ???*4*)}/${(???*5* | "esbuild.exe" | ???*6*)}`
 )
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
-- *2* pkg
+- *0* require: The require method from CommonJS
+- *1* pkg
   ⚠️  pattern without value
-- *3* ⚠️ This value might have side effects
-- *4* {}[???*6**5*]
+- *2* {}[???*3*]
   ⚠️  unknown object prototype methods or values
-- *5* ⚠️ This value might have side effects
-- *6* FreeVar(platformKey)
+- *3* FreeVar(platformKey)
   ⚠️  unknown global
-- *7* ⚠️ This value might have side effects
-- *8* unknown mutation
-- *9* subpath
+- *4* unknown mutation
+- *5* subpath
   ⚠️  pattern without value
-- *10* ⚠️ This value might have side effects
-- *11* unknown mutation
+- *6* unknown mutation
 
 0 -> 13 unreachable = ???*1**0*
 - *0* ⚠️ This value might have side effects

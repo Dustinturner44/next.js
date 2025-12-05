@@ -1,18 +1,13 @@
 arrPatternBool = (true | false)
 
-nestedPatternBool = (true | ???*1**0* | ???*3**2* | false)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
-- *2* ⚠️ This value might have side effects
-- *3* ???*5**4*[0]
+nestedPatternBool = (true | ???*0* | ???*1* | false)
+- *0* unknown mutation
+- *1* ???*2*[0]
   ⚠️  unknown object
-- *4* ⚠️ This value might have side effects
-- *5* unknown mutation
+- *2* unknown mutation
 
-objPatternBool = (true | ???*1**0* | false)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+objPatternBool = (true | ???*0* | false)
+- *0* unknown mutation
 
-singleAssignBool = (true | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+singleAssignBool = (true | ???*0*)
+- *0* unknown mutation

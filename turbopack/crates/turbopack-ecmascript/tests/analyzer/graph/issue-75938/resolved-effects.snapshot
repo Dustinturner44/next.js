@@ -1,8 +1,7 @@
 0 -> 2 call = module<react, {}>["useMemo"]((...) => new HelloWorld(), [])
 
-2 -> 3 call = new ???*1**0*()
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
+2 -> 3 call = new ???*0*()
+- *0* unsupported expression
 
 0 -> 6 member call = module<react, {}>["useMemo"]((...) => ???*0*, [])["hi"]()
 - *0* new HelloWorld()
@@ -17,18 +16,16 @@
 - *0* ⚠️ This value might have side effects
 - *1* unreachable
 
-0 -> 9 member call = ???*1**0*[???*2*]((...) => undefined)
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
-- *2* private names in member expressions are not supported
+0 -> 9 member call = ???*0*[???*1*]((...) => undefined)
+- *0* unsupported expression
+- *1* private names in member expressions are not supported
 
 9 -> 10 free var = FreeVar(alert)
 
 9 -> 12 call = module<./external, {}>["fooBar"]()
 
-9 -> 13 call = ???*1**0*(module<./external, {}>["fooBar"]())
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(alert)
+9 -> 13 call = ???*0*(module<./external, {}>["fooBar"]())
+- *0* FreeVar(alert)
   ⚠️  unknown global
 
 0 -> 14 call = ???*0*()

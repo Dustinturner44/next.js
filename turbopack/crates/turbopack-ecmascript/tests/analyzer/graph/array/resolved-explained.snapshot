@@ -3,39 +3,32 @@ a = 1
 b = "foo"
 
 c = (1 | "foo" | ???*0*)
-- *0* [][???*2**1*]
+- *0* [][???*1*]
   ⚠️  unknown array prototype methods or values
-- *1* ⚠️ This value might have side effects
-- *2* ???*4**3*["index"]
+- *1* ???*2*["index"]
   ⚠️  unknown object
-- *3* ⚠️ This value might have side effects
-- *4* FreeVar(global)
+- *2* FreeVar(global)
   ⚠️  unknown global
 
 d1 = [1, "foo"]
 
 d2 = (1 | "foo" | ???*0*)
-- *0* [][???*2**1*]
+- *0* [][???*1*]
   ⚠️  unknown array prototype methods or values
-- *1* ⚠️ This value might have side effects
-- *2* ???*4**3*["index"]
+- *1* ???*2*["index"]
   ⚠️  unknown object
-- *3* ⚠️ This value might have side effects
-- *4* FreeVar(global)
+- *2* FreeVar(global)
   ⚠️  unknown global
 
-d3 = ("foo" | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+d3 = ("foo" | ???*0*)
+- *0* unknown mutation
 
 d4 = ???*0*
 - *0* [1, "foo"][2]
   ⚠️  invalid index
 
-value#3 = (1 | "foo" | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+value#3 = (1 | "foo" | ???*0*)
+- *0* unknown mutation
 
-value#5 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+value#5 = ???*0*
+- *0* unknown mutation

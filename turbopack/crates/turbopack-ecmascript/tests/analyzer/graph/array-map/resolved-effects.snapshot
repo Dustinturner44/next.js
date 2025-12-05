@@ -14,10 +14,9 @@
 
 8 -> 10 free var = FreeVar(require)
 
-8 -> 11 member call = require*1**0*["resolve"](???*2*)
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
-- *2* arguments[0]
+8 -> 11 member call = require*0*["resolve"](???*1*)
+- *0* require: The require method from CommonJS
+- *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 8 -> 12 unreachable = ???*1**0*
@@ -26,10 +25,9 @@
 
 0 -> 14 free var = FreeVar(require)
 
-0 -> 15 member call = require*1**0*["resolve"](???*2*)
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
-- *2* arguments[0]
+0 -> 15 member call = require*0*["resolve"](???*1*)
+- *0* require: The require method from CommonJS
+- *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 0 -> 16 unreachable = ???*1**0*

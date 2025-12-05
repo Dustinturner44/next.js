@@ -8,150 +8,81 @@
   | [generateBinPath(), []]
 )
 
-args = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* max number of linking steps reached
+args = (["bin/esbuild"] | ???*0* | [])
+- *0* unknown mutation
 
-binPath = (???*0* | require*2**1*["resolve"](???*3*) | ???*21**20*)
+binPath = (???*0* | ???*1* | ???*7*)
 - *0* binPath
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* require: The require method from CommonJS
-- *3* `${(
-          | ???*4*
-          | "esbuild-windows-arm64"
-          | "esbuild-windows-32"
-          | "esbuild-windows-64"
-          | ???*6**5*
-          | "esbuild-android-arm64"
-          | "esbuild-darwin-arm64"
-          | "esbuild-darwin-64"
-          | "esbuild-freebsd-arm64"
-          | "esbuild-freebsd-64"
-          | "esbuild-linux-arm"
-          | "esbuild-linux-arm64"
-          | "esbuild-linux-32"
-          | "esbuild-linux-mips64le"
-          | "esbuild-linux-ppc64le"
-          | "esbuild-linux-s390x"
-          | "esbuild-linux-64"
-          | "esbuild-netbsd-64"
-          | "esbuild-openbsd-64"
-          | "esbuild-sunos-64"
-          | ???*16**15*
-        )}/${(???*17* | "esbuild.exe" | "bin/esbuild" | ???*19**18*)}`
-  ⚠️  nested operation
-- *4* pkg
+- *1* require.resolve*2*(
+        `${(???*3* | undefined | ???*4* | "esbuild-linux-64")}/${(???*5* | "esbuild.exe" | "bin/esbuild" | ???*6*)}`
+    )
+  ⚠️  require.resolve non constant
+- *2* require.resolve: The require.resolve method from CommonJS
+- *3* pkg
   ⚠️  pattern without value
-- *5* ⚠️ This value might have side effects
-- *6* {}[`linux ${???*7*} ${???*11*}`]
-  ⚠️  unknown object prototype methods or values
-- *7* ???*8*()
-  ⚠️  nested operation
-- *8* ???*9*["arch"]
-  ⚠️  unknown object
-- *9* ...*10*("os")
-  ⚠️  nested operation
-- *10* ⚠️ This value might have side effects
-- *11* ???*12*()
-  ⚠️  nested operation
-- *12* ???*13*["endianness"]
-  ⚠️  unknown object
-- *13* ...*14*("os")
-  ⚠️  nested operation
-- *14* ⚠️ This value might have side effects
-- *15* ⚠️ This value might have side effects
-- *16* unknown mutation
-- *17* subpath
+- *4* unknown mutation
+- *5* subpath
   ⚠️  pattern without value
-- *18* ⚠️ This value might have side effects
-- *19* unknown mutation
-- *20* ⚠️ This value might have side effects
-- *21* ???*23**22*(pkg, subpath)
+- *6* unknown mutation
+- *7* ???*8*(pkg, subpath)
   ⚠️  unknown callee
-- *22* ⚠️ This value might have side effects
-- *23* FreeVar(downloadedBinPath)
+- *8* FreeVar(downloadedBinPath)
   ⚠️  unknown global
 
-binTargetPath = ???*0*
-- *0* ???*1*(???*5*, ???*13*)
-  ⚠️  unknown callee
-- *1* ???*2*["join"]
-  ⚠️  unknown object
-- *2* require*4**3*("path")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
-- *5* ???*6*(???*10*)
-  ⚠️  unknown callee
-- *6* ???*7*["dirname"]
-  ⚠️  unknown object
-- *7* require*9**8*("path")
-  ⚠️  nested operation
-- *8* ⚠️ This value might have side effects
-- *9* require: The require method from CommonJS
-- *10* require*12**11*["resolve"]("esbuild")
-  ⚠️  nested operation
-- *11* ⚠️ This value might have side effects
-- *12* require: The require method from CommonJS
-- *13* `pnpapi-${(
-          | ???*14*
-          | "esbuild-windows-arm64"
-          | "esbuild-windows-32"
-          | "esbuild-windows-64"
-          | ???*16**15*
-          | "esbuild-android-arm64"
-          | "esbuild-darwin-arm64"
-          | "esbuild-darwin-64"
-          | "esbuild-freebsd-arm64"
-          | "esbuild-freebsd-64"
-          | "esbuild-linux-arm"
-          | "esbuild-linux-arm64"
-          | "esbuild-linux-32"
-          | "esbuild-linux-mips64le"
-          | "esbuild-linux-ppc64le"
-          | "esbuild-linux-s390x"
-          | "esbuild-linux-64"
-          | "esbuild-netbsd-64"
-          | "esbuild-openbsd-64"
-          | "esbuild-sunos-64"
-          | ???*22**21*
-        )}-${???*24**23*}`
-  ⚠️  nested operation
-- *14* pkg
+binTargetPath = `"esbuild"/resolved/lib${("/" | "")}pnpapi-${(???*0* | undefined | ???*1* | "esbuild-linux-64")}-${???*2*}`
+- *0* pkg
   ⚠️  pattern without value
-- *15* ⚠️ This value might have side effects
-- *16* {}[`linux ${???*17*} ${???*19*}`]
-  ⚠️  unknown object prototype methods or values
-- *17* ???*18*()
-  ⚠️  nested operation
-- *18* ???["arch"]
-  ⚠️  unknown object
-- *19* ???*20*()
-  ⚠️  nested operation
-- *20* ???["endianness"]
-  ⚠️  unknown object
-- *21* ⚠️ This value might have side effects
-- *22* unknown mutation
-- *23* ⚠️ This value might have side effects
-- *24* ???*25*(
-        (???*29* | "esbuild.exe" | "bin/esbuild" | ???*31**30*)
-    )
+- *1* unknown mutation
+- *2* ???*3*((???*5* | "esbuild.exe" | "bin/esbuild" | ???*6*))
   ⚠️  unknown callee
-- *25* ???*26*["basename"]
-  ⚠️  unknown object
-- *26* require*28**27*("path")
-  ⚠️  nested operation
-- *27* ⚠️ This value might have side effects
-- *28* require: The require method from CommonJS
-- *29* subpath
+- *3* path*4*["basename"]
+  ⚠️  unsupported property on Node.js path module
+- *4* path: The Node.js path module: https://nodejs.org/api/path.html
+- *5* subpath
   ⚠️  pattern without value
-- *30* ⚠️ This value might have side effects
-- *31* unknown mutation
+- *6* unknown mutation
 
-command = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* max number of linking steps reached
+command = (
+  | "node"
+  | ???*0*
+  | ???*1*
+  | `"esbuild"/resolved/lib${("/" | "")}pnpapi-${(???*2* | undefined | ???*3* | "esbuild-linux-64")}-${???*4*}`
+  | ???*9*
+  | ???*10*
+  | ???*16*
+)
+- *0* unknown mutation
+- *1* FreeVar(ESBUILD_BINARY_PATH)
+  ⚠️  unknown global
+- *2* pkg
+  ⚠️  pattern without value
+- *3* unknown mutation
+- *4* ???*5*((???*7* | "esbuild.exe" | "bin/esbuild" | ???*8*))
+  ⚠️  unknown callee
+- *5* path*6*["basename"]
+  ⚠️  unsupported property on Node.js path module
+- *6* path: The Node.js path module: https://nodejs.org/api/path.html
+- *7* subpath
+  ⚠️  pattern without value
+- *8* unknown mutation
+- *9* binPath
+  ⚠️  pattern without value
+- *10* require.resolve*11*(
+        `${(???*12* | undefined | ???*13* | "esbuild-linux-64")}/${(???*14* | "esbuild.exe" | "bin/esbuild" | ???*15*)}`
+    )
+  ⚠️  require.resolve non constant
+- *11* require.resolve: The require.resolve method from CommonJS
+- *12* pkg
+  ⚠️  pattern without value
+- *13* unknown mutation
+- *14* subpath
+  ⚠️  pattern without value
+- *15* unknown mutation
+- *16* ???*17*(pkg, subpath)
+  ⚠️  unknown callee
+- *17* FreeVar(downloadedBinPath)
+  ⚠️  unknown global
 
 e#10 = ???*0*
 - *0* e
@@ -171,19 +102,7 @@ esbuildCommandAndArgs = (...) => (
   | [generateBinPath(), []]
 )
 
-esbuildLibDir = ???*0*
-- *0* ???*1*(???*5*)
-  ⚠️  unknown callee
-- *1* ???*2*["dirname"]
-  ⚠️  unknown object
-- *2* require*4**3*("path")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
-- *5* require*7**6*["resolve"]("esbuild")
-  ⚠️  nested operation
-- *6* ⚠️ This value might have side effects
-- *7* require: The require method from CommonJS
+esbuildLibDir = "\"esbuild\"/resolved/lib"
 
 generateBinPath = (...) => (FreeVar(ESBUILD_BINARY_PATH) | binTargetPath | binPath)
 
@@ -213,139 +132,39 @@ knownWindowsPackages = {
     "win32 x64 LE": "esbuild-windows-64"
 }
 
-os = require*1**0*("os")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+os = os*0*
+- *0* os: The Node.js os module: https://nodejs.org/api/os.html
 
-path = require*1**0*("path")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+path = path*0*
+- *0* path: The Node.js path module: https://nodejs.org/api/path.html
 
-path2 = require*1**0*("path")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+path2 = path*0*
+- *0* path: The Node.js path module: https://nodejs.org/api/path.html
 
-pkg#3 = (
-  | ???*0*
-  | "esbuild-windows-arm64"
-  | "esbuild-windows-32"
-  | "esbuild-windows-64"
-  | ???*2**1*
-  | "esbuild-android-arm64"
-  | "esbuild-darwin-arm64"
-  | "esbuild-darwin-64"
-  | "esbuild-freebsd-arm64"
-  | "esbuild-freebsd-64"
-  | "esbuild-linux-arm"
-  | "esbuild-linux-arm64"
-  | "esbuild-linux-32"
-  | "esbuild-linux-mips64le"
-  | "esbuild-linux-ppc64le"
-  | "esbuild-linux-s390x"
-  | "esbuild-linux-64"
-  | "esbuild-netbsd-64"
-  | "esbuild-openbsd-64"
-  | "esbuild-sunos-64"
-)
+pkg#3 = (???*0* | undefined | ???*1* | "esbuild-linux-64")
 - *0* pkg
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* {}[`linux ${???*3*} ${???*8*}`]
-  ⚠️  unknown object prototype methods or values
-- *3* ???*4*()
-  ⚠️  nested operation
-- *4* ???*5*["arch"]
-  ⚠️  unknown object
-- *5* require*7**6*("os")
-  ⚠️  nested operation
-- *6* ⚠️ This value might have side effects
-- *7* require: The require method from CommonJS
-- *8* ???*9*()
-  ⚠️  nested operation
-- *9* ???*10*["endianness"]
-  ⚠️  unknown object
-- *10* require*12**11*("os")
-  ⚠️  nested operation
-- *11* ⚠️ This value might have side effects
-- *12* require: The require method from CommonJS
+- *1* unknown mutation
 
-pkg#7 = (
-  | ???*0*
-  | "esbuild-windows-arm64"
-  | "esbuild-windows-32"
-  | "esbuild-windows-64"
-  | ???*2**1*
-  | "esbuild-android-arm64"
-  | "esbuild-darwin-arm64"
-  | "esbuild-darwin-64"
-  | "esbuild-freebsd-arm64"
-  | "esbuild-freebsd-64"
-  | "esbuild-linux-arm"
-  | "esbuild-linux-arm64"
-  | "esbuild-linux-32"
-  | "esbuild-linux-mips64le"
-  | "esbuild-linux-ppc64le"
-  | "esbuild-linux-s390x"
-  | "esbuild-linux-64"
-  | "esbuild-netbsd-64"
-  | "esbuild-openbsd-64"
-  | "esbuild-sunos-64"
-  | ???*14**13*
-)
+pkg#7 = (???*0* | undefined | ???*1* | "esbuild-linux-64")
 - *0* pkg
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* {}[`linux ${???*3*} ${???*8*}`]
-  ⚠️  unknown object prototype methods or values
-- *3* ???*4*()
-  ⚠️  nested operation
-- *4* ???*5*["arch"]
-  ⚠️  unknown object
-- *5* require*7**6*("os")
-  ⚠️  nested operation
-- *6* ⚠️ This value might have side effects
-- *7* require: The require method from CommonJS
-- *8* ???*9*()
-  ⚠️  nested operation
-- *9* ???*10*["endianness"]
-  ⚠️  unknown object
-- *10* require*12**11*("os")
-  ⚠️  nested operation
-- *11* ⚠️ This value might have side effects
-- *12* require: The require method from CommonJS
-- *13* ⚠️ This value might have side effects
-- *14* unknown mutation
+- *1* unknown mutation
 
 pkgAndSubpathForCurrentPlatform = (...) => {"pkg": pkg, "subpath": subpath}
 
-platformKey = `linux ${???*0*} ${???*5*}`
-- *0* ???*1*()
-  ⚠️  nested operation
-- *1* ???*2*["arch"]
-  ⚠️  unknown object
-- *2* require*4**3*("os")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
-- *5* ???*6*()
-  ⚠️  nested operation
-- *6* ???*7*["endianness"]
-  ⚠️  unknown object
-- *7* require*9**8*("os")
-  ⚠️  nested operation
-- *8* ⚠️ This value might have side effects
-- *9* require: The require method from CommonJS
+platformKey = "linux x64 LE"
 
 subpath#3 = (???*0* | "esbuild.exe" | "bin/esbuild")
 - *0* subpath
   ⚠️  pattern without value
 
-subpath#7 = (???*0* | "esbuild.exe" | "bin/esbuild" | ???*2**1*)
+subpath#7 = (???*0* | "esbuild.exe" | "bin/esbuild" | ???*1*)
 - *0* subpath
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* unknown mutation
+- *1* unknown mutation
 
-x = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* max number of linking steps reached
+x = (["bin/esbuild", "--service=0.14.12", "--ping"] | ???*0* | ["--service=0.14.12", "--ping"])
+- *0* ???*1*["concat"]("--service=0.14.12", "--ping")
+  ⚠️  unknown callee object
+- *1* unknown mutation

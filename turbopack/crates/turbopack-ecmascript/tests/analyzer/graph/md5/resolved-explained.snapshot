@@ -50,20 +50,16 @@ bitRotateLeft = (...) => ???*1**0*
 - *0* ⚠️ This value might have side effects
 - *1* unsupported expression
 
-bytes = (???*0* | new ???*2**1*((???*4**3* | undefined["length"])))
+bytes = (???*0* | new ???*1*((???*2* | undefined["length"])))
 - *0* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *1* ⚠️ This value might have side effects
-- *2* FreeVar(Array)
+- *1* FreeVar(Array)
   ⚠️  unknown global
-- *3* ⚠️ This value might have side effects
-- *4* ???*6**5*["length"]
+- *2* ???*3*["length"]
   ⚠️  unknown object
-- *5* ⚠️ This value might have side effects
-- *6* ???*8**7*(FreeVar(encodeURIComponent)(bytes))
+- *3* ???*4*(FreeVar(encodeURIComponent)(bytes))
   ⚠️  unknown callee
-- *7* ⚠️ This value might have side effects
-- *8* FreeVar(unescape)
+- *4* FreeVar(unescape)
   ⚠️  unknown global
 
 bytesToWords = (...) => output
@@ -112,28 +108,25 @@ d#7 = ???*1**0*
 - *0* ⚠️ This value might have side effects
 - *1* max number of linking steps reached
 
-hex = (???*0* | ???*2**1*)
+hex = (???*0* | ???*1*)
 - *0* hex
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* ???*4**3*(
-        (hexTab["charAt"](???*6**5*) + hexTab["charAt"](???*8**7*)),
+- *1* ???*2*(
+        (hexTab["charAt"](???*4**3*) + hexTab["charAt"](???*6**5*)),
         16
     )
   ⚠️  unknown callee
-- *3* ⚠️ This value might have side effects
-- *4* FreeVar(parseInt)
+- *2* FreeVar(parseInt)
   ⚠️  unknown global
+- *3* ⚠️ This value might have side effects
+- *4* unsupported expression
 - *5* ⚠️ This value might have side effects
 - *6* unsupported expression
-- *7* ⚠️ This value might have side effects
-- *8* unsupported expression
 
 hexTab = "0123456789abcdef"
 
-i#3 = (0 | undefined | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* updated with update expression
+i#3 = (0 | undefined | ???*0*)
+- *0* updated with update expression
 
 i#5 = (???*0* | 0 | (???*1* + 8))
 - *0* i
@@ -167,19 +160,15 @@ len = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-length32 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
+length32 = ???*0*
+- *0* unsupported expression
 
-length8 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
+length8 = ???*0*
+- *0* unsupported expression
 
-lsw = (???*1**0* + ???*3**2*)
-- *0* ⚠️ This value might have side effects
+lsw = (???*0* + ???*1*)
+- *0* unsupported expression
 - *1* unsupported expression
-- *2* ⚠️ This value might have side effects
-- *3* unsupported expression
 
 md5 = (...) => md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), ???*1**0*))
 - *0* ⚠️ This value might have side effects
@@ -208,21 +197,16 @@ md5ii = (...) => md5cmn(???*1**0*, a, b, x, s, t)
 - *0* ⚠️ This value might have side effects
 - *1* unsupported expression
 
-msg = (???*1**0* | undefined)
-- *0* ⚠️ This value might have side effects
-- *1* ???*3**2*(FreeVar(encodeURIComponent)(bytes))
+msg = (???*0* | undefined)
+- *0* ???*1*(FreeVar(encodeURIComponent)(bytes))
   ⚠️  unknown callee
-- *2* ⚠️ This value might have side effects
-- *3* FreeVar(unescape)
+- *1* FreeVar(unescape)
   ⚠️  unknown global
 
-msw = (???*1**0* + ???*3**2* + ???*5**4*)
-- *0* ⚠️ This value might have side effects
+msw = (???*0* + ???*1* + ???*2*)
+- *0* unsupported expression
 - *1* unsupported expression
-- *2* ⚠️ This value might have side effects
-- *3* unsupported expression
-- *4* ⚠️ This value might have side effects
-- *5* unsupported expression
+- *2* unsupported expression
 
 num = ???*0*
 - *0* arguments[0]
@@ -322,11 +306,10 @@ x#18 = ???*0*
 - *0* arguments[4]
   ⚠️  function calls are not analyzed yet
 
-x#5 = (???*0* | ???*2**1*)
+x#5 = (???*0* | ???*1*)
 - *0* x
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* unsupported expression
+- *1* unsupported expression
 
 x#7 = ???*0*
 - *0* arguments[0]

@@ -12,9 +12,8 @@
 
 0 -> 6 free var = FreeVar(console)
 
-0 -> 7 member call = ???*1**0*["log"]("initLasyInitAsyncProcess")
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(console)
+0 -> 7 member call = ???*0*["log"]("initLasyInitAsyncProcess")
+- *0* FreeVar(console)
   ⚠️  unknown global
 
 0 -> 8 conditional = !((null | Promise<undefined>))

@@ -1,6 +1,5 @@
-0 -> 1 typeof = typeof(???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(x)
+0 -> 1 typeof = typeof(???*0*)
+- *0* FreeVar(x)
   ⚠️  unknown global
 
 0 -> 2 free var = FreeVar(x)

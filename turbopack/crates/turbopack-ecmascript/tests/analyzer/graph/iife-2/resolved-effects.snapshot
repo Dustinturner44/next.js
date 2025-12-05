@@ -11,56 +11,50 @@
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-0 -> 9 member call = ???*1**0*["debug"]("####", ???*2*, (???*3* ? true : false))
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(console)
+0 -> 9 member call = ???*0*["debug"]("####", ???*1*, (???*2* ? true : false))
+- *0* FreeVar(console)
   ⚠️  unknown global
-- *2* arguments[1]
+- *1* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* arguments[1]
+- *2* arguments[1]
   ⚠️  function calls are not analyzed yet
 
 0 -> 12 conditional = ???*0*
 - *0* arguments[1]
   ⚠️  function calls are not analyzed yet
 
-0 -> 14 call = (...) => parent(???*0*, (???*2* ? ???*3* : (???*13**12* | undefined)), (???*20* | {}){truthy})
+0 -> 14 call = (...) => parent(???*0*, (???*2* ? ???*3* : (???*10* | undefined)), (???*15* | {}){truthy})
 - *0* ???*1*[key]
   ⚠️  unknown object
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 - *2* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *3* `${???*4*}.${(???*6**5* | undefined)}`
+- *3* `${???*4*}.${(???*5* | undefined)}`
   ⚠️  nested operation
 - *4* arguments[1]
   ⚠️  function calls are not analyzed yet
-- *5* ⚠️ This value might have side effects
-- *6* ???*8**7*[i]
+- *5* ???*6*[i]
   ⚠️  unknown object
-- *7* ⚠️ This value might have side effects
-- *8* ???*10**9*(???*11*)
+- *6* ???*7*(???*9*)
   ⚠️  unknown callee
-- *9* ⚠️ This value might have side effects
-- *10* Object["keys"]
+- *7* Object*8*["keys"]
   ⚠️  unsupported property on global Object
-- *11* arguments[0]
+- *8* Object: The global Object variable
+- *9* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *12* ⚠️ This value might have side effects
-- *13* ???*15**14*[i]
+- *10* ???*11*[i]
   ⚠️  unknown object
-- *14* ⚠️ This value might have side effects
-- *15* ???*17**16*(???*19*)
+- *11* ???*12*(???*14*)
   ⚠️  unknown callee
-- *16* ⚠️ This value might have side effects
-- *17* Object*18*["keys"]
+- *12* Object*13*["keys"]
   ⚠️  unsupported property on global Object
-- *18* Object: The global Object variable
-- *19* arguments[0]
+- *13* Object: The global Object variable
+- *14* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *20* ???*21*[key]
+- *15* ???*16*[key]
   ⚠️  unknown object
-- *21* arguments[2]
+- *16* arguments[2]
   ⚠️  function calls are not analyzed yet
 
 0 -> 15 unreachable = ???*1**0*

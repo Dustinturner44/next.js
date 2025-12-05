@@ -6,6 +6,5 @@
 
 0 -> 5 free var = FreeVar(Worker)
 
-0 -> 6 call = new Worker*1**0*(./worker.ts relative)
-- *0* ⚠️ This value might have side effects
-- *1* Worker: The standard Worker constructor: https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker
+0 -> 6 call = new Worker*0*(./worker.ts relative)
+- *0* Worker: The standard Worker constructor: https://developer.mozilla.org/en-US/docs/Web/API/Worker/Worker

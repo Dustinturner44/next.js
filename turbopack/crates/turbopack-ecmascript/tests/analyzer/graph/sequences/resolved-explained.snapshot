@@ -1,8 +1,6 @@
-x = (1 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* updated with update expression
+x = (1 | ???*0*)
+- *0* updated with update expression
 
-y = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* 2
+y = ???*0*
+- *0* 2
   ⚠️  sequence with side effects

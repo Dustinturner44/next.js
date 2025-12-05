@@ -940,12 +940,10 @@ Oj = !(1)
 
 Ok (const after eval) = (...) => a
 
-P = (null | null*0* | null*2**1* | a | a*3* | b | a | a*4*)
+P = (null | null*0* | a | a*1* | b | a | a*2*)
 - *0* ⚠️ This value might have side effects
 - *1* ⚠️ This value might have side effects
 - *2* ⚠️ This value might have side effects
-- *3* ⚠️ This value might have side effects
-- *4* ⚠️ This value might have side effects
 
 Pa (const after eval) = (...) => (Ma(a["type"]) | Ma("Lazy") | Ma("Suspense") | Ma("SuspenseList") | ???*1**0* | "" | undefined)
 - *0* ⚠️ This value might have side effects
@@ -967,10 +965,8 @@ Pe (const after eval) = (ia && ???*1**0* && ???*3**2*)
 
 Pf (const after eval) = `__reactProps$${Nf}`
 
-Pg = (null | null*1**0* | null*2*)
+Pg = (null | null*0*)
 - *0* ⚠️ This value might have side effects
-- *1* ⚠️ This value might have side effects
-- *2* ⚠️ This value might have side effects
 
 Ph (const after eval) = ua["ReactCurrentDispatcher"]
 
@@ -1116,9 +1112,8 @@ Sd (const after eval) = A(
     }
 )
 
-Se = (null | d | null*1**0*)
+Se = (null | d | null*0*)
 - *0* ⚠️ This value might have side effects
-- *1* ⚠️ This value might have side effects
 
 Sf (const after eval) = []
 
@@ -2726,7 +2721,10 @@ b#286 = arguments[1]
 
 b#3 = (
   | `https://reactjs.org/docs/error-decoder.html?invariant=${a}`
-  | `${b}${`&args[]=${FreeVar(encodeURIComponent)(FreeVar(arguments)[c])}`}`
+  | (
+      + b
+      + `&args[]=${FreeVar(encodeURIComponent)(FreeVar(arguments)[c])}`
+    )
 )
 
 b#30 = (arguments[1] | *anonymous function 6811*)
@@ -2986,7 +2984,7 @@ b#56 = (Ta(a) ? "checked" : "value")
 b#562 = (
   | R["identifierPrefix"]
   | `:${b}R${c}`
-  | `${b}${`H${c["toString"](32)}`}`
+  | (b + `H${c["toString"](32)}`)
   | `${b}:`
   | `:${b}r${c["toString"](32)}:`
 )
@@ -5854,7 +5852,7 @@ m#404 = (
   | a["alternate"]
   | undefined
   | m["updateQueue"]
-  | null*1**0*
+  | null*0*
   | {
         "eventTime": y,
         "lane": 0,
@@ -5862,14 +5860,13 @@ m#404 = (
         "payload": h["payload"],
         "callback": h["callback"],
         "next": null
-    }*2*
+    }*1*
   | y
-  | y*3*
+  | y*2*
 )
 - *0* ⚠️ This value might have side effects
 - *1* ⚠️ This value might have side effects
 - *2* ⚠️ This value might have side effects
-- *3* ⚠️ This value might have side effects
 
 m#431 = (...) => (???*1**0* | b)
 - *0* ⚠️ This value might have side effects
@@ -5921,13 +5918,12 @@ mb = (???*0* | (mb || FreeVar(document)["createElement"]("div")))
 
 mc (const after eval) = (...) => undefined
 
-md = (null | e["slice"](a, (???*1**0* ? ???*3**2* : undefined)) | null*5**4*)
+md = (null | e["slice"](a, (???*1**0* ? ???*3**2* : undefined)) | null*4*)
 - *0* ⚠️ This value might have side effects
 - *1* unsupported expression
 - *2* ⚠️ This value might have side effects
 - *3* unsupported expression
 - *4* ⚠️ This value might have side effects
-- *5* ⚠️ This value might have side effects
 
 me (const after eval) = (...) => (("input" === b) ? !(!(le[a["type"]])) : (("textarea" === b) ? !(0) : !(1)))
 
@@ -6324,11 +6320,10 @@ sj (const after eval) = (...) => (???*1**0* | f | tj(a, b, g, null) | tj(a, b, g
 - *1* tj(a, b, g, d)
   ⚠️  sequence with side effects
 
-sk = (0 | 0*1**0* | ???*3**2*)
+sk = (0 | 0*0* | ???*2**1*)
 - *0* ⚠️ This value might have side effects
 - *1* ⚠️ This value might have side effects
-- *2* ⚠️ This value might have side effects
-- *3* unsupported assign operation
+- *2* unsupported assign operation
 
 sl (const after eval) = (...) => hl(g)
 

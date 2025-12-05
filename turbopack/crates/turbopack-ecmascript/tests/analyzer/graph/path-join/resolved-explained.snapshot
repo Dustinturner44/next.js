@@ -1,18 +1,13 @@
-a = require*1**0*("foo")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+a = module<foo, {}>
 
-p1 = require*1**0*("path")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+p1 = path*0*
+- *0* path: The Node.js path module: https://nodejs.org/api/path.html
 
-path = require*1**0*("path")
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+path = path*0*
+- *0* path: The Node.js path module: https://nodejs.org/api/path.html
 
-path_join1 = require*1**0*("path")["join"]
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+path_join1 = path.join*0*
+- *0* path.join: The Node.js path.join method: https://nodejs.org/api/path.html#pathjoinpaths
 
 path_join2 = path.join*0*
 - *0* path.join: The Node.js path.join method: https://nodejs.org/api/path.html#pathjoinpaths
@@ -20,60 +15,17 @@ path_join2 = path.join*0*
 path_join3 = path.join*0*
 - *0* path.join: The Node.js path.join method: https://nodejs.org/api/path.html#pathjoinpaths
 
-path_join4 = import*1**0*("path")["join"]
-- *0* ⚠️ This value might have side effects
-- *1* import: The dynamic import() method from the ESM specification: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#dynamic_imports
+path_join4 = path.join*0*
+- *0* path.join: The Node.js path.join method: https://nodejs.org/api/path.html#pathjoinpaths
 
-z1_joined = ???*0*
-- *0* ???*1*("foo", "bar")
-  ⚠️  unknown callee
-- *1* ???*2*["join"]
-  ⚠️  unknown object
-- *2* require*4**3*("path")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
+z1_joined = "foo/bar"
 
-z2_joined = ???*0*
-- *0* ???*1*("foo/", "bar")
-  ⚠️  unknown callee
-- *1* ???*2*["join"]
-  ⚠️  unknown object
-- *2* require*4**3*("path")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
+z2_joined = "foo/bar"
 
-z3_joined = ???*0*
-- *0* ???*1*("foo", "/bar")
-  ⚠️  unknown callee
-- *1* ???*2*["join"]
-  ⚠️  unknown object
-- *2* require*4**3*("path")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
+z3_joined = "foo/bar"
 
-z4_joined = ???*0*
-- *0* ???*1*("foo/", "/bar")
-  ⚠️  unknown callee
-- *1* ???*2*["join"]
-  ⚠️  unknown object
-- *2* require*4**3*("path")
-  ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
+z4_joined = "foo/bar"
 
-z5_joined = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* ???*2*("foo", "bar", "..", "baz", ???*7**6*, "..", "foo")
-  ⚠️  unknown callee
-- *2* ???*3*["join"]
-  ⚠️  unknown object
-- *3* require*5**4*("path")
-  ⚠️  nested operation
-- *4* ⚠️ This value might have side effects
-- *5* require: The require method from CommonJS
-- *6* ⚠️ This value might have side effects
-- *7* FreeVar(global)
+z5_joined = `foo/baz${("/" | "")}${???*0*}${("/" | "")}../foo`
+- *0* FreeVar(global)
   ⚠️  unknown global

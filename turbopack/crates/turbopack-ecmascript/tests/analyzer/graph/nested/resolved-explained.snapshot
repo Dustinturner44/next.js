@@ -10,9 +10,8 @@ b = (...) => undefined
 
 c = (...) => undefined
 
-d = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
+d = ???*0*
+- *0* unsupported expression
 
 e = (...) => undefined
 
@@ -44,13 +43,11 @@ y#9 = 1
 
 z#3 = (...) => undefined
 
-z#6 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
+z#6 = ???*0*
+- *0* unsupported expression
 
-z#7 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* unsupported expression
+z#7 = ???*0*
+- *0* unsupported expression
 
 z#9 = (...) => undefined
 

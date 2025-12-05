@@ -1,8 +1,7 @@
 0 -> 2 free var = FreeVar(Math)
 
-0 -> 3 member call = ???*1**0*["random"]()
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(Math)
+0 -> 3 member call = ???*0*["random"]()
+- *0* FreeVar(Math)
   ⚠️  unknown global
 
 0 -> 5 free var = FreeVar(JSON)
@@ -13,24 +12,23 @@
 - *1* arguments[0]
   ⚠️  function calls are not analyzed yet
 
-0 -> 7 member call = ???*1**0*["stringify"](
+0 -> 7 member call = ???*0*["stringify"](
     {
-        "condition": ((???*2* | "true") === "true"),
-        "buggedConditionalCheck": (???*4* ? "true" : "false")
+        "condition": ((???*1* | "true") === "true"),
+        "buggedConditionalCheck": (???*3* ? "true" : "false")
     }
 )
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(JSON)
+- *0* FreeVar(JSON)
   ⚠️  unknown global
-- *2* ???*3*["variable"]
+- *1* ???*2*["variable"]
   ⚠️  unknown object
-- *3* arguments[0]
+- *2* arguments[0]
   ⚠️  function calls are not analyzed yet
-- *4* ((???*5* | "true") === "true")
+- *3* ((???*4* | "true") === "true")
   ⚠️  nested operation
-- *5* ???*6*["variable"]
+- *4* ???*5*["variable"]
   ⚠️  unknown object
-- *6* arguments[0]
+- *5* arguments[0]
   ⚠️  function calls are not analyzed yet
 
 0 -> 8 unreachable = ???*1**0*

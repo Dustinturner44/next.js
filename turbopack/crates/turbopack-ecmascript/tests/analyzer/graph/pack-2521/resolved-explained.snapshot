@@ -7,83 +7,47 @@ errors = []
 path = (
   | `../src/build/Release/sharp-${???*0*}.node`
   | "../src/build/Release/sharp-wasm32.node"
-  | `@img/sharp-${???*5*}/sharp.node`
+  | `@img/sharp-${???*1*}/sharp.node`
   | "@img/sharp-wasm32/sharp.node"
-  | ???*11**10*
+  | ???*2*
 )
-- *0* ???*1*()
+- *0* module<./libvips, {}>["runtimePlatformArch"]()
   ⚠️  nested operation
-- *1* ???*2*["runtimePlatformArch"]
-  ⚠️  unknown object
-- *2* require*4**3*("./libvips")
+- *1* module<./libvips, {}>["runtimePlatformArch"]()
   ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
-- *5* ???*6*()
-  ⚠️  nested operation
-- *6* ???*7*["runtimePlatformArch"]
-  ⚠️  unknown object
-- *7* require*9**8*("./libvips")
-  ⚠️  nested operation
-- *8* ⚠️ This value might have side effects
-- *9* require: The require method from CommonJS
-- *10* ⚠️ This value might have side effects
-- *11* unknown mutation
+- *2* unknown mutation
 
 paths = [
     `../src/build/Release/sharp-${???*0*}.node`,
     "../src/build/Release/sharp-wasm32.node",
-    `@img/sharp-${???*5*}/sharp.node`,
+    `@img/sharp-${???*1*}/sharp.node`,
     "@img/sharp-wasm32/sharp.node"
 ]
-- *0* ???*1*()
+- *0* module<./libvips, {}>["runtimePlatformArch"]()
   ⚠️  nested operation
-- *1* ???*2*["runtimePlatformArch"]
-  ⚠️  unknown object
-- *2* require*4**3*("./libvips")
+- *1* module<./libvips, {}>["runtimePlatformArch"]()
   ⚠️  nested operation
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS
-- *5* ???*6*()
-  ⚠️  nested operation
-- *6* ???*7*["runtimePlatformArch"]
-  ⚠️  unknown object
-- *7* require*9**8*("./libvips")
-  ⚠️  nested operation
-- *8* ⚠️ This value might have side effects
-- *9* require: The require method from CommonJS
 
-runtimePlatform = ???*0*()
-- *0* ???*1*["runtimePlatformArch"]
-  ⚠️  unknown object
-- *1* require*3**2*("./libvips")
-  ⚠️  nested operation
-- *2* ⚠️ This value might have side effects
-- *3* require: The require method from CommonJS
+runtimePlatform = module<./libvips, {}>["runtimePlatformArch"]()
 
-runtimePlatformArch = require*1**0*("./libvips")["runtimePlatformArch"]
-- *0* ⚠️ This value might have side effects
-- *1* require: The require method from CommonJS
+runtimePlatformArch = module<./libvips, {}>["runtimePlatformArch"]
 
-sharp = (
-  | ???*0*
-  | require*2**1*(
-        (???*3* | "../src/build/Release/sharp-wasm32.node" | "@img/sharp-wasm32/sharp.node" | ???*10**9*)
-    )
-)
+sharp = (???*0* | ???*1*)
 - *0* sharp
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
+- *1* require*2*(
+        (
+          | `../src/build/Release/sharp-${???*3*}.node`
+          | "../src/build/Release/sharp-wasm32.node"
+          | `@img/sharp-${???*4*}/sharp.node`
+          | "@img/sharp-wasm32/sharp.node"
+          | ???*5*
+        )
+    )
+  ⚠️  only constant argument is supported
 - *2* require: The require method from CommonJS
-- *3* `../src/build/Release/sharp-${???*4*}.node`
+- *3* module<./libvips, {}>["runtimePlatformArch"]()
   ⚠️  nested operation
-- *4* ???*5*()
+- *4* module<./libvips, {}>["runtimePlatformArch"]()
   ⚠️  nested operation
-- *5* ???*6*["runtimePlatformArch"]
-  ⚠️  unknown object
-- *6* require*8**7*("./libvips")
-  ⚠️  nested operation
-- *7* ⚠️ This value might have side effects
-- *8* require: The require method from CommonJS
-- *9* ⚠️ This value might have side effects
-- *10* unknown mutation
+- *5* unknown mutation

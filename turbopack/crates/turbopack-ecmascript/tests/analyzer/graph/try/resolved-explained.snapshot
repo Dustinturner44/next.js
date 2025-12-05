@@ -2,10 +2,6 @@ e = ???*0*
 - *0* e
   ⚠️  pattern without value
 
-pkg = (???*0* | require*2**1*("packages/not-found") | require*4**3*("packages/found"))
+pkg = (???*0* | module<packages/not-found, {}> | module<packages/found, {}>)
 - *0* pkg
   ⚠️  pattern without value
-- *1* ⚠️ This value might have side effects
-- *2* require: The require method from CommonJS
-- *3* ⚠️ This value might have side effects
-- *4* require: The require method from CommonJS

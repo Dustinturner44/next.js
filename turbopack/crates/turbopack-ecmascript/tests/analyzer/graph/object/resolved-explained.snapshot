@@ -1,142 +1,107 @@
-a = (1 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+a = (1 | ???*0*)
+- *0* unknown mutation
 
-a1 = (1 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+a1 = (1 | ???*0*)
+- *0* unknown mutation
 
-a2 = (1 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+a2 = (1 | ???*0*)
+- *0* unknown mutation
 
-a3 = (1 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+a3 = (1 | ???*0*)
+- *0* unknown mutation
 
-a4 = (1 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+a4 = (1 | ???*0*)
+- *0* unknown mutation
 
-a5 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* {"a": 1, ...???*3**2*, "b": 2}["a"]
+a5 = ???*0*
+- *0* {"a": 1, ...???*1*, "b": 2}["a"]
   ⚠️  spread object
-- *2* ⚠️ This value might have side effects
-- *3* FreeVar(global)
+- *1* FreeVar(global)
   ⚠️  unknown global
 
-a6 = (1 | 2 | 4 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+a6 = (1 | 2 | 4 | ???*0*)
+- *0* unknown mutation
 
-b = (2 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+b = (2 | ???*0*)
+- *0* unknown mutation
 
-b1 = (2 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+b1 = (2 | ???*0*)
+- *0* unknown mutation
 
-b2 = (2 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+b2 = (2 | ???*0*)
+- *0* unknown mutation
 
-b3 = (22 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+b3 = (22 | ???*0*)
+- *0* unknown mutation
 
-b4 = (2 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+b4 = (2 | ???*0*)
+- *0* unknown mutation
 
-b5 = (2 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+b5 = (2 | ???*0*)
+- *0* unknown mutation
 
-b6 = (2 | 4 | ???*1**0* | ???*3**2*)
-- *0* ⚠️ This value might have side effects
-- *1* {}["b"]
+b6 = (2 | 4 | ???*0* | ???*1*)
+- *0* {}["b"]
   ⚠️  unknown object prototype methods or values
-- *2* ⚠️ This value might have side effects
-- *3* unknown mutation
-
-c = (3 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
 - *1* unknown mutation
 
-c1 = (3 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+c = (3 | ???*0*)
+- *0* unknown mutation
 
-c2 = (3 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+c1 = (3 | ???*0*)
+- *0* unknown mutation
 
-c3 = (3 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+c2 = (3 | ???*0*)
+- *0* unknown mutation
 
-c4 = (3 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+c3 = (3 | ???*0*)
+- *0* unknown mutation
 
-c5 = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* {"a": 1, ...???*3**2*, "b": 2}["c"]
+c4 = (3 | ???*0*)
+- *0* unknown mutation
+
+c5 = ???*0*
+- *0* {"a": 1, ...???*1*, "b": 2}["c"]
   ⚠️  spread object
-- *2* ⚠️ This value might have side effects
-- *3* FreeVar(global)
+- *1* FreeVar(global)
   ⚠️  unknown global
 
-c6 = (3 | 4 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+c6 = (3 | 4 | ???*0*)
+- *0* unknown mutation
 
-d = (undefined | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+d = (undefined | ???*0*)
+- *0* unknown mutation
 
-d1 = (undefined | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+d1 = (undefined | ???*0*)
+- *0* unknown mutation
 
-d2 = (undefined | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+d2 = (undefined | ???*0*)
+- *0* unknown mutation
 
-d3 = (undefined | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+d3 = (undefined | ???*0*)
+- *0* unknown mutation
 
-d4 = (undefined | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+d4 = (undefined | ???*0*)
+- *0* unknown mutation
 
-d6 = (2 | 4 | ???*1**0* | ???*3**2*)
-- *0* ⚠️ This value might have side effects
-- *1* {}["d"]
+d6 = (2 | 4 | ???*0* | ???*1*)
+- *0* {}["d"]
   ⚠️  unknown object prototype methods or values
-- *2* ⚠️ This value might have side effects
-- *3* unknown mutation
-
-e6 = (5 | ???*1**0*)
-- *0* ⚠️ This value might have side effects
 - *1* unknown mutation
+
+e6 = (5 | ???*0*)
+- *0* unknown mutation
 
 object = {"a": 1, "b": 2, "c": 3}
 
-object2 = {"a": 1, ???*1**0*: 2, "c": 3, ???*3**2*: 4, "e": 5}
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(global)
+object2 = {"a": 1, ???*0*: 2, "c": 3, ???*1*: 4, "e": 5}
+- *0* FreeVar(global)
   ⚠️  unknown global
-- *2* ⚠️ This value might have side effects
-- *3* FreeVar(global)
+- *1* FreeVar(global)
   ⚠️  unknown global
 
 object_spread = {"a": 11, "a": 1, "b": 2, "c": 3, "b": 22}
 
-unknown_spread = {"a": 1, ...???*1**0*, "b": 2}
-- *0* ⚠️ This value might have side effects
-- *1* FreeVar(global)
+unknown_spread = {"a": 1, ...???*0*, "b": 2}
+- *0* FreeVar(global)
   ⚠️  unknown global

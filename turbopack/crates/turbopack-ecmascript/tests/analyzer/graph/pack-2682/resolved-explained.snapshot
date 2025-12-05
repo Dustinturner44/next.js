@@ -12,17 +12,15 @@ BuggyArguments = (...) => FreeVar(JSON)["stringify"](
     }
 )
 
-res = ???*1**0*
-- *0* ⚠️ This value might have side effects
-- *1* ???*3**2*["stringify"](
+res = ???*0*
+- *0* ???*1*["stringify"](
         {
             "condition": (variable === "true"),
             "buggedConditionalCheck": ((variable === "true") ? "true" : "false")
         }
     )
   ⚠️  unknown callee object
-- *2* ⚠️ This value might have side effects
-- *3* FreeVar(JSON)
+- *1* FreeVar(JSON)
   ⚠️  unknown global
 
 variable = (???*0* | "true")

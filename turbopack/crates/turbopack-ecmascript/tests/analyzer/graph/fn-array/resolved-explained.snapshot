@@ -10,10 +10,8 @@ c = (...) => [`${a}${b}`, a]
 
 d = ["12", "1"]
 
-e = ("12" | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+e = ("12" | ???*0*)
+- *0* unknown mutation
 
-f = ("1" | ???*1**0*)
-- *0* ⚠️ This value might have side effects
-- *1* unknown mutation
+f = ("1" | ???*0*)
+- *0* unknown mutation
