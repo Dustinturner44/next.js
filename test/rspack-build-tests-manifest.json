@@ -10345,12 +10345,6 @@
       "skip-trailing-slash-redirect should apply config rewrites correctly",
       "skip-trailing-slash-redirect should be able to redirect locale casing $1",
       "skip-trailing-slash-redirect should correct skip URL normalizing in middleware",
-      "skip-trailing-slash-redirect should handle external rewrite correctly /chained-rewrite-ssg",
-      "skip-trailing-slash-redirect should handle external rewrite correctly /chained-rewrite-ssr",
-      "skip-trailing-slash-redirect should handle external rewrite correctly /chained-rewrite-static",
-      "skip-trailing-slash-redirect should handle external rewrite correctly /docs-auto-static/first",
-      "skip-trailing-slash-redirect should handle external rewrite correctly /docs-ssr/first",
-      "skip-trailing-slash-redirect should handle external rewrite correctly /docs/first",
       "skip-trailing-slash-redirect should merge cookies from middleware and API routes correctly",
       "skip-trailing-slash-redirect should merge cookies from middleware and edge API routes correctly",
       "skip-trailing-slash-redirect should not apply trailing slash on load on client",
@@ -10358,7 +10352,14 @@
       "skip-trailing-slash-redirect should parse locale info for data request correctly",
       "skip-trailing-slash-redirect should provide original _next/data URL with skipProxyUrlNormalize"
     ],
-    "failed": [],
+    "failed": [
+      "skip-trailing-slash-redirect should handle external rewrite correctly /chained-rewrite-ssg",
+      "skip-trailing-slash-redirect should handle external rewrite correctly /chained-rewrite-ssr",
+      "skip-trailing-slash-redirect should handle external rewrite correctly /chained-rewrite-static",
+      "skip-trailing-slash-redirect should handle external rewrite correctly /docs-auto-static/first",
+      "skip-trailing-slash-redirect should handle external rewrite correctly /docs-ssr/first",
+      "skip-trailing-slash-redirect should handle external rewrite correctly /docs/first"
+    ],
     "pending": [],
     "flakey": [],
     "runtimeError": false
