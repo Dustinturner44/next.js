@@ -1,0 +1,6 @@
+- pipeline: asw
+  refs:
+  - :default
+  fail_on_prepare_env_warning: true
+  events:
+  - type: WEBHOOK
