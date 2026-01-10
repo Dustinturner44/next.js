@@ -142,7 +142,6 @@ export function io(expression: string, type: ApiType) {
         }
       }
       break
-    case 'prerender-ppr':
     case 'prerender-legacy':
     case 'cache':
     case 'private-cache':
@@ -160,8 +159,8 @@ function applyOwnerStack(error: Error) {
   // via `throwIfDisallowedDynamic`.
   if (process.env.NODE_ENV !== 'production') {
     const ownerStack =
-      getClientReact()?.captureOwnerStack() ??
-      getServerReact()?.captureOwnerStack()
+      getClientReact()?.captureOwnerStack?.() ??
+      getServerReact()?.captureOwnerStack?.()
 
     if (ownerStack) {
       let stack = ownerStack
