@@ -1,0 +1,6 @@
+- sandbox: asw
+  name: asw
+  os: ubuntu:24.04
+  app_type: CMD
+  endpoints:
+  - www: 80
